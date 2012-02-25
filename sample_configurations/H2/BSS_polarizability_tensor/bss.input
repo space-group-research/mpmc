@@ -1,0 +1,33 @@
+
+ensemble		uvt
+
+seed			258348
+numsteps		1000
+corrtime		100
+
+move_probability	0.1
+insert_probability	0.5
+
+temperature		77.0
+pressure		60.0
+
+basis1			18.0	0.0	0.0
+basis2			0.0	18.0	0.0
+basis3			0.0	0.0	18.0
+
+polarization		on
+polar_damp		2.1304
+polar_damp_type		exponential
+polarizability_tensor	on
+polar_damp_type	exponential
+
+wrapall			on
+pdb_input		co2.initial.pdb
+pdb_output		bss.final.pdb
+pdb_restart		bss.restart.pdb
+traj_output		bss.traj.pdb
+energy_output		bss.energy.dat
+dipole_output		bss.dipole.dcd
+field_output		bss.field.dcd
+traj_output		/dev/null
+

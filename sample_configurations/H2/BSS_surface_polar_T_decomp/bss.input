@@ -1,0 +1,21 @@
+
+ensemble		surf
+
+surf_decomp		on
+surf_min		3.0
+surf_max		10.0
+surf_inc		0.001
+surf_preserve		on
+
+polarization            on
+polar_iterative         on
+polar_damp              2.1304
+polar_precision         0.00001
+
+basis1                  1000000.0 0.0 0.0
+basis2                  0.0 1000000.0 0.0
+basis3                  0.0 0.0 1000000.0
+
+
+pdb_input		bss.initial.pdb
+

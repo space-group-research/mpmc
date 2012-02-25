@@ -1,0 +1,252 @@
+MAIN: processes started on 1 cores
+MAIN: running parameters found in ./bss.input
+INPUT: finished reading config file
+INPUT: Potential energy surface fitting
+INPUT: frozen atom charges scaled by 1.00
+INPUT: molecular coordinates are in bss.initial.pdb
+INPUT: Thole polarization activated
+INPUT: Matrix polarization activated
+INPUT: basis vector 1 = 1000000.00000 0.00000 0.00000
+INPUT: basis vector 2 = 0.00000 1000000.00000 0.00000
+INPUT: basis vector 3 = 0.00000 0.00000 1000000.00000
+INPUT: unit cell volume = 1000000000000000000.000 A^3 (cutoff = 500000.000 A)
+INPUT: recip basis vector 1 = 0.00000 0.00000 0.00000
+INPUT: recip basis vector 2 = 0.00000 0.00000 0.00000
+INPUT: recip basis vector 3 = 0.00000 0.00000 0.00000
+INPUT: config file validated
+INPUT: finished reading in molecules
+INPUT: finished allocating pair lists
+INPUT: finished calculating periodic boundary conditions
+INPUT: finished calculating pairwise interactions
+MAIN: the simulation has been initialized
+MAIN: the random seeds on the compute cores are all set
+MAIN: all 1 cores are in sync
+MAIN: *************************************************************
+MAIN: *** starting potential energy surface fitting calculation ***
+MAIN: *************************************************************
+temperature = 500.000000, sq_error = 2915.085894
+	atomtype H2G q = -0.746400 eps = 12.765320 sig = 3.155280 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.167260 sig = 2.370310 dr = 0.000000
+temperature = 450.000000, sq_error = 3398.802863
+	atomtype H2G q = -0.746400 eps = 12.859847 sig = 3.116373 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.436732 sig = 2.473095 dr = -0.000191
+temperature = 405.000000, sq_error = 3663.504307
+	atomtype H2G q = -0.746400 eps = 13.212686 sig = 3.188793 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 3.061333 sig = 2.273311 dr = -0.000231
+temperature = 364.500000, sq_error = 3631.593000
+	atomtype H2G q = -0.746400 eps = 11.258199 sig = 3.149827 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 3.028103 sig = 2.348864 dr = 0.000453
+temperature = 328.050000, sq_error = 3688.410385
+	atomtype H2G q = -0.746400 eps = 9.692683 sig = 3.182437 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.799265 sig = 2.317874 dr = 0.000224
+temperature = 295.245000, sq_error = 4011.404619
+	atomtype H2G q = -0.746400 eps = 11.163336 sig = 3.129426 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.167645 sig = 2.357125 dr = 0.000263
+temperature = 265.720500, sq_error = 3939.266964
+	atomtype H2G q = -0.746400 eps = 12.015403 sig = 3.118442 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.846360 sig = 2.356105 dr = 0.000160
+temperature = 239.148450, sq_error = 3420.220610
+	atomtype H2G q = -0.746400 eps = 11.933480 sig = 3.149313 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.428263 sig = 2.324055 dr = -0.000447
+temperature = 215.233605, sq_error = 4183.040301
+	atomtype H2G q = -0.746400 eps = 11.926928 sig = 3.123739 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.707350 sig = 2.280290 dr = 0.000234
+temperature = 193.710245, sq_error = 3366.817232
+	atomtype H2G q = -0.746400 eps = 12.940120 sig = 3.176780 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 3.234685 sig = 2.240121 dr = -0.000312
+temperature = 174.339220, sq_error = 3434.280882
+	atomtype H2G q = -0.746400 eps = 12.598875 sig = 3.132478 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.446627 sig = 2.322019 dr = 0.000138
+temperature = 156.905298, sq_error = 3204.175766
+	atomtype H2G q = -0.746400 eps = 13.390262 sig = 3.154563 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.918833 sig = 2.262369 dr = 0.000438
+temperature = 141.214768, sq_error = 2998.089805
+	atomtype H2G q = -0.746400 eps = 13.304640 sig = 3.144484 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.987809 sig = 2.318971 dr = -0.000191
+temperature = 127.093291, sq_error = 3248.178955
+	atomtype H2G q = -0.746400 eps = 13.047295 sig = 3.166379 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.392347 sig = 2.313934 dr = 0.000074
+temperature = 114.383962, sq_error = 3268.805561
+	atomtype H2G q = -0.746400 eps = 12.810261 sig = 3.139199 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.757391 sig = 2.373742 dr = 0.000103
+temperature = 102.945566, sq_error = 3027.176399
+	atomtype H2G q = -0.746400 eps = 13.228821 sig = 3.164199 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 2.254077 sig = 2.249014 dr = -0.000402
+temperature = 92.651009, sq_error = 3299.191366
+	atomtype H2G q = -0.746400 eps = 14.213983 sig = 3.137060 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.471673 sig = 2.299337 dr = 0.000485
+temperature = 83.385908, sq_error = 3274.955798
+	atomtype H2G q = -0.746400 eps = 15.624598 sig = 3.132382 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.252693 sig = 2.333797 dr = -0.000159
+temperature = 75.047318, sq_error = 2991.554859
+	atomtype H2G q = -0.746400 eps = 14.944177 sig = 3.133286 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.893426 sig = 2.360137 dr = -0.000427
+temperature = 67.542586, sq_error = 2928.732701
+	atomtype H2G q = -0.746400 eps = 16.327348 sig = 3.119696 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.450125 sig = 2.339783 dr = -0.000282
+temperature = 60.788327, sq_error = 3140.358443
+	atomtype H2G q = -0.746400 eps = 15.887302 sig = 3.144001 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.992631 sig = 2.267894 dr = 0.000318
+temperature = 54.709495, sq_error = 2928.402419
+	atomtype H2G q = -0.746400 eps = 15.247431 sig = 3.127841 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.556494 sig = 2.372474 dr = -0.000153
+temperature = 49.238545, sq_error = 3005.713856
+	atomtype H2G q = -0.746400 eps = 15.404686 sig = 3.115701 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.504770 sig = 2.417498 dr = 0.000156
+temperature = 44.314691, sq_error = 3121.672236
+	atomtype H2G q = -0.746400 eps = 15.786626 sig = 3.097681 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.018093 sig = 2.457491 dr = 0.000242
+temperature = 39.883222, sq_error = 2928.742990
+	atomtype H2G q = -0.746400 eps = 16.110662 sig = 3.109334 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.300123 sig = 2.392443 dr = -0.000201
+temperature = 35.894899, sq_error = 2972.574688
+	atomtype H2G q = -0.746400 eps = 14.702879 sig = 3.128965 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.847615 sig = 2.318747 dr = -0.000386
+temperature = 32.305409, sq_error = 2918.939626
+	atomtype H2G q = -0.746400 eps = 15.646939 sig = 3.125557 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.738896 sig = 2.291437 dr = -0.000291
+temperature = 29.074869, sq_error = 2942.564727
+	atomtype H2G q = -0.746400 eps = 15.584140 sig = 3.128894 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.791678 sig = 2.263300 dr = -0.000224
+temperature = 26.167382, sq_error = 2968.664889
+	atomtype H2G q = -0.746400 eps = 14.756731 sig = 3.132602 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.633893 sig = 2.314659 dr = 0.000290
+temperature = 23.550643, sq_error = 2925.841585
+	atomtype H2G q = -0.746400 eps = 15.164880 sig = 3.134264 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.739586 sig = 2.296134 dr = 0.000256
+temperature = 21.195579, sq_error = 2922.264079
+	atomtype H2G q = -0.746400 eps = 15.145941 sig = 3.130445 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.810859 sig = 2.286081 dr = 0.000019
+temperature = 19.076021, sq_error = 3001.135831
+	atomtype H2G q = -0.746400 eps = 15.605128 sig = 3.135609 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.608281 sig = 2.317153 dr = -0.000315
+temperature = 17.168419, sq_error = 2960.914287
+	atomtype H2G q = -0.746400 eps = 15.352974 sig = 3.116362 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.399121 sig = 2.374850 dr = -0.000289
+temperature = 15.451577, sq_error = 2941.255141
+	atomtype H2G q = -0.746400 eps = 15.778524 sig = 3.126471 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.611444 sig = 2.347586 dr = 0.000071
+temperature = 13.906419, sq_error = 2932.896382
+	atomtype H2G q = -0.746400 eps = 15.676874 sig = 3.118893 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.416526 sig = 2.399865 dr = -0.000187
+temperature = 12.515778, sq_error = 2932.193901
+	atomtype H2G q = -0.746400 eps = 15.388393 sig = 3.115791 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.438193 sig = 2.390535 dr = -0.000445
+temperature = 11.264200, sq_error = 2967.757245
+	atomtype H2G q = -0.746400 eps = 14.484460 sig = 3.138392 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.932765 sig = 2.358236 dr = 0.000037
+temperature = 10.137780, sq_error = 2921.193463
+	atomtype H2G q = -0.746400 eps = 14.561778 sig = 3.128756 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.644949 sig = 2.428648 dr = -0.000115
+temperature = 9.124002, sq_error = 2940.008588
+	atomtype H2G q = -0.746400 eps = 14.757210 sig = 3.118404 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.431467 sig = 2.475339 dr = 0.000436
+temperature = 8.211602, sq_error = 2934.539128
+	atomtype H2G q = -0.746400 eps = 14.583204 sig = 3.122416 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.474779 sig = 2.447918 dr = 0.000461
+temperature = 7.390441, sq_error = 2920.879143
+	atomtype H2G q = -0.746400 eps = 14.373139 sig = 3.127577 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.630282 sig = 2.420114 dr = 0.000261
+temperature = 6.651397, sq_error = 2925.337024
+	atomtype H2G q = -0.746400 eps = 14.324050 sig = 3.125537 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.556065 sig = 2.465911 dr = -0.000048
+temperature = 5.986258, sq_error = 2940.053803
+	atomtype H2G q = -0.746400 eps = 15.235384 sig = 3.112213 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.380189 sig = 2.499279 dr = 0.000029
+temperature = 5.387632, sq_error = 2967.446122
+	atomtype H2G q = -0.746400 eps = 15.172158 sig = 3.108277 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.294491 sig = 2.576026 dr = 0.000018
+temperature = 4.848869, sq_error = 2963.870466
+	atomtype H2G q = -0.746400 eps = 15.204345 sig = 3.110499 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.243169 sig = 2.516431 dr = -0.000388
+temperature = 4.363982, sq_error = 2942.923461
+	atomtype H2G q = -0.746400 eps = 15.508682 sig = 3.106825 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.243198 sig = 2.538693 dr = -0.000298
+temperature = 3.927584, sq_error = 2970.104309
+	atomtype H2G q = -0.746400 eps = 15.810204 sig = 3.093943 dr = 0.000000
+	atomtype H2E q = 0.373200 eps = 0.000000 sig = 0.000000 dr = 0.000000
+	atomtype H2N q = 0.000000 eps = 1.138518 sig = 2.599372 dr = 0.000436
+2.900000 151.595411 49.353729 31.926626 37.447270
+3.000000 77.604754 12.936738 -10.628480 2.841383
+3.100000 35.529977 -7.103057 -32.186020 -15.708969
+3.200000 11.832940 -17.516101 -41.857505 -24.888846
+3.300000 -1.197138 -22.300192 -44.879785 -28.645742
+3.400000 -8.016897 -23.837847 -44.280559 -29.323001
+3.500000 -11.232213 -23.553341 -41.812387 -28.314097
+3.600000 -12.379611 -22.297363 -38.484696 -26.445288
+3.700000 -12.369445 -20.574901 -34.870926 -24.202035
+3.800000 -11.741364 -18.681645 -31.287913 -21.864320
+3.900000 -10.813683 -16.786361 -27.901625 -19.588192
+4.000000 -9.771806 -14.980996 -24.789936 -17.455245
+4.100000 -8.721108 -13.311310 -21.980050 -15.502767
+4.200000 -7.718836 -11.795669 -19.470852 -13.742154
+4.300000 -6.793465 -10.436572 -17.246203 -12.170146
+4.400000 -5.956501 -9.227715 -15.282797 -10.775659
+4.500000 -5.209676 -8.158277 -13.554728 -9.543889
+4.600000 -4.549328 -7.215500 -12.036059 -8.458743
+4.700000 -3.969048 -6.386192 -10.702209 -7.504229
+4.800000 -3.461262 -5.657582 -9.530617 -6.665215
+4.900000 -3.018147 -5.017765 -8.500997 -5.927797
+5.000000 -2.632152 -4.455911 -7.595346 -5.279449
+5.100000 -2.296257 -3.962314 -6.797830 -4.709022
+5.200000 -2.004101 -3.528376 -6.094609 -4.206682
+5.300000 -1.750007 -3.146530 -5.473631 -3.763806
+5.400000 -1.528966 -2.810156 -4.924426 -3.372863
+5.500000 -1.336591 -2.513477 -4.437913 -3.027294
+5.600000 -1.169061 -2.251466 -4.006224 -2.721397
+5.700000 -1.023059 -2.019755 -3.622538 -2.450216
+5.800000 -0.895715 -1.814551 -3.280941 -2.209447
+5.900000 -0.784546 -1.632557 -2.976304 -1.995354
+6.000000 -0.687408 -1.470914 -2.704173 -1.804688
+MAIN: **************************************************************
+MAIN: *** finishing potential energy surface fitting calculation ***
+MAIN: **************************************************************
+MAIN: freeing all data structures.......done
+MAIN: simulation exiting successfully
+

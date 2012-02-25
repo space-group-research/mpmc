@@ -1,0 +1,6 @@
+
+-do cavity biasing as cubes rather than spheres
+-recalculate only ES/rd/polar term for molecule that moved?
+-integrate Widom
+-add mkl and acml matrix ops instead of numerical recipes
+

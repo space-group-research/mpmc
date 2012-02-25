@@ -1,0 +1,25 @@
+
+ensemble		nve
+
+seed			258348
+numsteps		1000000
+corrtime		100
+move_probability	0.03
+
+
+total_energy		-14655.219
+free_volume		11595.4
+
+#feynman_hibbs		on
+#feynman_hibbs_order	4
+
+basis1			25.669	0.0	0.0
+basis2			0.0	25.669	0.0
+basis3			0.0	0.0	25.669
+
+wrapall			on
+pdb_input		MOF5+BSS.initial.pdb
+pdb_output		MOF5+BSS.final.pdb
+pdb_restart		MOF5+BSS.restart.pdb
+energy_output		MOF5+BSS.energy.dat
+

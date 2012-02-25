@@ -1,0 +1,23 @@
+
+ensemble		uvt
+rd_only			on
+
+seed			258348
+numsteps		1000000
+corrtime		1000
+insert_probability	0.5
+move_probability	0.1
+
+temperature		77.0
+pressure		100.0
+
+basis1			18.0	0.0	0.0
+basis2			0.0	18.0	0.0
+basis3			0.0	0.0	18.0
+
+wrapall			on
+pdb_input		buch.initial.pdb
+pdb_output		buch.final.pdb
+pdb_restart		buch.restart.pdb
+energy_output		buch.energy.dat
+

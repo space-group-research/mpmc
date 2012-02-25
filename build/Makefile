@@ -1,0 +1,13 @@
+
+#HOSTNAME=spin COMPILER=gcc MODE=serial CUDA=no QM_ROTATION=no
+CC=gcc
+CFLAGS=-g3 -O3 -lm
+DEFINES= -DVDW
+EXTRA_DEFINES=
+EXTRA_INCLUDES=
+EXTRA_LIBS= -llapack
+CUDA=no
+QM_ROTATION=no
+
+include Makefile.common
+

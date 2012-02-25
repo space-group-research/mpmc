@@ -1,0 +1,31 @@
+ensemble		nve
+
+seed			258348
+numsteps		1
+corrtime		1
+
+move_probability 0.0
+rot_probability 0.0
+insert_probability 0.0
+
+temperature		77.0
+pressure		100.0
+
+basis1			18.0	0.0	0.0
+basis2			0.0	18.0	0.0
+basis3			0.0	0.0	18.0
+
+polarization	on
+polar_damp		2.1304
+polar_iterative		on
+polar_damp_type		exponential
+polar_precision		0.000001
+
+wrapall			on
+pdb_input		config.pdb
+pdb_output		/dev/null
+pdb_restart		/dev/null
+traj_output		/dev/null
+energy_output		bssp.energy.out
+dipole_output		bssp.dipole.out
+field_output		bssp.field.dcd

@@ -1,0 +1,26 @@
+
+ensemble		uvt
+
+seed			258348
+numsteps		100000
+corrtime		100
+move_probability	0.01
+rot_probability		0.01
+insert_probability	0.666
+
+
+temperature		350.0
+pressure                1.0
+free_volume             6335.29
+
+
+basis1			22.4567	0.0	0.0
+basis2			0.0	22.4567	0.0
+basis3			0.0	0.0	22.4567
+
+wrapall			on
+pdb_input		socMOF+DIMP.initial.pdb
+pdb_output		socMOF+DIMP.final.pdb
+pdb_restart		socMOF+DIMP.restart.pdb
+energy_output		socMOF+DIMP.energy.dat
+traj_output		socMOF+DIMP.traj.pdb

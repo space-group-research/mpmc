@@ -1,0 +1,13 @@
+
+ensemble		surf
+
+# max and min displacements in angstroms
+surf_min		2.8
+surf_max		10.0
+# displacement increments in angstroms
+surf_inc		0.1
+# angle increments in radians - below is pi/3
+surf_ang		1.047197551
+
+pdb_input		dl.initial.pdb
+

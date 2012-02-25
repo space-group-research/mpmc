@@ -1,0 +1,22 @@
+
+ensemble		uvt
+
+seed			258348
+numsteps		10000
+corrtime		1000
+move_probability	0.1
+insert_probability	0.3
+
+temperature		77.0
+pressure		100.0
+
+basis1			18.0	0.0	0.0
+basis2			0.0	18.0	0.0
+basis3			0.0	0.0	18.0
+
+wrapall			on
+pdb_input		dl.initial.pdb
+pdb_output		dl.final.pdb
+pdb_restart		dl.restart.pdb
+energy_output		dl.energy.dat
+

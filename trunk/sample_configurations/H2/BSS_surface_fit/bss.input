@@ -1,0 +1,10 @@
+
+ensemble		surf_fit
+
+seed			2537465987
+
+
+# both molecules in the initial file must be aligned along the x-axis
+pdb_input		bss.initial.pdb
+fit_input		mp4.curves.dat
+

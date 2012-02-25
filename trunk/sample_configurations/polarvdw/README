@@ -1,0 +1,20 @@
+Compare the energy of some configuration between bssp and polar-vdw.
+
+
+First, generate the configuration from the single molecule pdb by running
+mpmc generate_config.in.
+
+Then we can calculate the energy of the system using 
+mpmc energy-bssp.in
+and
+mpmc vdw-bssp.in
+
+
+
+
+Instead of using the option "polarvdw on" we can use "polarvdw evects," to
+print the matrix of eigenvectors each time we calculate the vdw energy. Recall,
+that the matrix we are working with is C_ij= A_ij omega_i omega_j sqrt(alpha_i alpha_j),
+however, we suppress columns and rows for which omega=0.
+
+See vdw.c for details.

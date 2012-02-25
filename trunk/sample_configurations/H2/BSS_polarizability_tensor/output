@@ -1,0 +1,50 @@
+mpirun --mca pls_rsh_agent rsh --mca pls_rsh_num_concurrent 1024 --prefix /opt/priv/openmpi-1.2.7/pgi-7.2-5 --mca btl ^mx --mca mtl ^mx -np 1 /home/staff/amullen/bin/mpmc64_co2f2 ./bss.input
+MAIN: processes started on 1 cores
+MAIN: running parameters found in ./bss.input
+INPUT: finished reading config file
+INPUT: Grand canonical ensemble
+INPUT: frozen atom charges scaled by 1.00
+INPUT: molecular coordinates are in bss.initial.pdb
+INPUT: Thole polarization activated
+INPUT: Matrix polarization activated
+INPUT: Polarizability tensor calculation activated
+INPUT: basis vector 1 = 18.00000 0.00000 0.00000
+INPUT: basis vector 2 = 0.00000 18.00000 0.00000
+INPUT: basis vector 3 = 0.00000 0.00000 18.00000
+INPUT: unit cell volume = 5832.000 A^3 (cutoff = 9.000 A)
+INPUT: recip basis vector 1 = 0.05556 0.00000 0.00000
+INPUT: recip basis vector 2 = 0.00000 0.05556 0.00000
+INPUT: recip basis vector 3 = 0.00000 0.00000 0.05556
+INPUT: Ewald gaussian width = 0.500000 A
+INPUT: Ewald max k-vector = 7 A^-1
+INPUT: rng seed is 258348
+INPUT: each core performing 1000 simulation steps
+INPUT: system correlation time is 100 steps
+INPUT: system temperature is 77.000 K
+INPUT: reservoir pressure is 60.000 atm
+INPUT: trial move scaling is 0.100
+INPUT: adiabatic move scaling is 0.000
+INPUT: insert move probability is 0.500
+INPUT: will be writing final configuration to bss.final.pdb
+INPUT: will be writing restart configuration to bss.restart.pdb
+INPUT: dipole will be written to bss.dipole.dcd
+INPUT: electric field will be written to bss.field.dcd
+INPUT: histogram calculation will not be performed :(
+INPUT: config file validated
+INPUT: finished reading in molecules
+INPUT: finished allocating pair lists
+INPUT: finished calculating periodic boundary conditions
+INPUT: finished calculating pairwise interactions
+MAIN: the simulation has been initialized
+MAIN: the random seeds on the compute cores are all set
+MAIN: all 1 cores are in sync
+MAIN: *******************************************************
+MAIN: *** starting Grand Canonical Monte Carlo simulation ***
+MAIN: *******************************************************
+POLARIZATION: polarizability tensor (A^3):
+##########################
+0.694 0.000 0.000 
+0.000 0.694 0.000 
+0.000 0.000 0.975 
+##########################
+isotropic = 0.788

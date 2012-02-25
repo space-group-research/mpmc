@@ -1,0 +1,10 @@
+
+ensemble		surf
+
+surf_min		0.001
+surf_max		25.0
+surf_inc		0.01
+surf_ang		0.5
+
+pdb_input		bss.initial.pdb
+

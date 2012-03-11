@@ -14,7 +14,7 @@ system_t *read_config(char *input_file) {
 
 	system_t *system;
 	char linebuffer[MAXLINE], *n;
-	char token1[MAXLINE], token2[MAXLINE], token3[MAXLINE], token4[MAXLINE];
+	char token1[MAXLINE], token2[MAXLINE], token3[MAXLINE], token4[MAXLINE], token5[MAXLINE], token6[MAXLINE], token7[MAXLINE];
 	FILE *fp;
 
 	system = calloc(1, sizeof(system_t));
@@ -94,7 +94,10 @@ system_t *read_config(char *input_file) {
 		memset(token2, 0, MAXLINE);
 		memset(token3, 0, MAXLINE);
 		memset(token4, 0, MAXLINE);
-		sscanf(linebuffer, "%s %s %s %s", token1, token2, token3, token4);
+		memset(token5, 0, MAXLINE);
+		memset(token6, 0, MAXLINE);
+		memset(token7, 0, MAXLINE);
+		sscanf(linebuffer, "%s %s %s %s %s %s %s", token1, token2, token3, token4, token5, token6, token7);
 
 		if(!strcasecmp(token1, "ensemble")) {
 			if(!strcasecmp(token2, "nvt"))
@@ -189,6 +192,21 @@ system_t *read_config(char *input_file) {
 				system->surf_preserve = 1;
 			else
 				system->surf_preserve = 0;
+		}
+
+	//set rotation in input file for surf_preserve (calc dimer geometry curves)
+		if(!strcasecmp(token1, "surf_preserve_rotation")) {
+			if(system->surf_preserve_rotation_on != NULL) {
+				fprintf(stderr,"ERROR: surf_preserve_rotation already set.\n");
+				return(NULL);
+			}
+			system->surf_preserve_rotation_on = malloc(6*sizeof(double));
+			system->surf_preserve_rotation_on->alpha1=atof(token2);
+			system->surf_preserve_rotation_on->beta1=atof(token3);
+			system->surf_preserve_rotation_on->gamma1=atof(token4);
+			system->surf_preserve_rotation_on->alpha2=atof(token5);
+			system->surf_preserve_rotation_on->beta2=atof(token6);
+			system->surf_preserve_rotation_on->gamma2=atof(token7);
 		}
 
 		if(!strcasecmp(token1, "spectre")) {

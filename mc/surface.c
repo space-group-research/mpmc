@@ -149,6 +149,25 @@ int surface(system_t *system) {
 	/* output the potential energy curve */
 	if(system->surf_preserve) {	/* preserve the orientation and only calculate based on displacement */
 
+		//apply rotation if given in input file
+		if ( system->surf_preserve_rotation_on != NULL ) {
+			surface_dimer_geometry(system, 0.0, 
+				system->surf_preserve_rotation_on->alpha1,
+				system->surf_preserve_rotation_on->beta1,
+				system->surf_preserve_rotation_on->gamma1,
+				system->surf_preserve_rotation_on->alpha2,
+				system->surf_preserve_rotation_on->beta2,
+				system->surf_preserve_rotation_on->gamma2);
+				printf("SURFACE: Setting preserve angles (radians) for molecule 1: %lf %lf %lf\n",
+					system->surf_preserve_rotation_on->alpha1,
+					system->surf_preserve_rotation_on->beta1,
+					system->surf_preserve_rotation_on->gamma1);
+				printf("SURFACE: Setting preserve angles (radians) for molecule 2: %lf %lf %lf\n",
+					system->surf_preserve_rotation_on->alpha2,
+					system->surf_preserve_rotation_on->beta2,
+					system->surf_preserve_rotation_on->gamma2);
+		}
+		
 		for(r = system->surf_min; r <= system->surf_max; r += system->surf_inc) {
 
 			/* calculate the energy */
@@ -213,6 +232,8 @@ int surface(system_t *system) {
 										pe_total_avg = pe_total_avg*avg_factor + (pe_total/((double)avg_counter));
 
 									}
+									//unrotate (not the most efficent thing to be doing, but oh well)
+									surface_dimer_geometry(system, 0.0, -alpha_origin, -beta_origin, -gamma_origin, -alpha_move, -beta_move, -gamma_move);
 
 								} /* end gamma_move */
 							} /* end beta_move */

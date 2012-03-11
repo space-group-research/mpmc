@@ -398,6 +398,10 @@ typedef struct _qshiftData {
 	double drH2Q;
 } qshiftData_t;
 
+typedef struct _surf_preserve_rotation {
+	double alpha1, alpha2, beta1, beta2, gamma1, gamma2;
+} surf_preserve_rotation;
+
 typedef struct _system {
 
 	////////////////////////////////////////////////////////////
@@ -411,6 +415,8 @@ typedef struct _system {
 	int surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;
 	int surf_weight_constant_on;
 	int surf_preserve, surf_decomp;
+	//some surf_preserve options
+	surf_preserve_rotation * surf_preserve_rotation_on;
 	long int seed;
 	int numsteps, corrtime, step;
 	double move_probability, rot_probability, insert_probability, adiabatic_probability, spinflip_probability, gwp_probability;

@@ -216,6 +216,7 @@ void cleanup(system_t *system) {
 
 	if(system->frozen_output) free(system->frozen_output);
 
+	if(system->surf_preserve_rotation_on) free(system->surf_preserve_rotation_on);
 
 	if(system->cavity_bias) free_cavity_grid(system);
 

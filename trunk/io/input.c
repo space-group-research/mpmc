@@ -175,7 +175,7 @@ system_t *read_config(char *input_file) {
 		if(!strcasecmp(token1, "surf_qshift")) {
 			if (!strcasecmp(token2, "on")) {
 				system->surf_qshift_on = 1;
-				fprintf(stderr,"INPUT: SURF_QSHIFT IS ON. "
+				fprintf(stdout,"INPUT: SURF_QSHIFT IS ON. "
 					"CHARGED SITES ARE ALLOWED TO MIGRATE.\n"
 					"INPUT: THE QUADRUPOLE MOMENT WILL BE PRESERVED.\n"
 					"INPUT: *** ONLY USE WITH LINEAR MOLECULES ALIGNED ON THE X-AXIS. ***\n"
@@ -449,19 +449,19 @@ system_t *read_config(char *input_file) {
 				//polarvdw requires polarization matricies to be built
 				system->polarization=1;
 				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stderr,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 			}
 			else if (!strcasecmp(token2, "evects")) {
 				system->polarvdw = 2; //calculate eigenvectors
 				system->polarization=1;
 				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stderr,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 			}
 			else if ( !strcasecmp(token2, "comp")) {
 				system->polarvdw = 3; //calculate eigenvectors
 				system->polarization=1;
 				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stderr,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 			}
 			else 
 				system->polarvdw = 0;

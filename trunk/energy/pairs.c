@@ -63,6 +63,9 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 		if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
 			pair_ptr->attractive_only = 1;
 			pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));
+		} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
+			pair_ptr->sigma = 0;
+			pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
 		} else {
 			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
 			pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
@@ -140,9 +143,14 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 
 	/* store the results for this pair */
 	pair_ptr->r = r;
-	pair_ptr->rimg = ri;
-	for(p = 0; p < 3; p++)
-		pair_ptr->dimg[p] = di[p];
+
+	if ( isnan(ri) != 0 ) pair_ptr->rimg = r;
+	else pair_ptr->rimg = ri;
+
+	for(p = 0; p < 3; p++) {
+		if ( isnan(di[p]) != 0 ) pair_ptr->dimg[p] = d[p];
+		else pair_ptr->dimg[p] = di[p];
+	}
 
 	/* store the 3rd and 5th powers for A matrix stuff */
 //	if(system->polarization) {
@@ -193,13 +201,12 @@ void pairs(system_t *system) {
 			pair_ptr->atom = atom_array[j];
 			pair_ptr->molecule = molecule_array[j];
 
-			/* set any necessary exclusions and min image */
+			/* set any necessary exclusions */
 			/* frozen-frozen and self distances dont change */
 			if(!(pair_ptr->frozen || (pair_ptr->rd_excluded && pair_ptr->es_excluded)))
 				pair_exclusions(system, molecule_array[i], molecule_array[j], atom_array[i], atom_array[j], pair_ptr);
-			else if ( system->polarvdw )
-				pair_exclusions(system, molecule_array[i], molecule_array[j], atom_array[i], atom_array[j], pair_ptr);
 
+			/* recalc min image */
 			if(!(pair_ptr->frozen))
 				minimum_image(system, atom_array[i], atom_array[j], pair_ptr);
 

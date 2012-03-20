@@ -34,10 +34,10 @@ int open_files(system_t *system) {
 	//added for sanity
 #ifdef VDW
 		fprintf(system->file_pointers.fp_energy,
-			"#energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio\n");
+			"#energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio #volume\n");
 #else
 		fprintf(system->file_pointers.fp_energy,
-			"#energy coulombic rd polar kinetic temp N spin_ratio\n");
+			"#energy #coulombic #rd #polar #kinetic #temp #N #spin_ratio #volume\n");
 #endif
 	}
 
@@ -193,14 +193,14 @@ void spectre_wrapall(system_t *system) {
 /* write out the final system state as a PDB file */
 int write_molecules(system_t *system, char *filename) {
 
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
-	char linebuf[MAXLINE];
-	FILE *fp;
-	int i, j, k;
 	int atom_box, molecule_box, p, q;
 	double box_pos[3], box_occupancy[3];
 	int l, m, n, box_labels[2][2][2], diff;
+	char linebuf[MAXLINE];
+	molecule_t *molecule_ptr;
+	atom_t *atom_ptr;
+	FILE *fp;
+	int i, j, k;
 
 	fp = fopen(filename, "w");
 	if(!fp) {
@@ -281,7 +281,7 @@ int write_molecules(system_t *system, char *filename) {
 						box_pos[p] += system->pbc->basis[p][q]*box_occupancy[q];
 
 				for(p = 0; p < 3; p++)
-					fprintf(fp, "%8.3f", box_pos[p]);
+					fprintf(fp, "%14.8f", box_pos[p]);
 
 				/* null interactions */
 				fprintf(fp, " %8.4f", 0.0);
@@ -335,10 +335,10 @@ void write_states(FILE *fp, molecule_t *molecules) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	char linebuf[MAXLINE];
-	int i, j, k;
-	int atom_box, molecule_box, p, q;
 	double box_pos[3], box_occupancy[3];
 	int l, m, n, box_labels[2][2][2], diff;
+	int i, j, k;
+	int atom_box, molecule_box, p, q;
 	int num_frozen_molecules, num_moveable_molecules;
 	int num_frozen_atoms, num_moveable_atoms;
 
@@ -443,9 +443,9 @@ int write_performance(int i, system_t *system) {
 void write_observables(FILE *fp_energy, observables_t *observables) {
 
 #ifdef VDW
-	fprintf(fp_energy, "%f %f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->vdw_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio);
+	fprintf(fp_energy, "%f %f %f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->vdw_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio, observables->volume);
 #else
-	fprintf(fp_energy, "%f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio);
+	fprintf(fp_energy, "%f %f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio, observables->volume);
 #endif
 	fflush(fp_energy);
 
@@ -512,6 +512,7 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: AR = %.3f (%.3f I/ %.3f R/ %.3f D", averages->acceptance_rate, averages->acceptance_rate_insert, averages->acceptance_rate_remove, averages->acceptance_rate_displace);
 		if(averages->acceptance_rate_adiabatic > 0.0) printf("/ %.3f A", averages->acceptance_rate_adiabatic);
 		if(averages->acceptance_rate_spinflip > 0.0) printf("/ %.3f S", averages->acceptance_rate_spinflip);
+		if(averages->acceptance_rate_volume > 0.0) printf("/ %.3f V", averages->acceptance_rate_volume);
 		printf(")\n");
 	}
 
@@ -538,7 +539,6 @@ int write_averages(system_t *system) {
 		if(averages->polarization_iterations != 0.0)
 			printf(" (iterations = %.1f +- %.1f rrms = %e +- %e)", averages->polarization_iterations, 0.5*averages->polarization_iterations_error, averages->dipole_rrms, 0.5*averages->dipole_rrms_error);
 		printf("\n");
-
 	}
 
 #ifdef VDW
@@ -567,29 +567,36 @@ int write_averages(system_t *system) {
 	if(averages->excess_ratio > 0.0)
 		printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
 
+	//error wasn't calculated correctly, nor is it simple to calculate
+	// qst, heat_cap and compress, are based on the variance of other quantities. calculating the error
+	// of a variance is either non-trivial (try it!), or I'm an idiot.
 	if(averages->qst > 0.0) {
-		if(averages->qst_error > MAXDOUBLE)	/* lack of error bar, avoid nan from sqrt(-small) */
-			printf("OUTPUT: qst = %.3f +- N/A kJ/mol\n", averages->qst);
-		else
-			printf("OUTPUT: qst = %.3f +- %.3f kJ/mol\n", averages->qst, 0.5*averages->qst_error);
+//		if(averages->qst_error > MAXDOUBLE)	/* lack of error bar, avoid nan from sqrt(-small) */
+			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
+//		else
+//			printf("OUTPUT: qst = %.3f +- %.3f kJ/mol\n", averages->qst, 0.5*averages->qst_error);
 	}
 
+	if(system->ensemble == ENSEMBLE_NPT)
+		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
+
+	//error wasn't calculated correctly, nor is it simple to calculate (see qst above)
 	if(averages->heat_capacity > 0.0) {
-		if(averages->heat_capacity_error > MAXDOUBLE)
-			printf("OUTPUT: heat capacity = %.3f +- N/A kJ/mol K\n", averages->heat_capacity);
-		else
-			printf("OUTPUT: heat capacity = %.3f +- %.3f kJ/mol K\n", averages->heat_capacity, 0.5*averages->heat_capacity_error);
+//		if(averages->heat_capacity_error > MAXDOUBLE)
+			printf("OUTPUT: heat capacity = %.3f +- kJ/mol K\n", averages->heat_capacity);
+//		else
+	//		printf("OUTPUT: heat capacity = %.3f +- %.3f kJ/mol K\n", averages->heat_capacity, 0.5*averages->heat_capacity_error);
 	}
 
 	if(averages->compressibility > 0.0) {
-
-		if(averages->compressibility_error > MAXDOUBLE) {
-			printf("OUTPUT: compressibility = %.6f +- N/A atm^-1\n", averages->compressibility);
-			printf("OUTPUT: bulk modulus = %.6f +- N/A GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
-		} else {
-			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, 0.5*averages->compressibility_error);
-			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility,  ATM2PASCALS*1.0e-9/(0.5*averages->compressibility_error));
-		}
+//error wasn't calculated correctly, nor is it simple to calculate (see qst above)
+//		if(averages->compressibility_error > MAXDOUBLE) {
+			printf("OUTPUT: compressibility = %.6f +- atm^-1\n", averages->compressibility);
+			printf("OUTPUT: bulk modulus = %.6f +- GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
+//		} else {
+//			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, 0.5*averages->compressibility_error);
+//			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility,  ATM2PASCALS*1.0e-9/(0.5*averages->compressibility_error));
+	//	}
 	}
 
 	if(averages->spin_ratio > 0.0) {

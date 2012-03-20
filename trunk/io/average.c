@@ -67,6 +67,11 @@ void track_ar(nodestats_t *ns) {
 	else
 		ns->acceptance_rate_spinflip = 0;
 
+	if(ns->accept_volume + ns->reject_volume)
+		ns->acceptance_rate_volume = ((double)ns->accept_volume) / ((double)(ns->accept_volume + ns->reject_volume));
+	else
+		ns->acceptance_rate_volume = 0;
+
 }
 
 /* update node statistics related to the processing */
@@ -88,6 +93,7 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 	avg_nodestats->acceptance_rate_displace = nodestats->acceptance_rate_displace;
 	avg_nodestats->acceptance_rate_adiabatic = nodestats->acceptance_rate_adiabatic;
 	avg_nodestats->acceptance_rate_spinflip = nodestats->acceptance_rate_spinflip;
+	avg_nodestats->acceptance_rate_volume = nodestats->acceptance_rate_volume;
 
 	avg_nodestats->cavity_bias_probability = factor*avg_nodestats->cavity_bias_probability + nodestats->cavity_bias_probability / ((double)counter);
 	avg_nodestats->cavity_bias_probability_sq = factor*avg_nodestats->cavity_bias_probability_sq + nodestats->cavity_bias_probability*nodestats->cavity_bias_probability / ((double)counter);
@@ -102,7 +108,7 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 
 void update_root_averages(system_t *system, observables_t *observables, avg_nodestats_t *avg_nodestats, avg_observables_t *avg_observables) {
 
-	double particle_mass, frozen_mass;
+	double particle_mass, frozen_mass, curr_density;
 
 	molecule_t *molecule_ptr;
 	static int counter = 0;
@@ -150,6 +156,10 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 	avg_observables->temperature_sq = factor*avg_observables->temperature_sq + (observables->temperature*observables->temperature) / ((double)counter);
 	avg_observables->temperature_error = 0.5*sqrt(avg_observables->temperature_sq  - avg_observables->temperature*avg_observables->temperature);
 
+	avg_observables->volume = factor*avg_observables->volume + observables->volume / ((double)counter);
+	avg_observables->volume_sq = factor*avg_observables->volume_sq + (observables->volume*observables->volume) / ((double)counter);
+	avg_observables->volume_error = 0.5*sqrt(avg_observables->volume_sq  - avg_observables->volume*avg_observables->volume);
+
 	avg_observables->N = factor*avg_observables->N + observables->N / ((double)counter);
 	avg_observables->N_sq = factor*avg_observables->N_sq + (observables->N*observables->N) / ((double)counter);
 	avg_observables->N_error = 0.5*sqrt(avg_observables->N_sq  - avg_observables->N*avg_observables->N);
@@ -173,6 +183,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 	avg_observables->acceptance_rate_displace = factor*avg_observables->acceptance_rate_displace + avg_nodestats->acceptance_rate_displace / ((double)counter);
 	avg_observables->acceptance_rate_adiabatic = factor*avg_observables->acceptance_rate_adiabatic + avg_nodestats->acceptance_rate_adiabatic / ((double)counter);
 	avg_observables->acceptance_rate_spinflip = factor*avg_observables->acceptance_rate_spinflip + avg_nodestats->acceptance_rate_spinflip / ((double)counter);
+	avg_observables->acceptance_rate_volume = factor*avg_observables->acceptance_rate_volume + avg_nodestats->acceptance_rate_volume / ((double)counter);
 
 	avg_observables->cavity_bias_probability = factor*avg_observables->cavity_bias_probability + avg_nodestats->cavity_bias_probability / ((double)counter);
 	avg_observables->cavity_bias_probability_sq = factor*avg_observables->cavity_bias_probability_sq + avg_nodestats->cavity_bias_probability_sq / ((double)counter);
@@ -191,19 +202,18 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 			particle_mass = molecule_ptr->mass;
 	}
 
-	/* density in g/cm^3 */
-	avg_observables->density = avg_observables->N*particle_mass/(system->pbc->volume*NA*A32CM3);
-	avg_observables->density_error = avg_observables->N_error*particle_mass/(system->pbc->volume*NA*A32CM3);
+	/* density in g/cm^3 */ //had to modify since density isn't neccessarily constant since adding NPT
+	curr_density = observables->N * particle_mass / (system->pbc->volume*NA*A32CM3);
+//	avg_observables->density = avg_observables->N*particle_mass/(system->pbc->volume*NA*A32CM3);
+	avg_observables->density = factor*avg_observables->density + curr_density/((double)counter);
+	avg_observables->density_sq = factor * avg_observables->density_sq + (curr_density*curr_density)/(double)counter;
+	avg_observables->density_error = 0.5*sqrt(avg_observables->density_sq - (avg_observables->density)*(avg_observables->density) );
 
 	/* heat capacity in kJ/mol K */
 	avg_observables->heat_capacity = (KB*NA/1000.0)*(avg_observables->energy_sq - avg_observables->energy*avg_observables->energy)/(system->temperature*system->temperature);
-	avg_observables->heat_capacity_sq = factor*avg_observables->heat_capacity_sq + (avg_observables->heat_capacity*avg_observables->heat_capacity) / ((double)counter);
-	avg_observables->heat_capacity_error = 0.5*sqrt(avg_observables->heat_capacity_sq - avg_observables->heat_capacity*avg_observables->heat_capacity);
 
 	/* compressibility */
 	avg_observables->compressibility = ATM2PASCALS*(system->pbc->volume/pow(METER2ANGSTROM, 3.0))*(avg_observables->N_sq - avg_observables->N*avg_observables->N)/(KB*system->temperature*avg_observables->N*avg_observables->N);
-	avg_observables->compressibility_sq = factor*avg_observables->compressibility_sq + (avg_observables->compressibility*avg_observables->compressibility) / ((double)counter);
-	avg_observables->compressibility_error = 0.5*sqrt(avg_observables->compressibility_sq - avg_observables->compressibility*avg_observables->compressibility);
 
 	/* we have a solid phase */
 	if(frozen_mass > 0.0) {
@@ -237,9 +247,6 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		avg_observables->qst /= (avg_observables->N_sq - avg_observables->N*avg_observables->N);
 		avg_observables->qst += system->temperature;
 		avg_observables->qst *= KB*NA/1000.0;	/* convert to kJ/mol */
-
-		avg_observables->qst_sq = factor*avg_observables->qst_sq + (avg_observables->qst*avg_observables->qst) / ((double)counter);
-		avg_observables->qst_error = 0.5*sqrt(avg_observables->qst_sq - avg_observables->qst*avg_observables->qst);
 
 	}
 

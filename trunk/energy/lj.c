@@ -86,7 +86,7 @@ double lj(system_t *system) {
 
 						}
 
-						/* cause an autoreject on insertions */
+						/* cause an autoreject on insertions */ //cavity_autoreject_absolute is checked in energy.c
 						if(system->cavity_autoreject) {
 							if(pair_ptr->rimg < system->cavity_autoreject_scale*fabs(pair_ptr->sigma))
 								pair_ptr->rd_energy = MAXVALUE;
@@ -94,8 +94,14 @@ double lj(system_t *system) {
 
 					}
 
-					/* include the long-range correction */
-					if(!(pair_ptr->rd_excluded || pair_ptr->frozen) && (pair_ptr->lrc == 0.0) && system->rd_lrc ) {
+					/* include the long-range correction */  /* I'm  not sure that I'm handling spectre pairs correctly */
+					/* we can't use rd_excluded flag, since that disqualifies inter-molecular, but that DOES contribute to LRC */
+					/* ALL OF THESE MUST BE TRUE TO PERFORM LRC CALCULATION */
+					if( ( pair_ptr->epsilon != 0 && pair_ptr->sigma != 0 ) &&  //if these are zero, then we won't waste our time
+							!( atom_ptr->spectre && pair_ptr->atom->spectre ) && //i think we want to disqualify s-s pairs 
+							!( pair_ptr->frozen ) &&  //disqualify frozen pairs
+							((pair_ptr->lrc == 0.0) || system->last_volume != system->pbc->volume) &&  //LRC only changes if the volume changes
+							system->rd_lrc) { //flag to include LRC
 
 						sig_cut = fabs(pair_ptr->sigma)/system->pbc->cutoff;
 						sig3 = pow(fabs(pair_ptr->sigma), 3.0);
@@ -108,7 +114,7 @@ double lj(system_t *system) {
             else 
               //if polarvdw is off, do the usual thing
               pair_ptr->lrc = ((16.0/3.0)*M_PI*pair_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
-
+		
 					}
 
 				} /* if recalculate */
@@ -119,6 +125,32 @@ double lj(system_t *system) {
 			} /* pair */
 		} /* atom */
 	} /* molecule */
+
+	/* calculate self LRC interaction */
+
+	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+
+			if ( ((atom_ptr->sigma != 0)  && (atom_ptr->epsilon != 0)) && //non-zero parameters
+					 !(atom_ptr->frozen) && //not frozen
+					 !(atom_ptr->spectre) && //not spectre
+					 (system->rd_lrc) ) { // flag for LRC calculation
+		
+				sig_cut = fabs(atom_ptr->sigma)/system->pbc->cutoff;
+				sig3 = pow(fabs(atom_ptr->sigma), 3.0);
+				sig_cut3 = pow(sig_cut, 3.0);
+				sig_cut9 = pow(sig_cut, 9.0);
+
+				if ( system->polarvdw ) 
+				//only repulsion term, if polarvdw is on
+					potential += (16.0/9.0)*M_PI*atom_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
+				else 
+				//if polarvdw is off, do the usual thing
+					potential += ((16.0/3.0)*M_PI*atom_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
+			}
+
+		}
+	}
 
 
 	return(potential);
@@ -161,6 +193,7 @@ double lj_nopbc(system_t * system) {
 			} /* pair */
 		} /* atom */
 	} /* molecule */
+
 
 	return(potential);
 

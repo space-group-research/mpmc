@@ -9,10 +9,29 @@ University of South Florida
 
 #include <mc.h>
 
+
+/*check cavity_autoreject_absolute 
+-- probably not the most efficient place to put this, but likely the safest*/
+double cavity_absolute_check ( system_t * system ) {
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	pair_t * pair_ptr;
+	
+	for ( molecule_ptr=system->molecules; molecule_ptr; molecule_ptr=molecule_ptr->next ) {
+		for ( atom_ptr=molecule_ptr->atoms; atom_ptr; atom_ptr=atom_ptr->next ) {
+			for ( pair_ptr=atom_ptr->pairs; pair_ptr; pair_ptr=pair_ptr->next ) {
+				if ( molecule_ptr == pair_ptr->molecule ) continue; //skip if on the same molecule
+				if ( pair_ptr->rimg < system->cavity_autoreject_scale ) return MAXVALUE;
+			}
+		}
+	}
+	return 0;
+}
+
+
 /* returns the total potential energy for the system and updates our observables */
 double energy(system_t *system) {
 
-	atom_t *atom_ptr;
 	molecule_t *molecule_ptr;
 	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy;
 	double kinetic_energy;
@@ -28,13 +47,16 @@ double energy(system_t *system) {
 	vdw_energy = 0;
 
 	/* get the periodic boundary conditions */
-	if(system->wpi || system->fvm) pbc(system->pbc);	/* do this each time only for fvm and wpi */
+	if(system->wpi || system->fvm) pbc(system);	/* do this each time only for fvm and wpi */
 
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
 
 	/* only on the first simulation step, make sure that all recalculate flags are set */
 	if(system->observables->energy == 0.0) flag_all_pairs(system);
+	/* if we made a volume change (or just reverted from one) set recalculate flags */
+	if ( system->last_volume != system->pbc->volume ) //we set last_volume at the end of this function
+		flag_all_pairs(system);
 
 	/* get the repulsion/dispersion potential */
 	if(system->rd_anharmonic)
@@ -83,7 +105,6 @@ double energy(system_t *system) {
 			system->observables->polarization_energy = polar_energy;
 
 		}
-
 		if (system->polarvdw) {
 #ifdef CUDA
 			if (system->cuda) {
@@ -139,11 +160,19 @@ double energy(system_t *system) {
 	/* need this for the isosteric heat */
 	system->observables->NU = system->observables->N*system->observables->energy;
 
+	/* set last known volume*/
+	system->last_volume = system->pbc->volume;
+
+	if(system->cavity_autoreject_absolute)
+		potential_energy += cavity_absolute_check( system );
 
 	return(potential_energy);
 
-
 }
+
+
+
+/// Not adjusted to work with NPT. need to run recalculates whenever volume changes
 
 /* returns the total potential energy for the system */
 /* this function is meant to be called by routines that do not */
@@ -151,8 +180,6 @@ double energy(system_t *system) {
 /* routines, widom insertion, etc. */
 double energy_no_observables(system_t *system) {
 
-	atom_t *atom_ptr;
-	molecule_t *molecule_ptr;
 	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy;
 
 	/* zero the initial values */
@@ -163,7 +190,7 @@ double energy_no_observables(system_t *system) {
 	vdw_energy = 0;
 
 	/* get the periodic boundary conditions */
-	if(system->wpi || system->fvm) pbc(system->pbc);	/* do this each time only for fvm and wpi */
+	if(system->wpi || system->fvm) pbc(system);	/* do this each time only for fvm and wpi */
 
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
@@ -189,6 +216,8 @@ double energy_no_observables(system_t *system) {
 			vdw_energy = vdw(system);
 
 	}
+
+
 
 	/* sum the total potential energy */
 	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy;

@@ -15,6 +15,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 	double delta_energy;
 	double u, g, partfunc_ratio;
 	double fugacity;
+	double v_new, v_old;
 
 	delta_energy = final_energy - initial_energy;
 
@@ -86,11 +87,32 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 
 
 
+	} else if(system->ensemble == ENSEMBLE_NPT) {
+
+		if ( system->checkpoint->movetype == MOVETYPE_VOLUME ) { /*shrink/grow simulation box*/
+			v_old = system->checkpoint->observables->volume;
+			v_new = system->observables->volume;
+			//boltzmann factor for log volume changes
+			system->nodestats->boltzmann_factor = 
+				exp(-(		delta_energy 
+							+ system->pressure * ATM2REDUCED * (v_new-v_old) 
+							- (system->observables->N + 1) * system->temperature * log(v_new/v_old)
+						 )/system->temperature);
+
+		}
+
+		else 	/* DISPLACE */
+			system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
+
+
+
 	} else if(system->ensemble == ENSEMBLE_NVE) {
 		system->nodestats->boltzmann_factor = pow((system->total_energy - final_energy), 3.0*system->N/2.0);
 		system->nodestats->boltzmann_factor /= pow((system->total_energy - initial_energy), 3.0*system->N/2.0);
 	}
 
+
+	return;
 }
 
 /* keep track of which specific moves were accepted */
@@ -114,7 +136,9 @@ void register_accept(system_t *system) {
 		case MOVETYPE_SPINFLIP:
 			++system->nodestats->accept_spinflip;
 			break;
-
+		case MOVETYPE_VOLUME:
+			++system->nodestats->accept_volume;
+			break;
 	}
 
 }
@@ -139,6 +163,9 @@ void register_reject(system_t *system) {
 			break;
 		case MOVETYPE_SPINFLIP:
 			++system->nodestats->reject_spinflip;
+			break;
+		case MOVETYPE_VOLUME:
+			++system->nodestats->reject_volume;
 			break;
 
 	}
@@ -202,6 +229,9 @@ int mc(system_t *system) {
 	/* determine the initial number of atoms in the simulation */
 	system->checkpoint->N_atom = num_atoms(system);
 	system->checkpoint->N_atom_prev = system->checkpoint->N_atom;
+
+	/* set volume observable */
+	system->observables->volume = system->pbc->volume;
 
 	/* get the initial energy of the system */
 	initial_energy = energy(system);

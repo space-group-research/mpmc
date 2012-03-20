@@ -25,10 +25,12 @@ extern int rank, size;
 #define ENSEMBLE_SURF_FIT			4
 #define ENSEMBLE_NVE				5
 #define ENSEMBLE_TE				6
+#define ENSEMBLE_NPT				7
 
 #define MOVETYPE_INSERT				1
 #define MOVETYPE_REMOVE				2
 #define MOVETYPE_DISPLACE			3
 #define MOVETYPE_ADIABATIC			4
 #define MOVETYPE_SPINFLIP			5
+#define MOVETYPE_VOLUME			6
 

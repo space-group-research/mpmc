@@ -10,12 +10,869 @@ University of South Florida
 #include <mc.h>
 #define au2invseconds 4.13412763705666648752113572754445220741745180640e16 
 
+//convert string *a to a double and store at the address of f.
+int safe_atof ( char * a, double * f ) {
+	if ( sscanf(a,"%lf",f) == 0 ) return 1; //failure
+ 	return 0; //success
+}
+	
+//convert string *a to a double and store at the address of f.
+int safe_atoi ( char * a, int * i ) {
+	if ( sscanf(a,"%d",i) == 0 ) return 1; //failure
+ 	return 0; //success
+}
+
+//converts string *a to a long
+int safe_atol ( char * a, long unsigned int * l ) {
+	if ( sscanf(a,"%lu",l) == 0 ) return 1; //fail
+	return 0;
+}
+
+
+/* check each input command and set system flags */
+int do_command (system_t * system, char ** token ) {
+	// check for comment/blanks
+	if (!strncasecmp(token[0], "!", 1)) return 0;
+	else if (!strcasecmp(token[0],"#")) return 0;
+	else if (!strcasecmp(token[0],"")) return 0;
+
+	// ensemble options
+	else if (!strcasecmp(token[0],"ensemble")) {
+		if (!strcasecmp(token[1],"nvt"))
+			system->ensemble = ENSEMBLE_NVT;
+		else if (!strcasecmp(token[1],"uvt"))
+			system->ensemble = ENSEMBLE_UVT;
+		else if (!strcasecmp(token[1],"surf"))
+			system->ensemble = ENSEMBLE_SURF;
+		else if (!strcasecmp(token[1],"surf_fit"))
+			system->ensemble = ENSEMBLE_SURF_FIT;
+		else if (!strcasecmp(token[1],"nve"))
+			system->ensemble = ENSEMBLE_NVE;
+		else if (!strcasecmp(token[1],"total_energy")) 
+			system->ensemble = ENSEMBLE_TE;
+		else if (!strcasecmp(token[1],"npt"))
+			system->ensemble = ENSEMBLE_NPT;
+	}
+
+	//surf options
+	else if(!strcasecmp(token[0],"surf_decomp")) {
+		if(!strcasecmp(token[1], "on" ))
+			system->surf_decomp = 1;
+		else if (!strcasecmp(token[1], "off" ))
+			system->surf_decomp = 0;
+		else return 1; //unrecognized argument
+	}
+	else if(!strcasecmp(token[0], "surf_min" ))
+		{ if ( safe_atof(token[1],&(system->surf_min)) ) return 1; }
+	else if(!strcasecmp(token[0], "surf_max" ))
+		{ if ( safe_atof(token[1],&(system->surf_max)) ) return 1; }
+	else if(!strcasecmp(token[0], "surf_inc" ))
+		{ if ( safe_atof(token[1],&(system->surf_inc)) ) return 1; }
+	else if(!strcasecmp(token[0], "surf_ang" ))
+		{ if ( safe_atof(token[1],&(system->surf_ang)) ) return 1; }
+	//allows us to specify the surf-fit scales in the input file
+	else if(!strcasecmp(token[0], "surf_weight_constant")) {
+		{ if ( safe_atof(token[1],&(system->surf_weight_constant)) ) return 1; }
+		system->surf_weight_constant_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_q")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_q)) ) return 1; }
+		system->surf_scale_q_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_r")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_r)) ) return 1; }
+		system->surf_scale_r_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_epsilon")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_epsilon)) ) return 1; }
+		system->surf_scale_epsilon_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_sigma")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_sigma)) ) return 1; }
+		system->surf_scale_sigma_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_omega")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_omega)) ) return 1; }
+		system->surf_scale_omega_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_qshift")) {
+		if (!strcasecmp(token[1],"on")) {
+			system->surf_qshift_on = 1;
+			printf("INPUT: surf_qshift is ON.\n");
+			printf("INPUT: only use qshift with x-axis aligned linear molecules.\n");
+		}
+		else if (!strcasecmp(token[1],"off")) {
+			system->surf_qshift_on = 0;
+			printf("INPUT: surf_qshift is OFF.\n");
+		}
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "surf_preserve")) {
+		if(!strcasecmp(token[1],"on"))
+			system->surf_preserve = 1;
+		else if(!strcasecmp(token[1],"off"))
+			system->surf_preserve = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "surf_preserve_rotation")) {
+		if(system->surf_preserve_rotation_on != NULL) {
+			fprintf(stderr,"ERROR: surf_preserve_rotationalready set.\n");
+			return 1;
+		}
+		system->surf_preserve_rotation_on = malloc(6*sizeof(double));
+		{ if ( safe_atof(token[1],&(system->surf_preserve_rotation_on->alpha1)) ) return 1; }
+		{ if ( safe_atof(token[2],&(system->surf_preserve_rotation_on->beta1)) ) return 1; }
+		{ if ( safe_atof(token[3],&(system->surf_preserve_rotation_on->gamma1)) ) return 1; }
+		{ if ( safe_atof(token[4],&(system->surf_preserve_rotation_on->alpha2)) ) return 1; }
+		{ if ( safe_atof(token[5],&(system->surf_preserve_rotation_on->beta2)) ) return 1; }
+		{ if ( safe_atof(token[6],&(system->surf_preserve_rotation_on->gamma2)) ) return 1; }
+	}
+
+	//spectre options
+	else if(!strcasecmp(token[0], "spectre")) {
+		if(!strcasecmp(token[1], "on" ))
+			system->spectre = 1;
+		else if(!strcasecmp(token[1], "off" )) 
+			system->spectre = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "spectre_max_charge"))
+		system->spectre_max_charge = fabs(atof(token[1]));
+	else if(!strcasecmp(token[0], "spectre_max_target"))
+		system->spectre_max_target = fabs(atof(token[1]));
+
+	//cavity options
+	else if (!strcasecmp(token[0], "cavity_bias")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cavity_bias = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cavity_bias = 0;
+		else return 1; //no match
+	}
+	else if (!strcasecmp(token[0], "cavity_grid"))
+		{ if ( safe_atoi(token[1],&(system->cavity_grid_size)) ) return 1; }
+	else if (!strcasecmp(token[0],"cavity_radius"))
+		{ if ( safe_atof(token[1],&(system->cavity_radius)) ) return 1; }
+	else if (!strcasecmp(token[0],"cavity_autoreject")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cavity_autoreject = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cavity_autoreject = 0;
+		else return 1; //no match
+	}
+	else if (!strcasecmp(token[0],"cavity_autoreject_absolute")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cavity_autoreject_absolute = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cavity_autoreject_absolute = 0;
+		else return 1; //no match
+	}
+	else if (!strcasecmp(token[0],"cavity_autoreject_scale")) {
+		{ if ( safe_atof(token[1],&(system->cavity_autoreject_scale)) ) return 1; }
+	}
+
+	//polar options
+	else if(!strcasecmp(token[0], "polarization")) {
+		if(!strcasecmp(token[1], "on"))
+			system->polarization = 1; 
+		else if (!strcasecmp(token[1], "off"))
+			system->polarization = 0; 
+		else return 1;
+	}    
+	else if(!strcasecmp(token[0], "polarvdw")) {
+		if(!strcasecmp(token[1], "on")) {
+			system->polarvdw = 1; 
+			system->polarization=1;
+			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
+			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+		}    
+		else if (!strcasecmp(token[1], "evects")) {
+			system->polarvdw = 2; //calculate eigenvectors
+			system->polarization=1;
+			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
+			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+		}
+		else if ( !strcasecmp(token[1], "comp")) {
+			system->polarvdw = 3; //calculate eigenvectors
+			system->polarization=1;
+			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
+			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+		}
+		else if (!strcasecmp(token[1], "off")) 
+			system->polarvdw = 0;
+		else return 1;
+	}
+	else if (!strcasecmp(token[0], "polar_ewald")) {
+		if (!strcasecmp(token[1], "on"))
+			system->polar_ewald = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->polar_ewald = 0;
+		else return 1;
+	}
+
+	/*set total energy for NVE*/
+	else if(!strcasecmp(token[0], "total_energy"))
+		{ if ( safe_atof(token[1],&(system->total_energy)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "seed")) 
+		{ if ( safe_atol(token[1],&(system->seed)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "numsteps"))
+		{ if ( safe_atoi(token[1],&(system->numsteps)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "corrtime"))
+		{ if ( safe_atoi(token[1],&(system->corrtime)) ) return 1; }
+	
+	/* set Monte Carlo options */
+	else if(!strcasecmp(token[0], "move_probability")) 
+		{ if ( safe_atof(token[1],&(system->move_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "gwp_probability")) 
+		{ if ( safe_atof(token[1],&(system->gwp_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "rot_probability")) 
+		{ if ( safe_atof(token[1],&(system->rot_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "insert_probability")) 
+		{ if ( safe_atof(token[1],&(system->insert_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "adiabatic_probability")) 
+		{ if ( safe_atof(token[1],&(system->adiabatic_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "spinflip_probability")) 
+		{ if ( safe_atof(token[1],&(system->spinflip_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "volume_probability")) 
+		{ if ( safe_atof(token[1],&(system->volume_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "volume_change_factor")) 
+		{ if ( safe_atof(token[1],&(system->volume_change_factor)) ) return 1; }
+	/*end setting MC options*/
+
+	else if(!strcasecmp(token[0], "temperature")) 
+		{ if ( safe_atof(token[1],&(system->temperature)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "simulated_annealing")) {
+		if(!strcasecmp(token[1], "on")) 
+			system->simulated_annealing = 1;
+		else if(!strcasecmp(token[1], "off")) 
+			system->simulated_annealing = 0;
+		else return 1; //no match
+	}
+
+	else if(!strcasecmp(token[0], "simulated_annealing_schedule")) 
+		{ if ( safe_atof(token[1],&(system->simulated_annealing_schedule)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "pressure")) 
+		{ if ( safe_atof(token[1],&(system->pressure)) ) return 1; }
+
+/* fugacity shits */
+	else if(!strcasecmp(token[0], "h2_fugacity")) {
+		if(!strcasecmp(token[1], "on"))
+			system->h2_fugacity = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->h2_fugacity = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "co2_fugacity")) {
+		if(!strcasecmp(token[1], "on"))
+			system->co2_fugacity = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->co2_fugacity = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "co2fug"))
+		{ if ( safe_atof(token[1],&(system->fugacity)) ) return 1; }
+	else if(!strcasecmp(token[0], "ch4_fugacity")) {
+		if(!strcasecmp(token[1], "on"))
+			system->ch4_fugacity = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->ch4_fugacity = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "n2_fugacity")) {
+		if(!strcasecmp(token[1], "on"))
+			system->n2_fugacity = 1;
+		else if(!strcasecmp(token[1],"off"))
+			system->n2_fugacity = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "free_volume"))
+		{ if ( safe_atof(token[1],&(system->free_volume)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "rd_only")) {
+		if(!strcasecmp(token[1], "on"))
+			system->rd_only = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->rd_only = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "gwp")) {
+		if(!strcasecmp(token[1], "on"))
+			system->gwp = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->gwp = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "wolf")) {
+		if(!strcasecmp(token[1], "on"))
+			system->wolf = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->wolf = 0;
+		else return 1;
+	}
+
+	// rd options
+	else if(!strcasecmp(token[0], "rd_lrc")) {
+		if(!strcasecmp(token[1], "on"))
+			system->rd_lrc = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->rd_lrc = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "rd_anharmonic")) {
+		if(!strcasecmp(token[1], "on"))
+			system->rd_anharmonic = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->rd_anharmonic = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "rd_anharmonic_k"))
+		{ if ( safe_atof(token[1],&(system->rd_anharmonic_k)) ) return 1; }
+	else if(!strcasecmp(token[0], "rd_anharmonic_g"))
+		{ if ( safe_atof(token[1],&(system->rd_anharmonic_g)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "feynman_hibbs")) {
+		if(!strcasecmp(token[1],"on"))
+			system->feynman_hibbs = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->feynman_hibbs = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "feynman_kleinert")) {
+		if(!strcasecmp(token[1],"on"))
+			system->feynman_kleinert = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->feynman_kleinert = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "feynman_hibbs_order"))
+		{ if ( safe_atoi(token[1],&(system->feynman_hibbs_order)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "wpi")) {
+		if(!strcasecmp(token[1],"on"))
+			system->wpi = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->wpi = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "wpi_grid")) 
+		{ if ( safe_atoi(token[1],&(system->wpi_grid)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "fvm")) {
+		if(!strcasecmp(token[1],"on"))
+			system->fvm = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->fvm = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "sg")) {
+		if(!strcasecmp(token[1],"on"))
+			system->sg = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->sg = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "dreiding")) {
+		if(!strcasecmp(token[1],"on"))
+			system->dreiding = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->dreiding = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "wrapall")) {
+		if(!strcasecmp(token[1],"on"))
+			system->wrapall = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->wrapall = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "scale_charge"))
+		{ if ( safe_atof(token[1],&(system->scale_charge)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "scale_rd"))
+		{ if ( safe_atof(token[1],&(system->scale_rd)) ) return 1; }
+		
+	else if(!strcasecmp(token[0], "ewald_alpha"))
+		{ if ( safe_atof(token[1],&(system->ewald_alpha)) ) return 1; }
+	
+	else if(!strcasecmp(token[0], "ewald_kmax"))
+		{ if ( safe_atoi(token[1],&(system->ewald_kmax)) ) return 1; }
+	
+	else if(!strcasecmp(token[0], "pbc_cutoff"))
+		{ if ( safe_atof(token[1],&(system->pbc->cutoff)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "vdw_fh_cap")) {
+		{ if ( safe_atof(token[1],&(system->VDW_FH_cap)) ) return 1; }
+		if ( system->VDW_FH_cap > 0 ) 
+			system->VDW_FH_cap = -system->VDW_FH_cap;
+	}
+
+//polar options
+	else if(!strcasecmp(token[0], "polar_ewald")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_ewald = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_ewald = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polarizability_tensor")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polarizability_tensor = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polarizability_tensor = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_zodid")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_zodid = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_zodid = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_iterative")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_iterative = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_iterative = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_palmo")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_palmo = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_palmo = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_gs")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_gs = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_gs = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_gs_ranked")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_gs_ranked = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_gs_ranked = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_sor")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_sor = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_sor = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_esor")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_esor = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_esor = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_gamma"))
+		{ if ( safe_atof(token[1],&(system->polar_gamma)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_damp"))
+		{ if ( safe_atof(token[1],&(system->polar_damp)) ) return 1; }
+	else if(!strcasecmp(token[0], "field_damp"))
+		{ if ( safe_atof(token[1],&(system->field_damp)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_precision"))
+		{ if ( safe_atof(token[1],&(system->polar_precision)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_max_iter"))
+		{ if ( safe_atoi(token[1],&(system->polar_max_iter)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_damp_type")) {
+		if(!strcasecmp(token[1],"linear"))
+			system->damp_type = DAMPING_LINEAR;
+		else if (!strcasecmp(token[1],"exponential")) 
+			system->damp_type = DAMPING_EXPONENTIAL;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "polar_self")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_self = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_self = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "cuda")) {
+		if(!strcasecmp(token[1],"on"))
+			system->cuda = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->cuda = 0;
+		else return 1;
+	}
+	
+	else if(!strcasecmp(token[0], "independent_particle")) {
+		if(!strcasecmp(token[1],"on"))
+			system->independent_particle = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->independent_particle = 0;
+		else return 1;
+	}
+
+//quantum rotation stuff
+#ifdef QM_ROTATION
+	else if(!strcasecmp(token[0], "quantum_rotation")) {
+		if(!strcasecmp(token[1],"on"))
+			system->quantum_rotation = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->quantum_rotation = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "quantum_rotation_hindered")) {
+		if(!strcasecmp(token[1],"on"))
+			system->quantum_rotation_hindered = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->quantum_rotation_hindered = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "quantum_rotation_hindered_barrier"))
+		{ if ( safe_atof(token[1],&(system->quantum_rotation_hindered_barrier)) ) return 1; }
+	else if(!strcasecmp(token[0], "quantum_rotation_B"))
+		{ if ( safe_atof(token[1],&(system->quantum_rotation_B)) ) return 1; }
+	else if(!strcasecmp(token[0], "quantum_rotation_level_max"))
+		{ if ( safe_atoi(token[1],&(system->quantum_rotation_level_max)) ) return 1; }
+	else if(!strcasecmp(token[0], "quantum_rotation_l_max"))
+		{ if ( safe_atoi(token[1],&(system->quantum_rotation_l_max)) ) return 1; }
+	else if(!strcasecmp(token[0], "quantum_rotation_sum"))
+		{ if ( safe_atoi(token[1],&(system->quantum_rotation_sum)) ) return 1; }
+#endif //end QM rotation
+
+/* #ifdef XXX
+	else if(!strcasecmp(token[0], "quantum_vibration")) {
+		if(!strcasecmp(token[1],"on"))
+			system->quantum_vibration = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->quantum_vibration = 0;
+		else return 1;
+	}
+#endif */
+
+	//output and input files
+	else if (!strcasecmp(token[0], "pdb_input")) {
+		if(!system->pdb_input) {
+			system->pdb_input = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pdb_input,MAXLINE*sizeof(char),93);
+			strcpy(system->pdb_input,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "pdb_output")) {
+		if(!system->pdb_output) {
+			system->pdb_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pdb_output,MAXLINE*sizeof(char),94);
+			strcpy(system->pdb_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "pdb_restart")) {
+		if(!system->pdb_restart) {
+			system->pdb_restart = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pdb_restart,MAXLINE*sizeof(char),95);
+			strcpy(system->pdb_restart,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "traj_output")) {
+		if(!system->traj_output) {
+			system->traj_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
+			strcpy(system->traj_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "energy_output")) {
+		if(!system->energy_output) {
+			system->energy_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->energy_output,MAXLINE*sizeof(char),97);
+			strcpy(system->energy_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "pop_histogram_output")) {
+		if(!system->histogram_output) {
+			system->histogram_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->histogram_output,MAXLINE*sizeof(char),98);
+			strcpy(system->histogram_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "dipole_output")) {
+		if(!system->dipole_output) {
+			system->dipole_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->dipole_output,MAXLINE*sizeof(char),99);
+			strcpy(system->dipole_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "field_output")) {
+		if(!system->field_output) {
+			system->field_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->field_output,MAXLINE*sizeof(char),101);
+			strcpy(system->field_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "frozen_output")) {
+		if(!system->frozen_output) {
+			system->frozen_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->frozen_output,MAXLINE*sizeof(char),101);
+			strcpy(system->frozen_output,token[1]);
+		} else return 1;
+	}
+	else if (!strcasecmp(token[0], "insert_input")) {
+		if(!system->insert_input) {
+			system->insert_input = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->insert_input,MAXLINE*sizeof(char),102);
+			strcpy(system->insert_input,token[1]);
+		} else return 1;
+	}
+	//read box limits from pdb input
+	else if(!strcasecmp(token[0], "read_pdb_box")) {
+		if(!strcasecmp(token[1],"on"))
+			system->read_pdb_box_on = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->read_pdb_box_on = 0;
+		else return 1;
+	}
+
+	// surface fit input parameters
+	else if( !strcasecmp( token[0], "fit_schedule")) {
+		register double temp = atof(token[1]);
+		if( temp<= 0.0 || temp>=1.0 ) {
+			error( "INPUT: Invalid schedule.\n");
+			return 1;
+		}
+		else
+			system->fit_schedule = temp;
+	}
+	else if( !strcasecmp( token[0], "fit_max_energy")) {
+		register double temp = atof(token[1]);
+		if( temp<= 0.0 ) {
+			error( "INPUT: fit_max_energy parameter must be greater than zero.\n");
+			return 1;
+		}
+		else
+			system->fit_max_energy = temp;
+	}
+	else if( !strcasecmp( token[0], "fit_start_temp" )) {
+		register double temp = atof(token[1]);
+		if( temp<= 0.0 ) {
+			error( "INPUT: fit_start_temp parameter must be greater than zero.\n");
+			return 1;
+		}
+		else
+			{ if ( safe_atof(token[1],&(system->fit_start_temp)) ) return 1; }
+	}
+	else if(!strcasecmp(token[0], "fit_input")) {
+	// navigate to the end of the input file linked list
+		fileNode_t *node = &(system->fit_input_list);
+		while( node->next )
+			node = node->next;
+		// allocate a new node
+		if( !(node->next = malloc( sizeof(fileNode_t)   ))   ) {
+			error( "INPUT: Exhausted memory during input file node allocation.\n");
+			return (1);
+		}
+		// advance to new node and initialize
+		node = node->next;
+		node->next = 0; // terminate list
+		if(   !(node->data.filename = calloc(MAXLINE, sizeof(char)))   ) {
+			error( "INPUT: Exhausted memory during string allocation for fit input filename.\n");
+			return (1);
+		}
+		// copy filename to node and increment list count
+		strcpy(node->data.filename, token[1]);
+		system->fit_input_list.data.count++;
+	}	
+
+	// set basis
+	else if(!strcasecmp(token[0], "basis1")) {
+		{ if ( safe_atof(token[1],&(system->pbc->basis[0][0])) ) return 1; }
+		{ if ( safe_atof(token[2],&(system->pbc->basis[0][1])) ) return 1; }
+		{ if ( safe_atof(token[3],&(system->pbc->basis[0][2])) ) return 1; }
+	}
+	else if(!strcasecmp(token[0], "basis2")) {
+		{ if ( safe_atof(token[1],&(system->pbc->basis[1][0])) ) return 1; }
+		{ if ( safe_atof(token[2],&(system->pbc->basis[1][1])) ) return 1; }
+		{ if ( safe_atof(token[3],&(system->pbc->basis[1][2])) ) return 1; }
+	}
+	else if(!strcasecmp(token[0], "basis3")) {
+		{ if ( safe_atof(token[1],&(system->pbc->basis[2][0])) ) return 1; }
+		{ if ( safe_atof(token[2],&(system->pbc->basis[2][1])) ) return 1; }
+		{ if ( safe_atof(token[3],&(system->pbc->basis[2][2])) ) return 1; }
+	}
+
+	else if(!strcasecmp(token[0], "max_bondlength"))
+		{ if ( safe_atof(token[1],&(system->max_bondlength)) ) return 1; }
+
+	else if(!strcasecmp(token[0], "pop_histogram")) {
+		if(!strcasecmp(token[1],"on"))
+			system->calc_hist = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->calc_hist = 0;
+		else return 1;
+	}
+
+	else if (!strcasecmp(token[0], "pop_hist_resolution"))
+		{ if ( safe_atof(token[1],&(system->hist_resolution)) ) return 1; }
+	
+	else return 1; //no match
+
+	return 0;
+}		
+
+
+
+
+
+
+int read_pdb_box ( system_t * system ) {
+
+	double xmin, xmax, ymin, ymax, zmin, zmax, xread, yread, zread;
+	double xlim, ylim, zlim;
+	char buffer[1024], item[64], type[4];
+	FILE * fp;
+
+	/* set init vals */
+	xmin = ymin = zmin = INFINITY;
+	xmax = ymax = zmax = -INFINITY;
+
+	/* open the molecule input file */
+	fp = fopen(system->pdb_input, "r");
+	if(!fp) {
+		sprintf(buffer, "INPUT: couldn't open PDB input file %s\n", system->pdb_input);
+		error(buffer);	
+		return(-1);
+	}
+	
+	printf("INPUT: setting basis from pdb file: assuming orthorhombic basis.\n");
+	
+	rewind(fp);
+	while ( fgets(buffer, 1024, fp) != NULL ) {
+		sscanf(buffer, "%s %*s %*s %s %*s %*s %lf %lf %lf %*s", item, type, &xread, &yread, &zread);
+		if ( strncmp(item, "CONECT", 6) == 0 ) //don't use these lines
+			continue;
+		if ( strncmp(type, "BOX", 3) == 0 ) { //if it's of type==BOX, try to set box limits
+			if ( xread < xmin ) xmin = xread;
+			if ( yread < ymin ) ymin = yread;
+			if ( zread < zmin ) zmin = zread;
+			if ( xread > xmax ) xmax = xread;
+			if ( yread > ymin ) ymax = yread;
+			if ( zread > zmin ) zmax = zread;
+		}
+	}
+
+	//calculate the dimensions of the box in each direction
+	//this part could be rewritten to support non-orthorhombic boxes
+	xlim = xmax - xmin;
+	ylim = ymax - ymin;
+	zlim = zmax - zmin;
+
+	if ( isfinite(xlim) == 0 || isfinite(ylim) == 0 || isfinite(zlim) == 0 ) {
+		printf("INPUT: *** failed to read box dimensions from pdb ***\n");
+		fprintf(stderr,"INPUT: *** failed to read box dimensions from pdb ***\n");
+	}
+	else {
+		system->pbc->basis[0][0]=xlim;
+		system->pbc->basis[0][1]=0;
+		system->pbc->basis[0][2]=0;
+		system->pbc->basis[1][0]=0;
+		system->pbc->basis[1][1]=ylim;
+		system->pbc->basis[1][2]=0;
+		system->pbc->basis[2][0]=0;
+		system->pbc->basis[2][1]=0;
+		system->pbc->basis[2][2]=zlim;
+	}
+
+	fclose(fp);
+	return 0;
+}
+
+
+
+
+void setdefaults(system_t * system) {
+
+	/* set the default scaling to 1 */
+	system->scale_charge = 1.0;
+	system->scale_rd = 1.0;
+	system->rot_probability = 1.0;
+	system->spinflip_probability = 0.0;
+	system->volume_probability = 0.0;
+
+	/* set default volume change factor (for NPT) to 0.25 */
+	system->volume_change_factor = 0.25;
+
+	/* set histogram flag default: off */
+	system->calc_hist=0;
+	system->hist_resolution=0.0;
+	system->histogram_output=NULL;
+
+	/* default ewald parameters */
+	system->ewald_alpha = EWALD_ALPHA;
+	system->ewald_kmax = EWALD_KMAX;
+
+	/* default polarization parameters */
+	system->polar_gamma = 1.0;
+
+	/* default rd LRC flag */
+	system->rd_lrc = 1;
+
+	/*default vdw feynman-hibbs correction cap*/
+	system->VDW_FH_cap = -1000;
+
+	// Initialize fit_input_list to reflect an empty list
+	system->fit_input_list.next       = 0;
+	system->fit_input_list.data.count = 0;
+
+	// Initialize surface fitting parameters
+	system->fit_schedule         = 0;
+	system->fit_start_temp       = 0;
+	system->fit_max_energy       = 0;
+
+	// Initialize insertion parameters
+	system->num_insertion_molecules   = 0;
+	system->insertion_molecules       = (molecule_t  *) 0;
+	system->insertion_molecules_array = (molecule_t **) 0;
+
+#ifdef QM_ROTATION
+	/* default QR parameters */
+	system->quantum_rotation_level_max = QUANTUM_ROTATION_LEVEL_MAX;
+	system->quantum_rotation_l_max = QUANTUM_ROTATION_L_MAX;
+	system->quantum_rotation_theta_max = QUANTUM_ROTATION_THETA_MAX;
+	system->quantum_rotation_phi_max = QUANTUM_ROTATION_PHI_MAX;
+	system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
+#endif /* QM_ROTATION */
+
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
 system_t *read_config(char *input_file) {
 
 	system_t *system;
 	char linebuffer[MAXLINE], *n;
-	char token1[MAXLINE], token2[MAXLINE], token3[MAXLINE], token4[MAXLINE], token5[MAXLINE], token6[MAXLINE], token7[MAXLINE];
+	char ** token;
 	FILE *fp;
+	int i, linenum;
 
 	system = calloc(1, sizeof(system_t));
 	if(!system) {
@@ -36,1426 +893,55 @@ system_t *read_config(char *input_file) {
 		return(NULL);
 	}
 
-	/* set the default scaling to 1 */
-	system->scale_charge = 1.0;
-	system->scale_rd = 1.0;
-	system->rot_probability = 1.0;
-	system->spinflip_probability = 0.0;
+	/* allocate space for tokens */
+	token = calloc(10, sizeof(char *));
+	memnullcheck(token, 10*sizeof(char *), 130);
+	for ( i=0; i<10; i++ ) {
+		token[i] = calloc(MAXLINE, sizeof(char));
+		memnullcheck(token[i], MAXLINE*sizeof(char), 131);
+	}
 
-	/* set histogram flag default: off */
-	system->calc_hist=0;
-	system->hist_resolution=0.0;
-	system->histogram_output=NULL;
-
-	/* default ewald parameters */
-	system->ewald_alpha = EWALD_ALPHA;
-	system->ewald_kmax = EWALD_KMAX;
-
-	/* default polarization parameters */
-	system->polar_gamma = 1.0;
-
-	/* default rd LRC flag */
-	system->rd_lrc = 1;
-
-	/*default vdw feynman-hibbs correction cap*/
-	system->VDW_FH_cap = -1000;
-
-        // Initialize fit_input_list to reflect an empty list
-        system->fit_input_list.next       = 0;
-        system->fit_input_list.data.count = 0;
-
-        // Initialize surface fitting parameters
-        system->fit_schedule         = 0;
-        system->fit_start_temp       = 0;
-        system->fit_max_energy       = 0;
-
-	// Initialize insertion parameters
-	system->num_insertion_molecules   = 0;
-	system->insertion_molecules       = (molecule_t  *) 0;
-	system->insertion_molecules_array = (molecule_t **) 0;
-
-
-#ifdef QM_ROTATION
-	/* default QR parameters */
-	system->quantum_rotation_level_max = QUANTUM_ROTATION_LEVEL_MAX;
-	system->quantum_rotation_l_max = QUANTUM_ROTATION_L_MAX;
-	system->quantum_rotation_theta_max = QUANTUM_ROTATION_THETA_MAX;
-	system->quantum_rotation_phi_max = QUANTUM_ROTATION_PHI_MAX;
-	system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
-#endif /* QM_ROTATION */
+	/* set default vaules */
+	setdefaults(system);
 
 	/* loop over each line */
 	memset(linebuffer, 0, MAXLINE);
 	n = fgets(linebuffer, MAXLINE, fp);
+	
+	linenum=0;
 	while(n) {
 
+		linenum++;
 		/* grab a line and parse it out */
-		memset(token1, 0, MAXLINE);
-		memset(token2, 0, MAXLINE);
-		memset(token3, 0, MAXLINE);
-		memset(token4, 0, MAXLINE);
-		memset(token5, 0, MAXLINE);
-		memset(token6, 0, MAXLINE);
-		memset(token7, 0, MAXLINE);
-		sscanf(linebuffer, "%s %s %s %s %s %s %s", token1, token2, token3, token4, token5, token6, token7);
-
-		if(!strcasecmp(token1, "ensemble")) {
-			if(!strcasecmp(token2, "nvt"))
-				system->ensemble = ENSEMBLE_NVT;
-			else if(!strcasecmp(token2, "uvt"))
-				system->ensemble = ENSEMBLE_UVT;
-			else if(!strcasecmp(token2, "surf"))
-				system->ensemble = ENSEMBLE_SURF;
-			else if(!strcasecmp(token2, "surf_fit"))
-				system->ensemble = ENSEMBLE_SURF_FIT;
-			else if(!strcasecmp(token2, "nve"))
-				system->ensemble = ENSEMBLE_NVE;
-			else if(!strcasecmp(token2, "total_energy")) {
-				system->ensemble = ENSEMBLE_TE;
-				system->numsteps = 0; //do no mc steps
-			}
-
-		}
-
-		/* for NVE only */
-		if(!strcasecmp(token1, "total_energy"))
-                        system->total_energy = atof(token2);
-
-		if(!strcasecmp(token1, "surf_decomp")) {
-			if(!strcasecmp(token2, "on"))
-				system->surf_decomp = 1;
-			else
-				system->surf_decomp = 0;
-		}
-
-		if(!strcasecmp(token1, "surf_min"))
-			system->surf_min = atof(token2);
-
-		if(!strcasecmp(token1, "surf_max"))
-			system->surf_max = atof(token2);
-
-		if(!strcasecmp(token1, "surf_inc"))
-			system->surf_inc = atof(token2);
-
-		if(!strcasecmp(token1, "surf_ang"))
-			system->surf_ang = atof(token2);
-
-		//allows us to specify the surf-fit scales in the input file
-		if(!strcasecmp(token1, "surf_weight_constant")) {
-			system->surf_weight_constant = atof(token2);
-			system->surf_weight_constant_on = 1;
-		}
-
-		if(!strcasecmp(token1, "surf_scale_q")) {
-			system->surf_scale_q = atof(token2);
-			system->surf_scale_q_on = 1;
-		}
-
-		if(!strcasecmp(token1, "surf_scale_r")) {
-			system->surf_scale_r = atof(token2);
-			system->surf_scale_r_on = 1;
-		}
-
-		if(!strcasecmp(token1, "surf_scale_epsilon")) {
-			system->surf_scale_epsilon = atof(token2);
-			system->surf_scale_epsilon_on = 1;
-		}
-
-		if(!strcasecmp(token1, "surf_scale_sigma")) {
-			system->surf_scale_sigma = atof(token2);
-			system->surf_scale_sigma_on = 1;
-		}
-
-		if(!strcasecmp(token1, "surf_scale_omega")) {
-			system->surf_scale_omega = atof(token2);
-			system->surf_scale_omega_on = 1;
-		}
-
-		//let the charge site shift during fitting
-		if(!strcasecmp(token1, "surf_qshift")) {
-			if (!strcasecmp(token2, "on")) {
-				system->surf_qshift_on = 1;
-				fprintf(stdout,"INPUT: SURF_QSHIFT IS ON. "
-					"CHARGED SITES ARE ALLOWED TO MIGRATE.\n"
-					"INPUT: THE QUADRUPOLE MOMENT WILL BE PRESERVED.\n"
-					"INPUT: *** ONLY USE WITH LINEAR MOLECULES ALIGNED ON THE X-AXIS. ***\n"
-					"INPUT: Label the charged sites, H2G and H2Q.\n");
-			}
-			else {
-				fprintf(stderr,"INPUT: ERROR: Invalid argument to qshift option.\n");
-				return(NULL);
-			}
-		}
-
-		if(!strcasecmp(token1, "surf_preserve")) {
-			if(!strcasecmp(token2, "on"))
-				system->surf_preserve = 1;
-			else
-				system->surf_preserve = 0;
-		}
-
-	//set rotation in input file for surf_preserve (calc dimer geometry curves)
-		if(!strcasecmp(token1, "surf_preserve_rotation")) {
-			if(system->surf_preserve_rotation_on != NULL) {
-				fprintf(stderr,"ERROR: surf_preserve_rotation already set.\n");
-				return(NULL);
-			}
-			system->surf_preserve_rotation_on = malloc(6*sizeof(double));
-			system->surf_preserve_rotation_on->alpha1=atof(token2);
-			system->surf_preserve_rotation_on->beta1=atof(token3);
-			system->surf_preserve_rotation_on->gamma1=atof(token4);
-			system->surf_preserve_rotation_on->alpha2=atof(token5);
-			system->surf_preserve_rotation_on->beta2=atof(token6);
-			system->surf_preserve_rotation_on->gamma2=atof(token7);
-		}
-
-		if(!strcasecmp(token1, "spectre")) {
-			if(!strcasecmp(token2, "on"))
-				system->spectre = 1;
-			else
-				system->spectre = 0;
-		}
-
-		if(!strcasecmp(token1, "spectre_max_charge"))
-			system->spectre_max_charge = fabs(atof(token2));
-
-		if(!strcasecmp(token1, "spectre_max_target"))
-			system->spectre_max_target = fabs(atof(token2));
-
-		if(!strcasecmp(token1, "seed"))
-			system->seed = atol(token2);
-
-		if(!strcasecmp(token1, "numsteps"))
-			system->numsteps = atoi(token2);
-
-		if(!strcasecmp(token1, "corrtime"))
-			system->corrtime = atoi(token2);
-
-		if(!strcasecmp(token1, "move_probability"))
-			system->move_probability = atof(token2);
-
-		if(!strcasecmp(token1, "gwp_probability"))
-			system->gwp_probability = atof(token2);
-
-		if(!strcasecmp(token1, "rot_probability"))
-			system->rot_probability = atof(token2);
-
-		if(!strcasecmp(token1, "insert_probability"))
-			system->insert_probability = atof(token2);
-
-		if(!strcasecmp(token1, "adiabatic_probability"))
-			system->adiabatic_probability = atof(token2);
-
-		if(!strcasecmp(token1, "spinflip_probability"))
-			system->spinflip_probability = atof(token2);
-
-		if(!strcasecmp(token1, "cavity_bias")) {
-			if(!strcasecmp(token2, "on"))
-				system->cavity_bias = 1;
-			else
-				system->cavity_bias = 0;
-		}
-
-		if(!strcasecmp(token1, "cavity_grid"))
-			system->cavity_grid_size = atoi(token2);
-
-		if(!strcasecmp(token1, "cavity_radius"))
-			system->cavity_radius = atof(token2);
-
-		if(!strcasecmp(token1, "temperature"))
-			system->temperature = atof(token2);
-
-		if(!strcasecmp(token1, "simulated_annealing")) {
-			if(!strcasecmp(token2, "on"))
-				system->simulated_annealing = 1;
-			else
-				system->simulated_annealing = 0;
-		}
-
-		if(!strcasecmp(token1, "simulated_annealing_schedule"))
-			system->simulated_annealing_schedule = atof(token2);
-
-		if(!strcasecmp(token1, "pressure"))
-			system->pressure = atof(token2);
-
-		if(!strcasecmp(token1, "h2_fugacity")) {
-			if(!strcasecmp(token2, "on"))
-				system->h2_fugacity = 1;
-			else
-				system->h2_fugacity = 0;
-		}
-
-		if(!strcasecmp(token1, "co2_fugacity")) {
-			if(!strcasecmp(token2, "on"))
-				system->co2_fugacity = 1;
-			else
-				system->co2_fugacity = 0;
-		}
-		if(!strcasecmp(token1, "co2fug"))
-		        system->fugacity=atof(token2);
-
-                if(!strcasecmp(token1, "ch4_fugacity")) {
-                        if(!strcasecmp(token2, "on"))
-                                system->ch4_fugacity = 1; 
-                        else
-                                system->ch4_fugacity = 0; 
-                }
-
-		if(!strcasecmp(token1, "n2_fugacity")) {
-			if(!strcasecmp(token2, "on"))
-				system->n2_fugacity = 1;
-			else
-				system->n2_fugacity = 0;
-		}
-
-		if(!strcasecmp(token1, "free_volume"))
-			system->free_volume = atof(token2);
-
-		if(!strcasecmp(token1, "rd_only")) {
-			if(!strcasecmp(token2, "on"))
-				system->rd_only = 1;
-			else
-				system->rd_only = 0;
-		}
-
-		if(!strcasecmp(token1, "gwp")) {
-			if(!strcasecmp(token2, "on"))
-				system->gwp = 1;
-			else
-				system->gwp = 0;
-		}
-
-		if(!strcasecmp(token1, "wolf")) {
-			if(!strcasecmp(token2, "on"))
-				system->wolf = 1;
-			else
-				system->wolf = 0;
-		}
-
-		if(!strcasecmp(token1, "rd_lrc")) {
-			if(!strcasecmp(token2, "on"))
-				system->rd_lrc = 1;
-			else
-				system->rd_lrc = 0;
-		}
-
-		if(!strcasecmp(token1, "rd_anharmonic")) {
-			if(!strcasecmp(token2, "on"))
-				system->rd_anharmonic = 1;
-			else
-				system->rd_anharmonic = 0;
-		}
-
-		if(!strcasecmp(token1, "rd_anharmonic_k"))
-			system->rd_anharmonic_k = atof(token2);
-
-		if(!strcasecmp(token1, "rd_anharmonic_g"))
-			system->rd_anharmonic_g = atof(token2);
-
-		if(!strcasecmp(token1, "feynman_hibbs")) {
-			if(!strcasecmp(token2, "on"))
-				system->feynman_hibbs = 1;
-			else
-				system->feynman_hibbs = 0;
-		}
-
-		if(!strcasecmp(token1, "feynman_kleinert")) {
-			if(!strcasecmp(token2, "on"))
-				system->feynman_kleinert = 1;
-			else
-				system->feynman_kleinert = 0;
-		}
-
-		if(!strcasecmp(token1, "feynman_hibbs_order")) {
-			system->feynman_hibbs_order = atoi(token2);
-		}
-
-		if(!strcasecmp(token1, "wpi")) {
-			if(!strcasecmp(token2, "on"))
-				system->wpi = 1;
-			else
-				system->wpi = 0;
-		}
-
-		if(!strcasecmp(token1, "wpi_grid"))
-			system->wpi_grid = atoi(token2);
-
-		if(!strcasecmp(token1, "fvm")) {
-			if(!strcasecmp(token2, "on"))
-				system->fvm = 1;
-			else
-				system->wpi = 0;
-		}
-
-		if(!strcasecmp(token1, "sg")) {
-			if(!strcasecmp(token2, "on"))
-				system->sg = 1;
-			else if(!strcasecmp(token2, "off"))
-				system->sg = 0;
-		}
-
-		if(!strcasecmp(token1, "dreiding")) {
-			if(!strcasecmp(token2, "on"))
-				system->dreiding = 1;
-			else if(!strcasecmp(token2, "off"))
-				system->dreiding = 0;
-		}
-		if(!strcasecmp(token1, "wrapall")) {
-			if(!strcasecmp(token2, "on"))
-				system->wrapall = 1;
-			else
-				system->wrapall = 0;
-		}
-
-		if(!strcasecmp(token1, "scale_charge")) {
-			system->scale_charge = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "scale_rd")) {
-			system->scale_rd = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "ewald_alpha")) {
-			system->ewald_alpha = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "ewald_kmax")) {
-			system->ewald_kmax = atoi(token2);
-		}
-
-		if(!strcasecmp(token1, "pbc_cutoff")) {
-			system->pbc->cutoff = atof(token2);
-		}
-
- 		//cap the value of FH correction to VDW
- 		if (!strcasecmp(token1,"vdw_fh_cap")) {
- 			system->VDW_FH_cap = atof(token2);
- 			if ( system->VDW_FH_cap > 0 ) {
- 				fprintf(stderr,"INPUT: Error: VDW_FH_cap must be negative.\n");
- 				return(NULL);
- 			}
- 		}
-
-		if(!strcasecmp(token1, "polarization")) {
-			if(!strcasecmp(token2, "on"))
-				system->polarization = 1;
-			else
-				system->polarization = 0;
-		}
-
-		if(!strcasecmp(token1, "polarvdw")) {
-			if(!strcasecmp(token2, "on")) {
-				system->polarvdw = 1;
-				//polarvdw requires polarization matricies to be built
-				system->polarization=1;
-				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
-			}
-			else if (!strcasecmp(token2, "evects")) {
-				system->polarvdw = 2; //calculate eigenvectors
-				system->polarization=1;
-				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
-			}
-			else if ( !strcasecmp(token2, "comp")) {
-				system->polarvdw = 3; //calculate eigenvectors
-				system->polarization=1;
-				system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-				fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
-			}
-			else 
-				system->polarvdw = 0;
-		}
-
-		if(!strcasecmp(token1, "cavity_autoreject")) {
-			if(!strcasecmp(token2, "on"))
-				system->cavity_autoreject = 1;
-			else
-				system->cavity_autoreject = 0;
-		}
-
-		if(!strcasecmp(token1, "cavity_autoreject_scale")) {
-			system->cavity_autoreject_scale = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "polar_ewald")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_ewald = 1;
-			else
-				system->polar_ewald = 0;
-		}
-
-		if(!strcasecmp(token1, "polarizability_tensor")) {
-			if(!strcasecmp(token2, "on"))
-				system->polarizability_tensor = 1;
-			else
-				system->polarizability_tensor = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_zodid")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_zodid = 1;
-			else
-				system->polar_zodid = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_iterative")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_iterative = 1;
-			else
-				system->polar_iterative = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_palmo")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_palmo = 1;
-			else
-				system->polar_palmo = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_gs")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_gs = 1;
-			else
-				system->polar_gs = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_gs_ranked")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_gs_ranked = 1;
-			else
-				system->polar_gs_ranked = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_sor")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_sor = 1;
-			else
-				system->polar_sor = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_esor")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_esor = 1;
-			else
-				system->polar_esor = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_gamma")) {
-			system->polar_gamma = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "polar_damp")) {
-			system->polar_damp = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "field_damp")) {
-			system->field_damp = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "polar_precision")) {
-			system->polar_precision = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "polar_max_iter")) {
-			system->polar_max_iter = atoi(token2);
-		}
-
-		if(!strcasecmp(token1, "polar_damp_type")) {
-			if(!strcasecmp(token2, "linear"))
-				system->damp_type = DAMPING_LINEAR;
-			else if(!strcasecmp(token2, "exponential"))
-				system->damp_type = DAMPING_EXPONENTIAL;
-			else
-				system->damp_type = 0;
-		}
-
-		if(!strcasecmp(token1, "polar_self")) {
-			if(!strcasecmp(token2, "on"))
-				system->polar_self = 1;
-			else
-				system->polar_self = 0;
-		}
-
-		if(!strcasecmp(token1, "cuda")) {
-			if(!strcasecmp(token2, "on"))
-				system->cuda = 1;
-			else
-				system->cuda = 0;
-		}
-
-		if(!strcasecmp(token1, "independent_particle")) {
-			if(!strcasecmp(token2, "on"))
-				system->independent_particle = 1;
-			else
-				system->independent_particle = 0;
-		}
-
-#ifdef QM_ROTATION
-		if(!strcasecmp(token1, "quantum_rotation")) {
-			if(!strcasecmp(token2, "on"))
-				system->quantum_rotation = 1;
-			else
-				system->quantum_rotation = 0;
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_hindered")) {
-			if(!strcasecmp(token2, "on"))
-				system->quantum_rotation_hindered = 1;
-			else
-				system->quantum_rotation_hindered = 0;
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_hindered_barrier")) {
-			system->quantum_rotation_hindered_barrier = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_B")) {
-			system->quantum_rotation_B = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_level_max")) {
-			system->quantum_rotation_level_max = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_l_max")) {
-			system->quantum_rotation_l_max = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "quantum_rotation_sum")) {
-			system->quantum_rotation_sum = atof(token2);
-		}
-
-#endif /* QM_ROTATION */
-
-#ifdef XXX
-		if(!strcasecmp(token1, "quantum_vibration")) {
-			if(!strcasecmp(token2, "on"))
-				system->quantum_vibration = 1;
-			else
-				system->quantum_vibration = 0;
-		}
-#endif /* XXX */
-
-
-		if(!strcasecmp(token1, "pdb_input")) {
-			if(!system->pdb_input) {
-				system->pdb_input = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->pdb_input,MAXLINE*sizeof(char),93);
-				strcpy(system->pdb_input, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "pdb_output")) {
-			if(!system->pdb_output) {
-				system->pdb_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->pdb_output,MAXLINE*sizeof(char),94);
-				strcpy(system->pdb_output, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "pdb_restart")) {
-			if(!system->pdb_restart) {
-				system->pdb_restart = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->pdb_restart,MAXLINE*sizeof(char),95);
-				strcpy(system->pdb_restart, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "traj_output")) {
-			if(!system->traj_output) {
-				system->traj_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
-				strcpy(system->traj_output, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "energy_output")) {
-			if(!system->energy_output) {
-				system->energy_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->energy_output,MAXLINE*sizeof(char),97);
-				strcpy(system->energy_output, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "pop_histogram_output")) {
-			if(!system->histogram_output) {
-				system->histogram_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->histogram_output,MAXLINE*sizeof(char),98);
-				strcpy(system->histogram_output, token2);
-			}
-		}
-
-		if(system->polarization && !strcasecmp(token1, "dipole_output")) {
-			if(!system->dipole_output) {
-				system->dipole_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->dipole_output,MAXLINE*sizeof(char),99);
-				strcpy(system->dipole_output, token2);
-			}
-		}
-
-		if(system->polarization && !strcasecmp(token1, "field_output")) {
-			if(!system->field_output) {
-				system->field_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->field_output,MAXLINE*sizeof(char),100);
-				strcpy(system->field_output, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "frozen_output")) {
-			if(!system->frozen_output) {
-				system->frozen_output = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->frozen_output,MAXLINE*sizeof(char),101);
-				strcpy(system->frozen_output, token2);
-			}
-		}
-
-		if(!strcasecmp(token1, "insert_input")) {
-			if(!system->insert_input) {
-				system->insert_input = calloc(MAXLINE, sizeof(char));
-				memnullcheck(system->insert_input,MAXLINE*sizeof(char),102);
-				strcpy(system->insert_input, token2);
-			}
-		}
-
-
-
-
-
-
-                // Surface fit input parameters
-                //////////////////////////////////////////////////
-
-                if( !strcasecmp( token1, "fit_schedule")) {
-                    register double temp = atof(token2);
-                    if( temp<= 0.0 || temp>=1.0 )
-                        error( "INPUT: Invalid schedule. Using default.\n");
-                    else
-                        system->fit_schedule = temp;
-                }
-                else if( !strcasecmp( token1, "fit_max_energy")) {
-                    register double temp = atof(token2);
-                    if( temp<= 0.0 )
-                        error( "INPUT: fit_max_energy parameter must be greater than zero. Using default.\n");
-                    else
-                        system->fit_max_energy = temp;
-                }
-                else if( !strcasecmp( token1, "fit_start_temp" )) {
-                    register double temp = atof(token2);
-                    if( temp<= 0.0 )
-                        error( "INPUT: fit_start_temp parameter must be greater than zero. Using default.\n");
-                    else
-                        system->fit_start_temp = atof( token2 );
-                }
-                
-                else if(!strcasecmp(token1, "fit_input")) {
-
-                    // navigate to the end of the input file linked list
-                    fileNode_t *node = &(system->fit_input_list);
-                    while( node->next )
-                        node = node->next;
-
-                    // allocate a new node
-                    if( !(node->next = malloc( sizeof(fileNode_t)   ))   )
-                    {
-                        error( "INPUT: Exhausted memory during input file node allocation.\n");
-                        return (NULL);
-                    }
-
-                    // advance to new node and initialize
-                    node = node->next;
-                    node->next = 0; // terminate list
-                    if(   !(node->data.filename = calloc(MAXLINE, sizeof(char)))   )
-                    {
-                        error( "INPUT: Exhausted memory during string allocation for fit input filename.\n");
-                        return (NULL);
-                    }
-
-                    // copy filename to node and increment list count
-                    strcpy(node->data.filename, token2);
-                    system->fit_input_list.data.count++;
-                }
-
-
-
-
-		if(!strcasecmp(token1, "basis1")) {
-			system->pbc->basis[0][0] = atof(token2);
-			system->pbc->basis[0][1] = atof(token3);
-			system->pbc->basis[0][2] = atof(token4);
-		}
-
-		if(!strcasecmp(token1, "basis2")) {
-			system->pbc->basis[1][0] = atof(token2);
-			system->pbc->basis[1][1] = atof(token3);
-			system->pbc->basis[1][2] = atof(token4);
-		}
-
-		if(!strcasecmp(token1, "basis3")) {
-			system->pbc->basis[2][0] = atof(token2);
-			system->pbc->basis[2][1] = atof(token3);
-			system->pbc->basis[2][2] = atof(token4);
-		}
-
-		if(!strcasecmp(token1, "max_bondlength")) {
-			system->max_bondlength = atof(token2);
-		}
-
-		if(!strcasecmp(token1, "pop_histogram")) {
-			if(!strcasecmp(token2, "on")) 
-				system->calc_hist=1;
-			else 
-				system->calc_hist=0;
-		}
-
-		if(!strcasecmp(token1, "pop_hist_resolution"))
-			system->hist_resolution=atof(token2);
-
-		
+		for ( i=0; i<10; i++ )
+			memset(token[i], 0, MAXLINE); //clear a token
+		sscanf(linebuffer, "%s %s %s %s %s %s %s %s %s %s", 
+			token[0], token[1], token[2], token[3], token[4], 
+			token[5], token[6], token[7], token[8], token[9]);
+
+		//parse and apply a command
+		if ( do_command(system, token) != 0 ) {
+			fprintf(stderr,"INPUT: ERROR: invalid command on line %d.\n", linenum);
+			fprintf(stderr,"> %s\n", linebuffer);
+			return(NULL);
+		}	
 
 		memset(linebuffer, 0, MAXLINE);
 		n = fgets(linebuffer, MAXLINE, fp);
+
 	}
 
 	/* close the config file */
 	fclose(fp);
 
-	/* calculate things related to the periodic boundary conditions */
-	pbc(system->pbc);
+	for (i=0; i<10; i++)
+		free(token[i]);
+	free(token);
+
 
 	return(system);
 
 }
-
-double h2_fugacity(double temperature, double pressure) {
-
-	if((temperature == 77.0) && (pressure <= 200.0)) {
-
-		output("INPUT: fugacity calculation using Zhou function\n");
-		return(h2_fugacity_zhou(temperature, pressure));
-
-	}  else if(temperature >= 273.15) {
-
-		output("INPUT: fugacity calculation using Shaw function\n");
-		return(h2_fugacity_shaw(temperature, pressure));
-
-	} else {
-
-		output("INPUT: fugacity calculation using BACK EoS\n");
-		return(h2_fugacity_back(temperature, pressure));
-
-	}
-
-	return(0); /* NOT REACHED */
-
-}
-
-/* use the semi-empirical BACK equation of state */
-/* Tomas Boublik, "The BACK equation of state for hydrogen and related compounds", Fluid Phase Equilibria, 240, 96-100 (2005) */
-
-double h2_fugacity_back(double temperature, double pressure) {
-
-	double fugacity_coefficient, fugacity;
-	double comp_factor;
-	double P, dP;
-	char linebuf[MAXLINE];
-
-	/* integrate (z-1)/P from 0 to P */
-	fugacity_coefficient = 0;
-	for(P = 0.001, dP = 0.001; P <= pressure; P += dP) {
-
-		comp_factor = h2_comp_back(temperature, P);
-		fugacity_coefficient += dP*(comp_factor - 1.0)/P;
-
-	}
-	fugacity_coefficient = exp(fugacity_coefficient);
-
-	comp_factor = h2_comp_back(temperature, pressure);
-	sprintf(linebuf, "INPUT: BACK compressibility factor at %.3f atm is %.3f\n", pressure, comp_factor);
-	output(linebuf);
-
-	fugacity = pressure*fugacity_coefficient;
-	return(fugacity);
-
-}
-
-
-#define BACK_H2_ALPHA	1.033
-#define BACK_H2_U0	38.488
-#define BACK_H2_V00	9.746
-#define BACK_H2_N	0.00
-#define BACK_C		0.12
-
-#define BACK_MAX_M	9
-#define BACK_MAX_N	4
-
-double h2_comp_back(double temperature, double pressure) {
-
-	double alpha, y;				/* repulsive part of the compressibility factor */
-	double V, V0, u, D[BACK_MAX_M][BACK_MAX_N];	/* attractive part */
-	int n, m;					/* indices for double sum of attractive part */
-	double comp_factor;
-	double comp_factor_repulsive;
-	double comp_factor_attractive;
-	double fugacity;
-
-
-	/* setup the BACK universal D constants */
-	D[0][0] = -8.8043;	D[0][1] = 2.9396;	D[0][2] = -2.8225;	D[0][3] = 0.34;
-	D[1][0] = 4.164627;	D[1][1] = -6.0865383;	D[1][2] = 4.7600148;	D[1][3] = -3.1875014;
-	D[2][0] = -48.203555;	D[2][1] = 40.137956;	D[2][2] = 11.257177;	D[2][3] = 12.231796;
-	D[3][0] = 140.4362;	D[3][1] = -76.230797;	D[3][2] = -66.382743;	D[3][3] = -12.110681;
-	D[4][0] = -195.23339;	D[4][1] = -133.70055;	D[4][2] = 69.248785;	D[4][3] = 0.0;
-	D[5][0] = 113.515;	D[5][1] = 860.25349;	D[5][2] = 0.0;		D[5][3] = 0.0;
-	D[6][0] = 0.0;		D[6][1] = -1535.3224;	D[6][2] = 0.0;		D[6][3] = 0.0;
-	D[7][0] = 0.0;		D[7][1] = 1221.4261;	D[7][2] = 0.0;		D[7][3] = 0.0;
-	D[8][0] = 0.0;		D[8][1] = -409.10539;	D[8][2] = 0.0;		D[8][3] = 0.0;
-
-	/* calculate attractive part */
-	V0 = BACK_H2_V00*(1.0 - BACK_C*exp(-3.0*BACK_H2_U0/temperature));
-	V = NA*KB*temperature/(pressure*ATM2PASCALS*1.0e-6);
-	u = BACK_H2_U0*(1.0 + BACK_H2_N/temperature);
-
-	comp_factor_attractive = 0;
-	for(n = 0; n < BACK_MAX_N; n++)
-		for(m = 0; m < BACK_MAX_M; m++)
-			comp_factor_attractive += ((double)(m+1))*D[m][n]*pow(u/temperature, ((double)(n+1)))*pow(V0/V, ((double)(m+1)));
-
-	/* calculate repulsive part */
-	alpha = BACK_H2_ALPHA;
-	y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
-	comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-	comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-	comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-	comp_factor_repulsive /= pow((1.0 - y), 3.0);
-
-	comp_factor = comp_factor_repulsive + comp_factor_attractive;
-	return(comp_factor);
-
-}
-
-
-/* calculate the fugacity correction for H2 for 0 C and higher */
-/* this empirical relation follows from: */
-/* H.R. Shaw, D.F. Wones, American Journal of Science, 262, 918-929 (1964) */
-double h2_fugacity_shaw(double temperature, double pressure) {
-
-	double C1, C2, C3;
-	double fugacity, fugacity_coefficient;
-
-	C1 = -3.8402*pow(temperature, 1.0/8.0) + 0.5410;
-	C1 = exp(C1);
-
-	C2 = -0.1263*pow(temperature, 1.0/2.0) - 15.980;
-	C2 = exp(C2);
-
-	C3 = -0.11901*temperature - 5.941;
-	C3 = exp(C3);
-	C3 *= 300.0;
-
-	fugacity_coefficient = C1*pressure - C2*pow(pressure, 2.0) + C3*exp(-pressure/300.0 - 1.0);
-	fugacity_coefficient = exp(fugacity_coefficient);
-	fugacity = fugacity_coefficient*pressure;
-
-	return(fugacity);
-
-}
-
-/* fugacity for low temperature and up to 200 atm */
-/* Zhou, Zhou, Int. J. Hydrogen Energy, 26, 597-601 (2001) */
-double h2_fugacity_zhou(double temperature, double pressure) {
-
-	double fugacity, fugacity_coefficient;
-
-	pressure *= ATM2PSI;
-
-	fugacity_coefficient = -1.38130e-4*pressure;
-	fugacity_coefficient += 4.67096e-8*pow(pressure, 2.0)/2;
-	fugacity_coefficient += 5.93690e-12*pow(pressure, 3.0)/3;
-	fugacity_coefficient += -3.24527e-15*pow(pressure, 4.0)/4;
-	fugacity_coefficient += 3.54211e-19*pow(pressure, 5.0)/5;
-
-	pressure /= ATM2PSI;
-
-	fugacity_coefficient = exp(fugacity_coefficient);
-	fugacity = pressure*fugacity_coefficient;
-
-	return(fugacity);
-
-}
-
-/* ***************************** CH4 EQUATION OF STATE *************************************** */
-double ch4_fugacity(double temperature, double pressure) {
-
-        if((temperature >= 298.0) && (temperature <= 300.0) && (pressure <= 500.0)) {
-
-                output("INPUT: CH4 fugacity calculation using BACK EoS\n");
-                return(ch4_fugacity_back(temperature, pressure));
-
-        } else if((temperature == 150.0) && (pressure <= 200.0)) {
-
-                output("INPUT: CH4 fugacity calculation using Peng-Robinson EoS\n");
-                return(ch4_fugacity_PR(temperature, pressure));
-
-        } else {
-
-                output("INPUT: Unknown if CH4 fugacity will be correct at the requested temperature & pressure...defaulting to use the BACK EoS.\n");
-                return(ch4_fugacity_back(temperature, pressure));
-
-        }
-
-        return(0); /* NOT REACHED */
-
-}
-
-/* Incorporate BACK EOS */
-double ch4_fugacity_back(double temperature, double pressure) {
-
-        double fugacity_coefficient, fugacity;
-        double comp_factor;
-        double P, dP;
-        char linebuf[MAXLINE];
-
-        /* integrate (z-1)/P from 0 to P */
-        fugacity_coefficient = 0;
-        for(P = 0.001, dP = 0.001; P <= pressure; P += dP) {
-
-                comp_factor = ch4_comp_back(temperature, P);
-                fugacity_coefficient += dP*(comp_factor - 1.0)/P;
-
-        }
-        fugacity_coefficient = exp(fugacity_coefficient);
-
-        comp_factor = ch4_comp_back(temperature, pressure);
-        sprintf(linebuf, "INPUT: CH4 BACK compressibility factor at %.3f atm is %.3f\n", pressure, comp_factor);
-        output(linebuf);
-
-        fugacity = pressure*fugacity_coefficient;
-        return(fugacity);
-}
-
-#define MWCH4 16.043
-#define BACK_CH4_ALPHA  1.000
-#define BACK_CH4_U0     188.047
-#define BACK_CH4_V00    21.532
-#define BACK_CH4_N      2.40
-#define BACK_C          0.12
-
-#define BACK_MAX_M      9
-#define BACK_MAX_N      4
-
-double ch4_comp_back(double temperature, double pressure) {
-
-        double alpha, y;                                /* repulsive part of the compressibility factor */
-        double V, V0, u, D[BACK_MAX_M][BACK_MAX_N];     /* attractive part */
-        int n, m;                                       /* indices for double sum of attractive part */
-        double comp_factor;
-        double comp_factor_repulsive;
-        double comp_factor_attractive;
-        double fugacity;
-
-        /* setup the BACK universal D constants */
-        D[0][0] = -8.8043;      D[0][1] = 2.9396;       D[0][2] = -2.8225;      D[0][3] = 0.34;
-        D[1][0] = 4.164627;     D[1][1] = -6.0865383;   D[1][2] = 4.7600148;    D[1][3] = -3.1875014;
-        D[2][0] = -48.203555;   D[2][1] = 40.137956;    D[2][2] = 11.257177;    D[2][3] = 12.231796;
-        D[3][0] = 140.4362;     D[3][1] = -76.230797;   D[3][2] = -66.382743;   D[3][3] = -12.110681;
-        D[4][0] = -195.23339;   D[4][1] = -133.70055;   D[4][2] = 69.248785;    D[4][3] = 0.0;
-        D[5][0] = 113.515;      D[5][1] = 860.25349;    D[5][2] = 0.0;          D[5][3] = 0.0;
-        D[6][0] = 0.0;          D[6][1] = -1535.3224;   D[6][2] = 0.0;          D[6][3] = 0.0;
-        D[7][0] = 0.0;          D[7][1] = 1221.4261;    D[7][2] = 0.0;          D[7][3] = 0.0;
-        D[8][0] = 0.0;          D[8][1] = -409.10539;   D[8][2] = 0.0;          D[8][3] = 0.0;
-
-        /* calculate attractive part */
-        V0 = BACK_CH4_V00*(1.0 - BACK_C*exp(-3.0*BACK_CH4_U0/temperature));
-        V = NA*KB*temperature/(pressure*ATM2PASCALS*1.0e-6);
-        u = BACK_CH4_U0*(1.0 + BACK_CH4_N/temperature);
-
-        comp_factor_attractive = 0;
-        for(n = 0; n < BACK_MAX_N; n++)
-                for(m = 0; m < BACK_MAX_M; m++)
-                        comp_factor_attractive += ((double)(m+1))*D[m][n]*pow(u/temperature, ((double)(n+1)))*pow(V0/V, ((double)(m+1)));
-
-        /* calculate repulsive part */
-        alpha = BACK_CH4_ALPHA;
-        y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
-        comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-        comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-        comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-        comp_factor_repulsive /= pow((1.0 - y), 3.0);
-
-        comp_factor = comp_factor_repulsive + comp_factor_attractive;
-        return(comp_factor);
-
-}
-
-/* Apply the Peng-Robinson EoS to methane */
-double ch4_fugacity_PR(double temperature, double pressure) {
-
-  double Z, A, B, aa, bb, TcCH4, PcCH4, Tr;
-  double alpha, alpha2, wCH4, R, Q, X, j, k, l;
-  double theta, X2, Q3;
-  double uu, U, V, root1, root2, root3, answer, stuff1, stuff2, stuff3;
-  double f1, f2, f3, f4, fugacity, lnfoverp;
-  double pi=acos(-1.0);
-
-  /*Peng Robinson variables and equations for CH4 units K,atm, L, mole*/
-     TcCH4 = 190.564;    /* K */
-     PcCH4 = 45.391;    /* atm */
-     wCH4  = 0.01142;
-     R    = 0.08206;   /* gas constant atmL/moleK */
-
-     aa = (0.45724*R*R*TcCH4*TcCH4) / PcCH4;
-     bb = (0.07780*R*TcCH4) / PcCH4;
-     Tr = temperature / TcCH4;
-     stuff1 = 0.37464 + 1.54226*wCH4 - 0.26992*wCH4*wCH4;
-     stuff2=1.0-sqrt(Tr);
-     alpha=1.0+stuff1*stuff2;
-     alpha2=alpha*alpha;
-     A=alpha2*aa*pressure/(R*R*temperature*temperature);
-     B=bb*pressure/(R*temperature);
-
-     /* solving a cubic equation part */
-     j=-1.0*(1-B);
-     k=A-3.0*B*B-2.0*B;
-     l= -1*(A*B- B*B -B*B*B);
-     Q=(j*j-3.0*k)/9.0;
-     X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
-     Q3=Q*Q*Q;
-     X2=X*X;
-
-     /* Need to check X^2 < Q^3 */
-     if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */
-       theta=acos((X/sqrt(Q3)));
-       root1=-2.0*sqrt(Q)*cos(theta/3.0)-j/3.0;
-       root2=-2.0*sqrt(Q)*cos((theta+2.0*pi)/3.0)-j/3.0;
-       root3=-2.0*sqrt(Q)*cos((theta-2.0*pi)/3.0)-j/3.0;
-
-       /*Choose the root closest to 1, which is "ideal gas law" */
-       if((1.0-root1)<(1.0-root2) && (1.0-root1)<(1.0-root3))
-         Z=root1;
-       else if((1.0-root2)<(1.0-root3) && (1.0-root2)<(1.0-root1))
-         Z=root2;
-       else
-         Z=root3;
-     }
-     else{   /* ONLY ONE real root */
-       stuff3= X*X-Q*Q*Q;
-       uu=X-sqrt(stuff3);
-       /*Power function must have uu a positive number*/
-       if(uu<0.0)
-         uu=-1.0*uu;
-       U=pow(uu,(1.0/3.0));
-       V=Q/U;
-       root1=U+V-j/3.0;
-       Z=root1;
-     }
-
-     /* using Z calculate the fugacity */
-     f1=(Z-1.0)-log(Z-B);
-     f2=A/(2.0*sqrt(2.0)*B);
-     f3=Z+(1.0+sqrt(2.0))*B;
-     f4=Z+(1.0-sqrt(2.0))*B;
-     lnfoverp=f1-f2*log(f3/f4);
-     fugacity=exp(lnfoverp)*pressure;
-
-  return(fugacity);
-}
-/* ******************************* END CH4 FUGACITY ****************************************** */
-
-/* *************************** N2 BACK EQUATION OF STATE ************************************* */
-double n2_fugacity(double temperature, double pressure) {
-
-        if((temperature == 78.0) && (pressure <= 1.0)) {
-
-                output("INPUT: N2 fugacity calculation using Zhou\n");
-                return(n2_fugacity_zhou(temperature, pressure));
-
-        } else if((temperature == 78.0) && (pressure >= 10.0) && (pressure <= 300.0)) {
-
-                output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
-                return(n2_fugacity_PR(temperature, pressure));
-
-        } else if((temperature == 150.0) && (pressure < 175.0)) {
-
-                output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
-                return(n2_fugacity_PR(temperature, pressure));
-
-        } else if((temperature == 150.0) && (pressure >= 175.0) && (pressure <= 325.0)) {
-
-                output("INPUT: N2 fugacity calculation using BACK EoS\n");
-                return(n2_fugacity_back(temperature, pressure));
-
-        } else if((temperature >= 298.0) && (temperature <= 300.0) && (pressure <= 350.0)) {
-
-                output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
-                return(n2_fugacity_PR(temperature, pressure));
-
-        } else {
-                output("INPUT: Unknown if N2 fugacity will be correct at the requested temperature & pressure...defaulting to use the PR EoS.\n");
-                return(n2_fugacity_PR(temperature, pressure));
-
-        }
-
-        return(0); /* NOT REACHED */
-
-}
-
-/* Incorporate BACK EOS */
-double n2_fugacity_back(double temperature, double pressure) {
-
-        double fugacity_coefficient, fugacity;
-        double comp_factor;
-        double P, dP;
-        char linebuf[MAXLINE];
-
-        /* integrate (z-1)/P from 0 to P */
-        fugacity_coefficient = 0;
-        for(P = 0.001, dP = 0.001; P <= pressure; P += dP) {
-
-                comp_factor = n2_comp_back(temperature, P);
-                fugacity_coefficient += dP*(comp_factor - 1.0)/P;
-
-        }
-        fugacity_coefficient = exp(fugacity_coefficient);
-
-        comp_factor = n2_comp_back(temperature, pressure);
-        sprintf(linebuf, "INPUT: BACK compressibility factor at %.3f atm is %.3f\n", pressure, comp_factor);
-        output(linebuf);
-
-        fugacity = pressure*fugacity_coefficient;
-        return(fugacity);
-
-}
-
-#define BACK_N2_ALPHA   1.048
-#define BACK_N2_U0      120.489
-#define BACK_N2_V00     18.955
-#define BACK_N2_N       10.81
-#define BACK_C          0.12
-
-#define BACK_MAX_M      9
-#define BACK_MAX_N      4
-
-double n2_comp_back(double temperature, double pressure) {
-
-        double alpha, y;                                /* repulsive part of the compressibility factor */
-        double V, V0, u, D[BACK_MAX_M][BACK_MAX_N];     /* attractive part */
-        int n, m;                                       /* indices for double sum of attractive part */
-        double comp_factor;
-        double comp_factor_repulsive;
-        double comp_factor_attractive;
-        double fugacity;
-
-
-        /* setup the BACK universal D constants */
-        D[0][0] = -8.8043;      D[0][1] = 2.9396;       D[0][2] = -2.8225;      D[0][3] = 0.34;
-        D[1][0] = 4.164627;     D[1][1] = -6.0865383;   D[1][2] = 4.7600148;    D[1][3] = -3.1875014;
-        D[2][0] = -48.203555;   D[2][1] = 40.137956;    D[2][2] = 11.257177;    D[2][3] = 12.231796;
-        D[3][0] = 140.4362;     D[3][1] = -76.230797;   D[3][2] = -66.382743;   D[3][3] = -12.110681;
-        D[4][0] = -195.23339;   D[4][1] = -133.70055;   D[4][2] = 69.248785;    D[4][3] = 0.0;
-        D[5][0] = 113.515;      D[5][1] = 860.25349;    D[5][2] = 0.0;          D[5][3] = 0.0;
-        D[6][0] = 0.0;          D[6][1] = -1535.3224;   D[6][2] = 0.0;          D[6][3] = 0.0;
-        D[7][0] = 0.0;          D[7][1] = 1221.4261;    D[7][2] = 0.0;          D[7][3] = 0.0;
-        D[8][0] = 0.0;          D[8][1] = -409.10539;   D[8][2] = 0.0;          D[8][3] = 0.0;
-
-        /* calculate attractive part */
-        V0 = BACK_N2_V00*(1.0 - BACK_C*exp(-3.0*BACK_N2_U0/temperature));
-        V = NA*KB*temperature/(pressure*ATM2PASCALS*1.0e-6);
-        u = BACK_N2_U0*(1.0 + BACK_N2_N/temperature);
-
-        comp_factor_attractive = 0;
-        for(n = 0; n < BACK_MAX_N; n++)
-                for(m = 0; m < BACK_MAX_M; m++)
-                        comp_factor_attractive += ((double)(m+1))*D[m][n]*pow(u/temperature, ((double)(n+1)))*pow(V0/V, ((double)(m+1)));
-
-        /* calculate repulsive part */
-        alpha = BACK_N2_ALPHA;
-        y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
-        comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-        comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-        comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-        comp_factor_repulsive /= pow((1.0 - y), 3.0);
-
-        comp_factor = comp_factor_repulsive + comp_factor_attractive;
-        return(comp_factor);
-}
-
-/* Apply the Peng-Robinson EoS to N2 */
-double n2_fugacity_PR(double temperature, double pressure) {
-
-  double Z, A, B, aa, bb, TcN2, PcN2, Tr;
-  double alpha, alpha2, wN2, R, Q, X, j, k, l;
-  double theta, X2, Q3;
-  double uu, U, V, root1, root2, root3, answer, stuff1, stuff2, stuff3;
-  double f1, f2, f3, f4, fugacity, lnfoverp;
-  double pi=acos(-1.0);
-
-  /*Peng Robinson variables and equations for N2 units K,atm, L, mole*/
-     TcN2 = 126.192;   /* K */
-     PcN2 = 33.514;    /* atm */
-     wN2  = 0.037;
-     R    = 0.08206;   /* gas constant atmL/moleK */
-
-     aa = (0.45724*R*R*TcN2*TcN2) / PcN2;
-     bb = (0.07780*R*TcN2) / PcN2;
-     Tr = temperature / TcN2;
-     stuff1 = 0.37464 + 1.54226*wN2 - 0.26992*wN2*wN2;
-     stuff2=1.0-sqrt(Tr);
-     alpha=1.0+stuff1*stuff2;
-     alpha2=alpha*alpha;
-     A=alpha2*aa*pressure/(R*R*temperature*temperature);
-     B=bb*pressure/(R*temperature);
-
-     /* solving a cubic equation part */
-     j=-1.0*(1-B);
-     k=A-3.0*B*B-2.0*B;
-     l= -1*(A*B- B*B -B*B*B);
-     Q=(j*j-3.0*k)/9.0;
-     X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
-     Q3=Q*Q*Q;
-     X2=X*X;
-
-     /* Need to check X^2 < Q^3 */
-     if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */
-       theta=acos((X/sqrt(Q3)));
-       root1=-2.0*sqrt(Q)*cos(theta/3.0)-j/3.0;
-       root2=-2.0*sqrt(Q)*cos((theta+2.0*pi)/3.0)-j/3.0;
-       root3=-2.0*sqrt(Q)*cos((theta-2.0*pi)/3.0)-j/3.0;
-
-       /*Choose the root closest to 1, which is "ideal gas law" */
-       if((1.0-root1)<(1.0-root2) && (1.0-root1)<(1.0-root3))
-         Z=root1;
-       else if((1.0-root2)<(1.0-root3) && (1.0-root2)<(1.0-root1))
-         Z=root2;
-       else
-         Z=root3;
-     }
-     else{   /* ONLY ONE real root */
-       stuff3= X*X-Q*Q*Q;
-       uu=X-sqrt(stuff3);
-       /*Power function must have uu a positive number*/
-       if(uu<0.0)
-         uu=-1.0*uu;
-       U=pow(uu,(1.0/3.0));
-       V=Q/U;
-       root1=U+V-j/3.0;
-       Z=root1;
-     }
-
-     /* using Z calculate the fugacity */
-     f1=(Z-1.0)-log(Z-B);
-     f2=A/(2.0*sqrt(2.0)*B);
-     f3=Z+(1.0+sqrt(2.0))*B;
-     f4=Z+(1.0-sqrt(2.0))*B;
-     lnfoverp=f1-f2*log(f3/f4);
-     fugacity=exp(lnfoverp)*pressure;
-
-  return(fugacity);
-}
-
-/* Apply the Zhou function to N2 */
-double n2_fugacity_zhou(double temperature, double pressure) {
-
-        double fugacity_coefficient, fugacity;
-
-        output("INPUT: N2 fugacity calculation using Zhou function\n");
-
-        pressure *= ATM2PSI;
-
-        fugacity_coefficient = -1.38130e-4*pressure;
-        fugacity_coefficient += 4.67096e-8*pow(pressure, 2.0)/2;
-        fugacity_coefficient += 5.93690e-12*pow(pressure, 3.0)/3;
-        fugacity_coefficient += -3.24527e-15*pow(pressure, 4.0)/4;
-        fugacity_coefficient += 3.54211e-19*pow(pressure, 5.0)/5;
-
-        pressure /= ATM2PSI;
-
-        fugacity_coefficient = exp(fugacity_coefficient);
-        fugacity = pressure*fugacity_coefficient;
-
-        return(fugacity);
-}
-/* ********************************** END N2 ****************************************************** */
-
-
-/* reads in temperature in K, and pressure (of the ideal gas in the resevoir) in atm */
-/* return the CO2 fugacity via the Peng-Robinson equation of state */
-/* else return 0.0 on error - I don't have an error statement*/
-/* units are  atm, K,  */
-
-double co2_fugacity(double temperature, double pressure) {
-
-  double Z, A, B, aa, bb, Tc, Pc, Tr;
-  double alpha,alpha2, w, R, Q, X, j,k,l;
-  double theta, X2, Q3;
-  double uu,U,V,root1,root2,root3, answer, stuff1, stuff2, stuff3;
-  double f1, f2, f3, f4, fugacity, lnfoverp;
-  double pi=acos(-1.0);
-
-  /*Peng Robinson variables and equations for CO2 units K,atm, L, mole*/
-     Tc=304.12;   /*K  */
-     Pc=73.74/1.01325;    /*bar to atm*/
-     w=0.225;
-     R=0.08206;   /* gas constant atmL/moleK */
-  
-     aa=0.45724*R*R*Tc*Tc/Pc;
-     bb=0.07780*R*Tc/Pc;
-     Tr=temperature/Tc;
-     stuff1=0.37464+1.54226*w -0.26992*w*w;
-     stuff2=1.0-sqrt(Tr);
-     alpha=1.0+stuff1*stuff2;
-     alpha2=alpha*alpha;
-     A=alpha2*aa*pressure/(R*R*temperature*temperature);
-     B=bb*pressure/(R*temperature);
-        
-     /* solving a cubic equation part */
-     j=-1.0*(1-B);
-     k=A-3.0*B*B-2.0*B;
-     l= -1*(A*B- B*B -B*B*B);
-     Q=(j*j-3.0*k)/9.0;
-     X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
-     Q3=Q*Q*Q;
-     X2=X*X;
-     
-     /* Need to check X^2 < Q^3 */
-     if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */
-       theta=acos((X/sqrt(Q3)));
-       root1=-2.0*sqrt(Q)*cos(theta/3.0)-j/3.0;
-       root2=-2.0*sqrt(Q)*cos((theta+2.0*pi)/3.0)-j/3.0;
-       root3=-2.0*sqrt(Q)*cos((theta-2.0*pi)/3.0)-j/3.0;
-       
-       /*Choose the root closest to 1, which is "ideal gas law" */
-       if((1.0-root1)<(1.0-root2) && (1.0-root1)<(1.0-root3))
-	 Z=root1;
-       else if((1.0-root2)<(1.0-root3) && (1.0-root2)<(1.0-root1))
-	 Z=root2;
-       else
-	 Z=root3;
-     }
-     else{   /* ONLY ONE real root */
-       stuff3= X*X-Q*Q*Q;
-       uu=X-sqrt(stuff3);
-       /*Power function must have uu a positive number*/
-       if(uu<0.0)
-	 uu=-1.0*uu;
-       U=pow(uu,(1.0/3.0));
-       V=Q/U;
-       root1=U+V-j/3.0;
-       Z=root1;
-     }
-
-     /* using Z calculate the fugacity */
-     f1=(Z-1.0)-log(Z-B);
-     f2=A/(2.0*sqrt(2.0)*B);
-     f3=Z+(1.0+sqrt(2.0))*B;
-     f4=Z+(1.0-sqrt(2.0))*B;
-     lnfoverp=f1-f2*log(f3/f4);
-     fugacity=exp(lnfoverp)*pressure;
-
-  return(fugacity);
-
-}
-
 
 int check_system(system_t *system) {
 
@@ -1480,6 +966,10 @@ int check_system(system_t *system) {
 			break;
 		case ENSEMBLE_TE:
 			output("INPUT: Single-point energy calculation\n");
+			system->numsteps = 0;
+			break;
+		case ENSEMBLE_NPT:
+			output("INPUT: Isobaric-Isothermal ensemble\n");
 			break;
 		default:
 			error("INPUT: improper ensemble specified\n");
@@ -1855,7 +1345,7 @@ int check_system(system_t *system) {
 			error("INPUT: no seed specified\n");
 			return(-1);
 		} else {
-			sprintf(linebuf, "INPUT: rng seed is %ld\n", system->seed);
+			sprintf(linebuf, "INPUT: rng seed is %lu\n", system->seed);
 			output(linebuf);
 		}
 
@@ -1891,6 +1381,17 @@ int check_system(system_t *system) {
 		if(system->free_volume > 0.0) {
 			sprintf(linebuf, "INPUT: system free_volume is %.3f A^3\n", system->free_volume);
 			output(linebuf);
+		}
+
+		if((system->ensemble == ENSEMBLE_NPT)) {
+			if (system->pressure <= 0.0) {
+				error("INPUT: invalid pressure set for NPT\n");
+				return(-1);
+			} else {
+				sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
+				sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity);
+				output(linebuf);
+			}
 		}
 
 		if((system->ensemble == ENSEMBLE_UVT) && (system->pressure <= 0.0)) {
@@ -1969,6 +1470,17 @@ int check_system(system_t *system) {
 			sprintf(linebuf, "INPUT: spinflip probability is %.3f\n", system->spinflip_probability);
 			output(linebuf);
 
+			if ( system->ensemble == ENSEMBLE_NPT ) {
+				if ( system->volume_probability == 0.0 )
+					sprintf(linebuf, "INPUT: volume change probability is 1/N_molecules.\n");
+				else
+					sprintf(linebuf, "INPUT: volume change probability is %.3f\n", system->volume_probability);
+				output(linebuf);
+
+				sprintf(linebuf, "INPUT: volume change factor is %lf.\n", system->volume_change_factor);
+				output(linebuf);
+			}
+
 		}
 
 		/* autoreject insertions closer than some scaling factor of sigma */
@@ -2010,8 +1522,11 @@ int check_system(system_t *system) {
 		}
 
 		if(!system->traj_output) {
-			error("INPUT: must specify a trajectory PDB\n");
-			return(-1);
+			error("INPUT: trajectory file unspecified; writing to /dev/null\n");
+			printf("INPUT: trajectory file unspecified; writing to /dev/null\n");
+			system->traj_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
+			sprintf(system->traj_output,"/dev/null");
 		} else {
 			sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
 			output(linebuf);
@@ -2024,13 +1539,25 @@ int check_system(system_t *system) {
 			output( "INPUT: inserted molecules will be selected from the restart file.\n" );
 		}
 
-		if(system->polarization && (!system->dipole_output || !system->field_output)) {
-			error("INPUT: must specify a dipole and field output file\n");
-			return(-1);
+		if(system->polarization && !system->dipole_output) {
+			error("INPUT: dipole file unspecified; writing to /dev/null\n");
+			printf("INPUT: dipole file unspecified; writing to /dev/null\n");
+			system->dipole_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->dipole_output,MAXLINE*sizeof(char),96);
+			sprintf(system->dipole_output,"/dev/null");
 		} else if(system->polarization) {
 			sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
 			output(linebuf);
-			sprintf(linebuf, "INPUT: electric field will be written to %s\n", system->field_output);
+		}
+
+		if(system->polarization && !system->field_output) {
+			error("INPUT: field file unspecified; writing to /dev/null\n");
+			printf("INPUT: field file unspecified; writing to /dev/null\n");
+			system->field_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->field_output,MAXLINE*sizeof(char),96);
+			sprintf(system->field_output,"/dev/null");
+		} else if(system->polarization) {
+			sprintf(linebuf, "INPUT: field field will be written to %s\n", system->dipole_output);
 			output(linebuf);
 		}
 
@@ -2083,9 +1610,7 @@ int check_system(system_t *system) {
 
 		}
 
-
 	}
-
 
 	return(0);
 
@@ -2274,13 +1799,17 @@ molecule_t *read_molecules(system_t *system) {
 			atom_ptr->polarizability = current_alpha;
 			atom_ptr->epsilon = current_epsilon;
 			atom_ptr->sigma = current_sigma;
-			//if polarvdw is on, we want sigma = 1
-			//it's an unneeded parameter, and complicates the mixing rules
-			if ( system->polarvdw && current_sigma != 1 ) {
-				fprintf(stderr,"INPUT: WARNING POLARVDW REQUIRES SIGMA = 1.\n"
-					"INPUT: INPUT VALUE OF %lf IGNORED.\n", current_sigma);
-				current_sigma = 1;
-				atom_ptr->sigma = 1;
+			//if polarvdw is on, we want sigma = 1 or sigma = 0
+			//it's an unneeded parameter, complicates the mixing rules and can break LRC
+			if ( system->polarvdw ){
+				if ( current_epsilon == 0 && current_sigma != 0 ) { //otherwise we break LRC
+					fprintf(stderr,"INPUT: for sites with epsilon == 0, we require sigma == 0.\n");
+					atom_ptr->sigma=0;
+				}
+				if ( current_epsilon != 0 && current_sigma != 1 ) { //keeps mixing rules simple
+					fprintf(stderr,"INPUT: for sites with epsilon != 0, we require sigma == 1.\n");
+					return(NULL);
+				}	
 			}
 			atom_ptr->omega = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
@@ -2551,14 +2080,6 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			atom_ptr->polarizability = current_alpha;
 			atom_ptr->epsilon   = current_epsilon;
 			atom_ptr->sigma     = current_sigma;
-			//if polarvdw is on, we want sigma = 1
-			//it's an unneeded parameter, and complicates the mixing rules
-			if ( system->polarvdw && current_sigma != 1 ) {
-				fprintf(stderr,"INPUT: WARNING POLARVDW REQUIRES SIGMA = 1.\n"
-					"INPUT: INPUT VALUE OF %lf IGNORED.\n", current_sigma);
-				current_sigma   = 1;
-				atom_ptr->sigma = 1;
-			}
 			atom_ptr->omega     = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
 			if(current_gwp_alpha != 0.)
@@ -2626,17 +2147,25 @@ system_t *setup_system(char *input_file) {
 	/* read in all of the tokens and parameters from the config file */
 	system = read_config(input_file);
 	if(!system) {
-		error("INPUT: error reading config file\n");
+   //		error("INPUT: error reading config file\n");  //error message already generated
 		return(NULL);
 	} else
 		output("INPUT: finished reading config file\n");
 
+	/* if read_pdb_box is set, then generate orthorhombic basis from pdb input file*/
+	if(system->read_pdb_box_on)
+		read_pdb_box(system);
+
+	/* calculate things related to the periodic boundary conditions */
+	pbc(system);
+		
 	/* validate configuration parameters */
 	if(check_system(system) < 0) {
 		error("INPUT: invalid config parameters specified\n");
 		return(NULL);
 	} else
 		output("INPUT: config file validated\n");
+
 
 	/* read in the input pdb and setup the data structures */
 	system->molecules = read_molecules(system);
@@ -2660,8 +2189,13 @@ system_t *setup_system(char *input_file) {
 	setup_pairs(system->molecules);
 	output("INPUT: finished allocating pair lists\n");
 
+//no better place to put this (too many conflicts
+	if ((system->ewald_alpha != EWALD_ALPHA) && (system->ensemble == ENSEMBLE_NPT)) {
+		printf("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
+	}	
+
 	/* calculate the periodic boundary conditions */
-	pbc(system->pbc);
+	pbc(system);
 	output("INPUT: finished calculating periodic boundary conditions\n");
 
 	/* get all of the pairwise interactions, exclusions, etc. */
@@ -2672,9 +2206,10 @@ system_t *setup_system(char *input_file) {
 	flag_all_pairs(system);
 	output("INPUT: finished calculating pairwise interactions\n");
 
-	/* set the ewald gaussian width appropriately */
+	/* set the ewald gaussian width appropriately */ //redundant in NPT
 	if(system->ewald_alpha == EWALD_ALPHA)
 		system->ewald_alpha = 3.5/system->pbc->cutoff;
+
 	if(!(system->sg || system->rd_only)) {
 		sprintf(linebuf, "INPUT: Ewald gaussian width = %f A\n", system->ewald_alpha);
 		output(linebuf);
@@ -3222,8 +2757,6 @@ void test_molecule(molecule_t *molecule) {
 
 printf("...finished\n");fflush(stdout);
 
-
 }
 #endif /* DEBUG */
-
 

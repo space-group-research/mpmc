@@ -133,6 +133,7 @@ typedef struct _nodestats {
 	int accept_displace, reject_displace;
 	int accept_adiabatic, reject_adiabatic;
 	int accept_spinflip, reject_spinflip;
+	int accept_volume, reject_volume;
 
 	double boltzmann_factor;
 	double acceptance_rate;
@@ -141,6 +142,7 @@ typedef struct _nodestats {
 	double acceptance_rate_displace;
 	double acceptance_rate_adiabatic;
 	double acceptance_rate_spinflip;
+	double acceptance_rate_volume;
 	double cavity_bias_probability;
 	double polarization_iterations;
 
@@ -157,6 +159,7 @@ typedef struct _avg_nodestats {
 	double acceptance_rate_displace;
 	double acceptance_rate_adiabatic;
 	double acceptance_rate_spinflip;
+	double acceptance_rate_volume;
 
 	double cavity_bias_probability;
 	double cavity_bias_probability_sq;
@@ -176,6 +179,7 @@ typedef struct _observables {
 	double dipole_rrms;
 	double kinetic_energy;		/* for NVE */
 	double temperature;		/* for NVE */
+	double volume; /* for NPT */
 	double N;
 	double NU;
 	double spin_ratio;		/* ortho:para spin ratio */
@@ -223,6 +227,11 @@ typedef struct _avg_observables {
 	double temperature_sq;
 	double temperature_error;
 
+	/* for NPT */
+	double volume;
+	double volume_sq;
+	double volume_error;
+
 	double N;
 	double N_sq;
 	double N_error;
@@ -246,6 +255,7 @@ typedef struct _avg_observables {
 	double acceptance_rate_displace;
 	double acceptance_rate_adiabatic;
 	double acceptance_rate_spinflip;
+	double acceptance_rate_volume;
 
 	double cavity_bias_probability;
 	double cavity_bias_probability_sq;
@@ -255,20 +265,14 @@ typedef struct _avg_observables {
 	double polarization_iterations_sq;
 	double polarization_iterations_error;
 
+	/* these quantities are based on averages; the error is not easily calculated */
 	double qst;
-	double qst_sq;
-	double qst_error;
-
 	double heat_capacity;
-	double heat_capacity_sq;
-	double heat_capacity_error;
-
 	double compressibility;
-	double compressibility_sq;
-	double compressibility_error;
 
 	/* the error of these propogates */
 	double density;
+	double density_sq;
 	double density_error;
 
 	double pore_density;
@@ -299,6 +303,7 @@ typedef struct _message {
 	double polarization_energy;
 	double kinetic_energy;
 	double temperature;
+	double volume;
 	double N;
 	double NU;
 	double spin_ratio;
@@ -312,6 +317,7 @@ typedef struct _message {
 	double acceptance_rate_remove;
 	double acceptance_rate_displace;
 	double acceptance_rate_spinflip;
+	double acceptance_rate_volume;
 
 	double cavity_bias_probability;
 	double cavity_bias_probability_sq;
@@ -417,14 +423,15 @@ typedef struct _system {
 	int surf_preserve, surf_decomp;
 	//some surf_preserve options
 	surf_preserve_rotation * surf_preserve_rotation_on;
-	long int seed;
+	long unsigned int seed;
 	int numsteps, corrtime, step;
-	double move_probability, rot_probability, insert_probability, adiabatic_probability, spinflip_probability, gwp_probability;
+	double move_probability, rot_probability, insert_probability, adiabatic_probability, spinflip_probability, gwp_probability, volume_probability;
+	double volume_change_factor, last_volume;
 	int cavity_bias, cavity_grid_size;
 	cavity_t ***cavity_grid;
 	int cavities_open;
 	double cavity_radius, cavity_volume;
-	int cavity_autoreject;
+	int cavity_autoreject, cavity_autoreject_absolute; //first is in terms of sigma and only applies to LJ; latter is in Angstroms and applies to all pairs
 	double cavity_autoreject_scale;
 	double temperature, pressure, fugacity, free_volume, total_energy, N;
 	int spectre;
@@ -458,6 +465,7 @@ typedef struct _system {
 
 	double **A_matrix, **B_matrix, C_matrix[3][3];	/* A matrix, B matrix and polarizability tensor */
 	char *pdb_input, *pdb_output, *pdb_restart, *traj_output, *energy_output;
+	int read_pdb_box_on;
 	char *dipole_output, *field_output, *histogram_output, *frozen_output;
 	char *insert_input;
 

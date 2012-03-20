@@ -70,6 +70,8 @@ int main(int argc, char **argv) {
 	sprintf(linebuf, "MAIN: running parameters found in %s\n", input_file);
 	output(linebuf);
 
+	// moved this allocation, because we'd like to set system->obsevables->volume during setup_system
+
 	/* read the input files and setup the simulation */
 	system = setup_system(input_file);
 	if(!system) {

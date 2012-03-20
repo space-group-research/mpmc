@@ -20,7 +20,7 @@ ifeq ($(QM_ROTATION),yes)
 all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o \
 	input.o output.o average.o mpi.o dxwrite.o\
 	main.o cleanup.o rng.o memnullcheck.o\
-	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o \
+	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o fugacity.o \
 	thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o \
 	vdw.o qshift.o \
 	histogram.o \
@@ -30,7 +30,7 @@ else
 all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o \
 	input.o output.o average.o mpi.o dxwrite.o\
 	main.o cleanup.o rng.o memnullcheck.o\
-	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o \
+	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o fugacity.o\
 	thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o \
 	histogram.o \
 	vdw.o qshift.o
@@ -95,7 +95,7 @@ memnullcheck.o: $(MAIN)/memnullcheck.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MAIN)/memnullcheck.c
 
 # monte carlo subtree
-mc: mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.c
+mc: mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.c fugacity.o
 mc.o: $(MC)/mc.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/mc.c
 mc_moves.o: $(MC)/mc_moves.c $(HEADERS)
@@ -110,6 +110,8 @@ cavity.o: $(MC)/cavity.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/cavity.c
 qshift.o: $(MC)/qshift.c $(HEADERS)
 	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/qshift.c
+fugacity.o: $(MC)/fugacity.c $(HEADERS)
+	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/fugacity.c
 
 # many-body polarization
 polarization: thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o

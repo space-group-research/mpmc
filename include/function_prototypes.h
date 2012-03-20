@@ -5,6 +5,7 @@
 /* energy */
 double energy(system_t *);
 double energy_no_observables(system_t *);
+double cavity_absolute_check (system_t *);
 double lj(system_t *);
 double lj_nopbc(system_t *);
 double dreiding(system_t *);
@@ -21,7 +22,7 @@ void unupdate_pairs_insert(system_t *);
 void unupdate_pairs_remove(system_t *);
 double pbc_cutoff(pbc_t *);
 double pbc_volume(pbc_t *);
-void pbc(pbc_t *);
+void pbc(system_t *);
 double sg(system_t *);
 double sg_nopbc(molecule_t *);
 double coulombic(system_t *);
@@ -135,6 +136,8 @@ void cavity_probability(system_t *);
 void cavity_update_grid(system_t *);
 void qshift_do(system_t *, qshiftData_t *, double, double);
 double calcquadrupole(system_t *);
+void volume_change(system_t *);
+void revert_volume_change(system_t *);
 
 /*surface_fit*/
 void surface_curve( system_t *, double, double, double, double * );
@@ -214,3 +217,20 @@ void test_list(molecule_t *);
 void test_cavity_grid(system_t *);
 #endif /* DEBUG */
 #endif // FXN_PROTOTYPES_H
+
+//fugacity functions
+double h2_fugacity(double, double);
+double h2_fugacity_back(double, double);
+double h2_comp_back(double, double);
+double h2_fugacity_shaw(double, double);
+double h2_fugacity_zhou(double, double);
+double ch4_fugacity(double, double);
+double ch4_fugacity_back(double, double);
+double ch4_comp_back(double, double);
+double ch4_fugacity_PR(double, double);
+double n2_fugacity(double, double);
+double n2_fugacity_back(double, double);
+double n2_comp_back(double, double);
+double n2_fugacity_PR(double, double);
+double n2_fugacity_zhou(double, double);
+double co2_fugacity(double, double);

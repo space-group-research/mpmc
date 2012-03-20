@@ -12,6 +12,83 @@ University of South Florida
 
 #include <mc.h>
 
+/* scale the volume : used in NPT ensemble */
+void volume_change( system_t * system ) {
+	molecule_t * m;
+	atom_t * a;
+	double new_volume, log_new_volume, basis_scale_factor;
+	double new_com[3], old_com[3], delta_pos[3];
+	int i,j;
+
+	// figure out what the new volume will be
+	log_new_volume=log(system->pbc->volume) + (get_rand()-0.5)*system->volume_change_factor;
+	new_volume=exp(log_new_volume);
+
+	//scale basis
+	basis_scale_factor = pow(new_volume/system->observables->volume,1.0/3.0);
+	for ( i=0; i<3; i++ )
+		for ( j=0; j<3; j++ )
+			system->pbc->basis[i][j] *= basis_scale_factor;
+
+	//recalculate PBC stuff (volume/reciprocal basis/cutoff)
+	pbc(system);
+	system->observables->volume = system->pbc->volume;
+
+	//scale molecule positions
+	for ( m = system->molecules; m; m = m->next ) {
+		for ( i=0; i<3; i++ ) {
+			old_com[i] = m->com[i]; //molecule ptr's com will be udated during pairs routine
+			new_com[i] = m->com[i] * basis_scale_factor;
+			delta_pos[i] = new_com[i] - old_com[i];
+		}
+		for ( a = m->atoms; a; a=a->next ) { //calculate new atomic positions based on new com
+			for (i=0; i<3; i++ ) {
+				a->pos[i] += delta_pos[i];
+				a->wrapped_pos[i] += delta_pos[i];
+			}
+		}
+	}		
+
+	return;
+}
+
+/* revert changes to volume */
+void revert_volume_change( system_t * system ) {
+	double basis_scale_factor, new_volume;
+	double old_com[3], new_com[3], delta_pos[3];
+	molecule_t * m; atom_t * a;
+	int i,j;
+	new_volume = system->checkpoint->observables->volume; 
+
+	//un-scale basis
+	basis_scale_factor = pow(new_volume/system->pbc->volume,1.0/3.0); //system->pbc->volume still has rejected value until pbc() is called
+	for ( i=0; i<3; i++ )
+		for ( j=0; j<3; j++ )
+			system->pbc->basis[i][j] *= basis_scale_factor;
+
+	//recalc PBC stuff
+	pbc(system);
+	system->observables->volume = system->pbc->volume;
+
+	//scale molecule positions
+	for ( m = system->molecules; m; m = m->next ) {
+		for ( i=0; i<3; i++ ) {
+			old_com[i] = m->com[i]; //molecule ptr's com will be udated during pairs routine
+			new_com[i] = m->com[i] * basis_scale_factor;
+			delta_pos[i] = new_com[i] - old_com[i];
+		}
+		for ( a = m->atoms; a; a=a->next ) { //calculate new atomic positions based on new com
+			for (i=0; i<3; i++ ) {
+				a->pos[i] += delta_pos[i];
+				a->wrapped_pos[i] += delta_pos[i];
+			}
+		}
+	}
+
+	return;
+}
+
+
 /* make an exact copy of src */
 molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 
@@ -545,8 +622,8 @@ void make_move(system_t *system) {
 		else
 			system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_PARA;
 
-	}
-
+	} else if (system->checkpoint->movetype == MOVETYPE_VOLUME)
+		volume_change(system); // I don't want to contribute to the god damned mess -- kmclaugh
 
 }
 
@@ -628,9 +705,18 @@ void checkpoint(system_t *system) {
 		else
 			system->checkpoint->movetype = MOVETYPE_DISPLACE;
 
+	} else if( system->ensemble == ENSEMBLE_NPT ) {
+
+		if ( system->volume_probability == 0.0 ) { //if volume probability isn't set, then do volume moves with prob = 1/nmolecules
+			if ( get_rand() < 1.0 / system->observables->N ) system->checkpoint->movetype = MOVETYPE_VOLUME;
+				else system->checkpoint->movetype = MOVETYPE_DISPLACE;
+		}
+		else { //if volume probability IS set
+			if ( get_rand() < system->volume_probability ) system->checkpoint->movetype = MOVETYPE_VOLUME;
+				else system->checkpoint->movetype = MOVETYPE_DISPLACE;
+		}
 	}
-
-
+			
 	/* if we have any adiabatic molecules, then we have to do some special stuff */
         /* randomly pick a (moveable) atom */
 	if(system->checkpoint->movetype == MOVETYPE_ADIABATIC) {
@@ -756,6 +842,8 @@ void restore(system_t *system) {
 		system->checkpoint->molecule_backup = NULL;
 
 
+	} else if ( system->checkpoint->movetype == MOVETYPE_VOLUME ) {
+		revert_volume_change(system);
 	}
 
 	/* renormalize charges */

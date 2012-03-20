@@ -12,9 +12,6 @@ University of South Florida
 /* total ES energy term */
 double coulombic(system_t *system) {
 
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
-	pair_t *pair_ptr;
 	double real, reciprocal;
 	double potential;
 
@@ -38,7 +35,8 @@ double coulombic_reciprocal(system_t *system) {
 	int q, p;
 	int kmax;
 	double alpha;
-	double l[3], k[3], k_squared, norm;
+	int l[3];
+	double norm, k[3], k_squared;
 	double gaussian, position_product;
 	double SF_real, SF_imaginary;			/* structure factor */
 	double recip_potential, self_potential, potential;
@@ -114,6 +112,7 @@ double coulombic_reciprocal(system_t *system) {
 
 							} /* atom */
 						} /* molecule */
+
 						recip_potential += gaussian*(SF_real*SF_real + SF_imaginary*SF_imaginary);
 
 					} /* end if norm */
@@ -151,15 +150,12 @@ double coulombic_real(system_t *system) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
-
 				if(pair_ptr->recalculate_energy) {
-
 					pair_ptr->es_real_energy = 0;
 
 					if(!pair_ptr->frozen) {
 
 						r = pair_ptr->rimg;
-
 						if(!((r > system->pbc->cutoff) || pair_ptr->es_excluded)) {	/* unit cell part */
 
 							erfc_term = erfc(alpha*r);
@@ -202,6 +198,7 @@ double coulombic_real(system_t *system) {
 
 						} else if(pair_ptr->es_excluded) /* calculate the self-intra part */
 							pair_ptr->es_self_intra_energy = atom_ptr->charge*pair_ptr->atom->charge*erf(alpha*pair_ptr->r)/pair_ptr->r;
+
 
 					} /* frozen */
 

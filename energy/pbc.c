@@ -86,7 +86,6 @@ double pbc_volume(pbc_t *pbc) {
 /* get the reciprocal space basis */
 void pbc_reciprocal(pbc_t *pbc) {
 
-	int p, q;
 	double inverse_volume;
 
 	inverse_volume = 1.0/pbc_volume(pbc);
@@ -103,20 +102,24 @@ void pbc_reciprocal(pbc_t *pbc) {
 	pbc->reciprocal_basis[2][1] = inverse_volume*(pbc->basis[0][1]*pbc->basis[2][0] - pbc->basis[0][0]*pbc->basis[2][1]);
 	pbc->reciprocal_basis[2][2] = inverse_volume*(pbc->basis[0][0]*pbc->basis[1][1] - pbc->basis[0][1]*pbc->basis[1][0]);
 
-
-
 }
 
-void pbc(pbc_t *pbc) {
+void pbc(system_t * system) {
+
+	pbc_t * pbc = system->pbc;
 
 	/* get the unit cell volume and cutoff */
 	pbc->volume = pbc_volume(pbc);
 
-	if(pbc->cutoff == 0.0)
+	if( (pbc->cutoff == 0.0) || (system->ensemble == ENSEMBLE_NPT) )
 		pbc->cutoff = pbc_cutoff(pbc);
 
 	/* get the reciprocal space lattice */
 	pbc_reciprocal(pbc);
 
-}
+	/* if NPT, recalculate ewald alpha */
+	if (system->ensemble == ENSEMBLE_NPT) {
+		system->ewald_alpha = 3.5/system->pbc->cutoff;
+	}
 
+}

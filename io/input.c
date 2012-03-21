@@ -737,14 +737,14 @@ int do_command (system_t * system, char ** token ) {
 
 int read_pdb_box ( system_t * system ) {
 
-	double xmin, xmax, ymin, ymax, zmin, zmax, xread, yread, zread;
-	double xlim, ylim, zlim;
-	char buffer[1024], item[64], type[4];
+	char buffer[MAXLINE], token[7][MAXLINE];
+	int basis_set[3]; 
 	FILE * fp;
 
-	/* set init vals */
-	xmin = ymin = zmin = INFINITY;
-	xmax = ymax = zmax = -INFINITY;
+	printf("INPUT: (read_pdb_box) checking input pdb for basis info\n");
+
+	//flags to make sure we set all basis vectors
+	basis_set[0]=basis_set[1]=basis_set[2]=0; 
 
 	/* open the molecule input file */
 	fp = fopen(system->pdb_input, "r");
@@ -754,44 +754,49 @@ int read_pdb_box ( system_t * system ) {
 		return(-1);
 	}
 	
-	printf("INPUT: setting basis from pdb file: assuming orthorhombic basis.\n");
-	
 	rewind(fp);
-	while ( fgets(buffer, 1024, fp) != NULL ) {
-		sscanf(buffer, "%s %*s %*s %s %*s %*s %lf %lf %lf %*s", item, type, &xread, &yread, &zread);
-		if ( strncmp(item, "CONECT", 6) == 0 ) //don't use these lines
-			continue;
-		if ( strncmp(type, "BOX", 3) == 0 ) { //if it's of type==BOX, try to set box limits
-			if ( xread < xmin ) xmin = xread;
-			if ( yread < ymin ) ymin = yread;
-			if ( zread < zmin ) zmin = zread;
-			if ( xread > xmax ) xmax = xread;
-			if ( yread > ymin ) ymax = yread;
-			if ( zread > zmin ) zmax = zread;
+	while ( fgets(buffer, MAXLINE, fp) != NULL ) {
+		sscanf(buffer, "%s %s %s %s %s %s %s", 
+			token[0], token[1], token[2], token[3], token[4], token[5], token[6]);
+		if ( (!strcmp(token[0],"REMARK")) && (!strcmp(token[1],"BOX")) && (!strcmp(token[3],"=")) ) {
+			if (!strcmp(token[2],"BASIS[0]")) { //set basis[0]
+				{ if (safe_atof(token[4],&(system->pbc->basis[0][0]))) continue; } //make sure each conversion is successful
+				{ if (safe_atof(token[5],&(system->pbc->basis[0][1]))) continue; }
+				{ if (safe_atof(token[6],&(system->pbc->basis[0][2]))) continue; }
+				//if we get this far, then we've successfully read in the basis vector
+				basis_set[0] = 1;
+			}
+			if (!strcmp(token[2],"BASIS[1]")) { //set basis[0]
+				{ if (safe_atof(token[4],&(system->pbc->basis[1][0]))) continue; } //make sure each conversion is successful
+				{ if (safe_atof(token[5],&(system->pbc->basis[1][1]))) continue; }
+				{ if (safe_atof(token[6],&(system->pbc->basis[1][2]))) continue; }
+				//if we get this far, then we've successfully read in the basis vector
+				basis_set[1] = 1;
+			}
+			if (!strcmp(token[2],"BASIS[2]")) { //set basis[0]
+				{ if (safe_atof(token[4],&(system->pbc->basis[2][0]))) continue; } //make sure each conversion is successful
+				{ if (safe_atof(token[5],&(system->pbc->basis[2][1]))) continue; }
+				{ if (safe_atof(token[6],&(system->pbc->basis[2][2]))) continue; }
+				//if we get this far, then we've successfully read in the basis vector
+				basis_set[2] = 1;
+			}
+			else continue;
 		}
+		else continue;
 	}
 
-	//calculate the dimensions of the box in each direction
-	//this part could be rewritten to support non-orthorhombic boxes
-	xlim = xmax - xmin;
-	ylim = ymax - ymin;
-	zlim = zmax - zmin;
-
-	if ( isfinite(xlim) == 0 || isfinite(ylim) == 0 || isfinite(zlim) == 0 ) {
-		printf("INPUT: *** failed to read box dimensions from pdb ***\n");
-		fprintf(stderr,"INPUT: *** failed to read box dimensions from pdb ***\n");
-	}
-	else {
-		system->pbc->basis[0][0]=xlim;
-		system->pbc->basis[0][1]=0;
-		system->pbc->basis[0][2]=0;
-		system->pbc->basis[1][0]=0;
-		system->pbc->basis[1][1]=ylim;
-		system->pbc->basis[1][2]=0;
-		system->pbc->basis[2][0]=0;
-		system->pbc->basis[2][1]=0;
-		system->pbc->basis[2][2]=zlim;
-	}
+	if (basis_set[0] == 1)
+		printf("INPUT: basis[0] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+			system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
+		else fprintf(stderr,"INPUT: unable to read basis[0] from pdb file.\n");
+	if (basis_set[1] == 1)
+		printf("INPUT: basis[1] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+			system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
+		else fprintf(stderr,"INPUT: unable to read basis[1] from pdb file.\n");
+	if (basis_set[2] == 1)
+		printf("INPUT: basis[2] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+			system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
+		else fprintf(stderr,"INPUT: unable to read basis[2] from pdb file.\n");
 
 	fclose(fp);
 	return 0;
@@ -2152,7 +2157,7 @@ system_t *setup_system(char *input_file) {
 	} else
 		output("INPUT: finished reading config file\n");
 
-	/* if read_pdb_box is set, then generate orthorhombic basis from pdb input file*/
+	/* if read_pdb_box is set, then read basis from pdb input file*/
 	if(system->read_pdb_box_on)
 		read_pdb_box(system);
 

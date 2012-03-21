@@ -264,6 +264,9 @@ int mc(system_t *system) {
 
 	}
 
+	if ( system->ensemble == ENSEMBLE_TE ) //per Chris's request that energy_output be written for TE runs.
+		write_observables(system->file_pointers.fp_energy, system->observables);
+
 	/* save the initial state */
 	checkpoint(system);
 

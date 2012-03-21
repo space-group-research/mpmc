@@ -281,7 +281,7 @@ int write_molecules(system_t *system, char *filename) {
 						box_pos[p] += system->pbc->basis[p][q]*box_occupancy[q];
 
 				for(p = 0; p < 3; p++)
-					fprintf(fp, "%14.8f ", box_pos[p]);
+					fprintf(fp, "%8.3f", box_pos[p]);
 
 				/* null interactions */
 				fprintf(fp, " %8.4f", 0.0);
@@ -298,7 +298,6 @@ int write_molecules(system_t *system, char *filename) {
 			}
 		}
 
-		/* output the connectivity information */
 		for(i = 0; i < 2; i++) {
 			for(j = 0; j < 2; j++) {
 				for(k = 0; k < 2; k++) {
@@ -322,6 +321,15 @@ int write_molecules(system_t *system, char *filename) {
 
 	} /* if wrapall */
 
+	/*write basis to the output file. needed for restarting NPT jobs, or whatever.*/
+	fprintf(fp, "REMARK BOX BASIS[0] = %20.14lf %20.14lf %20.14lf\n", 
+		system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
+	fprintf(fp, "REMARK BOX BASIS[1] = %20.14lf %20.14lf %20.14lf\n",
+		system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
+	fprintf(fp, "REMARK BOX BASIS[2] = %20.14lf %20.14lf %20.14lf\n", 
+		system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
+
+		/* output the connectivity information */
 	fprintf(fp, "END\n");
 	fflush(fp);
 

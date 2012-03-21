@@ -281,7 +281,7 @@ int write_molecules(system_t *system, char *filename) {
 						box_pos[p] += system->pbc->basis[p][q]*box_occupancy[q];
 
 				for(p = 0; p < 3; p++)
-					fprintf(fp, "%14.8f", box_pos[p]);
+					fprintf(fp, "%14.8f ", box_pos[p]);
 
 				/* null interactions */
 				fprintf(fp, " %8.4f", 0.0);

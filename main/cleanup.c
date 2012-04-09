@@ -150,23 +150,14 @@ void free_matrices(system_t *system) {
 
 /* free the cavity bias insertion grid */
 void free_cavity_grid(system_t *system) {
-
 	int i, j, N;
-
 	N = system->cavity_grid_size;
-
 	for(i = 0; i < N; i++) {
-
 		for(j = 0; j < N; j++)
 			free(system->cavity_grid[i][j]);
-
 		free(system->cavity_grid[i]);
-
-
 	}
 	free(system->cavity_grid);
-
-
 }
 
 #ifdef QM_ROTATION
@@ -192,6 +183,29 @@ void free_rotational(system_t *system) {
 }
 #endif /* QM_ROTATION */
 
+//free vdw pointer which keeps track of e_iso energies
+void free_vdw_eiso(vdw_t * vdw_eiso_info) {
+	vdw_t * vp;
+	vdw_t ** varray = NULL;
+	int i=0;
+
+	for ( vp = vdw_eiso_info; vp; vp=vp->next ) {
+		varray = realloc(varray, sizeof(vdw_t *)*(i+1));
+		memnullcheck(varray,sizeof(vdw_t *)*(i+1),36);
+		varray[i]=vp;
+		i++;
+	}
+
+	while ( i>0 ) {
+		i--;
+		free(varray[i]);
+	}
+
+	free(varray);
+
+	return;
+}
+
 /* free all of our data structures */
 void cleanup(system_t *system) {
 
@@ -201,6 +215,7 @@ void cleanup(system_t *system) {
 	if(system->quantum_rotation) free_rotational(system);
 #endif /* QM_ROTATION */
 	if(system->polarization && !system->cuda) free_matrices(system);
+
 
 	free_pairs(system->molecules);
 	free_atoms(system->molecules);
@@ -213,12 +228,11 @@ void cleanup(system_t *system) {
 	if(system->traj_output) free(system->traj_output);
 	if(system->dipole_output) free(system->dipole_output);
 	if(system->field_output) free(system->field_output);
-
 	if(system->frozen_output) free(system->frozen_output);
-
 	if(system->surf_preserve_rotation_on) free(system->surf_preserve_rotation_on);
-
 	if(system->cavity_bias) free_cavity_grid(system);
+
+	if ( system->vdw_eiso_info ) free_vdw_eiso(system->vdw_eiso_info);
 
 	/* free statistics */
 	free(system->nodestats);

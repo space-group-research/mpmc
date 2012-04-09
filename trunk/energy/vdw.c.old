@@ -21,6 +21,8 @@ energy calculation.
 #define halfHBAR 3.81911146e-12 //Ks
 #define au2invsec 4.13412763705e16 //s^-1 a.u.^-1
 
+
+
 // we can optionally calculate the vdw via 2-body expansion (neglect damping) for comparison
 double twobody ( system_t * system ) {
 	molecule_t * molecule_ptr;
@@ -368,38 +370,93 @@ double eigen2energy ( double * eigvals, int dim, double temperature ) {
 	return rval;
 }
 
-double calc_e_iso ( system_t * system, double * sqrtKinv ) {
-	int n, nstart, curr_dimM;
+//calculate energies for isolated molecules
+//if we don't know it, calculate it and save the value
+double calc_e_iso ( system_t * system, double * sqrtKinv, molecule_t * mptr ) {
+	int nstart, nsize, curr_dimM;
 	double e_iso; //total vdw energy of isolated molecules
 	struct mtx * Cm_iso; //matrix Cm_isolated
 	double * eigvals; //eigenvalues of Cm_cm
 	molecule_t * molecule_ptr;
 	atom_t * atom_ptr;
 
-	e_iso=0; //init, will sum over molecules (eigenvalues of each molecule)
-
-	n=nstart=0; //loop through each individual molecule
+	nstart=nsize=0; //loop through each individual molecule
 	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr=molecule_ptr->next ) {
-		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-			n++;
+		if ( molecule_ptr != mptr ) {  //count atoms then skip to next molecule
+			for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) nstart++;
+			continue;
 		}
-		//build matrix for calculation of vdw energy of isolated molecule
-		Cm_iso = build_M(3*(n-nstart), 3*nstart, system->A_matrix, sqrtKinv);
 
+		//now that we've found the molecule of interest, count natoms, and calc energy
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) nsize++;
+
+		//build matrix for calculation of vdw energy of isolated molecule
+		Cm_iso = build_M(3*(nsize), 3*nstart, system->A_matrix, sqrtKinv);
 		//diagonalize M and extract eigenvales -> calculate energy
 		eigvals=lapack_diag(Cm_iso,1); //no eigenvectors
-		e_iso+=eigen2energy(eigvals, Cm_iso->dim, system->temperature);
+		e_iso=eigen2energy(eigvals,Cm_iso->dim,system->temperature);
 
 		//free memory
 		free(eigvals);
 		free_mtx(Cm_iso);
-		//reset the offset
-		nstart=n;
+
+		//convert a.u. -> s^-1 -> K
+    return e_iso * au2invsec * halfHBAR ;
 	}	
 
-	//convert a.u. -> s^-1 -> K
-    return e_iso * au2invsec * halfHBAR ;
+	//unmatched molecule
+	return NAN; //we should never get here
 }
+
+//go through each molecule and determine the VDW energy associated with each isolated molecule
+double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
+
+	double e_iso = 0;
+	molecule_t * mp;
+	atom_t * ap;
+	vdw_t * vp;
+	vdw_t * vpscan;
+
+	//loop through molecules. if not known, calculate, store and count. otherwise just count.
+	for ( mp = system->molecules; mp; mp=mp->next ) {
+		for ( vp = system->vdw_eiso_info; vp != NULL; vp=vp->next ) { //loop through all vp's
+			if ( strncmp(vp->mtype,mp->moleculetype,MAXLINE) == 0 ) {
+					e_iso += vp->energy; //count energy
+					break; //break out of vp loop. the current molecule is accounted for now. go to the next molecule
+			}
+			else continue; //not a match, check the next vp
+		} //vp loop
+
+		if ( vp == NULL ) { //if the molecule was unmatched, we need to grow the list
+			// end of vp list and we haven't matched yet -> grow vdw_eiso_info
+			// scan to the last non-NULL element
+			if ( system->vdw_eiso_info == NULL ) {
+				system->vdw_eiso_info = calloc(1,sizeof(vdw_t)); //allocate space
+				checknull(system->vdw_eiso_info,"calloc vdw_t * vdw_eiso_info",sizeof(vdw_t));
+				vpscan = system->vdw_eiso_info; //set scan pointer
+			} else {
+				for ( vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan=vpscan->next );
+				vpscan->next = calloc(1,sizeof(vdw_t)); //allocate space
+				checknull(vpscan->next,"calloc vdw_t * vpscan->next", sizeof(vdw_t));
+				vpscan = vpscan->next;
+			} //done scanning and malloc'ing
+		
+			//set values
+			strncpy(vpscan->mtype,mp->moleculetype,MAXLINE); //assign moleculetype
+			vpscan->energy = calc_e_iso(system,sqrtKinv,mp); //assign energy
+			if ( isfinite(vpscan->energy) == 0 ) { //if nan, then calc_e_iso failed
+				fprintf(stderr,"VDW: ERROR: Problem in calc_e_iso.\n");
+				die(-1);
+			}
+			//otherwise count the energy and move to the next molecule
+			e_iso += vpscan->energy;
+
+		} //vp==NULL
+	} //mp loop	
+			
+	return e_iso;
+}
+
 
 //build the matrix K^(-1/2) -- see the PDF
 double * getsqrtKinv ( system_t * system, int N ) {
@@ -437,6 +494,7 @@ int getnatoms ( system_t *system ) {
 	return i;
 }
 
+
 //returns interaction VDW energy
 double vdw(system_t *system) {
 
@@ -454,7 +512,7 @@ double vdw(system_t *system) {
 	sqrtKinv = getsqrtKinv(system,N);
 
 	//calculate energy vdw of isolated molecules
-	e_iso = calc_e_iso ( system, sqrtKinv );
+	e_iso = sum_eiso_vdw ( system, sqrtKinv );
 
 	//Build the C_Matrix
 	Cm = build_M (3*N, 0, Am, sqrtKinv);

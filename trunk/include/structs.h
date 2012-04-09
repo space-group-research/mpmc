@@ -92,6 +92,12 @@ typedef struct _molecule {
 	struct _molecule *next;
 } molecule_t;
 
+typedef struct _vdw {
+	char mtype[MAXLINE];
+	double energy;
+	struct _vdw * next;
+} vdw_t;
+
 typedef struct _pbc {
 	double basis[3][3];		/* unit cell lattice (A) */
 	double reciprocal_basis[3][3];	/* reciprocal space lattice (1/A) */
@@ -499,6 +505,8 @@ typedef struct _system {
 	checkpoint_t *checkpoint;
 
 	file_pointers_t file_pointers;
+
+	vdw_t * vdw_eiso_info;
 
 } system_t;
 

@@ -20,172 +20,7 @@ energy calculation.
 #define cHBAR 7.63822291e-12 //Ks //HBAR is already taken to be in Js
 #define halfHBAR 3.81911146e-12 //Ks
 #define au2invsec 4.13412763705e16 //s^-1 a.u.^-1
-
-
-
-// we can optionally calculate the vdw via 2-body expansion (neglect damping) for comparison
-double twobody ( system_t * system ) {
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-	pair_t * pair_ptr;
-	double rm; //reduced mass
-	double w1, w2, w; //omegas
-	double a1, a2; //alphas
-	double e_tot = 0; //correction to the energy	
-	double e_single;
-
-	//for each pair
-	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
-		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
-				//skip if frozen
-				if ( pair_ptr->frozen ) continue;
-				//skip if they belong to the same molecule
-				if ( molecule_ptr == pair_ptr->molecule ) continue;
-				//skip if distance is greater than cutoff
-				if ( pair_ptr->rimg > system->pbc->cutoff ) continue;
-				//fetch alphas and omegas
-				a1=atom_ptr->polarizability;
-				a2=pair_ptr->atom->polarizability;
-				w1=atom_ptr->omega;
-				w2=pair_ptr->atom->omega;
-				if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
-				w=2*w1*w2/(w1+w2); //combine omegas
-				// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-				e_single = -0.75 * cHBAR * w * au2invsec * a1 * a2 * pow(pair_ptr->rimg,-6.0);
-				printf("ESINGLE %lf\n", e_single);
-				e_tot += e_single;
-			}
-		}
-	}
-
-	return e_tot;
-}
-
-
-// long-range correction
-double lr_vdw_corr ( system_t * system ) {
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-	pair_t * pair_ptr;
-	double w1, w2, w; //omegas
-	double a1, a2; //alphas
-	double cC; //leading coefficient to r^-6
-	double corr = 0; //correction to the energy
-
-	//skip if PBC isn't set-up
-	if ( system->pbc->volume == 0 ) {
-		fprintf(stderr,"VDW: PBC not set-up. Did you define your basis? Skipping LRC.\n");
-		return 0;
-	}
-
-	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
-		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
-					//skip if frozen
-					if ( pair_ptr->frozen ) continue;
-					//skip if same molecule  // don't do this... this DOES contribute to LRC
-//					if ( molecule_ptr == pair_ptr->molecule ) continue;
-					//fetch alphas and omegas
-					a1=atom_ptr->polarizability;
-					a2=pair_ptr->atom->polarizability;
-					w1=atom_ptr->omega;
-					w2=pair_ptr->atom->omega;
-					if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
-					w=2*w1*w2/(w1+w2); //combine omegas
-					// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-					cC=0.75 * cHBAR * w * au2invsec * a1 * a2;
-
-					// long-range correction
-					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3.0) / system->pbc->volume;
-			}
-		}
-	}
-
-	return corr;
-
-}
-
-// feynman-hibbs correction - based on 2-body. it's not very accurate, since damping is neglected :-(
-double fh_vdw_corr ( system_t * system ) {
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-	pair_t * pair_ptr;
-	double rm; //reduced mass
-	double w1, w2, w; //omegas
-	double a1, a2; //alphas
-	double cC; //leading coefficient to r^-6
-	double dv, d2v, d3v, d4v; //derivatives
-	double du, d2u, d3u, d4u; //derivatives of the first term
-	double dy, d2y, d3y, d4y; //derivatives of the second term
-	double corr = 0; //correction to the energy
-	double corr_single; //single vdw interaction energy
-
-	//for each pair
-	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
-		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
-				//skip if frozen
-				if ( pair_ptr->frozen ) continue;
-				//skip if they belong to the same molecule
-				if ( molecule_ptr == pair_ptr->molecule ) continue;
-				//skip if distance is greater than cutoff
-				if ( pair_ptr->rimg > system->pbc->cutoff ) continue;
-				//fetch alphas and omegas
-				a1=atom_ptr->polarizability;
-				a2=pair_ptr->atom->polarizability;
-				w1=atom_ptr->omega;
-				w2=pair_ptr->atom->omega;
-				if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
-				w=2*w1*w2/(w1+w2); //combine omegas
-				// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-				cC=0.75 * cHBAR * w * au2invsec * a1 * a2;
-				// reduced mass
-				rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
-					((molecule_ptr->mass)+(pair_ptr->molecule->mass));
-
-			//the potential has the form cC*r^-6 * (1 - 2.45*r^-2)
-				//derivatives of the first term
-				du = 6.0*cC*pow(pair_ptr->rimg,-7.0);	
-				d2u= du * (-7.0)/pair_ptr->rimg;
-				if ( system->feynman_hibbs_order >= 4 ) {
-					d3u= d2u* (-8.0)/pair_ptr->rimg;
-					d4u= d3u* (-9.0)/pair_ptr->rimg;
-				}
-				//derivatives of the second term
-				dy = -2.45*8.0*cC*pow(pair_ptr->rimg,-9.0);
-				d2y = dy * (-9.0)/pair_ptr->rimg;
-				if ( system->feynman_hibbs_order >= 4 ) {
-					d3y = d2y*(-10.0)/pair_ptr->rimg;
-					d4y = d3y*(-11.0)/pair_ptr->rimg;
-				}
-				//combine terms
-				dv = dy+du;
-				d2v = d2y+d2u;
-				d3v = d3y+d3u;
-				d4v = d4y+d4u;
-
-				//2nd order correction
-				corr_single = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
-				//4th order correction
-				if ( system->feynman_hibbs_order >= 4 )
-					corr_single += pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0) /
-						(1152.0*pow(KB*system->temperature*rm, 2.0))) *
-						(15.0*dv/pow(pair_ptr->rimg, 3.0) + 4.0*d3v/pair_ptr->rimg + d4v);
-
-				//cap the max correction (largest negative)
-				//otherwise positions of vdw sites will converge and energy will blow up
-				//since repulsion sites may differ
-				if ( system->VDW_FH_cap > corr_single )
-					corr += system->VDW_FH_cap;
-				else
-					corr += corr_single;
-			}
-		}
-	}
-
-	return corr;
-}
+#define FINITE_DIFF 0.01 //too small -> vdw calc noises becomes a problem
 
 //kill MPI before quitting, when neccessary
 void die( int code ){
@@ -494,6 +329,178 @@ int getnatoms ( system_t *system ) {
 	return i;
 }
 
+
+// long-range correction
+double lr_vdw_corr ( system_t * system ) {
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	pair_t * pair_ptr;
+	double w1, w2, w; //omegas
+	double a1, a2; //alphas
+	double cC; //leading coefficient to r^-6
+	double corr = 0; //correction to the energy
+
+	//skip if PBC isn't set-up
+	if ( system->pbc->volume == 0 ) {
+		fprintf(stderr,"VDW: PBC not set-up. Did you define your basis? Skipping LRC.\n");
+		return 0;
+	}
+
+	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
+			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
+					//skip if frozen
+					if ( pair_ptr->frozen ) continue;
+					//skip if same molecule  // don't do this... this DOES contribute to LRC
+//					if ( molecule_ptr == pair_ptr->molecule ) continue;
+					//fetch alphas and omegas
+					a1=atom_ptr->polarizability;
+					a2=pair_ptr->atom->polarizability;
+					w1=atom_ptr->omega;
+					w2=pair_ptr->atom->omega;
+					if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
+					w=2*w1*w2/(w1+w2); //combine omegas
+					// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
+					cC=0.75 * cHBAR * w * au2invsec * a1 * a2;
+
+					// long-range correction
+					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3.0) / system->pbc->volume;
+			}
+		}
+	}
+
+	return corr;
+
+}
+
+//calculate T matrix element for a particular separation
+double e2body(system_t * system, atom_t * atom, pair_t * pair, double r) {
+	double energy;
+	double lr = system->polar_damp * r;
+	double lr2 = lr*lr;
+	double lr3 = lr*lr2;
+	double Txx = pow(r,-3.0)*(-2.0+(0.5*lr3+lr2+2*lr+2)*exp(-lr));
+	double Tyy = pow(r,-3.0)*(1-(0.5*lr2+lr+1)*exp(-lr));
+	double * eigvals;
+	struct mtx * M = alloc_mtx(6);
+	
+	//only the sub-diagonals are non-zero
+	M->val[1]=M->val[2]=M->val[4]=M->val[5]=M->val[6]=M->val[8]=M->val[9]=M->val[11]=0;
+	M->val[12]=M->val[13]=M->val[15]=M->val[16]=M->val[19]=M->val[20]=M->val[22]=M->val[23]=0;
+	M->val[24]=M->val[26]=M->val[27]=M->val[29]=M->val[30]=M->val[31]=M->val[33]=M->val[34]=0;
+
+	//true diagonals
+	M->val[0]=M->val[7]=M->val[14]=(atom->omega)*(atom->omega);
+	M->val[21]=M->val[28]=M->val[35]=(pair->atom->omega)*(pair->atom->omega);
+
+	//sub-diagonals
+	M->val[3]=M->val[18]=
+		(atom->omega)*(pair->atom->omega)*sqrt(atom->polarizability*pair->atom->polarizability)*Txx;
+	M->val[10]=M->val[17]=M->val[25]=M->val[32]=
+		(atom->omega)*(pair->atom->omega)*sqrt(atom->polarizability*pair->atom->polarizability)*Tyy;
+
+	eigvals=lapack_diag(M,1);
+	energy = eigen2energy(eigvals, 6, system->temperature);
+
+	//subtract energy of atoms at infinity
+	energy -= 3*wtanh(atom->omega, system->temperature);
+	energy -= 3*wtanh(pair->atom->omega, system->temperature);
+
+	free(eigvals);
+	free(M);
+
+  return energy * au2invsec * halfHBAR;
+}
+
+// feynman-hibbs correction - based on 2-body. damping now included!!
+double fh_vdw_corr ( system_t * system ) {
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	pair_t * pair_ptr;
+	double rm; //reduced mass
+	double E[5];  //energy at five points, used for finite differencing
+	double dv, d2v, d3v, d4v; //derivatives
+	double corr = 0; //correction to the energy
+	double corr_single; //single vdw interaction energy
+	double h = FINITE_DIFF; //small dr used for finite differencing //too small -> vdw calculation noise becomes a problem
+
+	//for each pair
+	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
+			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
+				//skip if frozen
+				if ( pair_ptr->frozen ) continue;
+				//skip if they belong to the same molecule
+				if ( molecule_ptr == pair_ptr->molecule ) continue;
+				//skip if distance is greater than cutoff
+				if ( pair_ptr->rimg > system->pbc->cutoff ) continue;
+				//check if fh is non-zero
+				if ( atom_ptr->polarizability == 0 || pair_ptr->atom->polarizability == 0 || 
+					atom_ptr->omega == 0 || pair_ptr->atom->omega == 0 ) continue; //no vdw energy
+
+				//calculate two-body energies
+				E[0]=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg-h-h); //smaller r
+				E[1]=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg-h); 
+				E[2]=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg); //current r
+				E[3]=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg+h); //larger r
+				E[4]=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg+h+h);
+
+				//derivatives (Numerical Methods Using Matlab 4E 2004 Mathews/Fink 6.2)
+				dv = (E[3]-E[1])/(2.0*h);
+				d2v = (E[3]-2.0*E[2]+E[1])/(h*h);
+				d3v = (E[4]-2*E[3]+2*E[1]-E[0])/(2*pow(h,3.0));
+				d4v = (E[4]-4*E[3]+6*E[2]-4*E[1]+E[0])/pow(h,4.0);
+				
+				// reduced mass
+				rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
+					((molecule_ptr->mass)+(pair_ptr->molecule->mass));
+
+				//2nd order correction
+				corr_single = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
+				//4th order correction
+				if ( system->feynman_hibbs_order >= 4 )
+					corr_single += pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0) /
+						(1152.0*pow(KB*system->temperature*rm, 2.0))) *
+						(15.0*dv/pow(pair_ptr->rimg, 3.0) + 4.0*d3v/pair_ptr->rimg + d4v);
+
+				corr += corr_single;
+			}
+		}
+	}
+
+	return corr;
+}
+
+//with damping
+double twobody(system_t * system) {
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	pair_t * pair_ptr;
+	double energy = 0;
+
+	//for each pair
+	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
+			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
+				//skip if frozen
+				if ( pair_ptr->frozen ) continue;
+				//skip if they belong to the same molecule
+				if ( molecule_ptr == pair_ptr->molecule ) continue;
+				//skip if distance is greater than cutoff
+				if ( pair_ptr->rimg > system->pbc->cutoff ) continue;
+				//check if fh is non-zero
+				if ( atom_ptr->polarizability == 0 || pair_ptr->atom->polarizability == 0 || 
+					atom_ptr->omega == 0 || pair_ptr->atom->omega == 0 ) continue; //no vdw energy
+
+				//calculate two-body energies
+				energy+=e2body(system,atom_ptr,pair_ptr,pair_ptr->rimg);
+			}
+		}
+	}
+
+	return energy;
+}
+		
 
 //returns interaction VDW energy
 double vdw(system_t *system) {

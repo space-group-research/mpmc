@@ -407,7 +407,7 @@ double e2body(system_t * system, atom_t * atom, pair_t * pair, double r) {
 	energy -= 3*wtanh(pair->atom->omega, system->temperature);
 
 	free(eigvals);
-	free(M);
+	free_mtx(M);
 
   return energy * au2invsec * halfHBAR;
 }

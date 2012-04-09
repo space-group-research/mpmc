@@ -415,12 +415,6 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "pbc_cutoff"))
 		{ if ( safe_atof(token[1],&(system->pbc->cutoff)) ) return 1; }
 
-	else if(!strcasecmp(token[0], "vdw_fh_cap")) {
-		{ if ( safe_atof(token[1],&(system->VDW_FH_cap)) ) return 1; }
-		if ( system->VDW_FH_cap > 0 ) 
-			system->VDW_FH_cap = -system->VDW_FH_cap;
-	}
-
 //polar options
 	else if(!strcasecmp(token[0], "polar_ewald")) {
 		if(!strcasecmp(token[1],"on"))
@@ -832,9 +826,6 @@ void setdefaults(system_t * system) {
 	/* default rd LRC flag */
 	system->rd_lrc = 1;
 
-	/*default vdw feynman-hibbs correction cap*/
-	system->VDW_FH_cap = -1000;
-
 	// Initialize fit_input_list to reflect an empty list
 	system->fit_input_list.next       = 0;
 	system->fit_input_list.data.count = 0;
@@ -1106,10 +1097,13 @@ int check_system(system_t *system) {
 					output("INPUT: Feynman-Hibbs order unspecified - defaulting to h^2\n");
 					system->feynman_hibbs_order = 2;
 					break;
-
 			}
 		}
-
+		//if using polarvdw and FH, cavity_autoreject_absolute must be on (otherwise shit blows up)
+		if ( (system->polarvdw) && !(system->cavity_autoreject_absolute) ) {
+			error("INPUT: cavity_autoreject_absolute must be used with polarvdw + Feynman Hibbs.\n");
+			return(-1);
+		}
 	}
 
 #ifdef QM_ROTATION
@@ -1808,11 +1802,11 @@ molecule_t *read_molecules(system_t *system) {
 			//it's an unneeded parameter, complicates the mixing rules and can break LRC
 			if ( system->polarvdw ){
 				if ( current_epsilon == 0 && current_sigma != 0 ) { //otherwise we break LRC
-					fprintf(stderr,"INPUT: for sites with epsilon == 0, we require sigma == 0.\n");
+					fprintf(stderr,"INPUT: site %d has epsilon == 0. setting sigma = 0.\n", atom_ptr->id);
 					atom_ptr->sigma=0;
 				}
 				if ( current_epsilon != 0 && current_sigma != 1 ) { //keeps mixing rules simple
-					fprintf(stderr,"INPUT: for sites with epsilon != 0, we require sigma == 1.\n");
+					fprintf(stderr,"INPUT: site has epsilon != 0, but sigma != 1.\n");
 					return(NULL);
 				}	
 			}

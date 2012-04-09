@@ -6,8 +6,6 @@ Department of Chemistry
 University of South Florida
 
 */
-#define VERSION "0.11\n\tMC insertions selected from a separate linked list."
-
 
 int rank, size;
 
@@ -35,15 +33,13 @@ double get_rand(void) {
 }
 
 int main(int argc, char **argv) {
-        printf( "MPMC Version id: %s\n", VERSION );
-        int i, j, N;
+	printf("MPMC 2012 GPL\n");
+	int i, j, N;
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	char linebuf[MAXLINE];
 	char input_file[MAXLINE];
 	system_t *system;
-	
-
 
 	/* set the default rank */
 	rank = 0; size = 1;
@@ -61,9 +57,11 @@ int main(int argc, char **argv) {
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	sprintf(linebuf, "MAIN: processes started on %d cores\n", size);
 	output(linebuf);
 #endif /* MPI */
+
+	printf("For version info, use \"svn info\"\n" );
+	sprintf(linebuf, "MAIN: processes started on %d cores\n", size);
 
 	/* get the config file arg */
 	strcpy(input_file, argv[1]);

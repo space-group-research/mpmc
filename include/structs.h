@@ -457,7 +457,6 @@ typedef struct _system {
 	int polarization, polarizability_tensor;
 	int polarvdw; //for linear algebra VDW
 	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo, polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter;
-	double VDW_FH_cap; //cap FH so it doesn't blow up
 	double polar_gamma;
 	double polar_damp, field_damp, polar_precision;
 	int quantum_rotation, quantum_rotation_hindered;

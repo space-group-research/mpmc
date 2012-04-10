@@ -62,32 +62,23 @@ void thole_field_nopbc(system_t *system) {
 					else
 						damping = 1.0 - exp(-pow(r/system->field_damp, 3.0));
 
-					/* include self-induction if keyword polar_self is set */
-					if((r < system->pbc->cutoff) && (r != 0.)) {
+					if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
 
 						if(pair_ptr->es_excluded) {
-
-							if(system->polar_self) {
-
+							if(system->polar_self) { //self-induction
 								for(p = 0; p < 3; p++) {
 									atom_ptr->ef_static_self[p] += damping*pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
 									pair_ptr->atom->ef_static_self[p] -= damping*atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
 								}
-
-
 							}
-
 						} else {
-
 							for(p = 0; p < 3; p++) {
 								atom_ptr->ef_static[p] += damping*pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
 								pair_ptr->atom->ef_static[p] -= damping*atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
 							}
-
 						}
 
 					} /* cutoff */
-
 
 				} /* frozen */
 
@@ -95,7 +86,7 @@ void thole_field_nopbc(system_t *system) {
 		} /* atom */
 	} /* molecule */
 
-
+	return;
 }
 
 
@@ -116,25 +107,27 @@ void thole_field_real(system_t *system) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
 				if(!pair_ptr->frozen) {
-
 					if(!pair_ptr->es_excluded) {
 
-						field_value = erfc(alpha*pair_ptr->rimg) + 2.0*alpha*pair_ptr->rimg*exp(-alpha*alpha*pair_ptr->rimg*pair_ptr->rimg)/sqrt(M_PI);
+						field_value = erfc(alpha*pair_ptr->rimg) + 
+							2.0*alpha*pair_ptr->rimg * 
+							exp(-alpha*alpha*pair_ptr->rimg*pair_ptr->rimg)/sqrt(M_PI);
 
 						for(p = 0; p < 3; p++) {
-							atom_ptr->ef_static[p] += pair_ptr->atom->charge*field_value*pair_ptr->dimg[p]/(pair_ptr->rimg*pair_ptr->rimg*pair_ptr->rimg);
-							pair_ptr->atom->ef_static[p] -= atom_ptr->charge*field_value*pair_ptr->dimg[p]/(pair_ptr->rimg*pair_ptr->rimg*pair_ptr->rimg);
+							atom_ptr->ef_static[p] += pair_ptr->atom->charge*field_value*pair_ptr->dimg[p] / 
+								(pair_ptr->rimg*pair_ptr->rimg*pair_ptr->rimg);
+							pair_ptr->atom->ef_static[p] -= atom_ptr->charge*field_value*pair_ptr->dimg[p] /
+								(pair_ptr->rimg*pair_ptr->rimg*pair_ptr->rimg);
 						}
 
 					}
-
 				} /* !frozen */
 
 			} /* pair */
 		} /* atom */
 	} /* molecule */
 
-
+	return;
 }
 
 

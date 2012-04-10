@@ -73,8 +73,9 @@ void revert_volume_change( system_t * system ) {
 	//scale molecule positions
 	for ( m = system->molecules; m; m = m->next ) {
 		for ( i=0; i<3; i++ ) {
-			old_com[i] = m->com[i]; //molecule ptr's com will be udated during pairs routine
+			old_com[i] = m->com[i]; //molecule ptr's com will ned to be updated since this is a revert (no energy call following)
 			new_com[i] = m->com[i] * basis_scale_factor;
+			m->com[i] = new_com[i];
 			delta_pos[i] = new_com[i] - old_com[i];
 		}
 		for ( a = m->atoms; a; a=a->next ) { //calculate new atomic positions based on new com

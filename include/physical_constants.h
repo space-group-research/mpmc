@@ -78,3 +78,4 @@
 #define QUANTUM_ROTATION_SUM			10
 
 #define FEYNMAN_KLEINERT_TOLERANCE              1.0e-12                 /* tolerance in A^2 */
+#define SMALL_dR																1.0e-12 /*tolerance in r and r->img when comparisons are made for system->pbc->cutoff and similar boxsize issues*/

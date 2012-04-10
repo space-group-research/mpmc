@@ -9,6 +9,11 @@ University of South Florida
 
 #include <mc.h>
 
+double round_toward_zero ( double a) {
+	if (a>0.) return floor(a);
+	if (a<0.) return ceil(a);
+	if (a==0.) return 0.0;
+}
 
 /* flag all pairs to have their energy calculated */
 /* needs to be called at simulation start, or can */
@@ -99,21 +104,18 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 	double img[3];
 	double d[3], r, r2;
 	double di[3], ri, ri2;
+	double rnd;
 
 	/* get the real displacement */
 	pair_ptr->recalculate_energy = 0;	/* reset the recalculate flag */
 	for(p = 0; p < 3; p++) {
 		d[p] = atom_i->pos[p] - atom_j->pos[p];
-//	pair_ptr->d[p] = d[p]; //we no longer store this
 
 		/* this pair changed and so it will have it's energy recalculated */
 		if( d[p] != pair_ptr->d_prev[p]) {
-
 			pair_ptr->recalculate_energy = 1;
 			pair_ptr->d_prev[p] = d[p]; /* reset */
-
 		}
-
 	}
 
 	/* matrix multiply with the inverse basis and round */
@@ -121,7 +123,13 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 		for(q = 0, img[p] = 0; q < 3; q++) {
 			img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
 		}
-		img[p] = rint(img[p]);
+		//img[p] = rint(img[p]);
+		//this is fine unless we're exactly at 0.5 +/- rounding error (i.e. solids)
+		//in the case, we need to round in a consistent manner
+		if ( rint(img[p]+SMALL_dR) != rint(img[p]-SMALL_dR) ) //if adding a small dr would reverse the direction of rounding
+			rnd = round_toward_zero(img[p]); //we force rounding toward zero
+		else rnd = rint(img[p]); //round like normal
+		img[p] = rnd;
 	}
 
 	/* matrix multiply to project back into our basis */
@@ -151,17 +159,6 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 		if ( isnan(di[p]) != 0 ) pair_ptr->dimg[p] = d[p];
 		else pair_ptr->dimg[p] = di[p];
 	}
-
-	/* store the 3rd and 5th powers for A matrix stuff */
-//	if(system->polarization) {
-		//pair_ptr->r2 = r*r;
-		//pair_ptr->r3 = r*r*r;
-		//pair_ptr->r5 = pair_ptr->r3*r*r;
-		//pair_ptr->r2img = ri*ri;
-		//pair_ptr->r3img = ri*ri*ri;
-		//pair_ptr->r5img = pair_ptr->r3img*ri*ri;
-//	}
-
 
 }
 

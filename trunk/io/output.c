@@ -578,7 +578,7 @@ int write_averages(system_t *system) {
 	//error wasn't calculated correctly, nor is it simple to calculate
 	// qst, heat_cap and compress, are based on the variance of other quantities. calculating the error
 	// of a variance is either non-trivial (try it!), or I'm an idiot.
-	if(averages->qst > 0.0) {
+	if((averages->qst > 0.0) && isfinite(averages->qst)) {
 //		if(averages->qst_error > MAXDOUBLE)	/* lack of error bar, avoid nan from sqrt(-small) */
 			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
 //		else
@@ -589,18 +589,18 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
 
 	//error wasn't calculated correctly, nor is it simple to calculate (see qst above)
-	if(averages->heat_capacity > 0.0) {
+	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity))) {
 //		if(averages->heat_capacity_error > MAXDOUBLE)
 			printf("OUTPUT: heat capacity = %.3f +- kJ/mol K\n", averages->heat_capacity);
 //		else
 	//		printf("OUTPUT: heat capacity = %.3f +- %.3f kJ/mol K\n", averages->heat_capacity, 0.5*averages->heat_capacity_error);
 	}
 
-	if(averages->compressibility > 0.0) {
+	if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
 //error wasn't calculated correctly, nor is it simple to calculate (see qst above)
 //		if(averages->compressibility_error > MAXDOUBLE) {
-			printf("OUTPUT: compressibility = %.6f +- atm^-1\n", averages->compressibility);
-			printf("OUTPUT: bulk modulus = %.6f +- GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
+			printf("OUTPUT: compressibility = %.6f atm^-1\n", averages->compressibility);
+			printf("OUTPUT: bulk modulus = %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
 //		} else {
 //			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, 0.5*averages->compressibility_error);
 //			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility,  ATM2PASCALS*1.0e-9/(0.5*averages->compressibility_error));

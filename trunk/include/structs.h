@@ -14,6 +14,7 @@ typedef struct _pair {
 	double lrc;
 //	double charge;
 //	double polarizability;
+	double last_volume; //what was the volume when we last calculated LRC? needed for NPT
 	double epsilon;
 	double sigma;
 //	double gwp_alpha;

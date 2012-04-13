@@ -1534,9 +1534,7 @@ int check_system(system_t *system) {
 		if(system->insert_input) {
 			sprintf( linebuf, "INPUT: inserted molecules will be selected from: %s\n", system->insert_input );
 			output( linebuf );
-		} else {
-			output( "INPUT: inserted molecules will be selected from the restart file.\n" );
-		}
+		} 
 
 		if(system->polarization && !system->dipole_output) {
 			error("INPUT: dipole file unspecified; writing to /dev/null\n");

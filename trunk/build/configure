@@ -213,11 +213,11 @@ case "$HOSTNAME" in
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
-				CFLAGS="-g3 -O3 -lm"
+				CFLAGS="-g0 -O3 -lm"
 			;;
 			"pgi")
 				CC="pgcc"
-				CFLAGS="-g -O3 -fastsse -Mipa=fast,inline,libinline"
+				CFLAGS="-g0 -O3 -fastsse -Mipa=fast,inline,libinline"
 			;;
 			"icc")
 				CC="icc"

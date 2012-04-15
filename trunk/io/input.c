@@ -209,7 +209,13 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_ewald = 0;
 		else return 1;
 	}
-
+	else if (!strcasecmp(token[0], "polar_wolf")) {
+		if (!strcasecmp(token[1], "on"))
+			system->polar_wolf = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->polar_wolf = 0;
+		else return 1;
+	}
 	/*set total energy for NVE*/
 	else if(!strcasecmp(token[0], "total_energy"))
 		{ if ( safe_atof(token[1],&(system->total_energy)) ) return 1; }
@@ -400,6 +406,14 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 	
+	else if(!strcasecmp(token[0], "es_wolf")) {
+		if(!strcasecmp(token[1],"on"))
+			system->es_wolf = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->es_wolf = 0;
+		else return 1;
+	}	
+
 	else if(!strcasecmp(token[0], "scale_charge"))
 		{ if ( safe_atof(token[1],&(system->scale_charge)) ) return 1; }
 

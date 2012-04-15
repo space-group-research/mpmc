@@ -209,6 +209,7 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_ewald = 0;
 		else return 1;
 	}
+	//polar wolf shiz
 	else if (!strcasecmp(token[0], "polar_wolf")) {
 		if (!strcasecmp(token[1], "on"))
 			system->polar_wolf = 1;
@@ -216,6 +217,11 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_wolf = 0;
 		else return 1;
 	}
+	else if(!strcasecmp(token[0], "polar_wolf_damp")) 
+		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_wolf_alpha"))  //same as polar_wolf_damp
+		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
+
 	/*set total energy for NVE*/
 	else if(!strcasecmp(token[0], "total_energy"))
 		{ if ( safe_atof(token[1],&(system->total_energy)) ) return 1; }
@@ -1047,7 +1053,7 @@ int check_system(system_t *system) {
 	}
 
 
-	if(system->wolf) output("INPUT: Wolf summation active\n");
+	if(system->wolf) output("INPUT: ES Wolf summation active\n");
 
 	if(system->rd_lrc)
 		output("INPUT: rd long-range corrections are ON\n");
@@ -1232,6 +1238,17 @@ int check_system(system_t *system) {
 		if(!system->polar_iterative && system->polar_zodid) {
 			error("INPUT: ZODID and matrix inversion cannot both be set!\n");
 			return(-1);
+		}
+
+		if(system->polar_wolf) {
+			output("INPUT: Polar wolf activated. Thole field calculated using wolf method.\n");
+			if ( (system->polar_wolf_alpha >= 0 ) && ( system->polar_wolf_alpha <= 1 ) ) {
+				sprintf(linebuf,"INPUT: Polar wolf damping set to %lf. (0 is default)\n", system->polar_wolf_alpha);
+				output(linebuf);
+			} else {
+				error("INPUT: 1 >= polar_wolf_alpha >= 0 is required.\n");
+				return(-1);
+			}
 		}
 
 		if(system->damp_type == DAMPING_LINEAR)

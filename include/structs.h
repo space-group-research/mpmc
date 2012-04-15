@@ -1,4 +1,7 @@
 
+//I wish someone would go through this file and clean it up a bit. Maybe I will eventually
+//-- kmclaugh 2012/04/15
+
 /* complex value */
 typedef struct _complex_t {
 
@@ -457,9 +460,9 @@ typedef struct _system {
 	int ewald_kmax;
 	int polarization, polarizability_tensor;
 	int polarvdw; //for linear algebra VDW
-	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo, polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf;
-	double polar_gamma;
-	double polar_damp, field_damp, polar_precision;
+	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo;
+	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf;
+	double polar_wolf_alpha, polar_gamma, polar_damp, field_damp, polar_precision;
 	int quantum_rotation, quantum_rotation_hindered;
 	double quantum_rotation_B;
 	double quantum_rotation_hindered_barrier;

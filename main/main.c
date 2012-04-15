@@ -33,7 +33,7 @@ double get_rand(void) {
 }
 
 int main(int argc, char **argv) {
-	printf("MPMC 2012 GPL\n");
+	printf("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
 	int i, j, N;
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;

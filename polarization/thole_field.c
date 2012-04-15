@@ -97,16 +97,14 @@ void thole_field_wolf(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr;
-	int p;
-	double r, rr;
+	int p; //dimensionality
+	double r, rr; //r and 1/r (reciprocal of r)
 	double R = system->pbc->cutoff;
 	double rR = 1./R;
-
-//commented out stuff is for using damping alpha!=0. i will get this integrated later.
-
-	//double err, erR, a;
-	//a=system->polar_wolf_alpha
-	//erR=erfc(a*R);
+	//used for polar_wolf_alpha (aka polar_wolf_damp)
+	double a = system->polar_wolf_alpha;
+	double err, erR; //complementary error functions
+	erR=erfc(a*R);
 
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
@@ -121,13 +119,17 @@ void thole_field_wolf(system_t *system) {
 				if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
 					for ( p=0; p<3; p++ ) { 
 						//see JCP 124 (234104)
-						atom_ptr->ef_static[p] += (pair_ptr->atom->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
-						pair_ptr->atom->ef_static[p] -= (atom_ptr->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
-						//err=erfc(a*r);
-						//atom_ptr->ef_static[p] += pair_ptr->atom->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
-						//	(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
-						//pair_ptr->atom->ef_static[p] -= atom_ptr->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
-						//	(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
+						if ( a == 0 ) {
+							atom_ptr->ef_static[p] += (pair_ptr->atom->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
+							pair_ptr->atom->ef_static[p] -= (atom_ptr->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
+						} else {
+							err=erfc(a*r);
+							atom_ptr->ef_static[p] += pair_ptr->atom->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
+								(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
+							pair_ptr->atom->ef_static[p] -= atom_ptr->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
+								(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
+						}
+						
 					}
 				}
 

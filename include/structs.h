@@ -423,7 +423,7 @@ typedef struct _system {
 
 	int ensemble;
 	int gwp;
-	int wolf;
+	int wolf, es_wolf;
 	int surf_qshift_on;
 	int surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;
 	int surf_weight_constant_on;
@@ -457,7 +457,7 @@ typedef struct _system {
 	int ewald_kmax;
 	int polarization, polarizability_tensor;
 	int polarvdw; //for linear algebra VDW
-	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo, polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter;
+	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo, polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf;
 	double polar_gamma;
 	double polar_damp, field_damp, polar_precision;
 	int quantum_rotation, quantum_rotation_hindered;

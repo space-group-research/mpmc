@@ -15,17 +15,49 @@ double coulombic(system_t *system) {
 	double real, reciprocal;
 	double potential;
 
-	/* construct the relevant ewald terms */
-	real = coulombic_real(system);
-	reciprocal = coulombic_reciprocal(system);
-
-	/* return the total electrostatic energy */
-	potential = real + reciprocal;
+	if ( system->es_wolf )
+		potential = coulombic_wolf(system);
+	else {
+		/* construct the relevant ewald terms */
+		real = coulombic_real(system);
+		reciprocal = coulombic_reciprocal(system);
+		/* return the total electrostatic energy */
+		potential = real + reciprocal;
+	}
 
 	return(potential);
 
 }
 
+/* if system->es_wolf*/
+double coulombic_wolf(system_t *system) {
+	molecule_t *mole;
+	atom_t *atom;
+	pair_t *pair;
+	double r, rr, R, rR;
+	double a=0.2;
+	double pot=0;
+	double rsqrtpi=1./sqrt(M_PI);
+	double err, erR;
+
+	R=system->pbc->cutoff;
+	rR=1./R;
+
+	for ( mole=system->molecules; mole; mole=mole->next )
+		for ( atom=mole->atoms; atom; atom=atom->next ) 
+			for ( pair=atom->pairs; pair; pair=pair->next ) {
+				if(!((r - SMALL_dR > system->pbc->cutoff) || pair->es_excluded)) {
+					r=pair->rimg;
+					rr=1./r;
+					err=erfc(a*r);
+					erR=erfc(a*R);
+
+					pot += atom->charge * pair->atom->charge *
+							(err*rr-erR*rR);
+				}
+			}
+	return pot;
+}
 
 /* fourier space sum */
 double coulombic_reciprocal(system_t *system) {
@@ -156,7 +188,7 @@ double coulombic_real(system_t *system) {
 					if(!pair_ptr->frozen) {
 
 						r = pair_ptr->rimg;
-						if(!((r > system->pbc->cutoff) || pair_ptr->es_excluded)) {	/* unit cell part */
+						if(!((r - SMALL_dR > system->pbc->cutoff) || pair_ptr->es_excluded)) {	/* unit cell part */
 
 							erfc_term = erfc(alpha*r);
 							gaussian_term = exp(-alpha*alpha*r*r);

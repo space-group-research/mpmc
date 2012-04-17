@@ -133,6 +133,7 @@ double lj(system_t *system) {
 								}
 
 							if(pair_ptr->attractive_only) term12 = 0;
+								else if ( system->polarvdw ) term12 = pow(sigma_over_r, 12.0);
 								else term12 = pow(term6, 2.0);
 
 							potential_classical = 4.0*pair_ptr->epsilon*(term12 - term6);
@@ -196,6 +197,7 @@ double lj_nopbc(system_t * system) {
 						else term6 = pow(sigma_over_r, 6.0);
 
 					if(pair_ptr->attractive_only) term12 = 0;
+						else if (system->polarvdw) term12 = pow(sigma_over_r,12.0);
 						else term12 = pow(term6, 2.0);
 
 					potential += 4.0*pair_ptr->epsilon*(term12 - term6);

@@ -412,13 +412,12 @@ int mc(system_t *system) {
 		}
 
 		close_files(system);
-
-		free(observables_mpi);
-		free(avg_nodestats_mpi);
-
 		free(rcv_strct);
 
 	}
+
+		free(observables_mpi);
+		free(avg_nodestats_mpi);
 
 	return(0);
 

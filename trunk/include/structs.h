@@ -313,6 +313,7 @@ typedef struct _system {
 	//simulated annealing
 	int simulated_annealing;
 	double simulated_annealing_schedule;
+	double simulated_annealing_target;
 
 	//force-field options
 	int rd_only, rd_anharmonic;

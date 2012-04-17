@@ -511,6 +511,10 @@ int write_performance(int i, system_t *system) {
 		output(linebuf);
 		sprintf(linebuf, "OUTPUT: %f sec/step, ETA = %.3f hrs\n", sec_step, sec_step*(system->numsteps - i)/3600.0);
 		output(linebuf);
+		if ( system->simulated_annealing) {
+			sprintf(linebuf, "OUTPUT: Current temperature = %.5f\n", system->temperature);
+			output(linebuf);
+		}
 
 	}
 
@@ -648,6 +652,7 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: temperature = %.3f +- %.3f K\n", 
 			averages->temperature, 0.5*averages->temperature);
 	}
+
 
 	printf("OUTPUT: N = %.3f +- %.3f molecules\n", averages->N, 0.5*averages->N_error);
 	printf("OUTPUT: density = %.5f +- %.5f g/cm^3\n", averages->density, 0.5*averages->density_error);

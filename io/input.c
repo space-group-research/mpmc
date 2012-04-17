@@ -412,14 +412,6 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 	
-	else if(!strcasecmp(token[0], "es_wolf")) {
-		if(!strcasecmp(token[1],"on"))
-			system->es_wolf = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->es_wolf = 0;
-		else return 1;
-	}	
-
 	else if(!strcasecmp(token[0], "scale_charge"))
 		{ if ( safe_atof(token[1],&(system->scale_charge)) ) return 1; }
 
@@ -2184,6 +2176,11 @@ system_t *setup_system(char *input_file) {
 	if(system->read_pdb_box_on)
 		read_pdb_box(system);
 
+//no better place to put this (too many conflicts
+	if ((system->ewald_alpha != EWALD_ALPHA) && (system->ensemble == ENSEMBLE_NPT)) {
+		printf("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
+	}	
+
 	/* calculate things related to the periodic boundary conditions */
 	pbc(system);
 		
@@ -2216,11 +2213,6 @@ system_t *setup_system(char *input_file) {
 	/* allocate the necessary pairs */
 	setup_pairs(system->molecules);
 	output("INPUT: finished allocating pair lists\n");
-
-//no better place to put this (too many conflicts
-	if ((system->ewald_alpha != EWALD_ALPHA) && (system->ensemble == ENSEMBLE_NPT)) {
-		printf("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
-	}	
 
 	/* calculate the periodic boundary conditions */
 	pbc(system);

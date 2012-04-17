@@ -31,9 +31,14 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 
 			/* modified metropolis function */
 			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
-				system->nodestats->boltzmann_factor = (system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED/(system->temperature*system->observables->N))*exp(-delta_energy/system->temperature);
+				system->nodestats->boltzmann_factor = 
+					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED / 
+					(system->temperature*system->observables->N))*exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
-				system->nodestats->boltzmann_factor = (system->temperature*(system->observables->N + 1))/(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED)*exp(-delta_energy/system->temperature);
+				system->nodestats->boltzmann_factor = 
+					(system->temperature*(system->observables->N + 1)) / 
+					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED) *
+					exp(-delta_energy/system->temperature);
 			} else {							/* DISPLACE */
 				system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
 			}
@@ -41,9 +46,13 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 		} else {
 
 			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
-				system->nodestats->boltzmann_factor = (system->pbc->volume*fugacity*ATM2REDUCED/(system->temperature*system->observables->N))*exp(-delta_energy/system->temperature);
+				system->nodestats->boltzmann_factor = 
+					(system->pbc->volume*fugacity*ATM2REDUCED/(system->temperature*system->observables->N)) *
+					exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
-				system->nodestats->boltzmann_factor = (system->temperature*(system->observables->N + 1))/(system->pbc->volume*fugacity*ATM2REDUCED)*exp(-delta_energy/system->temperature);
+				system->nodestats->boltzmann_factor = 
+					(system->temperature*(system->observables->N + 1))/(system->pbc->volume*fugacity*ATM2REDUCED) *
+					exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_DISPLACE) {	/* DISPLACE */
 				system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_SPINFLIP) {	/* SPINFLIP */
@@ -254,18 +263,19 @@ int mc(system_t *system) {
 
 	/* if root, open necessary output files */
 	if(!rank) {
-
 		output("MC: initial values:\n");
 		write_averages(system);
 		if(open_files(system) < 0) {
 			error("MC: could not open files\n");
 			return(-1);
 		}
-
 	}
+	/* all nodes need a trajectory file */
+	if (open_traj_file(system) < 0)
+			error("MC: could not open trajectory files\n");
 
 	if ( system->ensemble == ENSEMBLE_TE ) //per Chris's request that energy_output be written for TE runs.
-		write_observables(system->file_pointers.fp_energy, system->observables);
+		write_observables(system->file_pointers.fp_energy, system, system->observables);
 
 	/* save the initial state */
 	checkpoint(system);
@@ -322,8 +332,6 @@ int mc(system_t *system) {
 		/* do this every correlation time, and at the very end */
 		if(!(system->step % system->corrtime) || (system->step == system->numsteps)) {
 
-
-
 			/* copy observables and avgs to the mpi send buffer */
 			/* histogram array is at the end of the message */
 			if(system->calc_hist) {
@@ -331,12 +339,18 @@ int mc(system_t *system) {
 				population_histogram(system);
 			}
 
+			/*write trajectory files for each node*/
+			if(system->file_pointers.fp_traj) 
+				write_states(system->file_pointers.fp_traj, system);
+
+
 			/* zero the send buffer */
 			memset(snd_strct, 0, msgsize);
 			memcpy(snd_strct, system->observables, sizeof(observables_t));
                         memcpy((snd_strct + sizeof(observables_t)), system->avg_nodestats, sizeof(avg_nodestats_t));
 			if(system->calc_hist)
-				mpi_copy_histogram_to_sendbuffer(snd_strct + sizeof(observables_t) + sizeof(avg_nodestats_t), system->grids->histogram->grid, system);
+				mpi_copy_histogram_to_sendbuffer(snd_strct + sizeof(observables_t) + sizeof(avg_nodestats_t), 
+					system->grids->histogram->grid, system);
 			if(!rank) memset(rcv_strct, 0, size*msgsize);
 
 #ifdef MPI
@@ -347,21 +361,20 @@ int mc(system_t *system) {
 			/* head node collects all observables and averages */
 			if(!rank) {
 				for(j = 0; j < size; j++) {
-				
 					/* copy from the mpi buffer */
 					memcpy(observables_mpi, rcv_strct + j*msgsize, sizeof(observables_t));
 					memcpy(avg_nodestats_mpi, rcv_strct + j*msgsize + sizeof(observables_t), sizeof(avg_nodestats_t));
 					if(system->calc_hist)
-						mpi_copy_rcv_histogram_to_data(rcv_strct + j*msgsize + sizeof(observables_t) + sizeof(avg_nodestats_t), system->grids->histogram->grid, system);
-
+						mpi_copy_rcv_histogram_to_data(rcv_strct + j*msgsize + sizeof(observables_t) 
+							+ sizeof(avg_nodestats_t), system->grids->histogram->grid, system);
 					/* collect the averages */
 					update_root_averages(system, observables_mpi, avg_nodestats_mpi, system->avg_observables);
 					if(system->calc_hist) update_root_histogram(system);
-					if(system->file_pointers.fp_energy) write_observables(system->file_pointers.fp_energy, observables_mpi);
+					if(system->file_pointers.fp_energy) write_observables(system->file_pointers.fp_energy, system, observables_mpi);
 
 				}
-				/* XXX - this needs to be fixed, currently only writing the root node's states */
-				if(system->file_pointers.fp_traj) write_states(system->file_pointers.fp_traj, system->molecules);
+			//	/* XXX - this needs to be fixed, currently only writing the root node's states */
+			//	if(system->file_pointers.fp_traj) write_states(system->file_pointers.fp_traj, system);
 
 				/* write the averages to stdout */
 				if(system->file_pointers.fp_histogram)

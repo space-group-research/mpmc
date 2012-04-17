@@ -63,27 +63,17 @@ void update_root_averages(system_t *, observables_t *, avg_nodestats_t *, avg_ob
 int write_performance(int, system_t *);
 int write_averages(system_t *);
 int write_molecules(system_t *, char *);
-void write_observables(FILE *, observables_t *);
+void write_observables(FILE *, system_t *, observables_t *);
 void write_dipole(FILE *, molecule_t *);
 void write_field(FILE *, molecule_t *);
-void write_states(FILE *, molecule_t *);
+#ifdef MPI
+	void write_states_MPI(MPI_File *, system_t *);
+#else
+	void write_states(FILE *, system_t *);
+#endif
 int wrapall(molecule_t *, pbc_t *);
 void spectre_wrapall(system_t *);
-double co2_fugacity(double, double);
-double ch4_fugacity(double, double);
-double ch4_fugacity_PR(double, double);
-double ch4_fugacity_back(double, double);
-double ch4_comp_back(double, double);
-double n2_fugacity(double, double);
-double n2_fugacity_PR(double, double);
-double n2_fugacity_back(double, double);
-double n2_comp_back(double, double);
-double n2_fugacity_zhou(double, double);
-double h2_fugacity(double, double);
-double h2_fugacity_shaw(double, double);
-double h2_fugacity_zhou(double, double);
-double h2_fugacity_back(double, double);
-double h2_comp_back(double, double);
+int open_traj_files(system_t *);
 int open_files(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles( system_t *, int );
@@ -236,3 +226,4 @@ double n2_comp_back(double, double);
 double n2_fugacity_PR(double, double);
 double n2_fugacity_zhou(double, double);
 double co2_fugacity(double, double);
+

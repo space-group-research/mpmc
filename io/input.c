@@ -268,6 +268,9 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "simulated_annealing_schedule")) 
 		{ if ( safe_atof(token[1],&(system->simulated_annealing_schedule)) ) return 1; }
 
+	else if(!strcasecmp(token[0], "simulated_annealing_target")) 
+		{ if ( safe_atof(token[1],&(system->simulated_annealing_target)) ) return 1; }
+
 	else if(!strcasecmp(token[0], "pressure")) 
 		{ if ( safe_atof(token[1],&(system->pressure)) ) return 1; }
 
@@ -1167,18 +1170,22 @@ int check_system(system_t *system) {
 
 	if(system->simulated_annealing) {
 
-		if(system->ensemble != ENSEMBLE_NVT) {
-			error("INPUT: Simulated annealing only valid for canonical ensemble\n");
-			return(-1);
-		} else {
-			output("INPUT: Simulated annealing active\n");
-		}
+		//there used to be a check that we were NVT. I don't believe it's neccessary. --kmclaugh 2012/04/17
+		output("INPUT: Simulated annealing active\n");
 
 		if((system->simulated_annealing_schedule < 0.0) || (system->simulated_annealing_schedule > 1.0)) {
 			error("INPUT: invalid simulated annealing temperature schedule specified\n");
 			return(-1);
 		} else {
 			sprintf(linebuf, "INPUT: Simulated annealing temperature schedule = %.3f\n", system->simulated_annealing_schedule);
+			output(linebuf);
+		}
+
+		if(system->simulated_annealing_target < 0.0) {
+			error("INPUT: invalid simulated annealing target specified\n");
+			return(-1);
+		} else {
+			sprintf(linebuf, "INPUT: Simulated annealing target %lfK.", system->simulated_annealing_target);
 			output(linebuf);
 		}
 

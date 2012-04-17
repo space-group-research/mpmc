@@ -23,6 +23,75 @@ void output(char *msg) {
 
 }
 
+char * make_filename ( char * basename, int fileno ) {
+	size_t len = strlen(basename);
+	size_t outlen;
+	char * rval = NULL;
+	char START[MAXLINE], STOP[MAXLINE];
+	int i, j;
+
+	if ( ! strncmp("/dev/null",basename,9) ) {
+		rval = malloc(10*sizeof(char));
+		memnullcheck(rval,10*sizeof(char),134);
+		sprintf(rval,"/dev/null");
+		return rval;
+	}
+	else 
+	//check if the file has a three character extension
+		if ( len - 4 > 0 )
+			if ( basename[len-4] == '.' ) { //only check this if previous check passes so we don't have a memory fault
+				for ( i=0; i < len-4; i++ ) //format pre-extension
+					START[i]=basename[i];
+				START[i]='\0';
+				for ( i=len-4, j=0; i<len; i++, j++ ) //format extension
+					STOP[j]=basename[i];
+				STOP[j]='\0';
+				//set string length
+				outlen=strlen(START)+strlen(STOP)+7;
+				rval = malloc(outlen*sizeof(char));
+				memnullcheck(rval,outlen*sizeof(char),132);
+				//make filename
+				sprintf(rval,"%s-%05d%s", START, fileno, STOP);
+			}
+	//if rval is still NULL, then it's neither /dev/null nor has a proper 3-character file extension
+	//just add the number to the end
+	if ( rval == NULL ) {
+		outlen = len + 7;
+		rval = malloc(outlen*sizeof(char));
+		memnullcheck(rval,outlen*sizeof(char),133);
+		//make filename
+		sprintf(rval,"%s-%05d", basename, fileno);
+	}
+	
+	return rval;	
+}
+
+int open_traj_file( system_t * system ) {
+	char linebuf[MAXLINE];
+
+	if(system->traj_output) {
+#ifdef MPI /*each node will write it's own file*/
+		char * filename;
+		filename = make_filename(system->traj_output,rank);
+		system->file_pointers.fp_traj = fopen(filename, "w");
+		if(!system->file_pointers.fp_traj) {
+			sprintf(linebuf,"MC: could not open traj file [%d] for writing\n", rank);
+			error(linebuf);
+			return -1;
+		}
+		free(filename);
+#else
+		system->file_pointers.fp_traj = fopen(system->traj_output, "w");
+		if(!system->file_pointers.fp_traj) {
+			error("MC: could not open trajectory file for writing\n");
+			return -1;
+		}
+#endif /*MPI*/
+	}
+
+	return 0;
+}
+
 int open_files(system_t *system) {
 
 	if(system->energy_output) {
@@ -31,22 +100,8 @@ int open_files(system_t *system) {
 			error("MC: could not open energy file for writing\n");
 			return(-1);
 		}
-	//added for sanity
-#ifdef VDW
 		fprintf(system->file_pointers.fp_energy,
-			"#energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio #volume\n");
-#else
-		fprintf(system->file_pointers.fp_energy,
-			"#energy #coulombic #rd #polar #kinetic #temp #N #spin_ratio #volume\n");
-#endif
-	}
-
-	if(system->traj_output) {
-		system->file_pointers.fp_traj = fopen(system->traj_output, "w");
-		if(!system->file_pointers.fp_traj) {
-			error("MC: could not open trajectory file for writing\n");
-			return(-1);
-		}
+			"#step #energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio #volume\n");
 	}
 
 	if(system->dipole_output) {
@@ -87,12 +142,14 @@ int open_files(system_t *system) {
 
 void close_files(system_t *system) {
 
+	int i;
+
 	if(system->file_pointers.fp_energy) fclose(system->file_pointers.fp_energy);
-	if(system->file_pointers.fp_traj) fclose(system->file_pointers.fp_traj);
 	if(system->file_pointers.fp_dipole) fclose(system->file_pointers.fp_dipole);
 	if(system->file_pointers.fp_field) fclose(system->file_pointers.fp_field);
 	if(system->file_pointers.fp_histogram) fclose(system->file_pointers.fp_histogram);
 	if(system->file_pointers.fp_frozen) fclose(system->file_pointers.fp_frozen);
+	if(system->file_pointers.fp_traj) fclose(system->file_pointers.fp_traj);
 
 }
 
@@ -245,9 +302,7 @@ int write_molecules(system_t *system, char *filename) {
 			fprintf(fp, " %8.5f", atom_ptr->polarizability);
 			fprintf(fp, " %8.5f", atom_ptr->epsilon);
 			fprintf(fp, " %8.5f", atom_ptr->sigma);
-//#ifdef VDW
 			fprintf(fp, " %8.5f", atom_ptr->omega);
-//#endif
 			fprintf(fp, " %8.5f", atom_ptr->gwp_alpha);
 			fprintf(fp, "\n");
 
@@ -338,8 +393,9 @@ int write_molecules(system_t *system, char *filename) {
 
 }
 
-void write_states(FILE *fp, molecule_t *molecules) {
+void write_states(FILE *fp, system_t * system) {
 
+	molecule_t *molecules = system->molecules;
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	char linebuf[MAXLINE];
@@ -349,6 +405,9 @@ void write_states(FILE *fp, molecule_t *molecules) {
 	int atom_box, molecule_box, p, q;
 	int num_frozen_molecules, num_moveable_molecules;
 	int num_frozen_atoms, num_moveable_atoms;
+
+	//don't bother if we'd be writing to /dev/null
+	if ( ! strncmp("/dev/null",system->traj_output,9) ) return;
 
 	/* count the number of molecules, atoms, etc. */
 	num_frozen_molecules = 0, num_moveable_molecules = 0;
@@ -366,9 +425,18 @@ void write_states(FILE *fp, molecule_t *molecules) {
 		}
 
 	}
-	fprintf(fp, "REMARK total_molecules=%d, total_atoms=%d\n", (num_frozen_molecules + num_moveable_molecules), (num_frozen_atoms + num_moveable_atoms));
-	fprintf(fp, "REMARK frozen_molecules=%d, moveable_molecules=%d\n", num_frozen_molecules, num_moveable_molecules);
-	fprintf(fp, "REMARK frozen_atoms=%d, moveable_atoms=%d\n", num_frozen_atoms, num_moveable_atoms);
+
+	fprintf(fp, "REMARK step=%d\n", system->step);
+#ifdef MPI
+	fprintf(fp, "REMARK node=%d\n", rank);
+#endif
+
+	fprintf(fp, "REMARK total_molecules=%d, total_atoms=%d\n", 
+		(num_frozen_molecules + num_moveable_molecules), (num_frozen_atoms + num_moveable_atoms));
+	fprintf(fp, "REMARK frozen_molecules=%d, moveable_molecules=%d\n", 
+		num_frozen_molecules, num_moveable_molecules);
+	fprintf(fp, "REMARK frozen_atoms=%d, moveable_atoms=%d\n", 
+		num_frozen_atoms, num_moveable_atoms);
 
 	/* write pdb formatted states */
 	for(molecule_ptr = molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
@@ -397,18 +465,23 @@ void write_states(FILE *fp, molecule_t *molecules) {
 			fprintf(fp, " %8.5f", atom_ptr->polarizability);
 			fprintf(fp, " %8.5f", atom_ptr->epsilon);
 			fprintf(fp, " %8.5f", atom_ptr->sigma);
-//#ifdef VDW
 			fprintf(fp, " %8.5f", atom_ptr->omega);
-//#endif
 			fprintf(fp, " %8.5f", atom_ptr->gwp_alpha);
 			fprintf(fp, "\n");
 
 		}
 	}
 
+	/*write basis to the output file. needed for restarting NPT jobs, or whatever.*/
+	fprintf(fp, "REMARK BOX BASIS[0] = %20.14lf %20.14lf %20.14lf\n", 
+		system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
+	fprintf(fp, "REMARK BOX BASIS[1] = %20.14lf %20.14lf %20.14lf\n",
+		system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
+	fprintf(fp, "REMARK BOX BASIS[2] = %20.14lf %20.14lf %20.14lf\n", 
+		system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
+
 	fprintf(fp, "ENDMDL\n");
 	fflush(fp);
-
 
 }
 
@@ -448,13 +521,21 @@ int write_performance(int i, system_t *system) {
 
 }
 
-void write_observables(FILE *fp_energy, observables_t *observables) {
+void write_observables(FILE *fp_energy, system_t * system, observables_t * observables) {
 
-#ifdef VDW
-	fprintf(fp_energy, "%f %f %f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->vdw_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio, observables->volume);
-#else
-	fprintf(fp_energy, "%f %f %f %f %f %f %f %f %f\n", observables->energy, observables->coulombic_energy, observables->rd_energy, observables->polarization_energy, observables->kinetic_energy, observables->temperature, observables->N, observables->spin_ratio, observables->volume);
-#endif
+	fprintf(fp_energy, "%d %f %f %f %f %f %f %f %f %f %f", 
+		system->step,
+		observables->energy, 
+		observables->coulombic_energy, 
+		observables->rd_energy, 
+		observables->polarization_energy, 
+		observables->vdw_energy, 
+		observables->kinetic_energy, 
+		observables->temperature, 
+		observables->N, 
+		observables->spin_ratio, 
+		observables->volume);
+	fprintf(fp_energy, "\n");
 	fflush(fp_energy);
 
 }
@@ -468,18 +549,14 @@ void write_dipole(FILE *fp_dipole, molecule_t *molecules) {
 	double dipole[3];
 
 	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
 		for(p = 0; p < 3; p++) dipole[p] = 0;
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-
 			for(p = 0; p < 3; p++)
 				dipole[p] += atom_ptr->mu[p];
-
 		}
-
 		if(!molecule_ptr->frozen) fprintf(fp_dipole, "%f %f %f\n", dipole[0]/DEBYE2SKA, dipole[1]/DEBYE2SKA, dipole[2]/DEBYE2SKA);
 	}
-
+	return;
 }
 
 /* output the total molecular electrostatic field (in e/A) per line) */
@@ -491,18 +568,15 @@ void write_field(FILE *fp_field, molecule_t *molecules) {
 	double field[3];
 
 	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
 		for(p = 0; p < 3; p++) field[p] = 0;
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-
 			for(p = 0; p < 3; p++)
 				field[p] += atom_ptr->ef_static[p] + atom_ptr->ef_induced[p];
-
 		}
-
 		if(!molecule_ptr->frozen) fprintf(fp_field, "%f %f %f\n", field[0]/E2REDUCED, field[1]/E2REDUCED, field[2]/E2REDUCED);
 	}
 
+	return;
 }
 
 
@@ -517,7 +591,9 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: BF = %.3f +- %.3f\n", averages->boltzmann_factor, 0.5*averages->boltzmann_factor_error);
 
 	if(averages->acceptance_rate > 0.0) {
-		printf("OUTPUT: AR = %.3f (%.3f I/ %.3f R/ %.3f D", averages->acceptance_rate, averages->acceptance_rate_insert, averages->acceptance_rate_remove, averages->acceptance_rate_displace);
+		printf("OUTPUT: AR = %.3f (%.3f I/ %.3f R/ %.3f D", 
+			averages->acceptance_rate, averages->acceptance_rate_insert, 
+			averages->acceptance_rate_remove, averages->acceptance_rate_displace);
 		if(averages->acceptance_rate_adiabatic > 0.0) printf("/ %.3f A", averages->acceptance_rate_adiabatic);
 		if(averages->acceptance_rate_spinflip > 0.0) printf("/ %.3f S", averages->acceptance_rate_spinflip);
 		if(averages->acceptance_rate_volume > 0.0) printf("/ %.3f V", averages->acceptance_rate_volume);
@@ -525,7 +601,8 @@ int write_averages(system_t *system) {
 	}
 
 	if(averages->cavity_bias_probability > 0.0)
-		printf("OUTPUT: Cavity bias probability = %.5f +- %.5f\n", averages->cavity_bias_probability, 0.5*averages->cavity_bias_probability_error);
+		printf("OUTPUT: Cavity bias probability = %.5f +- %.5f\n", 
+			averages->cavity_bias_probability, 0.5*averages->cavity_bias_probability_error);
 
 	if(system->gwp) 
 		printf("OUTPUT: total energy = %.3f +- %.3f eV\n", averages->energy/EV2K, 0.5*averages->energy_error/EV2K);
@@ -534,32 +611,42 @@ int write_averages(system_t *system) {
 
 	if(averages->coulombic_energy != 0.0) {
 		if(system->gwp) 
-			printf("OUTPUT: electrostatic energy = %.3f +- %.3f eV\n", averages->coulombic_energy/EV2K, 0.5*averages->coulombic_energy_error/EV2K);
+			printf("OUTPUT: electrostatic energy = %.3f +- %.3f eV\n",
+				averages->coulombic_energy/EV2K, 0.5*averages->coulombic_energy_error/EV2K);
 		else
-			printf("OUTPUT: electrostatic energy = %.3f +- %.3f K\n", averages->coulombic_energy, 0.5*averages->coulombic_energy_error);
+			printf("OUTPUT: electrostatic energy = %.3f +- %.3f K\n",
+				averages->coulombic_energy, 0.5*averages->coulombic_energy_error);
 	}
 
 	if(averages->rd_energy != 0.0)
-		printf("OUTPUT: repulsion/dispersion energy = %.3f +- %.3f K\n", averages->rd_energy, 0.5*averages->rd_energy_error);
+		printf("OUTPUT: repulsion/dispersion energy = %.3f +- %.3f K\n", 
+			averages->rd_energy, 0.5*averages->rd_energy_error);
 
 	if(averages->polarization_energy != 0.0) {
-		printf("OUTPUT: polarization energy = %.5f +- %.5f K", averages->polarization_energy, 0.5*averages->polarization_energy_error);
+		printf("OUTPUT: polarization energy = %.5f +- %.5f K", 
+			averages->polarization_energy, 0.5*averages->polarization_energy_error);
 		if(averages->polarization_iterations != 0.0)
-			printf(" (iterations = %.1f +- %.1f rrms = %e +- %e)", averages->polarization_iterations, 0.5*averages->polarization_iterations_error, averages->dipole_rrms, 0.5*averages->dipole_rrms_error);
+			printf(" (iterations = %.1f +- %.1f rrms = %e +- %e)", 
+				averages->polarization_iterations, 0.5*averages->polarization_iterations_error, 
+				averages->dipole_rrms, 0.5*averages->dipole_rrms_error);
 		printf("\n");
 	}
 
 #ifdef VDW
-		printf("OUTPUT: (coupled-dipole) vdw energy = %.5f +- %.5f K\n", averages->vdw_energy, 0.5*averages->vdw_energy_error);
+		printf("OUTPUT: (coupled-dipole) vdw energy = %.5f +- %.5f K\n", 
+			averages->vdw_energy, 0.5*averages->vdw_energy_error);
 #endif
 
 	if(averages->kinetic_energy > 0.0) {
 		if(system->gwp)
-			printf("OUTPUT: kinetic energy = %.3f +- %.3f eV\n", averages->kinetic_energy/EV2K, 0.5*averages->kinetic_energy_error/EV2K);
+			printf("OUTPUT: kinetic energy = %.3f +- %.3f eV\n", 
+				averages->kinetic_energy/EV2K, 0.5*averages->kinetic_energy_error/EV2K);
 		else
-			printf("OUTPUT: kinetic energy = %.3f +- %.3f K\n", averages->kinetic_energy, 0.5*averages->kinetic_energy_error);
+			printf("OUTPUT: kinetic energy = %.3f +- %.3f K\n", 
+				averages->kinetic_energy, 0.5*averages->kinetic_energy_error);
 
-		printf("OUTPUT: temperature = %.3f +- %.3f K\n", averages->temperature, 0.5*averages->temperature);
+		printf("OUTPUT: temperature = %.3f +- %.3f K\n", 
+			averages->temperature, 0.5*averages->temperature);
 	}
 
 	printf("OUTPUT: N = %.3f +- %.3f molecules\n", averages->N, 0.5*averages->N_error);
@@ -575,41 +662,22 @@ int write_averages(system_t *system) {
 	if(averages->excess_ratio > 0.0)
 		printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
 
-	//error wasn't calculated correctly, nor is it simple to calculate
-	// qst, heat_cap and compress, are based on the variance of other quantities. calculating the error
-	// of a variance is either non-trivial (try it!), or I'm an idiot.
-	if((averages->qst > 0.0) && isfinite(averages->qst)) {
-//		if(averages->qst_error > MAXDOUBLE)	/* lack of error bar, avoid nan from sqrt(-small) */
-			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
-//		else
-//			printf("OUTPUT: qst = %.3f +- %.3f kJ/mol\n", averages->qst, 0.5*averages->qst_error);
-	}
+	if((averages->qst > 0.0) && isfinite(averages->qst))
+		printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
 
 	if(system->ensemble == ENSEMBLE_NPT)
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
 
-	//error wasn't calculated correctly, nor is it simple to calculate (see qst above)
-	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity))) {
-//		if(averages->heat_capacity_error > MAXDOUBLE)
-			printf("OUTPUT: heat capacity = %.3f +- kJ/mol K\n", averages->heat_capacity);
-//		else
-	//		printf("OUTPUT: heat capacity = %.3f +- %.3f kJ/mol K\n", averages->heat_capacity, 0.5*averages->heat_capacity_error);
-	}
+	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
+		printf("OUTPUT: heat capacity = %.3f +- kJ/mol K\n", averages->heat_capacity);
 
 	if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
-//error wasn't calculated correctly, nor is it simple to calculate (see qst above)
-//		if(averages->compressibility_error > MAXDOUBLE) {
-			printf("OUTPUT: compressibility = %.6f atm^-1\n", averages->compressibility);
-			printf("OUTPUT: bulk modulus = %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
-//		} else {
-//			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, 0.5*averages->compressibility_error);
-//			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility,  ATM2PASCALS*1.0e-9/(0.5*averages->compressibility_error));
-	//	}
+		printf("OUTPUT: compressibility = %.6f atm^-1\n", averages->compressibility);
+		printf("OUTPUT: bulk modulus = %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
 	}
 
-	if(averages->spin_ratio > 0.0) {
+	if(averages->spin_ratio > 0.0)
 		printf("OUTPUT: ortho spin ratio = %.3f +- %.3f %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
-	}
 
 	printf("\n");
 	fflush(stdout);

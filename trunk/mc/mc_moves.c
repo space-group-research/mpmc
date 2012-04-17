@@ -25,7 +25,7 @@ void volume_change( system_t * system ) {
 	new_volume=exp(log_new_volume);
 
 	//scale basis
-	basis_scale_factor = pow(new_volume/system->observables->volume,1.0/3.0);
+	basis_scale_factor = pow(new_volume/system->pbc->volume,1.0/3.0);
 	for ( i=0; i<3; i++ )
 		for ( j=0; j<3; j++ )
 			system->pbc->basis[i][j] *= basis_scale_factor;

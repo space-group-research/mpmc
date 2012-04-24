@@ -104,6 +104,17 @@ void pbc_reciprocal(pbc_t *pbc) {
 
 }
 
+int checkortho ( pbc_t * pbc ) {
+	int i, j;
+	for ( i=0; i<3; i++ ) {
+		for ( j=0; j<3; j++ ) {
+			if ( i==j ) continue; //diagonal
+			if ( pbc->basis[i][j] != 0.0 ) return 0; //check non-diag. if non-zero return 0;
+		}
+	}
+	return 1; //it's ortho
+}
+
 void pbc(system_t * system) {
 
 	pbc_t * pbc = system->pbc;
@@ -121,5 +132,8 @@ void pbc(system_t * system) {
 	if (system->ensemble == ENSEMBLE_NPT) {
 		system->ewald_alpha = 3.5/system->pbc->cutoff;
 	}
+
+	/* check if the cell is orthorhombic */
+	pbc->isortho=checkortho(pbc);
 
 }

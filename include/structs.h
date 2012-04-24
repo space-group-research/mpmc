@@ -76,6 +76,7 @@ typedef struct _pbc {
 	double reciprocal_basis[3][3];	/* reciprocal space lattice (1/A) */
 	double cutoff;			/* radial cutoff (A) */
 	double volume;			/* unit cell volume (A^3) */
+	int isortho; /* is the unit cell orthorhombic?*/
 } pbc_t;
 
 typedef struct _cavity {

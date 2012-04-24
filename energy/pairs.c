@@ -9,12 +9,6 @@ University of South Florida
 
 #include <mc.h>
 
-double round_toward_zero ( double a) {
-	if (a>0.) return floor(a);
-	if (a<0.) return ceil(a);
-	if (a==0.) return 0.0;
-}
-
 /* flag all pairs to have their energy calculated */
 /* needs to be called at simulation start, or can */
 /* be called to periodically keep the total energy */
@@ -118,28 +112,38 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 		}
 	}
 
-	/* matrix multiply with the inverse basis and round */
-	for(p = 0; p < 3; p++) {
-		for(q = 0, img[p] = 0; q < 3; q++) {
-			img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
+	//relative position didn't change. nothing to do here.
+	if ( pair_ptr->recalculate_energy == 0 ) return;
+
+	//if orthorhombic cell, use the easy min image calculation
+	if ( system->pbc->isortho == 1 ) {
+		for ( p=0; p<3; p++ ) {
+			di[p] = d[p];
+			if ( di[p] > 0.5*system->pbc->basis[p][p] )
+				di[p] = -system->pbc->basis[p][p] + d[p];
+			if ( di[p] < -0.5*system->pbc->basis[p][p] )
+				di[p] = system->pbc->basis[p][p] + d[p];
+
 		}
-		//img[p] = rint(img[p]);
-		//this is fine unless we're exactly at 0.5 +/- rounding error (i.e. solids)
-		//in the case, we need to round in a consistent manner
-		if ( rint(img[p]+SMALL_dR) != rint(img[p]-SMALL_dR) ) //if adding a small dr would reverse the direction of rounding
-			rnd = round_toward_zero(img[p]); //we force rounding toward zero
-		else rnd = rint(img[p]); //round like normal
-		img[p] = rnd;
 	}
+	else {
+		/* matrix multiply with the inverse basis and round */
+		for(p = 0; p < 3; p++) {
+			for(q = 0, img[p] = 0; q < 3; q++) {
+				img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
+			}
+			img[p] = rint(img[p]);
+		}
 
-	/* matrix multiply to project back into our basis */
-	for(p = 0; p < 3; p++)
-		for(q = 0, di[p] = 0; q < 3; q++)
-			di[p] += system->pbc->basis[p][q]*img[q];
+		/* matrix multiply to project back into our basis */
+		for(p = 0; p < 3; p++)
+			for(q = 0, di[p] = 0; q < 3; q++)
+				di[p] += system->pbc->basis[p][q]*img[q];
 
-	/* now correct the displacement */
-	for(p = 0; p < 3; p++)
-		di[p] = d[p] - di[p];
+		/* now correct the displacement */
+		for(p = 0; p < 3; p++)
+			di[p] = d[p] - di[p];
+	}
 
 	/* pythagorean terms */
 	for(p = 0, r2 = 0, ri2 = 0; p < 3; p++) {
@@ -152,14 +156,18 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 	/* store the results for this pair */
 	pair_ptr->r = r;
 
-	if ( isnan(ri) != 0 ) pair_ptr->rimg = r;
-	else pair_ptr->rimg = ri;
-
-	for(p = 0; p < 3; p++) {
-		if ( isnan(di[p]) != 0 ) pair_ptr->dimg[p] = d[p];
-		else pair_ptr->dimg[p] = di[p];
+	if ( isnan(ri) != 0 ) {
+		pair_ptr->rimg = r;
+		for (p=0; p<3; p++ )
+			pair_ptr->dimg[p] = d[p];
+	}
+	else {
+		pair_ptr->rimg = ri;
+		for(p = 0; p < 3; p++)
+			pair_ptr->dimg[p] = di[p];
 	}
 
+	return;
 }
 
 
@@ -219,45 +227,55 @@ void pairs(system_t *system) {
 
 	/* rank metric */
 	if(system->polar_iterative && system->polar_gs_ranked) {
-
 		/* determine smallest polarizable separation */
 		rmin = MAXVALUE;
 		for(i = 0; i < n; i++) {
-
+			if ( atom_array[i]->polarizability == 0.0 )	continue;
+			for ( pair_ptr = atom_array[i]->pairs; pair_ptr; pair_ptr=pair_ptr->next ) {
+				if ( pair_ptr->atom->polarizability == 0.0 ) continue; 
+				if ( pair_ptr->rimg < rmin ) rmin = pair_ptr->rimg;
+			}
+		}
+		//calculate rank shits
+		for(i = 0; i < n; i++ )
+			atom_array[i]->rank_metric = 0;	
+		for(i = 0; i < n; i++) {
+			if ( atom_array[i]->polarizability == 0.0 )	continue;
+			for ( pair_ptr = atom_array[i]->pairs; pair_ptr; pair_ptr=pair_ptr->next ) {
+				if ( pair_ptr->atom->polarizability == 0.0 ) continue; 
+				if ( pair_ptr->r <= rmin*1.5 ) {
+					atom_array[i]->rank_metric += 1.0;
+					pair_ptr->atom->rank_metric += 1.0;
+				}
+			}
+		}
+		
+/*
+		for(i = 0; i < n; i++) {
 			for(j = 0; j < n; j++) {
-
 				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
 					for(p = 0, r = 0; p < 3; p++)
 						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2.0);
 					r = sqrt(r);
-
 					if(r < rmin) rmin = r;
 				}
-
 			}
-
 		}
 
 		for(i = 0; i < n; i++) {
-
 			atom_array[i]->rank_metric = 0;
 			for(j = 0; j < n; j++) {
-
 				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
-
 					for(p = 0, r = 0; p < 3; p++)
 						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2.0);
 					r = sqrt(r);
-
 					if(r <= 1.5*rmin)
 						atom_array[i]->rank_metric += 1.0;
-
 				}
 			}
 		}
-
+*/
 	}
-
 
 	/* free our temporary arrays */
 	free(atom_array);

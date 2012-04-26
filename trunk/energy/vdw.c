@@ -186,11 +186,13 @@ double * lapack_diag ( struct mtx * M, int jobtype ) {
 	return eigvals;
 }
 
+/* not needed unless T >> 300 
 double wtanh ( double w, double T ) {
-	if ( w < 1.0E-10 ) return TWOoverHBAR*T/au2invsec; //from Taylor expansion
+	if ( w < 1.0E-10 ) TWOoverHBAR*T/au2invsec; //from Taylor expansion
 	if ( T == 0 ) return w;
 	return w/tanh(halfHBAR*w*au2invsec/T);
 }
+*/
 
 double eigen2energy ( double * eigvals, int dim, double temperature ) {
 	int i;
@@ -200,7 +202,8 @@ double eigen2energy ( double * eigvals, int dim, double temperature ) {
 
 	for ( i=0; i<dim; i++ ) {
 		if ( eigvals[i] < 0 ) eigvals[i]=0;
-		rval += wtanh(sqrt(eigvals[i]), temperature);
+//		rval += wtanh(sqrt(eigvals[i]), temperature);
+		rval += sqrt(eigvals[i]);
 	}
 	return rval;
 }
@@ -403,8 +406,10 @@ double e2body(system_t * system, atom_t * atom, pair_t * pair, double r) {
 	energy = eigen2energy(eigvals, 6, system->temperature);
 
 	//subtract energy of atoms at infinity
-	energy -= 3*wtanh(atom->omega, system->temperature);
-	energy -= 3*wtanh(pair->atom->omega, system->temperature);
+//	energy -= 3*wtanh(atom->omega, system->temperature);
+	energy -= 3*atom->omega;
+//	energy -= 3*wtanh(pair->atom->omega, system->temperature);
+	energy -= 3*pair->atom->omega;
 
 	free(eigvals);
 	free_mtx(M);

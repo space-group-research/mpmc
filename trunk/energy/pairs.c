@@ -115,35 +115,22 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 	//relative position didn't change. nothing to do here.
 	if ( pair_ptr->recalculate_energy == 0 ) return;
 
-	//if orthorhombic cell, use the easy min image calculation
-	if ( system->pbc->isortho == 1 ) {
-		for ( p=0; p<3; p++ ) {
-			di[p] = d[p];
-			if ( di[p] > 0.5*system->pbc->basis[p][p] )
-				di[p] = -system->pbc->basis[p][p] + d[p];
-			if ( di[p] < -0.5*system->pbc->basis[p][p] )
-				di[p] = system->pbc->basis[p][p] + d[p];
-
+	for(p = 0; p < 3; p++) {
+		for(q = 0, img[p] = 0; q < 3; q++) {
+			img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
 		}
+		img[p] = rint(img[p]);
 	}
-	else {
-		/* matrix multiply with the inverse basis and round */
-		for(p = 0; p < 3; p++) {
-			for(q = 0, img[p] = 0; q < 3; q++) {
-				img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
-			}
-			img[p] = rint(img[p]);
-		}
 
-		/* matrix multiply to project back into our basis */
-		for(p = 0; p < 3; p++)
-			for(q = 0, di[p] = 0; q < 3; q++)
-				di[p] += system->pbc->basis[p][q]*img[q];
+	/* matrix multiply to project back into our basis */
+	for(p = 0; p < 3; p++)
+		for(q = 0, di[p] = 0; q < 3; q++)
+			di[p] += system->pbc->basis[p][q]*img[q];
 
-		/* now correct the displacement */
-		for(p = 0; p < 3; p++)
-			di[p] = d[p] - di[p];
-	}
+	/* now correct the displacement */
+	for(p = 0; p < 3; p++)
+		di[p] = d[p] - di[p];
+
 
 	/* pythagorean terms */
 	for(p = 0, r2 = 0, ri2 = 0; p < 3; p++) {

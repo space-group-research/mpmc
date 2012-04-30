@@ -28,7 +28,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
-				EXTRA_LIBS="-rpath /opt/pgi-7.2.5/libso -L/usr/local/tools/acml-pgi/lib -lpgc -lacml -lacml_mv -lpgftnrtl -lrt"
+				EXTRA_LIBS="-rpath /opt/pgi-7.2.5/libso -L/usr/local/tools/acml-pgi/lib -lpgc -lacml -lacml_mv -lpgftnrtl -lrt -lm"
 			;;
 			"icc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -49,7 +49,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
-				EXTRA_LIBS="-lpgc -lpgftnrtl -lrt"
+				EXTRA_LIBS="-lpgc -lpgftnrtl -lrt -lm"
 			;;
 			"icc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -87,7 +87,7 @@ case "$HOSTNAME" in
 
 				CC="gcc"
 				CFLAGS="-O3 -std=c99"
-				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt"
+				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
@@ -95,7 +95,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline,safe"
-				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl"
+				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lm"
 				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
@@ -114,12 +114,12 @@ case "$HOSTNAME" in
 			"gcc")
 				CC="gcc"
 				CFLAGS="-O3 -std=c99"
-				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt"
+				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
-				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt"
+				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
 			"icc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -140,7 +140,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
-				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt"
+				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
 			"icc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -198,7 +198,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -tp barcelona-64"
-				EXTRA_LIBS="-lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl"
+				EXTRA_LIBS="-lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lm"
 			;;
 			"icc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -213,7 +213,7 @@ case "$HOSTNAME" in
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
-				CFLAGS="-g0 -O3 -lm"
+				CFLAGS="-g0 -O3"
 			;;
 			"pgi")
 				CC="pgcc"
@@ -269,15 +269,15 @@ case "$MODE" in
 			;;
 			"dirac")
 				EXTRA_INCLUDES="$EXTRA_INCLUDES -I/usr/include/openmpi/1.2.3-gcc"
-				EXTRA_LIBS="$EXTRA_LIBS -L/usr/lib64/openmpi/1.2.3-gcc -lmpi"
+				EXTRA_LIBS="$EXTRA_LIBS -L/usr/lib64/openmpi/1.2.3-gcc -lmpi -lm"
 			;;
 			"time")
 				EXTRA_INCLUDES="-I/usr/include/openmpi/1.2.3-gcc"
-				EXTRA_LIBS="-L/usr/lib64/openmpi/1.2.3-gcc -lmpi"
+				EXTRA_LIBS="-L/usr/lib64/openmpi/1.2.3-gcc -lmpi -lm"
 			;;
 			"spin")
 				EXTRA_INCLUDES="-I/usr/include/openmpi"
-				EXTRA_LIBS="-L/usr/lib64/openmpi -lmpi"
+				EXTRA_LIBS="-L/usr/lib64/openmpi -lmpi -lm"
 			;;
 			*)
 				CC="mpicc"

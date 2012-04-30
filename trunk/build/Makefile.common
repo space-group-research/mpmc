@@ -25,7 +25,7 @@ all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o pol
 	vdw.o qshift.o \
 	histogram.o \
 	rotational_eigenspectrum.o rotational_basis.o rotational_potential.o rotational_integrate.o
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) *.o -o mpmc $(LIBS) $(EXTRA_LIBS)
+	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o mpmc $(GCC_EXTRA_LIBS)
 else
 all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o \
 	input.o output.o average.o mpi.o dxwrite.o\
@@ -34,7 +34,7 @@ all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o pol
 	thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o \
 	histogram.o \
 	vdw.o qshift.o
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) *.o -o mpmc $(LIBS) $(EXTRA_LIBS)
+	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o mpmc $(GCC_EXTRA_LIBS)
 endif
 
 clean:

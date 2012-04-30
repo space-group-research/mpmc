@@ -214,6 +214,7 @@ case "$HOSTNAME" in
 			"gcc")
 				CC="gcc"
 				CFLAGS="-g0 -O3"
+				EXTRA_LIBS="-lm"
 			;;
 			"pgi")
 				CC="pgcc"
@@ -335,7 +336,11 @@ echo "CFLAGS=$CFLAGS" >> Makefile
 echo "DEFINES=$DEFINES" >> Makefile
 echo "EXTRA_DEFINES=$EXTRA_DEFINES" >> Makefile
 echo "EXTRA_INCLUDES=$EXTRA_INCLUDES" >> Makefile
-echo "EXTRA_LIBS=$EXTRA_LIBS" >> Makefile
+if [ $COMPILER = "gcc" ]; then
+	echo "GCC_EXTRA_LIBS=$EXTRA_LIBS" >> Makefile
+else
+	echo "EXTRA_LIBS=$EXTRA_LIBS" >> Makefile
+fi
 echo "CUDA=$CUDA" >> Makefile
 echo "QM_ROTATION=$QM_ROTATION" >> Makefile
 echo >> Makefile

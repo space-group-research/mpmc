@@ -184,19 +184,19 @@ int do_command (system_t * system, char ** token ) {
 			system->polarvdw = 1; 
 			system->polarization=1;
 			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+			output("INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 		}    
 		else if (!strcasecmp(token[1], "evects")) {
 			system->polarvdw = 2; //calculate eigenvectors
 			system->polarization=1;
 			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+			output("INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 		}
 		else if ( !strcasecmp(token[1], "comp")) {
 			system->polarvdw = 3; //calculate eigenvectors
 			system->polarization=1;
 			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
-			fprintf(stdout,"INPUT: Forcing polar_iterative ON for CP-VdW.\n");
+			output("INPUT: Forcing polar_iterative ON for CP-VdW.\n");
 		}
 		else if (!strcasecmp(token[1], "off")) 
 			system->polarvdw = 0;
@@ -360,7 +360,14 @@ int do_command (system_t * system, char ** token ) {
 			system->feynman_hibbs = 0;
 		else return 1;
 	}
-	
+	//shitty feynman-hibbs correction for polarvdw (the default is better)
+	else if(!strcasecmp(token[0], "vdw_fh_2be")) {
+		if(!strcasecmp(token[1],"on"))
+			system->vdw_fh_2be = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->vdw_fh_2be = 0;
+		else return 1;
+	}
 	else if(!strcasecmp(token[0], "feynman_kleinert")) {
 		if(!strcasecmp(token[1],"on"))
 			system->feynman_kleinert = 1;
@@ -1330,6 +1337,16 @@ int check_system(system_t *system) {
 
 		if(system->polar_self) output("INPUT: Polarization self-induction is active\n");
 
+	}
+
+	if(system->polarvdw) {
+		output("INPUT: polarvdw (coupled-dipole van der Waals) activated\n");
+		if(system->feynman_hibbs) {
+			if(system->vdw_fh_2be)
+				output("INPUT: two-body-expansion feynman-hibbs for polarvdw is active\n");
+			else
+				output("INPUT: polarvdw feynman-hibbs will be calculated using MPFD\n");
+		}
 	}
 
 	if((system->pbc->volume < 0.0) || (system->pbc->cutoff < 0.0))

@@ -338,7 +338,7 @@ double lr_vdw_corr ( system_t * system ) {
 	molecule_t * molecule_ptr;
 	atom_t * atom_ptr;
 	pair_t * pair_ptr;
-	double w1, w2, w; //omegas
+	double w1, w2; //omegas
 	double a1, a2; //alphas
 	double cC; //leading coefficient to r^-6
 	double corr = 0; //correction to the energy
@@ -362,9 +362,8 @@ double lr_vdw_corr ( system_t * system ) {
 					w1=atom_ptr->omega;
 					w2=pair_ptr->atom->omega;
 					if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
-					w=2*w1*w2/(w1+w2); //combine omegas
 					// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-					cC=0.75 * cHBAR * w * au2invsec * a1 * a2;
+					cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2;
 
 					// long-range correction
 					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3.0) / system->pbc->volume;
@@ -417,7 +416,7 @@ double e2body(system_t * system, atom_t * atom, pair_t * pair, double r) {
   return energy * au2invsec * halfHBAR;
 }
 
-// feynman-hibbs correction - based on 2-body. damping now included!!
+// feynman-hibbs correction - molecular pair finite differencing method
 double fh_vdw_corr ( system_t * system ) {
 	molecule_t * molecule_ptr;
 	atom_t * atom_ptr;
@@ -474,6 +473,65 @@ double fh_vdw_corr ( system_t * system ) {
 	}
 
 	return corr;
+}
+
+// feynman-hibbs using 2BE (shitty)
+double fh_vdw_corr_2be ( system_t * system ) {
+  molecule_t * molecule_ptr;
+  atom_t * atom_ptr;
+  pair_t * pair_ptr;
+  double rm; //reduced mass
+  double w1, w2; //omegas
+  double a1, a2; //alphas
+  double cC; //leading coefficient to r^-6
+  double dv, d2v, d3v, d4v; //derivatives
+  double corr = 0; //correction to the energy
+  double corr_single; //single vdw interaction energy
+
+  //for each pair
+  for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) { 
+    for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) { 
+      for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next ) { 
+        //skip if frozen
+        if ( pair_ptr->frozen ) continue;
+        //skip if they belong to the same molecule
+        if ( molecule_ptr == pair_ptr->molecule ) continue;
+        //skip if distance is greater than cutoff
+        if ( pair_ptr->rimg > system->pbc->cutoff ) continue;
+        //fetch alphas and omegas
+        a1=atom_ptr->polarizability;
+        a2=pair_ptr->atom->polarizability;
+        w1=atom_ptr->omega;
+        w2=pair_ptr->atom->omega;
+        if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
+        // 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
+        cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2 *0.5;
+        // reduced mass
+        rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
+          ((molecule_ptr->mass)+(pair_ptr->molecule->mass));
+
+        //derivatives 
+        dv = 6.0*cC*pow(pair_ptr->rimg,-7.0);
+        d2v= dv * (-7.0)/pair_ptr->rimg;
+        if ( system->feynman_hibbs_order >= 4 ) {
+          d3v= d2v* (-8.0)/pair_ptr->rimg;
+          d4v= d3v* (-9.0)/pair_ptr->rimg;
+        }
+
+        //2nd order correction
+        corr_single = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
+        //4th order correction
+        if ( system->feynman_hibbs_order >= 4 )
+          corr_single += pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0) /
+            (1152.0*pow(KB*system->temperature*rm, 2.0))) *
+            (15.0*dv/pow(pair_ptr->rimg, 3.0) + 4.0*d3v/pair_ptr->rimg + d4v);
+
+        corr += corr_single;
+      }
+    }
+  }
+
+  return corr;
 }
 
 //with damping
@@ -542,10 +600,14 @@ double vdw(system_t *system) {
 	if ( system->polarvdw == 3 )
 		printf("VDW Two-Body | Many Body = %lf | %lf\n", twobody(system),e_total-e_iso);
 
-	if ( system->feynman_hibbs ) fh_corr = fh_vdw_corr(system);
-		else fh_corr=0;
+	if ( system->feynman_hibbs ) {
+		if ( system->vdw_fh_2be ) fh_corr = fh_vdw_corr_2be(system); //2be method
+		else fh_corr = fh_vdw_corr(system); //mpfd
+	}
+	else fh_corr=0;
+
 	if ( system->rd_lrc ) lr_corr = lr_vdw_corr(system);
-		else lr_corr=0;
+	else lr_corr=0;
 
 //cleanup and return
 	free(sqrtKinv);

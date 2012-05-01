@@ -334,6 +334,7 @@ typedef struct _system {
 
 	// energy-corrections
 	int feynman_hibbs, feynman_kleinert, feynman_hibbs_order;
+	int vdw_fh_2be; //2BE method for polarvdw 
 	int rd_lrc;
 
 	// uvt fugacity functions

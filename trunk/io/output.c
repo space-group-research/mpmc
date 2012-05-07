@@ -681,9 +681,21 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: bulk modulus = %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
 	}
 
-	if(averages->spin_ratio > 0.0)
+	if(averages->spin_ratio > 0.0) {
 		printf("OUTPUT: ortho spin ratio = %.3f +- %.3f %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
-
+	}
+	
+	if( system->sorbateCount > 1 ){
+		sorbateAverages_t *sorbate_ptr;
+		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
+			printf( "OUTPUT: Stats for %s\n", sorbate_ptr->id  );
+			printf( "             Average_N(%s)= %lf\n",         sorbate_ptr->id, sorbate_ptr->avgN          );
+			printf( "             Sorbed_Mass(%s)= %lf g/mol\n", sorbate_ptr->id, sorbate_ptr->sorbed_mass   );
+			printf( "             Bulk_Mass(%s)= %E g\n",        sorbate_ptr->id, sorbate_ptr->bulk_mass     );
+			printf( "             Selectivity(%s)= %lf\n",       sorbate_ptr->id, sorbate_ptr->selectivity   );
+		}
+	}
+	
 	printf("\n");
 	fflush(stdout);
 

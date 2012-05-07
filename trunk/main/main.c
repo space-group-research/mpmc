@@ -154,22 +154,6 @@ int main(int argc, char **argv) {
 #endif /* MPI */
 
 
-
-	///////////////////////////////////////////////////////////////////
-	// Testing Purposes only, for unique tagging of molecules erase
-	// when no longer needed.
-	{
-		molecule_t *mp;
-		int nMolecules = 0;
-		for( mp = system->molecules; mp; mp = mp->next )
-			nMolecules++;
-		system->tag = nMolecules + 1;
-	}
-	///////////////////////////////////////////////////////////////////
-
-
-
-
 	/* start the MC simulation */
 	if(system->ensemble == ENSEMBLE_UVT) {
 		output("MAIN: *******************************************************\n");

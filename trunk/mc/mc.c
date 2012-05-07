@@ -260,6 +260,7 @@ int mc(system_t *system) {
 	track_ar(system->nodestats);
 	update_nodestats(system->nodestats, system->avg_nodestats);
 	update_root_averages(system, system->observables, system->avg_nodestats, system->avg_observables);
+	update_sorbate_stats( system );
 
 	/* if root, open necessary output files */
 	if(!rank) {
@@ -357,6 +358,10 @@ int mc(system_t *system) {
 
 #ifdef MPI
 			MPI_Gather(snd_strct, 1, msgtype, rcv_strct, 1, msgtype, 0, MPI_COMM_WORLD);
+
+			// MPI Stuff for collecting sorbate stats from workers
+			// should go here. 
+
 #else
 			memcpy(rcv_strct, snd_strct, msgsize);
 #endif /* MPI */
@@ -374,6 +379,9 @@ int mc(system_t *system) {
 					if(system->calc_hist) update_root_histogram(system);
 					if(system->file_pointers.fp_energy) write_observables(system->file_pointers.fp_energy, system, observables_mpi);
 
+					// calculate stats for each individual sorbate
+					update_sorbate_stats( system );
+		
 				}
 			//	/* XXX - this needs to be fixed, currently only writing the root node's states */
 			//	if(system->file_pointers.fp_traj) write_states(system->file_pointers.fp_traj, system);

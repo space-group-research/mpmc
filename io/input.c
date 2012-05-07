@@ -1918,6 +1918,11 @@ molecule_t *read_molecules(system_t *system) {
 //  modified to read the candidate insertion molecules from a separate file. 
 ///////////////////////////////////////////////////////////////////////////////
 
+// helper functions which will test for presence of a sorbate in 
+// the sorbate list and which will add the sorbate if necessary.
+int sorbateIs_Not_InList( sorbateAverages_t, char * );
+int addSorbateToList( sorbateAverages_t *, char * );
+
 molecule_t *read_insertion_molecules(system_t *system) {
 
 	int i;
@@ -1969,6 +1974,11 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	memnullcheck(molecule_ptr->atoms,sizeof(atom_t),118);
 	atom_ptr            = molecule_ptr->atoms;
 	prev_atom_ptr       = atom_ptr;
+	
+
+	// initialize the list of individual sorbate averages
+	system->sorbateCount = 0;
+	system->sorbateStats.next = NULL;
 
 
 	// open the molecule input file 
@@ -2003,7 +2013,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 		memset( token_omega,        0, MAXLINE);
 		memset( token_gwp_alpha,    0, MAXLINE);
 
-		/* parse the line */
+		// parse the input line 
 		sscanf(linebuf, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
 		       token_atom, token_atomid, token_atomtype, 
 		       token_moleculetype, 
@@ -2058,7 +2068,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 				atom_ptr = molecule_ptr->atoms;
 			}
 
-                        strcpy(molecule_ptr->moleculetype, token_moleculetype);
+			strcpy(molecule_ptr->moleculetype, token_moleculetype);
 
 			molecule_ptr->id        = current_moleculeid;
 			molecule_ptr->frozen    = current_frozen;
@@ -2124,6 +2134,14 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			atom_ptr->polarizability = current_alpha;
 			atom_ptr->epsilon   = current_epsilon;
 			atom_ptr->sigma     = current_sigma;
+			//if polarvdw is on, we want sigma = 1
+			//it's an unneeded parameter, and complicates the mixing rules
+			if ( system->polarvdw && current_sigma != 1 ) {
+				fprintf(stderr,"INPUT: WARNING POLARVDW REQUIRES SIGMA = 1.\n"
+					"INPUT: INPUT VALUE OF %lf IGNORED.\n", current_sigma);
+				current_sigma   = 1;
+				atom_ptr->sigma = 1;
+			}
 			atom_ptr->omega     = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
 			if(current_gwp_alpha != 0.)
@@ -2149,15 +2167,34 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 
 	// Count the molecules and create an array of pointers, where each pointer
-	// points directly to a molecule in the linked list. 
+	// points directly to a molecule in the linked list. While counting the 
+	// molecules, check to see whether or not each sorbate is included in the
+	// sorbate statistics list, if it is not, we will create an entry for it
+	// so that each unique class of sorbate will have its own node in the stats
+	// list.
 	/////////////////////////////////////////////////////////////////////////////
 
 	// count	
 	int molecule_counter = 0;
-	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) 
+	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) { 
 		molecule_counter++;
+		// Check to see if this molecule is a new sorbate.
+		if( sorbateIs_Not_InList( system->sorbateStats, molecule_ptr->moleculetype ) ) {
+			system->sorbateCount++;
+			if( !addSorbateToList( &(system->sorbateStats), molecule_ptr->moleculetype )) {
+				error( "INPUT: Exhausted memory while constructing sorbate stat list." );
+				return NULL;
+			}
+			for( sorbateAverages_t *sorbate = system->sorbateStats.next; sorbate; sorbate = sorbate->next )
+				if( !strcasecmp( sorbate->id, molecule_ptr->moleculetype )){
+					sorbate->mass = molecule_ptr->mass;
+					break;
+				}
+		}
+	}
 
-	// allocate space for array
+	// allocate space for array that will give direct access to insertion-candidate
+	// molecules in the linked list. 
 	system->insertion_molecules_array = malloc( molecule_counter * sizeof(molecule_t*) );
 	if(!system->insertion_molecules_array ) {
 		error( "INPUT: ERROR - exhausted memory while allocating insertion molecules array.\n" );
@@ -2183,6 +2220,68 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 
 
+
+// sorbateIs_Not_InList() examines a sorbate stat list and a sorbate ID. 
+// Returns true if this sorbate is NOT in the list, false otherwise
+int sorbateIs_Not_InList( sorbateAverages_t sorbateList, char *type ) {
+	
+	sorbateAverages_t *sorbate;
+
+	// Look at each item in the list until we find a match
+	// with the sorbate id about which the inquiry was made.
+	for( sorbate = sorbateList.next; sorbate; sorbate = sorbate->next ){
+		if( !strcasecmp( type, sorbate->id ) )
+			// sorbate is already accounted for
+			return 0;
+	}
+	
+	// If end of list is reached w/o encountering the sorbate, then
+	// the sorbate is new... return 1, i.e. the statement "sorbate 
+	// is NOT in list" is TRUE.
+	return 1;
+}
+
+
+
+
+// addSorbateToList() Takes a sorbate stat list and a sorbate ID. Creates a 
+// node at the end of the list and initializes it with the passed sorbate id.
+int addSorbateToList( sorbateAverages_t *sorbateList, char *sorbate_type ){
+	
+	// navigate to the end of the list
+	sorbateAverages_t *sorbate = sorbateList;
+	while( sorbate->next ){
+		sorbate = sorbate->next;
+	}
+
+	// allocate a new node for the sorbate
+	sorbate->next = malloc( sizeof( sorbateAverages_t ));
+	sorbate = sorbate->next;
+	
+	// return 0 upon failure to allcoate
+	if( !sorbate ) return 0;
+
+	// initialize the new node
+	strcpy( sorbate->id, sorbate_type );
+	sorbate->currentN = 0;
+	sorbate->avgN = 0.0;
+	//sorbate->N = (double *) calloc( size, sizeof(double) ); // This will be an array w/1 entry per MPI worker.
+	sorbate->next = NULL;                                   // Terminate the list.
+	
+	// return 0 upon failure to allocate
+	//if( !sorbate->N ) return 0;
+
+	// send a status update to stdout
+	char buffer[MAXLINE];
+	sprintf( buffer, "INPUT: System will track individual stats for sorbate %s.\n", sorbate->id );
+	output( buffer );
+
+	return 1;
+}
+
+
+
+
 system_t *setup_system(char *input_file) {
 
 	system_t *system;
@@ -2191,7 +2290,7 @@ system_t *setup_system(char *input_file) {
 	/* read in all of the tokens and parameters from the config file */
 	system = read_config(input_file);
 	if(!system) {
-   //		error("INPUT: error reading config file\n");  //error message already generated
+   	// error message generated in read_config()
 		return(NULL);
 	} else
 		output("INPUT: finished reading config file\n");

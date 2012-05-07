@@ -100,7 +100,87 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 
 }
 
+// update the stats for the individual sorbates
+void update_sorbate_stats( system_t *system )
+{
 
+	static int counter = 0;
+	counter++;
+	double factor = ((double)(counter-1))/((double)(counter));
+	sorbateAverages_t *sorbate_ptr;
+	molecule_t        *molecule_ptr;
+
+	// Zero every count (N) for each sorbate in the averages list
+	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next )
+		sorbate_ptr->currentN = 0;
+
+	// Count each sorbate in the system and record the total in
+	// the corresponding entry in the sorbate averages list.
+	for( molecule_t *molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
+			if( !strcasecmp( sorbate_ptr->id, molecule_ptr->moleculetype )) {
+				sorbate_ptr->currentN++;
+				break;
+			}
+		}	
+	}
+	
+	// Using the current sorbate count (currentN), the number of readings
+	// contributing to the average N (count) and the old average N (avgN)
+	// (via "factor"), calculate the new average N (avgN). 
+	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
+		sorbate_ptr->avgN = factor * sorbate_ptr->avgN + ((double) sorbate_ptr->currentN)/((double)(counter));
+	}
+
+
+	// Calculate the weight percent and sorbed mass of each sorbate
+
+	//     First, calculate the frozen mass of the system
+	double system_mass = 0.0,
+	       frozen_mass = 0.0;
+	for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) { 
+		// Frozen Mass:
+		if(molecule_ptr->frozen || molecule_ptr->adiabatic)
+			frozen_mass += molecule_ptr->mass;
+	}
+
+	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
+		
+		// sorbed_mass 
+		double sorbed_mass =
+		       sorbate_ptr->sorbed_mass = 
+                       sorbate_ptr->avgN * sorbate_ptr->mass; 
+		double R          = 0.8205746; //  L*atm/(mol*K)
+		double A3PerLiter = 1.0e27;    //  A^3/L  (cubic angstroms per liter)
+		
+		// weight% 
+		sorbate_ptr->percent_wt    = 100.0 * sorbed_mass/(frozen_mass + sorbed_mass);
+		
+		// weight% (ME) 
+		sorbate_ptr->percent_wt_me = 100.0 * sorbed_mass/frozen_mass;
+
+		// bulk mass -- mass in present in system-sized container under ideal conditions.
+		sorbate_ptr->bulk_mass =   (system->free_volume * system->pressure * sorbate_ptr->mass)  
+		                         / (system->temperature * R * A3PerLiter );
+
+		// Selectivity
+		// The denominator is temporarily collected in sorbate_ptr->selectivity, and is a sum of all the
+		// avgN values for every sorbate in the system. Then, the avgN value for THIS sorbate is divided
+		// by said total to yield selectivity for THIS sorbate. If the denominator is 0, selectivity is 
+		// assigned a value of positive infinity.
+
+		sorbate_ptr->selectivity = 0;
+		for( sorbateAverages_t *sorb_ptr = system->sorbateStats.next; sorb_ptr; sorb_ptr = sorb_ptr->next ) {
+			if(  strcasecmp(sorbate_ptr->id, sorb_ptr->id)  &&  (sorb_ptr->avgN != 0)  ) {
+				sorbate_ptr->selectivity += sorb_ptr->avgN;
+			} 
+		}
+		if( sorbate_ptr->selectivity == 0 )
+			sorbate_ptr->selectivity = atof( "+Inf" );
+		else 
+			sorbate_ptr->selectivity = sorbate_ptr->avgN / sorbate_ptr->selectivity;
+	}
+}
 
 void update_root_averages(system_t *system, observables_t *observables, avg_nodestats_t *avg_nodestats, avg_observables_t *avg_observables) {
 

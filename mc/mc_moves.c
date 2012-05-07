@@ -737,9 +737,6 @@ void checkpoint(system_t *system) {
 			int    alt = nInsertionMolecules - (int)rint( nInsertionMolecules_d * get_rand());
 			system->checkpoint->molecule_altered = system->insertion_molecules_array[ alt ];
 			
-			// For unique tagging during testing... erase later (id not needed)
-			system->checkpoint->molecule_altered->id = system->tag++;
-			
 		} else {
 			// Otherwise, perform the original MPMC treatment:
 			--num_molecules_exchange;

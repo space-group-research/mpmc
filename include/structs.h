@@ -183,6 +183,23 @@ typedef struct _avg_observables {
 } avg_observables_t;
 
 
+// Node definition for a linked list that will hold individual
+// statistics for each unique sorbate in the system.
+typedef struct _sorbateAverages {
+	char   id[16];           // identifying tag for the sorbate, e.g. CH4, CO2 or H2
+	double mass;             // mass of this sorbate.
+	int    currentN;         // sorbate count for the current step
+	double avgN;             // average sorbate count
+	double percent_wt;       // average weight percent for this sorbate
+	double percent_wt_me;    // current weight percent for this sorbate    
+	double sorbed_mass;      // absolute mass of this sorbate sorbed in system
+	double bulk_mass;        // bulk mass of the sorbate
+	double selectivity;      // sorbate's selectivity ratio relative to all other sorbates in the insert list.
+	struct _sorbateAverages *next;
+} sorbateAverages_t; 
+
+
+
 typedef struct _grid {
 	histogram_t *histogram;
 	histogram_t *avg_histogram;
@@ -268,10 +285,6 @@ typedef struct _surf_preserve_rotation {
 
 
 typedef struct _system {
-
-	////////////////////////////////////////////////////////////
-	int tag; // Testing purposes only, erase when finished.  //
-	//////////////////////////////////////////////////////////
 
 	int ensemble;
 	int gwp;
@@ -380,6 +393,12 @@ typedef struct _system {
 	avg_nodestats_t *avg_nodestats;
 	observables_t *observables;
 	avg_observables_t *avg_observables;
+
+	// Linked list head that will keep track of separate average-observables
+	// for each sorbate in the system.
+	int sorbateCount;                 // Number of sorbates in the system.
+	sorbateAverages_t sorbateStats;  // Linked List w/1 node per sorbate.
+
 	checkpoint_t *checkpoint;
 	file_pointers_t file_pointers;
 

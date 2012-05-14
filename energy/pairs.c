@@ -30,6 +30,8 @@ void flag_all_pairs(system_t *system) {
 /* set the exclusions and LJ mixing for relevant pairs */
 void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molecule_j, atom_t *atom_i, atom_t *atom_j, pair_t *pair_ptr) {
 
+	double si3, sj3, si6, sj6;
+
 	/* recalculate exclusions */
 	if((molecule_i == molecule_j) && !system->gwp) { /* if both on same molecule, exclude all interactions */
 
@@ -58,19 +60,37 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 	/* get the mixed LJ parameters */
 	if(!system->sg) {
 
-		/* Lorentz-Berthelot mixing rules */
-		if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
-			pair_ptr->attractive_only = 1;
-			pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));
-		} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
-			pair_ptr->sigma = 0;
-			pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
-		} else {
-			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
-			pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
-		}
+		if (!system->waldmanhagler) {
+			/* Lorentz-Berthelot mixing rules */
+			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
+				pair_ptr->attractive_only = 1;
+				pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));
+			} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
+				pair_ptr->sigma = 0;
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
+			} else {
+				pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
+			}
+		} else { /* use waldman-hagler mixing rules */
 
-	}
+			si3 = pow(atom_i->sigma,3.0);
+			sj3 = pow(atom_j->sigma,3.0);
+			si6 = si3*si3;
+			sj6 = sj3*sj3;
+
+			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
+				pair_ptr->attractive_only = 1;
+				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
+			} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
+				pair_ptr->sigma = 0;
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
+			} else {
+				pair_ptr->sigma = pow(0.5*(pow(atom_i->sigma,6.0) + pow(atom_j->sigma,6.0)),1./6.);
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
+			}
+		} /*else waldmanhagler*/
+	} /*!sg*/
 
 	/* ensure that no ES calc for S-S pairs, and ONLY ES for S-everythingelse */
 	if(system->spectre) {

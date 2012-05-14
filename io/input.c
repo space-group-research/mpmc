@@ -405,6 +405,14 @@ int do_command (system_t * system, char ** token ) {
 			system->sg = 0;
 		else return 1;
 	}
+
+	else if(!strcasecmp(token[0], "waldmanhagler")) {
+		if(!strcasecmp(token[1],"on"))
+			system->waldmanhagler = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->waldmanhagler = 0;
+		else return 1;
+	}
 	
 	else if(!strcasecmp(token[0], "dreiding")) {
 		if(!strcasecmp(token[1],"on"))
@@ -1063,6 +1071,8 @@ int check_system(system_t *system) {
 		output("INPUT: rd long-range corrections are OFF\n");
 
 	if(system->sg) output("INPUT: Molecular potential is Silvera-Goldman\n");
+
+	if(system->waldmanhagler) output("INPUT: Using Waldman-Hagler mixing rules for LJ-interactions.\n");
 
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");
 
@@ -1927,6 +1937,8 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 	int i;
 
+	sorbateAverages_t * sorbate;
+
 	molecule_t *molecules, 
 	           *molecule_ptr;
 
@@ -2067,7 +2079,6 @@ molecule_t *read_insertion_molecules(system_t *system) {
 				free(atom_ptr);
 				atom_ptr = molecule_ptr->atoms;
 			}
-
 			strcpy(molecule_ptr->moleculetype, token_moleculetype);
 
 			molecule_ptr->id        = current_moleculeid;
@@ -2185,7 +2196,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 				error( "INPUT: Exhausted memory while constructing sorbate stat list." );
 				return NULL;
 			}
-			for( sorbateAverages_t *sorbate = system->sorbateStats.next; sorbate; sorbate = sorbate->next )
+			for( sorbate = system->sorbateStats.next; sorbate; sorbate = sorbate->next )
 				if( !strcasecmp( sorbate->id, molecule_ptr->moleculetype )){
 					sorbate->mass = molecule_ptr->mass;
 					break;

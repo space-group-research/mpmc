@@ -86,7 +86,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->sigma = 0;
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
 			} else {
-				pair_ptr->sigma = pow(0.5*(pow(atom_i->sigma,6.0) + pow(atom_j->sigma,6.0)),1./6.);
+				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
 			}
 		} /*else waldmanhagler*/

@@ -108,6 +108,7 @@ void update_sorbate_stats( system_t *system )
 	counter++;
 	double factor = ((double)(counter-1))/((double)(counter));
 	sorbateAverages_t *sorbate_ptr;
+	sorbateAverages_t *sorb_ptr;
 	molecule_t        *molecule_ptr;
 
 	// Zero every count (N) for each sorbate in the averages list
@@ -116,7 +117,7 @@ void update_sorbate_stats( system_t *system )
 
 	// Count each sorbate in the system and record the total in
 	// the corresponding entry in the sorbate averages list.
-	for( molecule_t *molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+	for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
 		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 			if( !strcasecmp( sorbate_ptr->id, molecule_ptr->moleculetype )) {
 				sorbate_ptr->currentN++;
@@ -170,7 +171,7 @@ void update_sorbate_stats( system_t *system )
 		// assigned a value of positive infinity.
 
 		sorbate_ptr->selectivity = 0;
-		for( sorbateAverages_t *sorb_ptr = system->sorbateStats.next; sorb_ptr; sorb_ptr = sorb_ptr->next ) {
+		for( sorb_ptr = system->sorbateStats.next; sorb_ptr; sorb_ptr = sorb_ptr->next ) {
 			if(  strcasecmp(sorbate_ptr->id, sorb_ptr->id)  &&  (sorb_ptr->avgN != 0)  ) {
 				sorbate_ptr->selectivity += sorb_ptr->avgN;
 			} 

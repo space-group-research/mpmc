@@ -291,6 +291,13 @@ double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
 
 		} //vp==NULL
 	} //mp loop	
+
+	////all of this logic is actually really bad if we're doing surface fitting, since omega will change... :-(
+	//free everything so we can recalc next step
+	if ( system->ensemble == ENSEMBLE_SURF_FIT )  {
+		free_vdw_eiso(system->vdw_eiso_info);
+		system->vdw_eiso_info = NULL;
+	}
 			
 	return e_iso;
 }

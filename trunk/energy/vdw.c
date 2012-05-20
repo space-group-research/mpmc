@@ -512,7 +512,7 @@ double fh_vdw_corr_2be ( system_t * system ) {
         w2=pair_ptr->atom->omega;
         if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
         // 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-        cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2 *0.5;
+        cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2;
         // reduced mass
         rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
           ((molecule_ptr->mass)+(pair_ptr->molecule->mass));

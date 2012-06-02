@@ -560,6 +560,7 @@ void write_dipole(FILE *fp_dipole, molecule_t *molecules) {
 		}
 		if(!molecule_ptr->frozen) fprintf(fp_dipole, "%f %f %f\n", dipole[0]/DEBYE2SKA, dipole[1]/DEBYE2SKA, dipole[2]/DEBYE2SKA);
 	}
+	fflush(fp_dipole);
 	return;
 }
 

@@ -24,7 +24,7 @@ sub readpdbconf(){
     }
   }
 
-  if($conf[0] =~ m/total_atoms=([0-9]+)/){ # parse out natoms
+  if($conf[1] =~ m/total_atoms=([0-9]+)/){ # parse out natoms
     $natoms = $1;
   } else {
     die "Something when wrong while reading in header in conf # $nconf \n"
@@ -36,16 +36,25 @@ sub readpdbconf(){
       die "Something wrong with ATOMs in conf # $nconf (atom # $i)\n";
     }
   }
+
+  # read headers ie the REMARK lines
+  for($i = 0;$i < $MREMARK; ++$i){
+    $conf[$i+$NREMARK+$natoms] = <DAT>;
+    if(!($conf[$i+$NREMARK+$natoms] =~ m/REMARK/)){
+      die "Something wrong with header in conf # $nconf line # $i\n";
+    }
+  }
+
   # read in endmdl
-  $conf[$natoms+$NREMARK] = <DAT>;
-  if(!($conf[$natoms+$NREMARK] =~ m/^ENDMDL/)){
+  $conf[$natoms+$NREMARK+$MREMARK] = <DAT>;
+  if(!($conf[$natoms+$NREMARK+$MREMARK] =~ m/^ENDMDL/)){
       die "Something wrong with ENDMDLs in conf # $nconf)\n";
     }
   return 1;
 }
 
 sub writepdbconf(){
-  if ($nconf ==1){
+  if ($nconf == 1){
     open (OUTPUT, ">$outfile") || die ("Could not open the output file $outfile!");
     print "\ncreating new file $outfile\n";
   }
@@ -63,7 +72,8 @@ sub writepdbconf(){
 
 # defaults
 
-$NREMARK=3; # number of remark lines in file (could change to count them)
+$NREMARK=4; # number of remark lines at beginning (could change to count them)
+$MREMARK=3; # number of remark lines at end of file
 $outfile = "output.pdb";
 $nconf = 0;
 $nconf1 = 0;
@@ -103,16 +113,18 @@ seek(DAT, 0, 0) or die "Can't seek to beginning of file: $!";
 
 while (readpdbconf()){
 
-  if($conf[0] =~ m/total_atoms=([0-9]+)/){ # parse out natoms
+  if($conf[1] =~ m/total_atoms=([0-9]+)/){ # parse out natoms
     $natoms = $1;
-    chomp $conf[0];
-    $conf[0] = $conf[0]." now = $nmax\n";
+    chomp $conf[1];
+    $conf[1] = $conf[1].", now=$nmax\n";
   } else {
     die "Something went wrong while reading in header in conf # $nconf \n"
   }
-  print "\rnconf = $nconf/$nconf1, max = $nmax, natoms = $natoms     ";
-  #move endline to end
-  $conf[$nmax+$NREMARK] = $conf[$natoms+$NREMARK]; #copy ENDMDL to end of array
+  print "\rnconf = $nconf/$nconf1, max = $nmax, natoms = $natoms         ";
+  #move endline and other REMARKs to end
+  for($i = 0;$i < $MREMARK+1; ++$i){
+    $conf[$nmax+$NREMARK+$i] = $conf[$natoms+$NREMARK+$i];
+  }
 
   # create new line to append - 
   # same x,y,z but molecule numer while preserving space.

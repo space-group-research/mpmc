@@ -275,8 +275,12 @@ int mc(system_t *system) {
 	if (open_traj_file(system) < 0)
 			error("MC: could not open trajectory files\n");
 
-	if ( system->ensemble == ENSEMBLE_TE ) //per Chris's request that energy_output be written for TE runs.
+	if ( system->ensemble == ENSEMBLE_TE ) { //per Chris's request that energy_output be written for TE runs.
 		write_observables(system->file_pointers.fp_energy, system, system->observables);
+		if ( system->file_pointers.fp_energy_csv ) {
+			write_observables_csv(system->file_pointers.fp_energy_csv, system, system->observables);
+		}
+	}
 
 	/* save the initial state */
 	checkpoint(system);
@@ -378,6 +382,7 @@ int mc(system_t *system) {
 					update_root_averages(system, observables_mpi, avg_nodestats_mpi, system->avg_observables);
 					if(system->calc_hist) update_root_histogram(system);
 					if(system->file_pointers.fp_energy) write_observables(system->file_pointers.fp_energy, system, observables_mpi);
+					if(system->file_pointers.fp_energy_csv) write_observables_csv(system->file_pointers.fp_energy_csv, system, observables_mpi);
 
 					// calculate stats for each individual sorbate
 					update_sorbate_stats( system );

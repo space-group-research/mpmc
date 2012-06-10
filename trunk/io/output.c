@@ -104,6 +104,16 @@ int open_files(system_t *system) {
 			"#step #energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio #volume\n");
 	}
 
+	if(system->energy_output_csv) {
+		system->file_pointers.fp_energy_csv = fopen(system->energy_output_csv, "w");
+		if(!system->file_pointers.fp_energy_csv) {
+			error("MC: could not open energy CSV file for writing\n");
+			return(-1);
+		}
+		fprintf(system->file_pointers.fp_energy_csv,
+			"#step,#energy,#coulombic,#rd,#polar,#vdw,#kinetic,#temp,#N,#spin_ratio,#volume\n");
+	}
+
 	if(system->dipole_output) {
 		system->file_pointers.fp_dipole = fopen(system->dipole_output, "w");
 		if(!system->file_pointers.fp_dipole) {
@@ -145,6 +155,7 @@ void close_files(system_t *system) {
 	int i;
 
 	if(system->file_pointers.fp_energy) fclose(system->file_pointers.fp_energy);
+	if(system->file_pointers.fp_energy_csv) fclose(system->file_pointers.fp_energy_csv);
 	if(system->file_pointers.fp_dipole) fclose(system->file_pointers.fp_dipole);
 	if(system->file_pointers.fp_field) fclose(system->file_pointers.fp_field);
 	if(system->file_pointers.fp_histogram) fclose(system->file_pointers.fp_histogram);
@@ -542,7 +553,24 @@ void write_observables(FILE *fp_energy, system_t * system, observables_t * obser
 		observables->volume);
 	fprintf(fp_energy, "\n");
 	fflush(fp_energy);
+}
 
+void write_observables_csv(FILE *fp_energy_csv, system_t * system, observables_t * observables) {
+
+	fprintf(fp_energy_csv, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", 
+		system->step,
+		observables->energy, 
+		observables->coulombic_energy, 
+		observables->rd_energy, 
+		observables->polarization_energy, 
+		observables->vdw_energy, 
+		observables->kinetic_energy, 
+		observables->temperature, 
+		observables->N, 
+		observables->spin_ratio, 
+		observables->volume);
+	fprintf(fp_energy_csv, "\n");
+	fflush(fp_energy_csv);
 }
 
 /* output each molecular dipole (in debye) per line */

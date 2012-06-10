@@ -240,6 +240,7 @@ typedef struct _param {
 
 typedef struct _file_pointers {
 	FILE *fp_energy;
+	FILE *fp_energy_csv;
 	FILE *fp_dipole;
 	FILE *fp_field;
 	FILE *fp_histogram;
@@ -355,7 +356,7 @@ typedef struct _system {
 
 	// i/o options
 	int wrapall;
-	char *pdb_input, *pdb_output, *pdb_restart, *traj_output, *energy_output;
+	char *pdb_input, *pdb_output, *pdb_restart, *traj_output, *energy_output, *energy_output_csv;
 	int read_pdb_box_on; //read box basis from pdb
 	char *dipole_output, *field_output, *histogram_output, *frozen_output;
 	char *insert_input;

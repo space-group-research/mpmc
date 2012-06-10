@@ -224,6 +224,7 @@ void cleanup(system_t *system) {
 	free(system->pdb_input);
 	free(system->pdb_output);
 	free(system->energy_output);
+	free(system->energy_output_csv);
 
 	if(system->traj_output) free(system->traj_output);
 	if(system->dipole_output) free(system->dipole_output);

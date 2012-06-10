@@ -505,9 +505,10 @@ int write_performance(int i, system_t *system) {
 			sprintf(linebuf, "OUTPUT: Canonical Monte Carlo simulation running on %d cores\n", size);
 			output(linebuf);
 		}
+		float nsf = system->numsteps; /* numsteps as a float (nsf) */
 		sprintf(linebuf, "OUTPUT: Root collecting statistics at %s", ctime(&current_time));
 		output(linebuf);
-		sprintf(linebuf, "OUTPUT: Completed step %d/%d\n", i, system->numsteps);
+		sprintf(linebuf, "OUTPUT: Completed step %d/%d  (%.3f %)\n", i, system->numsteps, (i/nsf)*100);
 		output(linebuf);
 		sprintf(linebuf, "OUTPUT: %f sec/step, ETA = %.3f hrs\n", sec_step, sec_step*(system->numsteps - i)/3600.0);
 		output(linebuf);

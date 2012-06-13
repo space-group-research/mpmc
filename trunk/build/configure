@@ -3,7 +3,7 @@
 if [ $# != 6 ]
 then
 	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
-	echo "     hostnames: llnl lincoln bigben circe galactic dirac lonestar ranger spin time generic"
+	echo "     hostnames: generic gdb circe ranger lincoln llnl bigben galactic dirac lonestar spin time"
 	echo "     compilers: gcc pgi icc"
 	exit 1
 fi
@@ -18,70 +18,48 @@ VDW=$6
 
 NVCC="nvcc"
 
+
+## Check for machine and compiler. Set CC/CFLAGS/LIBS.
 case "$HOSTNAME" in
 	"llnl")
 		case "$COMPILER" in
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
 				EXTRA_LIBS="-rpath /opt/pgi-7.2.5/libso -L/usr/local/tools/acml-pgi/lib -lpgc -lacml -lacml_mv -lpgftnrtl -lrt -lm"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 			;;
 		esac
 	;;
 	"lincoln")
 		case "$COMPILER" in
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
 				EXTRA_LIBS="-lpgc -lpgftnrtl -lrt -lm"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 			;;
 		esac
 	;;
 	"bigben")
 		case "$COMPILER" in
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			"pgi")
 				CC="cc"
 				CFLAGS="-O3 -fastsse -Mnontemporal -Mprefetch=distance:8,nta"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 			;;
 		esac
 	;;
-	"circe")
+	"circe") #USF research computing
 		case "$COMPILER" in
 			"gcc")
 
@@ -100,16 +78,12 @@ case "$HOSTNAME" in
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"dirac")
+	"dirac") #dirac.cas.usf.edu
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
@@ -121,16 +95,12 @@ case "$HOSTNAME" in
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
 				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"time")
+	"time") #time.cas.usf.edu
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
@@ -142,35 +112,23 @@ case "$HOSTNAME" in
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
 				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
 	"galactic")
 		case "$COMPILER" in
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
-			"pgi")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			"icc")
 				CC="icc"
 				CFLAGS="-O3 -prefetch -mp -axP -ip -unroll"
 			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"lonestar")
+	"lonestar") #TACC
 		case "$COMPILER" in
 			"gcc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
@@ -185,31 +143,35 @@ case "$HOSTNAME" in
 				CFLAGS="-O3 -prefetch -mp -ip -unroll"
 			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"ranger")
+	"ranger") #TACC
 		case "$COMPILER" in
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -tp barcelona-64"
 				EXTRA_LIBS="-lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lm"
 			;;
-			"icc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"spin")
+	"spin") #spin.cas.usf.edu
+		case "$COMPILER" in
+			"gcc")
+				CC="gcc"
+				CFLAGS="-g0 -O3"
+				EXTRA_LIBS="-lm"
+			;;
+			*)
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
+				exit 1
+		esac
+	;;
+	"generic")
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
@@ -219,44 +181,36 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-g0 -O3 -fastsse -Mipa=fast,inline,libinline"
+				EXTRA_LIBS="-lm"
 			;;
 			"icc")
 				CC="icc"
 				CFLAGS="-O3 -prefetch -mp -axN -ip -unroll"
+				EXTRA_LIBS="-lm"
 			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
 	;;
-	"generic")
+	"gdb") ##debug in gdb
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
-				CFLAGS="-O3"
-				EXTRA_LIBS="-lm"
-			;;
-			"pgi")
-				CC="pgcc"
-				CFLAGS="-O3"
-				EXTRA_LIBS="-lm"
-			;;
-			"icc")
-				CC="icc"
-				CFLAGS="-O3"
+				CFLAGS="-g"
 				EXTRA_LIBS="-lm"
 			;;
 			*)
-				echo "error: unknown compiler $COMPILER"
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
 		esac
-	;;
-	*)
-		echo "error: unknown hostname $HOSTNAME"
+	;;	*) ## no machine match
+		echo "error: unknown machine $HOSTNAME"
 		exit 1
 	;;
 esac
 
+## Serial/Parallel compilation
 case "$MODE" in
 	"serial")
 		DEFINES="$DEFINES"
@@ -301,21 +255,17 @@ if [ $VDW = "yes" ]; then
 	EXTRA_LIBS="$EXTRA_LIBS -llapack"
 fi
 
-if [ $CUDA = "yes" ]
-then
+if [ $CUDA = "yes" ]; then
 
-	if [ $HOSTNAME = "circe" ]
-	then
+	if [ $HOSTNAME = "circe" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/apps/cuda/3.0/include"
 		EXTRA_LIBS="$EXTRA_LIBS -L/opt/apps/cuda/3.0/lib64 -lcudart"
-	elif [ $HOSTNAME == "llnl" ]
-	then
+	elif [ $HOSTNAME == "llnl" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-3.0/include"
 		EXTRA_LIBS="$EXTRA_LIBS -L/opt/cudatoolkit-3.0/lib64 -lcudart"
-	elif [ $HOSTNAME == "lincoln" ]
-	then
+	elif [ $HOSTNAME == "lincoln" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/usr/local/cuda-3.0/include"
 		EXTRA_LIBS="$EXTRA_LIBS -L/usr/local/cuda-3.0/lib64 -lcudart"
@@ -325,26 +275,38 @@ then
 	fi
 fi
 
-echo > Makefile
-echo "#HOSTNAME=$HOSTNAME COMPILER=$COMPILER MODE=$MODE CUDA=$CUDA QM_ROTATION=$QM_ROTATION" >> Makefile
-echo "CC=$CC" >> Makefile
-if [ $CUDA = "yes" ]
-then
-	echo "NVCC=$NVCC" >> Makefile
-fi
-echo "CFLAGS=$CFLAGS" >> Makefile
-echo "DEFINES=$DEFINES" >> Makefile
-echo "EXTRA_DEFINES=$EXTRA_DEFINES" >> Makefile
-echo "EXTRA_INCLUDES=$EXTRA_INCLUDES" >> Makefile
-if [ $COMPILER = "gcc" ]; then
-	echo "GCC_EXTRA_LIBS=$EXTRA_LIBS" >> Makefile
+## Set CUDA flag
+if [ $CUDA = "yes" ]; then
+	NVCC=$NVCC
 else
-	echo "EXTRA_LIBS=$EXTRA_LIBS" >> Makefile
+	NVCC=
 fi
-echo "CUDA=$CUDA" >> Makefile
-echo "QM_ROTATION=$QM_ROTATION" >> Makefile
-echo >> Makefile
 
-echo "include Makefile.common" >> Makefile
-echo >> Makefile
+## Libs for gcc need to be specified in a different position
+if [ $COMPILER = "gcc" ]; then
+	GCC_EXTRA_LIBS=$EXTRA_LIBS
+	EXTRA_LIBS=
+else
+	GCC_EXTRA_LIBS=
+	EXTRA_LIBS=$EXTRA_LIBS
+fi
+
+cat > Makefile << EOF
+
+#HOSTNAME=$HOSTNAME COMPILER=$COMPILER MODE=$MODE CUDA=$CUDA QM_ROTATION=$QM_ROTATION" 
+CC=$CC
+CFLAGS=$CFLAGS
+
+DEFINES=$DEFINES
+EXTRA_INCLUDES=$EXTRA_INCLUDES
+EXTRA_LIBS=$EXTRA_LIBS
+GCC_EXTRA_LIBS=$GCC_EXTRA_LIBS
+CUDA=$CUDA
+QM_ROTATION=$QM_ROTATION
+
+NVCC=$NVCC
+
+include Makefile.common
+
+EOF
 

@@ -327,19 +327,6 @@ double * getsqrtKinv ( system_t * system, int N ) {
 	return sqrtKinv;
 }
 
-int getnatoms ( system_t *system ) {
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-	int i=0;
-	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr=molecule_ptr->next ) {
-		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-			i++;
-		}
-	}
-	return i;
-}
-
-
 // long-range correction
 double lr_vdw_corr ( system_t * system ) {
 	molecule_t * molecule_ptr;

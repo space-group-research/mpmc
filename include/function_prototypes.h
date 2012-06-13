@@ -45,6 +45,7 @@ double anharmonic_fh_fourth_order(double, double, double, double, double);
 double h2_bond_energy(double r);
 int bessik(float, float, float *, float *, float *, float *);	/* NR function */
 double besselK(double, double);
+int getnatoms(system_t *);
 
 /* io */
 system_t *read_config(char *);
@@ -160,6 +161,7 @@ void invert_matrix(int, double **, double **);
 int num_atoms(system_t *);
 void thole_resize_matrices(system_t *);
 void print_matrix(int N, double **matrix);
+void ewald_estatic ( system_t * );
 
 /* polarization - CUDA */
 #ifdef CUDA
@@ -227,3 +229,8 @@ double n2_fugacity_PR(double, double);
 double n2_fugacity_zhou(double, double);
 double co2_fugacity(double, double);
 
+
+//useful math calls
+double dddotprod(double*, double*);
+double didotprod(double*, int*);
+double iidotprod(int*, int*);

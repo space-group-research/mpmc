@@ -3,140 +3,66 @@
 # !!! common Makefile - DO NOT EDIT !!! #
 #########################################
 
-BUILD=.
-TOP=$(BUILD)/..
-HEADERS=$(TOP)/include/function_prototypes.h $(TOP)/include/mc.h $(TOP)/include/physical_constants.h $(TOP)/include/structs.h $(TOP)/include/surf_const.h
+TOP=..
 INCLUDES=-I$(TOP)/include
 
 ENERGY=$(TOP)/energy
 IO=$(TOP)/io
 MAIN=$(TOP)/main
 MC=$(TOP)/mc
-POLARIZATION=$(TOP)/polarization
-HISTOGRAM=$(TOP)/histogram
-QUANTUM_ROTATION=$(TOP)/quantum_rotation
+POLAR=$(TOP)/polarization
+HIST=$(TOP)/histogram
+QROT =$(TOP)/quantum_rotation
+
+TARGET=mpmc
+
+ENERGY_OBJ = bessel.o bond.o coulombic.o coulombic_gwp.o dreiding.o energy.o lj.o pairs.o pbc.o polar.o sg.o vdw.o
+IO_OBJ = average.o dxwrite.o input.o mpi.o output.o
+MAIN_OBJ = cleanup.o main.o memnullcheck.o rng.o usefulmath.o
+MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.o
+POLAR_OBJ = ewald_efield.o thole_field.o thole_iterative.o thole_matrix.o thole_polarizability.o
+HIST_OBJ = histogram.o
+QROT_OBJ = rotational_basis.o rotational_eigenspectrum.o rotational_integrate.o rotational_potential.o
 
 ifeq ($(QM_ROTATION),yes)
-all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o \
-	input.o output.o average.o mpi.o dxwrite.o\
-	main.o cleanup.o rng.o memnullcheck.o\
-	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o fugacity.o \
-	thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o \
-	vdw.o qshift.o \
-	histogram.o \
-	rotational_eigenspectrum.o rotational_basis.o rotational_potential.o rotational_integrate.o
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o mpmc $(GCC_EXTRA_LIBS)
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(QROT_OBJ)
+	$(CC) $(CFLAGS) $(DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o $(TARGET)  $(GCC_EXTRA_LIBS)
 else
-all:	energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o \
-	input.o output.o average.o mpi.o dxwrite.o\
-	main.o cleanup.o rng.o memnullcheck.o\
-	mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.o fugacity.o\
-	thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o \
-	histogram.o \
-	vdw.o qshift.o
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o mpmc $(GCC_EXTRA_LIBS)
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) 
+	$(CC) $(CFLAGS) $(DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o $(TARGET) $(GCC_EXTRA_LIBS)
 endif
 
 clean:
 	rm -f *.o *.oo *.ipa mpmc
 
 # energy routines
-energy: energy.o pairs.o pbc.o lj.o dreiding.o sg.o coulombic.o coulombic_gwp.o polar.o bond.o bessel.o vdw.o
-energy.o: $(ENERGY)/energy.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/energy.c
-pairs.o: $(ENERGY)/pairs.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/pairs.c
-pbc.o: $(ENERGY)/pbc.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/pbc.c
-lj.o: $(ENERGY)/lj.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/lj.c
-dreiding.o: $(ENERGY)/dreiding.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/dreiding.c
-sg.o: $(ENERGY)/sg.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/sg.c
-coulombic.o: $(ENERGY)/coulombic.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/coulombic.c
-coulombic_gwp.o: $(ENERGY)/coulombic_gwp.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/coulombic_gwp.c
-bond.o: $(ENERGY)/bond.c
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/bond.c
-bessel.o: $(ENERGY)/bessel.c
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/bessel.c
-polar.o: $(ENERGY)/polar.c
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar.c
-vdw.o: $(ENERGY)/vdw.c
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/vdw.c
+energy: $(ENERGY_OBJ)
+%.o: $(ENERGY)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 ifeq ($(CUDA),yes)
-	$(NVCC) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar_cuda.cu
+	$(NVCC) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar_cuda.cu
 endif
-
 # input/output functions
-io: input.o output.o average.o mpi.o dxwrite.o
-input.o: $(IO)/input.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(IO)/input.c
-output.o: $(IO)/output.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(IO)/output.c
-average.o: $(IO)/average.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(IO)/average.c
-mpi.o: $(IO)/mpi.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(IO)/mpi.c
-dxwrite.o: $(IO)/dxwrite.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(IO)/dxwrite.c
-
+io: $(IO_OBJ)
+%.o: $(IO)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 # main associated things
-main: main.o cleanup.o rng.o memnullcheck.o
-main.o: $(MAIN)/main.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MAIN)/main.c
-cleanup.o: $(MAIN)/cleanup.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MAIN)/cleanup.c
-rng.o: $(MAIN)/rng.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MAIN)/rng.c
-memnullcheck.o: $(MAIN)/memnullcheck.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MAIN)/memnullcheck.c
-
+main: $(MAIN_OBJ)
+%.o: $(MAIN)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 # monte carlo subtree
-mc: mc.o mc_moves.o pimc.o surface.o cavity.o surf_fit.c fugacity.o
-mc.o: $(MC)/mc.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/mc.c
-mc_moves.o: $(MC)/mc_moves.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/mc_moves.c
-pimc.o: $(MC)/pimc.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/pimc.c
-surf_fit.o: $(MC)/surf_fit.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/surf_fit.c
-surface.o: $(MC)/surface.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/surface.c
-cavity.o: $(MC)/cavity.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/cavity.c
-qshift.o: $(MC)/qshift.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/qshift.c
-fugacity.o: $(MC)/fugacity.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(MC)/fugacity.c
-
+mc: $(MC_OBJ)
+%.o: $(MC)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 # many-body polarization
-polarization: thole_iterative.o thole_matrix.o thole_field.o thole_polarizability.o
-thole_iterative.o: $(POLARIZATION)/thole_iterative.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(POLARIZATION)/thole_iterative.c
-thole_matrix.o: $(POLARIZATION)/thole_matrix.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(POLARIZATION)/thole_matrix.c
-thole_field.o: $(POLARIZATION)/thole_field.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(POLARIZATION)/thole_field.c
-thole_polarizability.o: $(POLARIZATION)/thole_polarizability.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(POLARIZATION)/thole_polarizability.c
-
+polar: $(POLAR_OBJ) 
+%.o: $(POLAR)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 # 3D histograms
-histogram: histogram.o
-histogram.o: $(HISTOGRAM)/histogram.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(HISTOGRAM)/histogram.c
-
+hist: $(HIST_OBJ)
+%.o: $(HIST)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 # quantum rotational diagonalization
-quantum_rotation: rotational_eigenspectrum.o rotational_basis.o rotational_potential.o rotational_integrate.o
-rotational_eigenspectrum.o: $(QUANTUM_ROTATION)/rotational_eigenspectrum.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(QUANTUM_ROTATION)/rotational_eigenspectrum.c
-rotational_basis.o: $(QUANTUM_ROTATION)/rotational_basis.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(QUANTUM_ROTATION)/rotational_basis.c
-rotational_potential.o: $(QUANTUM_ROTATION)/rotational_potential.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(QUANTUM_ROTATION)/rotational_potential.c
-rotational_integrate.o: $(QUANTUM_ROTATION)/rotational_integrate.c $(HEADERS)
-	$(CC) $(CFLAGS) $(DEFINES) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(QUANTUM_ROTATION)/rotational_integrate.c
-
+qrot: $(QROT_OBJ) 
+%.o: $(QROT)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 

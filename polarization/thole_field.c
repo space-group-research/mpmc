@@ -30,11 +30,8 @@ void thole_field(system_t *system) {
 	}
 
 	/* calculate the electrostatic field */
-	if(system->polar_ewald) {
-		thole_field_real(system);
-		thole_field_recip(system);
-		thole_field_self(system);
-	} 
+	if(system->polar_ewald)
+		ewald_estatic(system);
 	else if (system->polar_wolf)
 		thole_field_wolf(system);
 	else
@@ -42,14 +39,14 @@ void thole_field(system_t *system) {
 
 }
 
-/* calculate the field without ewald summation */
+/* calculate the field without ewald summation/wolf */
 void thole_field_nopbc(system_t *system) {
 
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr;
 	int p;
-	double r, damping;
+	double r;
 
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
@@ -58,25 +55,21 @@ void thole_field_nopbc(system_t *system) {
 				if(!pair_ptr->frozen) {
 
 					r = pair_ptr->rimg;
-					/* exponential field damping */
-					if(system->field_damp == 0.0)
-						damping = 1.0;
-					else
-						damping = 1.0 - exp(-pow(r/system->field_damp, 3.0));
 
+					//inclusive near the cutoff
 					if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
 
 						if(pair_ptr->es_excluded) {
 							if(system->polar_self) { //self-induction
 								for(p = 0; p < 3; p++) {
-									atom_ptr->ef_static_self[p] += damping*pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
-									pair_ptr->atom->ef_static_self[p] -= damping*atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
+									atom_ptr->ef_static_self[p] += pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
+									pair_ptr->atom->ef_static_self[p] -= atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
 								}
 							}
 						} else {
 							for(p = 0; p < 3; p++) {
-								atom_ptr->ef_static[p] += damping*pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
-								pair_ptr->atom->ef_static[p] -= damping*atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
+								atom_ptr->ef_static[p] += pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
+								pair_ptr->atom->ef_static[p] -= atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
 							}
 						}
 

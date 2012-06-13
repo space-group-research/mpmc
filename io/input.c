@@ -513,8 +513,6 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->polar_gamma)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_damp"))
 		{ if ( safe_atof(token[1],&(system->polar_damp)) ) return 1; }
-	else if(!strcasecmp(token[0], "field_damp"))
-		{ if ( safe_atof(token[1],&(system->field_damp)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_precision"))
 		{ if ( safe_atof(token[1],&(system->polar_precision)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_max_iter"))
@@ -1288,9 +1286,6 @@ int check_system(system_t *system) {
 			return(-1);
 		} else {
 			sprintf(linebuf, "INPUT: Thole damping parameter is %.4f\n", system->polar_damp);
-			output(linebuf);
-
-			sprintf(linebuf, "INPUT: Field damping parameter is %.4f\n", system->field_damp);
 			output(linebuf);
 		}
 

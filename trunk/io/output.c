@@ -144,6 +144,9 @@ int open_files(system_t *system) {
 			error("MC: could not open frozen dx file for writing\n");
 			return(-1);
 		}
+		//go ahead and write the frozen lattice configuration now
+		if(system->file_pointers.fp_frozen) write_frozen(system->file_pointers.fp_frozen,system);
+		fclose(system->file_pointers.fp_frozen);
 	}
 
 	return(0);
@@ -159,7 +162,8 @@ void close_files(system_t *system) {
 	if(system->file_pointers.fp_dipole) fclose(system->file_pointers.fp_dipole);
 	if(system->file_pointers.fp_field) fclose(system->file_pointers.fp_field);
 	if(system->file_pointers.fp_histogram) fclose(system->file_pointers.fp_histogram);
-	if(system->file_pointers.fp_frozen) fclose(system->file_pointers.fp_frozen);
+// no need to keep this file open the whole time (afaik) --kmclaugh
+//if(system->file_pointers.fp_frozen) fclose(system->file_pointers.fp_frozen);
 	if(system->file_pointers.fp_traj) fclose(system->file_pointers.fp_traj);
 
 }

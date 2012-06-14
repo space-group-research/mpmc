@@ -2373,9 +2373,6 @@ system_t *setup_system(char *input_file) {
 		output(linebuf);
 	}
 
-	/* write the frozen lattice configuration */
-	if(system->file_pointers.fp_frozen) write_frozen(system->file_pointers.fp_frozen,system);
-
 	/* ensure that all SPECTRE charges lie within the restricted domain */
 	if(system->spectre) spectre_wrapall(system);
 

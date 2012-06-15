@@ -83,7 +83,7 @@ case "$HOSTNAME" in
 				exit 1
 		esac
 	;;
-	"dirac") #dirac.cas.usf.edu
+	"dirac") #dirac usf
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
@@ -100,7 +100,7 @@ case "$HOSTNAME" in
 				exit 1
 		esac
 	;;
-	"time") #time.cas.usf.edu
+	"time") #time usf
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"
@@ -159,7 +159,7 @@ case "$HOSTNAME" in
 				exit 1
 		esac
 	;;
-	"spin") #spin.cas.usf.edu
+	"spin") #spin usf
 		case "$COMPILER" in
 			"gcc")
 				CC="gcc"

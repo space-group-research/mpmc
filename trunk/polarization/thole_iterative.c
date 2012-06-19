@@ -60,14 +60,18 @@ int thole_iterative(system_t *system) {
 		if(iteration_counter >= MAX_ITERATION_COUNT) {
 
 			for(i = 0; i < N; i++)
-				for(p = 0; p < 3; p++)
+				for(p = 0; p < 3; p++) {
 					atom_array[i]->mu[p] = atom_array[i]->polarizability*atom_array[i]->ef_static[p];
+					atom_array[i]->ef_induced_change[p] = 0.0; //so we don't break palmo
+				}
+
+			//set convergence failure flag
+			system->iter_success = 1;
 
 			free(atom_array);
 			return(iteration_counter);
 
 		}
-
 
 		/* save the current dipole set and clear the induced field vectors */
 		for(i = 0; i < N; i++) {

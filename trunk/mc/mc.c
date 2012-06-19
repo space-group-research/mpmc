@@ -312,6 +312,12 @@ int mc(system_t *system) {
 
 		/* Metropolis function */
 		if(get_rand() < system->nodestats->boltzmann_factor) {	/* ACCEPT */
+			// if iterative solver failed, but we are still accepting this move, issue a warning.
+			// note: I don't really know the correct way to handle this.
+			if ( system->iter_success == 1 ) {
+				fprintf(stderr,"warning: iterative solver failed on accepted mc step (step %d)\n", system->step);
+				system->iter_success = 0;
+			}
 
 			/* checkpoint */
 			checkpoint(system);
@@ -323,6 +329,9 @@ int mc(system_t *system) {
 						(system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
 
 		} else {						/* REJECT */
+
+			//reset the polar iterative failure flag
+			system->iter_success = 0;
 
 			/* restore from last checkpoint */
 			restore(system);

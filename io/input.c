@@ -586,26 +586,25 @@ int do_command (system_t * system, char ** token ) {
 	}
 #endif */
 
-	//output and input files
-	else if (!strcasecmp(token[0], "pdb_input")) {
-		if(!system->pdb_input) {
-			system->pdb_input = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pdb_input,MAXLINE*sizeof(char),93);
-			strcpy(system->pdb_input,token[1]);
+	else if (!strcasecmp(token[0], "pqr_input")) {
+		if(!system->pqr_input) {
+			system->pqr_input = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_input,MAXLINE*sizeof(char),93);
+			strcpy(system->pqr_input,token[1]);
 		} else return 1;
 	}
-	else if (!strcasecmp(token[0], "pdb_output")) {
-		if(!system->pdb_output) {
-			system->pdb_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pdb_output,MAXLINE*sizeof(char),94);
-			strcpy(system->pdb_output,token[1]);
+	else if (!strcasecmp(token[0], "pqr_output")) {
+		if(!system->pqr_output) {
+			system->pqr_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_output,MAXLINE*sizeof(char),94);
+			strcpy(system->pqr_output,token[1]);
 		} else return 1;
 	}
-	else if (!strcasecmp(token[0], "pdb_restart")) {
-		if(!system->pdb_restart) {
-			system->pdb_restart = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pdb_restart,MAXLINE*sizeof(char),95);
-			strcpy(system->pdb_restart,token[1]);
+	else if (!strcasecmp(token[0], "pqr_restart")) {
+		if(!system->pqr_restart) {
+			system->pqr_restart = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),95);
+			strcpy(system->pqr_restart,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "traj_output")) {
@@ -664,12 +663,13 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->insert_input,token[1]);
 		} else return 1;
 	}
-	//read box limits from pdb input
-	else if(!strcasecmp(token[0], "read_pdb_box")) {
+
+	// read box limits from pqr input
+	else if(!strcasecmp(token[0], "read_pqr_box")) {
 		if(!strcasecmp(token[1],"on"))
-			system->read_pdb_box_on = 1;
+			system->read_pqr_box_on = 1;
 		else if (!strcasecmp(token[1],"off")) 
-			system->read_pdb_box_on = 0;
+			system->read_pqr_box_on = 0;
 		else return 1;
 	}
 
@@ -763,22 +763,21 @@ int do_command (system_t * system, char ** token ) {
 
 
 
-
-int read_pdb_box ( system_t * system ) {
+int read_pqr_box ( system_t * system ) {
 
 	char buffer[MAXLINE], token[7][MAXLINE];
 	int basis_set[3]; 
 	FILE * fp;
 
-	printf("INPUT: (read_pdb_box) checking input pdb for basis info\n");
+	printf("INPUT: (read_pqr_box) checking input pqr for basis info\n");
 
 	//flags to make sure we set all basis vectors
 	basis_set[0]=basis_set[1]=basis_set[2]=0; 
 
 	/* open the molecule input file */
-	fp = fopen(system->pdb_input, "r");
+	fp = fopen(system->pqr_input, "r");
 	if(!fp) {
-		sprintf(buffer, "INPUT: couldn't open PDB input file %s\n", system->pdb_input);
+		sprintf(buffer, "INPUT: couldn't open PQR input file %s\n", system->pqr_input);
 		error(buffer);	
 		return(-1);
 	}
@@ -815,17 +814,17 @@ int read_pdb_box ( system_t * system ) {
 	}
 
 	if (basis_set[0] == 1)
-		printf("INPUT: basis[0] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+		printf("INPUT: basis[0] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[0] from pdb file.\n");
+		else fprintf(stderr,"INPUT: unable to read basis[0] from pqr file.\n");
 	if (basis_set[1] == 1)
-		printf("INPUT: basis[1] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+		printf("INPUT: basis[1] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[1] from pdb file.\n");
+		else fprintf(stderr,"INPUT: unable to read basis[1] from pqr file.\n");
 	if (basis_set[2] == 1)
-		printf("INPUT: basis[2] successfully read from pdb {%.5lf %.5lf %.5lf}\n", 
+		printf("INPUT: basis[2] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[2] from pdb file.\n");
+		else fprintf(stderr,"INPUT: unable to read basis[2] from pqr file.\n");
 
 	fclose(fp);
 	return 0;
@@ -1213,12 +1212,11 @@ int check_system(system_t *system) {
 
 	}
 
-
-	if(!system->pdb_input) {
-		error("INPUT: must specify an input PDB\n");
+	if(!system->pqr_input) {
+		error("INPUT: must specify an input PQR file\n");
 		return(-1);
 	} else {
-		sprintf(linebuf, "INPUT: molecular coordinates are in %s\n", system->pdb_input);
+		sprintf(linebuf, "INPUT: molecular coordinates are in %s\n", system->pqr_input);
 		output(linebuf);
 	}
 
@@ -1563,19 +1561,19 @@ int check_system(system_t *system) {
 
 		}
 
-		if(!system->pdb_output) {
-			error("INPUT: must specify an output PDB\n");
+		if(!system->pqr_output) {
+			error("INPUT: must specify an output PQR\n");
 			return(-1);
 		} else {
-			sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pdb_output);
+			sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
 			output(linebuf);
 		}
 
-		if(!system->pdb_restart) {
-			error("INPUT: must specify a restart PDB\n");
+		if(!system->pqr_restart) {
+			error("INPUT: must specify a restart PQR file\n");
 			return(-1);
 		} else {
-			sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pdb_restart);
+			sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
 			output(linebuf);
 		}
 
@@ -1710,10 +1708,9 @@ molecule_t *read_molecules(system_t *system) {
 	prev_atom_ptr = atom_ptr;
 
 
-	/* open the molecule input file */
-	fp = fopen(system->pdb_input, "r");
+	fp = fopen(system->pqr_input, "r");
 	if(!fp) {
-		sprintf(linebuf, "INPUT: couldn't open PDB input file %s\n", system->pdb_input);
+		sprintf(linebuf, "INPUT: couldn't open PQR input file %s\n", system->pqr_input);
 		error(linebuf);	
 		return(NULL);
 	}
@@ -1911,7 +1908,7 @@ molecule_t *read_molecules(system_t *system) {
 	} else {
 
 		if(!moveable) {
-			error("INPUT: no moveable molecules found, there must be at least one in your PDB file\n");
+			error("INPUT: no moveable molecules found, there must be at least one in your PQR file\n");
 			return(NULL);
 		}
 
@@ -2308,11 +2305,11 @@ system_t *setup_system(char *input_file) {
 	} else
 		output("INPUT: finished reading config file\n");
 
-	/* if read_pdb_box is set, then read basis from pdb input file*/
-	if(system->read_pdb_box_on)
-		read_pdb_box(system);
+	/* if read_pqr_box is set, then read basis from pqr input file */
+	if(system->read_pqr_box_on)
+		read_pqr_box(system);
 
-//no better place to put this (too many conflicts
+//no better place to put this (too many conflicts)
 	if ((system->ewald_alpha != EWALD_ALPHA) && (system->ensemble == ENSEMBLE_NPT)) {
 		printf("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
 	}	
@@ -2328,7 +2325,7 @@ system_t *setup_system(char *input_file) {
 		output("INPUT: config file validated\n");
 
 
-	/* read in the input pdb and setup the data structures */
+	/* read in the input pqr and setup the data structures */
 	system->molecules = read_molecules(system);
 	if(!system->molecules) {
 		error("INPUT: error reading in molecules\n");

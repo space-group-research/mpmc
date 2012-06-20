@@ -93,8 +93,8 @@ int alloc_curves ( int nCurves, int nPoints, curveData_t * curve ) {
 	return 0;
 }
 
-//output dimer configurations to pdb for verification
-void output_pdbs ( system_t * system, int nCurves, curveData_t * curve ) {
+//output dimer configurations to pqr for verification
+void output_pqrs ( system_t * system, int nCurves, curveData_t * curve ) {
 
 	int i;
   char filename[500];
@@ -104,7 +104,7 @@ void output_pdbs ( system_t * system, int nCurves, curveData_t * curve ) {
       // Apply rotation associated with i-th curve and separate COM by 5 Angstroms
       surface_dimer_geometry(system, 5.0, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
                                           curve[i].alpha2, curve[i].beta2, curve[i].gamma2 );
-      sprintf( filename, "%s.pdb\0", curve[i].id );
+      sprintf( filename, "%s.pqr\0", curve[i].id );
       write_molecules( system, filename );
 
       // Restore the molecule to its initial orientation
@@ -347,7 +347,7 @@ void revert_parameters ( system_t * system, param_t * params ) {
 void new_global_min ( system_t * system, int nCurves, int nPoints, curveData_t * curve ) {
 	int j, i;
 	// output the new geometry
-	write_molecules(system, "fit_geometry.pdb");
+	write_molecules(system, "fit_geometry.pqr");
 	for( j = 0; j<nCurves; j++ )
 		for(i = 0; i < nPoints; i++)
 			curve[j].global[i] = curve[j].output[i];

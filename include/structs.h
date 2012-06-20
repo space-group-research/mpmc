@@ -340,7 +340,7 @@ typedef struct _system {
 	//thole options
 	int polarization, polarvdw, polarizability_tensor;
 	int iter_success; //flag set when iterative solver fails to converge (when polar_precision is used)
-	int polar_iterative, polar_ewald, polar_zodid, polar_self, polar_palmo;
+	int polar_iterative, polar_ewald, polar_ewald_full, polar_zodid, polar_self, polar_palmo;
 	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf;
 	double polar_wolf_alpha, polar_gamma, polar_damp, field_damp, polar_precision;
 	int damp_type;

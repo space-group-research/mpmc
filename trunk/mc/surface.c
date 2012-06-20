@@ -269,11 +269,11 @@ int surface_dimer_geometry(system_t *system, double r, double alpha_origin, doub
 	molecule_origin = system->molecules;
 	molecule_move = molecule_origin->next;
 	if(!molecule_move) {
-		error("SURFACE: the input PDB has only a single molecule\n");
+		error("SURFACE: the input PQR has only a single molecule\n");
 		return(-1);
 	}
 	if(molecule_move->next) {
-		error("SURFACE: the input PDB must contain exactly two molecules\n");
+		error("SURFACE: the input PQR must contain exactly two molecules\n");
 		return(-1);
 	}
 
@@ -314,7 +314,7 @@ atom_t *find_atom_by_id( system_t *system, int target_id ) {
 
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) 
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-                        // Look for the bond_id, that is, the id specified in the pdb input
+                        // Look for the bond_id, that is, the id specified in the pqr input
                         // file, NOT the id stored in the id field, which is just its position
                         // in the input file.
                         if( atom_ptr->bond_id == target_id )
@@ -462,7 +462,7 @@ int surface_fit(system_t *system) {
 	r_inc = r_input[1] - r_input[0];
 
 	// Output the geometry for visual verification
-	output_pdbs ( system, nCurves, curve );	
+	output_pqrs ( system, nCurves, curve );	
 
 	// Get the Initial Error
 	//////////////////////////////////
@@ -502,7 +502,7 @@ int surface_fit(system_t *system) {
 // ANNEALING
 // Loop over temperature. When the temperature reaches MIN_TEMPERATURE
 // we quit. Assuming we find an error smaller than the initial error
-// we'll spit out a fit_geometry.pdb file, and you'll want to re-anneal.
+// we'll spit out a fit_geometry.pqr file, and you'll want to re-anneal.
 	for(nSteps = 0; temperature > MIN_TEMPERATURE; ++nSteps) {
 
 		// randomly perturb the parameters

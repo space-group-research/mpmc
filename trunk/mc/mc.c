@@ -412,7 +412,8 @@ int mc(system_t *system) {
 					error("MC: could not write statistics to stdout\n");
 					return(-1);
 				}
-				if(write_molecules(system, system->pdb_restart) < 0) {
+
+				if(write_molecules(system, system->pqr_restart) < 0) {
 					error("MC: could not write restart state to disk\n");
 					return(-1);
 				}
@@ -430,7 +431,7 @@ int mc(system_t *system) {
 	free(snd_strct);
 	if(!rank) {
 
-		if(write_molecules(system, system->pdb_output) < 0) {
+		if(write_molecules(system, system->pqr_output) < 0) {
 			error("MC: could not write final state to disk\n");
 			return(-1);
 		}

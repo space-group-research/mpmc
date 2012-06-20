@@ -68,6 +68,9 @@ int main(int argc, char **argv) {
 	sprintf(linebuf, "MAIN: running parameters found in %s\n", input_file);
 	output(linebuf);
 
+	/* output warning about PDB --> PQR change */
+	printf("MAIN: *** PLEASE NOTE THAT THE PDB FILE FORMAT IS NO LONGER SUPPORTED IN MPMC ***\n" );
+
 	// moved this allocation, because we'd like to set system->obsevables->volume during setup_system
 
 	/* read the input files and setup the simulation */

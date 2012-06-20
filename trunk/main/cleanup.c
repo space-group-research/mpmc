@@ -220,9 +220,8 @@ void cleanup(system_t *system) {
 	free_pairs(system->molecules);
 	free_atoms(system->molecules);
 	free_molecules(system->molecules);
-
-	free(system->pdb_input);
-	free(system->pdb_output);
+	free(system->pqr_input);
+	free(system->pqr_output);
 	free(system->energy_output);
 	free(system->energy_output_csv);
 
@@ -283,7 +282,7 @@ void cleanup(system_t *system) {
 	}
 
 
-	free(system->pdb_restart);
+	free(system->pqr_restart);
 
 	free(system->pbc);
 

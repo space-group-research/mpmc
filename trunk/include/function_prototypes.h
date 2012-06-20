@@ -135,7 +135,7 @@ void revert_volume_change(system_t *);
 void surface_curve( system_t *, double, double, double, double * );
 double error_calc ( system_t *, int, int, curveData_t *, double );
 int alloc_curves ( int, int, curveData_t * );
-void output_pdbs ( system_t *, int, curveData_t * );
+void output_pqrs ( system_t *, int, curveData_t * );
 void output_params ( double, double, param_t * );
 param_t * record_params ( system_t * );
 void surf_perturb ( system_t *, double, qshiftData_t *, param_t *);

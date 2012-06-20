@@ -357,8 +357,8 @@ typedef struct _system {
 
 	// i/o options
 	int wrapall;
-	char *pdb_input, *pdb_output, *pdb_restart, *traj_output, *energy_output, *energy_output_csv;
-	int read_pdb_box_on; //read box basis from pdb
+        char *pqr_input, *pqr_output, *pqr_restart, *traj_output, *energy_output, *energy_output_csv;
+        int read_pqr_box_on; //read box basis from pqr
 	char *dipole_output, *field_output, *histogram_output, *frozen_output;
 	char *insert_input;
 	double max_bondlength; /* threshold to bond (re:output files) */

@@ -5,7 +5,7 @@ sub min($$) {if($_[0] < $_[1]) {return $_[0];} return $_[1]; }
 
 sub log10 {my $n = shift; return log($n)/log(10);}
 
-sub readpdbconf(){
+sub readpqrconf(){
 
   #check for EOF
 
@@ -53,7 +53,7 @@ sub readpdbconf(){
   return 1;
 }
 
-sub writepdbconf(){
+sub writepqrconf(){
   if ($nconf == 1){
     open (OUTPUT, ">$outfile") || die ("Could not open the output file $outfile!");
     print "\ncreating new file $outfile\n";
@@ -74,7 +74,7 @@ sub writepdbconf(){
 
 $NREMARK=4; # number of remark lines at beginning (could change to count them)
 $MREMARK=3; # number of remark lines at end of file
-$outfile = "output.pdb";
+$outfile = "output.pqr";
 $nconf = 0;
 $nconf1 = 0;
 $data_file = $ARGV[0];
@@ -111,7 +111,7 @@ print "maximum atom = $nmax, minimum atoms = $nmin, nconf = $nconf1\n";
 #rewind file
 seek(DAT, 0, 0) or die "Can't seek to beginning of file: $!";
 
-while (readpdbconf()){
+while (readpqrconf()){
 
   if($conf[1] =~ m/total_atoms=([0-9]+)/){ # parse out natoms
     $natoms = $1;
@@ -145,7 +145,7 @@ while (readpdbconf()){
   for($i=$natoms+$NREMARK;$i<$nmax+$NREMARK;++$i){
     $conf[$i] = $line; # copy atom line to fill out array
   }
-  writepdbconf();
+  writepqrconf();
 }
 
 #clean up files

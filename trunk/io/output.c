@@ -262,7 +262,7 @@ void spectre_wrapall(system_t *system) {
 }
 
 
-/* write out the final system state as a PDB file */
+/* write out the final system state as a PQR file */
 int write_molecules(system_t *system, char *filename) {
 
 	int atom_box, molecule_box, p, q;
@@ -273,15 +273,22 @@ int write_molecules(system_t *system, char *filename) {
 	atom_t *atom_ptr;
 	FILE *fp;
 	int i, j, k;
+	int ext_output = 0; // By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
 
 	fp = fopen(filename, "w");
 	if(!fp) {
-		sprintf(linebuf, "OUTPUT: could not write pdb to file %s\n", filename);
+		sprintf(linebuf, "OUTPUT: could not write pqr to file %s\n", filename);
 		error(linebuf);
 		return(-1);
 	}
 
-	/* write pdb */
+	/* Check if extended coordinate output is needed (CRC) */
+	if( (system->pbc->basis[0][0] >= 200.0) || (system->pbc->basis[0][1] >= 200.0) || (system->pbc->basis[0][2] >= 200.0) || 
+	    (system->pbc->basis[1][0] >= 200.0) || (system->pbc->basis[1][1] >= 200.0) || (system->pbc->basis[1][2] >= 200.0) || 
+	    (system->pbc->basis[2][0] >= 200.0) || (system->pbc->basis[2][1] >= 200.0) || (system->pbc->basis[2][2] >= 200.0) )
+		ext_output = 1;
+
+	/* write pqr */
 	for(molecule_ptr = system->molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++) {
 
@@ -303,14 +310,27 @@ int write_molecules(system_t *system, char *filename) {
 				fprintf(fp, " %4d   ", i);
 			else
 				fprintf(fp, " %4d   ", j);		/* give each molecule a unique id */
-			if(system->wrapall) {
+
+			/* Regular (PDB compliant) Coordinate Output */
+			if( (system->wrapall) && (ext_output == 0) ) {
 				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[0]);
 				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[1]);
 				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[2]);
-			} else {
+			} else if(ext_output == 0){
 				fprintf(fp, "%8.3f", atom_ptr->pos[0]);
 				fprintf(fp, "%8.3f", atom_ptr->pos[1]);
 				fprintf(fp, "%8.3f", atom_ptr->pos[2]);
+			}
+
+			/* Extended (PQR) Coordinate Output */
+			if( (system->wrapall) && (ext_output == 1) ) {
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[0]);
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[1]);
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[2]);
+			} else if (ext_output == 1) {
+				fprintf(fp, "%11.6f ", atom_ptr->pos[0]);
+				fprintf(fp, "%11.6f ", atom_ptr->pos[1]);
+				fprintf(fp, "%11.6f ", atom_ptr->pos[2]);
 			}
 			fprintf(fp, " %8.5f", atom_ptr->mass);
 			fprintf(fp, " %8.5f", atom_ptr->charge/E2REDUCED);	/* convert charge back to real units */
@@ -351,7 +371,10 @@ int write_molecules(system_t *system, char *filename) {
 						box_pos[p] += system->pbc->basis[p][q]*box_occupancy[q];
 
 				for(p = 0; p < 3; p++)
-					fprintf(fp, "%8.3f", box_pos[p]);
+					if(ext_output == 0)
+						fprintf(fp, "%8.3f", box_pos[p]);
+					else
+						fprintf(fp, "%11.6f ", box_pos[p]);
 
 				/* null interactions */
 				fprintf(fp, " %8.4f", 0.0);
@@ -420,6 +443,7 @@ void write_states(FILE *fp, system_t * system) {
 	int atom_box, molecule_box, p, q;
 	int num_frozen_molecules, num_moveable_molecules;
 	int num_frozen_atoms, num_moveable_atoms;
+	int ext_output = 0; // By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
 
 	//don't bother if we'd be writing to /dev/null
 	if ( ! strncmp("/dev/null",system->traj_output,9) ) return;
@@ -453,7 +477,13 @@ void write_states(FILE *fp, system_t * system) {
 	fprintf(fp, "REMARK frozen_atoms=%d, moveable_atoms=%d\n", 
 		num_frozen_atoms, num_moveable_atoms);
 
-	/* write pdb formatted states */
+	/* Check if extended coordinate output is needed (CRC) */
+	if( (system->pbc->basis[0][0] >= 200.0) || (system->pbc->basis[0][1] >= 200.0) || (system->pbc->basis[0][2] >= 200.0) || 
+	    (system->pbc->basis[1][0] >= 200.0) || (system->pbc->basis[1][1] >= 200.0) || (system->pbc->basis[1][2] >= 200.0) || 
+	    (system->pbc->basis[2][0] >= 200.0) || (system->pbc->basis[2][1] >= 200.0) || (system->pbc->basis[2][2] >= 200.0) )
+		ext_output = 1;
+
+	/* write pqr formatted states */
 	for(molecule_ptr = molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++) {
 
@@ -472,9 +502,19 @@ void write_states(FILE *fp, system_t * system) {
 			else
 				fprintf(fp, "%-1.1s", "M");
 			fprintf(fp, "%4d    ", j);		/* give each molecule a unique id */
-			fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[0]);
-			fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[1]);
-			fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[2]);
+
+			if(ext_output == 0) {
+				/* Regular (PDB compliant) Coordinate Output */
+				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[0]);
+				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[1]);
+				fprintf(fp, "%8.3f", atom_ptr->wrapped_pos[2]);
+			} else {
+				/* Extended (PQR) Coordinate Output */
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[0]);
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[1]);
+				fprintf(fp, "%11.6f ", atom_ptr->wrapped_pos[2]);
+			}
+
 			fprintf(fp, " %8.4f", atom_ptr->mass);
 			fprintf(fp, " %8.4f", atom_ptr->charge/E2REDUCED);	/* convert charge back to real units */
 			fprintf(fp, " %8.5f", atom_ptr->polarizability);

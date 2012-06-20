@@ -586,6 +586,15 @@ int do_command (system_t * system, char ** token ) {
 	}
 #endif */
 
+	// set job name (CRC)
+	else if (!strcasecmp(token[0], "job_name")) {
+		if(!system->job_name) {
+			system->job_name = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->job_name,MAXLINE*sizeof(char),135);
+			strcpy(system->job_name,token[1]);
+		} else return 1;
+	}
+
 	else if (!strcasecmp(token[0], "pqr_input")) {
 		if(!system->pqr_input) {
 			system->pqr_input = calloc(MAXLINE,sizeof(char));
@@ -1220,6 +1229,15 @@ int check_system(system_t *system) {
 		output(linebuf);
 	}
 
+	// Require a job name (CRC)
+	if(!system->job_name) {
+		error("INPUT: must specify a job name\n");
+		return(-1);
+	} else {
+		sprintf(linebuf, "INPUT: Job Name: %s\n", system->job_name);
+		output(linebuf);
+	}
+
 
 	if(system->cuda) {
 #ifndef CUDA
@@ -1561,27 +1579,62 @@ int check_system(system_t *system) {
 
 		}
 
-		if(!system->pqr_output) {
-			error("INPUT: must specify an output PQR\n");
-			return(-1);
+		if(!system->pqr_output) {	// (CRC)
+			system->pqr_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_output,MAXLINE*sizeof(char),94);
+			strcpy(system->pqr_output,system->job_name);
+			strcat(system->pqr_output,".final.pqr");
+			sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
+			output(linebuf);
+		} else if(!strcasecmp(system->pqr_output, "off")) {	// Optionally turn off final configuration output
+			error("INPUT: **Warning: PQR final configuration file unspecified; writing to /dev/null\n");
+			sprintf(system->pqr_output,"/dev/null");
 		} else {
 			sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
 			output(linebuf);
 		}
 
-		if(!system->pqr_restart) {
-			error("INPUT: must specify a restart PQR file\n");
-			return(-1);
+		if(!system->pqr_restart) {	// (CRC)
+			system->pqr_restart = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),95);
+			strcpy(system->pqr_restart,system->job_name);
+			strcat(system->pqr_restart,".restart.pqr");
+			sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
+			output(linebuf);
+		} else if(!strcasecmp(system->pqr_restart, "off")) {	// Optionally turn off restart configuration output
+			error("INPUT: **Warning: PQR restart file unspecified; writing to /dev/null\n");
+			sprintf(system->pqr_restart,"/dev/null");
 		} else {
 			sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
 			output(linebuf);
 		}
 
-		if(!system->traj_output) {
-			error("INPUT: trajectory file unspecified; writing to /dev/null\n");
-			printf("INPUT: trajectory file unspecified; writing to /dev/null\n");
+		/* NEW: Energy output will default to on if not specified */
+		if(!system->energy_output) {	// (CRC)
+			system->energy_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->energy_output,MAXLINE*sizeof(char),97);
+			strcpy(system->energy_output,system->job_name);
+			strcat(system->energy_output,".energy.dat");
+			sprintf(linebuf, "INPUT: will be writing energy output to %s\n", system->energy_output);
+			output(linebuf);
+		} else if(!strcasecmp(system->energy_output, "off")) {	// Optionally turn off energy printing
+			error("INPUT: energy file unspecified; writing to /dev/null\n");
+			sprintf(system->energy_output,"/dev/null");
+		} else {
+			sprintf(linebuf, "INPUT: will be writing energy output to %s\n", system->energy_output);
+			output(linebuf);
+		}
+
+		/* NEW: Trajectory file will default to on if not specified */
+		if(!system->traj_output) {	// (CRC)
 			system->traj_output = calloc(MAXLINE,sizeof(char));
 			memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
+			strcpy(system->traj_output,system->job_name);
+			strcat(system->traj_output,".traj.pqr");
+			sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
+			output(linebuf);
+		} else if(!strcasecmp(system->traj_output, "off")) {	// Optionally turn off trajectory printing
+			error("INPUT: trajectory file unspecified; writing to /dev/null\n");
 			sprintf(system->traj_output,"/dev/null");
 		} else {
 			sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
@@ -1593,25 +1646,33 @@ int check_system(system_t *system) {
 			output( linebuf );
 		} 
 
-		if(system->polarization && !system->dipole_output) {
-			error("INPUT: dipole file unspecified; writing to /dev/null\n");
-			printf("INPUT: dipole file unspecified; writing to /dev/null\n");
+		if(system->polarization && !system->dipole_output) {	// (CRC)
 			system->dipole_output = calloc(MAXLINE,sizeof(char));
 			memnullcheck(system->dipole_output,MAXLINE*sizeof(char),96);
+			strcpy(system->dipole_output,system->job_name);
+			strcat(system->dipole_output,".dipole.dat");
+			sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
+			output(linebuf);
+		} else if( (system->polarization) && (!strcasecmp(system->dipole_output, "off")) ) {
+			error("INPUT: dipole file unspecified; writing to /dev/null\n");
 			sprintf(system->dipole_output,"/dev/null");
 		} else if(system->polarization) {
 			sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
 			output(linebuf);
 		}
 
-		if(system->polarization && !system->field_output) {
-			error("INPUT: field file unspecified; writing to /dev/null\n");
-			printf("INPUT: field file unspecified; writing to /dev/null\n");
+		if(system->polarization && !system->field_output) {	// (CRC)
 			system->field_output = calloc(MAXLINE,sizeof(char));
 			memnullcheck(system->field_output,MAXLINE*sizeof(char),96);
+			strcpy(system->field_output,system->job_name);
+			strcat(system->field_output,".field.dat");
+			sprintf(linebuf, "INPUT: field field will be written to %s\n", system->field_output);
+			output(linebuf);
+		} else if( (system->polarization) && (!strcasecmp(system->field_output, "off")) ) {
+			error("INPUT: field file unspecified; writing to /dev/null\n");
 			sprintf(system->field_output,"/dev/null");
 		} else if(system->polarization) {
-			sprintf(linebuf, "INPUT: field field will be written to %s\n", system->dipole_output);
+			sprintf(linebuf, "INPUT: field field will be written to %s\n", system->field_output);
 			output(linebuf);
 		}
 

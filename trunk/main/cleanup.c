@@ -286,6 +286,8 @@ void cleanup(system_t *system) {
 
 	free(system->pbc);
 
+	free(system->job_name); // (CRC)
+
 	free(system);
 
 }

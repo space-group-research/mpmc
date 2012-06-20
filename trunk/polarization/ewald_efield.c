@@ -5,6 +5,8 @@
 #include <mc.h>
 #include <fenv.h>
 
+#define OneOverSqrtPi 0.5641895835477562869480794515607725858440506293289988
+
 void zero_out ( molecule_t * m ) {
 	molecule_t * mptr;
 	atom_t * aptr;
@@ -29,7 +31,7 @@ void real_term ( system_t * system ) {
 	pair_t * pptr;
 	int p;
 	double r, r2, factor, ea;
-	ea = system->ewald_alpha; //actually sqrt(alpha), for some reason
+	ea = system->ewald_alpha; //some ambiguity between ea and ea^2 across the literature
 
 	for (mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for (aptr = mptr->atoms; aptr; aptr=aptr->next ) {
@@ -37,22 +39,21 @@ void real_term ( system_t * system ) {
 				if (pptr->frozen) continue; //if the pair is frozen (i.e. MOF-MOF interaction) it doesn't contribute to polar
 				r = pptr->rimg;
 				if ( (r > system->pbc->cutoff) || (r == 0.0) ) continue; //if outside cutoff sphere (not sure why r==0 ever) -> skip
+				r2 = r*r; 
 				if (pptr->es_excluded) {
-					if ( system->polar_self ) { //self-induction not usually used
-						r2 = r*r;
-						factor = 2.0*ea*sqrt(1.0/M_PI)*exp(-ea*ea*r2) + erfc(ea*r)/r;
-						for ( p=0; p<3; p++ ) { // for each dim, add e-field contribution for the pair
-							aptr->ef_static_self[p] += factor * pptr->atom->charge * pptr->dimg[p] / r2;
-							pptr->atom->ef_static_self[p] -= factor * aptr->charge * pptr->dimg[p] / r2;
-						}
-					} //self-polar
+					//need to subtract self-term (interaction between a site and a neighbor's screening charge (on the same molecule)
+					factor = (2.0*ea*OneOverSqrtPi*exp(-ea*ea*r2)*r - erf(ea*r))/(r*r2);
+					for ( p=0; p<3; p++ ) {
+						aptr->ef_static_self[p] += factor*pptr->atom->charge * pptr->dimg[p];
+						pptr->atom->ef_static_self[p] -= factor*aptr->charge * pptr->dimg[p];
+					}
 				} //excluded
 				else { //not excluded
 					r2 = r*r;
-					factor = 2.0*ea*sqrt(1.0/M_PI)*exp(-ea*ea*r2) + erfc(ea*r)/r;
+					factor = (2.0*ea*OneOverSqrtPi*exp(-ea*ea*r2)*r + erfc(ea*r))/(r2*r);
 					for ( p=0; p<3; p++ ) { // for each dim, add e-field contribution for the pair
-						aptr->ef_static[p] += factor*pptr->atom->charge * pptr->dimg[p] / r2;
-						pptr->atom->ef_static[p] -= factor*aptr->charge * pptr->dimg[p] / r2;
+						aptr->ef_static[p] += factor*pptr->atom->charge * pptr->dimg[p];
+						pptr->atom->ef_static[p] -= factor*aptr->charge * pptr->dimg[p];
 					}
 				} //excluded else
 			} //ptr
@@ -127,12 +128,76 @@ void recip_term ( system_t * system ) {
 	return;
 }
 
+//set zeroth iteration dipoles
+void init_dipoles( system_t * system ) {
+	molecule_t * mptr;
+	atom_t * aptr;
+	int p;
+
+	for ( mptr=system->molecules; mptr; mptr=mptr->next ) {
+		for ( aptr=mptr->atoms; aptr; aptr=aptr->next ) {
+			for ( p=0; p<3; p++ )
+				aptr->mu[p] = aptr->polarizability*aptr->ef_static[p];
+		}
+	}
+	return;
+}
+
+//only calculate the static e-field via ewald
 //see http://www.pages.drexel.edu/~cfa22/msim/node50.html
 void ewald_estatic ( system_t * system ) {
 
+	//calculate static e-field
 	zero_out(system->molecules);
 	recip_term(system);
 	real_term(system);
 
 	return;
 }
+
+void induced_real_term(system_t * system) {
+
+	return;
+}
+
+void induced_recip_term(system_t * system) {
+
+	return;
+}
+
+void induced_self_term(system_t * system) {
+
+	return;
+}
+
+void new_dipoles(system_t * system) {
+
+
+	return;
+}
+
+//do full polarization calculation using ewald
+//see nymand and linse jcp 112 6152 (2000)
+void ewald_full ( system_t * system ) {
+
+	int max_iter=10; //temporary
+	int i;
+
+	//calculate static e-field
+	zero_out(system->molecules);
+	recip_term(system);
+	real_term(system);
+
+	//calculate induced e-field
+	init_dipoles(system);	
+
+	for ( i=0; i<max_iter; i++ ) {
+		induced_real_term(system);
+		induced_recip_term(system);
+		induced_self_term(system);
+		new_dipoles(system);
+	}
+
+	return;
+}
+

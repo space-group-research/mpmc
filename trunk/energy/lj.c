@@ -13,31 +13,33 @@ double lj_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_p
 	double reduced_mass;
 	double dE, d2E, d3E, d4E; //energy derivatives
 	double corr;
+	double ir = 1.0/pair_ptr->rimg;
+	double ir2 = ir*ir;
+	double ir3 = ir2*ir;
+	double ir4 = ir3*ir;
 
 	if ( (order != 2) && (order != 4) ) return NAN; //must be order 2 or 4
 
 	reduced_mass = AMU2KG*molecule_ptr->mass*pair_ptr->molecule->mass /
 		(molecule_ptr->mass+pair_ptr->molecule->mass);
 
-	dE = -24.0*pair_ptr->epsilon*(2.0*term12 - term6)/pair_ptr->rimg;
-	d2E = 24.0*pair_ptr->epsilon*(26.0*term12 - 7.0*term6) /
-		pow(pair_ptr->rimg, 2);
+	dE = -24.0*pair_ptr->epsilon*(2.0*term12 - term6) * ir;
+	d2E = 24.0*pair_ptr->epsilon*(26.0*term12 - 7.0*term6) * ir2;
 
 	//2nd order correction
-	corr = pow(METER2ANGSTROM, 2) *
-		(HBAR*HBAR/(24.0*KB*system->temperature*reduced_mass)) *
+	corr = M2A2 *
+		(HBAR2/(24.0*KB*system->temperature*reduced_mass)) *
 		(d2E + 2.0*dE/pair_ptr->rimg);
 
 	if(order >= 4) {
 
-		d3E = -1344.0*pair_ptr->epsilon*(6.0*term12 - term6)/pow(pair_ptr->rimg, 3);
-		d4E = 12096.0*pair_ptr->epsilon*(10.0*term12 - term6)/pow(pair_ptr->rimg, 4);
+		d3E = -1344.0*pair_ptr->epsilon*(6.0*term12 - term6) * ir3;
+		d4E = 12096.0*pair_ptr->epsilon*(10.0*term12 - term6) * ir4;
 	
 		//4th order corection
-		corr += pow(METER2ANGSTROM, 4) *
-			(pow(HBAR, 4)/(1152.0*pow(KB*system->temperature*reduced_mass, 2))) *
-			( 15.0*dE/pow(pair_ptr->rimg, 3) + 
-				4.0*d3E/pair_ptr->rimg + d4E );
+		corr += M2A4 *
+			(HBAR4/(1152.0*KB2*system->temperature*system->temperature*reduced_mass*reduced_mass)) *
+			( 15.0*dE*ir3 +	4.0*d3E*ir + d4E );
 	}
 
 	return corr;
@@ -59,9 +61,10 @@ double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr ) {
 		pair_ptr->last_volume = system->pbc->volume;
 
 		sig_cut = fabs(pair_ptr->sigma)/system->pbc->cutoff;
-		sig3 = pow(fabs(pair_ptr->sigma), 3);
-		sig_cut3 = pow(sig_cut, 3);
-		sig_cut9 = pow(sig_cut, 9);
+		sig3 = fabs(pair_ptr->sigma);
+		sig3 *= sig3*sig3;
+		sig_cut3 = sig_cut*sig_cut*sig_cut;
+		sig_cut9 = sig_cut3*sig_cut3*sig_cut3;
 
 		if ( system->polarvdw ) //only repulsion term, if polarvdw is on
 			corr = (16.0/9.0)*M_PI*pair_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
@@ -82,9 +85,10 @@ double lj_lrc_self ( system_t * system, atom_t * atom_ptr ) {
 		 !(atom_ptr->spectre) ) { //not spectre 
 		
 		sig_cut = fabs(atom_ptr->sigma)/system->pbc->cutoff;
-		sig3 = pow(fabs(atom_ptr->sigma), 3);
-		sig_cut3 = pow(sig_cut, 3);
-		sig_cut9 = pow(sig_cut, 9);
+		sig3 = fabs(atom_ptr->sigma);
+		sig3 *= sig3*sig3;
+		sig_cut3 = sig_cut*sig_cut*sig_cut;
+		sig_cut9 = sig_cut3*sig_cut3*sig_cut3;
 
 		if ( system->polarvdw ) //only repulsion term, if polarvdw is on
 			corr = (16.0/9.0)*M_PI*atom_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
@@ -102,7 +106,7 @@ double lj(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6;
+	double sigma_over_r, term12, term6, sigma_over_r6;
 	double potential, potential_classical;
 
 	potential = 0;
@@ -118,23 +122,24 @@ double lj(system_t *system) {
 					if(!((pair_ptr->rimg - SMALL_dR > system->pbc->cutoff) || pair_ptr->rd_excluded || pair_ptr->frozen)) {
 
 						sigma_over_r = fabs(pair_ptr->sigma)/pair_ptr->rimg;
+						sigma_over_r6 = sigma_over_r*sigma_over_r*sigma_over_r;
+						sigma_over_r6 *= sigma_over_r6;
 
 						/* the LJ potential */
 						if(system->spectre) {
 							term6 = 0;
-							term12 = system->scale_rd*pow(sigma_over_r, 12);
+							term12 = system->scale_rd*sigma_over_r6*sigma_over_r6;
 							potential_classical = term12;
 						} 
 						else {
 							if ( system->polarvdw ) term6=0; //vdw calc'd by vdw.c
 								else {
-									term6 = pow(sigma_over_r, 6);
+									term6 = sigma_over_r6;
 									term6 *= system->scale_rd;
 								}
 
 							if(pair_ptr->attractive_only) term12 = 0;
-								else if ( system->polarvdw ) term12 = pow(sigma_over_r, 12);
-								else term12 = pow(term6, 2);
+								else term12 = sigma_over_r6*sigma_over_r6;
 
 							potential_classical = 4.0*pair_ptr->epsilon*(term12 - term6);
 						}
@@ -181,7 +186,7 @@ double lj_nopbc(system_t * system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6;
+	double sigma_over_r, term12, term6, sigma_over_r6;
 	double potential;
 
 	for(molecule_ptr = molecules, potential = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
@@ -192,13 +197,14 @@ double lj_nopbc(system_t * system) {
 				if(!pair_ptr->rd_excluded) {
 
 					sigma_over_r = fabs(pair_ptr->sigma)/pair_ptr->r;
+					sigma_over_r6 = sigma_over_r*sigma_over_r*sigma_over_r;
+					sigma_over_r6 *= sigma_over_r6;
 
 					if ( system->polarvdw ) term6=0;
-						else term6 = pow(sigma_over_r, 6);
+						else term6 = sigma_over_r6;
 
 					if(pair_ptr->attractive_only) term12 = 0;
-						else if (system->polarvdw) term12 = pow(sigma_over_r,12);
-						else term12 = pow(term6, 2);
+						else term12 = sigma_over_r6*sigma_over_r6;
 
 					potential += 4.0*pair_ptr->epsilon*(term12 - term6);
 

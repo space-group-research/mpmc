@@ -5,7 +5,10 @@
 
 #define H			6.626068e-34		/* Planck's constant in J s */
 #define HBAR			1.054571e-34		/* above divided by 2pi in J s */
+#define HBAR2 1.11211999e-68
+#define HBAR4 1.23681087e-136 
 #define KB			1.3806503e-23		/* Boltzmann's constant in J/K */
+#define KB2			1.90619525e-46
 #define NA			6.0221415e23		/* Avogadro's number */
 #define C			2.99792458e8		/* speed of light in vacuum in m/s */
 
@@ -34,6 +37,8 @@
 #define au2invseconds 4.13412763705666648752113572754445220741745180640e16 
 #define AU2ANGSTROM		0.529177249		/* convert from Bohr radii to angstroms */
 #define METER2ANGSTROM		1.0e10			/* convert from meters to angstroms */
+#define M2A2 1.0e20
+#define M2A4 1.0e40
 #define HARTREE2KELVIN		3.15774655e5		/* convert from Hartrees to Kelvin */
 #define E2REDUCED		408.7816		/* convert from e to sqrt(K*A) */
 #define ATM2REDUCED		0.0073389366		/* convert from atm to K/A^3 */

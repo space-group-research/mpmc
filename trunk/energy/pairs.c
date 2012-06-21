@@ -74,9 +74,12 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			}
 		} else { /* use waldman-hagler mixing rules */
 
-			si3 = pow(atom_i->sigma,3);
-			sj3 = pow(atom_j->sigma,3);
+			si3 = atom_i->sigma;
+			si3 *= si3*si3;
 			si6 = si3*si3;
+
+			sj3 = atom_j->sigma;
+			sj3 *= sj3*sj3;
 			sj6 = sj3*sj3;
 
 			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {

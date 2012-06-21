@@ -32,7 +32,7 @@ void thole_amatrix(system_t *system) {
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr;
 	double r, damping_term1, damping_term2;
-	double r3, r5;
+	double r3, r5, ir;
 	double v, s;
 	double rimg2;
 
@@ -78,8 +78,9 @@ void thole_amatrix(system_t *system) {
 			if(pair_ptr->rimg == 0.)
 				r3 = r5 = MAXVALUE;
 			else {
-				r3 = pow(pair_ptr->rimg, -3);
-				r5 = pow(pair_ptr->rimg, -5);
+				ir = 1.0/pair_ptr->rimg;
+				r3 = ir*ir*ir;
+				r5 = r3*ir*ir;
 			}
 
 

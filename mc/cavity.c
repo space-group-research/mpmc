@@ -110,14 +110,14 @@ void setup_cavity_grid(system_t *system) {
 	int i, j;
 
 	system->cavity_grid = calloc(system->cavity_grid_size, sizeof(cavity_t **));
-	memnullcheck(system->cavity_grid,system->cavity_grid_size*sizeof(cavity_t **),37);
+	memnullcheck(system->cavity_grid,system->cavity_grid_size*sizeof(cavity_t **),__LINE__-1, __FILE__);
 	for(i = 0; i < system->cavity_grid_size; i++) {
 
 		system->cavity_grid[i] = calloc(system->cavity_grid_size, sizeof(cavity_t *));
-		memnullcheck(system->cavity_grid[i],system->cavity_grid_size*sizeof(cavity_t *),38);
+		memnullcheck(system->cavity_grid[i],system->cavity_grid_size*sizeof(cavity_t *),__LINE__-1, __FILE__);
 		for(j = 0; j < system->cavity_grid_size; j++) {
 			system->cavity_grid[i][j] = calloc(system->cavity_grid_size, sizeof(cavity_t));
-			memnullcheck(system->cavity_grid[i][j],system->cavity_grid_size*sizeof(cavity_t),39);
+			memnullcheck(system->cavity_grid[i][j],system->cavity_grid_size*sizeof(cavity_t),__LINE__-1, __FILE__);
 		}
 
 	}

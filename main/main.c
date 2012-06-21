@@ -95,23 +95,23 @@ int main(int argc, char **argv) {
 
 	/* allocate space for the statistics */
 	system->nodestats = calloc(1, sizeof(nodestats_t));
-	memnullcheck(system->nodestats,sizeof(nodestats_t),21);
+	memnullcheck(system->nodestats,sizeof(nodestats_t), __LINE__-1, __FILE__);
 	system->avg_nodestats = calloc(1, sizeof(avg_nodestats_t));
-	memnullcheck(system->avg_nodestats,sizeof(avg_nodestats_t), 22);
+	memnullcheck(system->avg_nodestats,sizeof(avg_nodestats_t), __LINE__-1, __FILE__);
 	system->observables = calloc(1, sizeof(observables_t));
-	memnullcheck(system->observables,sizeof(observables_t),23);
+	memnullcheck(system->observables,sizeof(observables_t), __LINE__-1, __FILE__);
 	system->avg_observables = calloc(1, sizeof(avg_observables_t));
-	memnullcheck(system->avg_observables,sizeof(avg_observables_t),24);
+	memnullcheck(system->avg_observables,sizeof(avg_observables_t), __LINE__-1, __FILE__);
 	system->checkpoint = calloc(1, sizeof(checkpoint_t));
-	memnullcheck(system->checkpoint,sizeof(checkpoint_t),25);
+	memnullcheck(system->checkpoint,sizeof(checkpoint_t), __LINE__-1, __FILE__);
 	system->checkpoint->observables = calloc(1, sizeof(observables_t));
-	memnullcheck(system->checkpoint->observables,sizeof(observables_t),26);
+	memnullcheck(system->checkpoint->observables,sizeof(observables_t), __LINE__-1, __FILE__);
 	system->grids = calloc(1,sizeof(grid_t));
-	memnullcheck(system->grids,sizeof(grid_t),27);
+	memnullcheck(system->grids,sizeof(grid_t), __LINE__-1, __FILE__);
 	system->grids->histogram = calloc(1,sizeof(histogram_t));
-	memnullcheck(system->grids->histogram,sizeof(histogram_t),28);
+	memnullcheck(system->grids->histogram,sizeof(histogram_t), __LINE__-1, __FILE__);
 	system->grids->avg_histogram = calloc(1,sizeof(histogram_t));
-	memnullcheck(system->grids->avg_histogram,sizeof(histogram_t),29);
+	memnullcheck(system->grids->avg_histogram,sizeof(histogram_t), __LINE__-1, __FILE__);
 
 	/* if polarization active, allocate the necessary matrices */
 	if(system->polarization && !system->cuda) {
@@ -122,18 +122,18 @@ int main(int argc, char **argv) {
 				++N;
 
 		system->A_matrix = calloc(3*N, sizeof(double *));
-		memnullcheck(system->A_matrix,3*N*sizeof(double *),30);
+		memnullcheck(system->A_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
 		for(i = 0; i < 3*N; i++) {
 			system->A_matrix[i] = calloc(3*N, sizeof(double));
-			memnullcheck(system->A_matrix[i],3*N*sizeof(double), 31);
+			memnullcheck(system->A_matrix[i],3*N*sizeof(double), __LINE__-1, __FILE__);
 		}
 
 		if(!system->polar_iterative) {
 			system->B_matrix = calloc(3*N, sizeof(double *));
-			memnullcheck(system->B_matrix,3*N*sizeof(double *),32);
+			memnullcheck(system->B_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
 			for(i = 0; i < 3*N; i++) {
 				system->B_matrix[i] = calloc(3*N, sizeof(double));
-				memnullcheck(system->B_matrix[i],3*N*sizeof(double),33);
+				memnullcheck(system->B_matrix[i],3*N*sizeof(double),__LINE__-1, __FILE__);
 			}
 		}
 

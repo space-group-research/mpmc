@@ -80,7 +80,7 @@ void molecule_rotate(molecule_t *molecule, double alpha, double beta, double gam
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
 		++n;
 	new_coord_array = calloc(n*3, sizeof(double));
-	memnullcheck(new_coord_array,n*3*sizeof(double),54);
+	memnullcheck(new_coord_array,n*3*sizeof(double),__LINE__-1, __FILE__);
 
 	/* save the com coordinate */
 	com[0] = molecule->com[0];
@@ -349,7 +349,7 @@ int surface_dimer_parameters(system_t *system, param_t *params) {
 
     // Default bond partner for atoms without explicit site neighbor
     atom_t *origin = calloc( sizeof(atom_t), 1 ); // calloc sets pos[] fields all to 0
-		memnullcheck( origin, sizeof(atom_t), 55);
+		memnullcheck( origin, sizeof(atom_t), __LINE__-1, __FILE__);
 
     for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 

@@ -142,7 +142,7 @@ param_t * record_params ( system_t * system ) {
 	atom_t * atom_ptr;
 
   param_t * rval  = calloc(1, sizeof(param_t)); //return value
-	memnullcheck(rval,sizeof(param_t),56);
+	memnullcheck(rval,sizeof(param_t), __LINE__-1, __FILE__);
 	param_t * param_ptr = rval; //used to seek through param list
 	param_t * prev_param_ptr;
 
@@ -163,7 +163,7 @@ param_t * record_params ( system_t * system ) {
           param_ptr->last_omega   = param_ptr->omega;
 
           param_ptr->next = calloc(1, sizeof(param_t));
-					memnullcheck(param_ptr->next,sizeof(param_t),57);
+					memnullcheck(param_ptr->next,sizeof(param_t), __LINE__-1, __FILE__);
           prev_param_ptr = param_ptr;
           param_ptr = param_ptr->next;
 

@@ -27,7 +27,7 @@ int thole_iterative(system_t *system) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
 
 			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1),80);
+			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
 			atom_array[N] = atom_ptr;
 
 		}
@@ -35,7 +35,7 @@ int thole_iterative(system_t *system) {
 
 	/* array for ranking */
 	ranked_array = calloc(N, sizeof(int));
-	memnullcheck(ranked_array,N*sizeof(int),81);
+	memnullcheck(ranked_array,N*sizeof(int),__LINE__-1, __FILE__);
 	for(i = 0; i < N; i++) ranked_array[i] = i;
 
 	/* initialize things */

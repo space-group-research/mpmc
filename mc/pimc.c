@@ -371,11 +371,9 @@ int do_pimc(struct particle_t *particle_array, double Z, double temperature, dou
 
 	/* open the output files for writing */
 	fp_coords = fopen(COORDS_OUTPUT_FILENAME, "w");
+	filecheck(fp_coords,COORDS_OUTPUT_FILENAME,WRITE);
 	fp_energy = fopen(ENERGY_OUTPUT_FILENAME, "w");
-	if(!fp_coords || !fp_energy) {
-		fprintf(stderr, "do_pimc: couldn't open output files for writing\n");
-		return(-1);
-	}
+	filecheck(fp_energy,ENERGY_OUTPUT_FILENAME,WRITE);
 
 	/* write xmov header to coords file */
 	fprintf(fp_coords, "# %d 1 0.001\n", (particle_array[0].trotter + 1));

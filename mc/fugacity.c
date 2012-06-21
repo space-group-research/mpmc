@@ -99,9 +99,9 @@ double h2_comp_back(double temperature, double pressure) {
 	alpha = BACK_H2_ALPHA;
 	y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
 	comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-	comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-	comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-	comp_factor_repulsive /= pow((1.0 - y), 3.0);
+	comp_factor_repulsive += (3.0*pow(alpha, 2) - 3.0*alpha + 1.0)*pow(y, 2);
+	comp_factor_repulsive -= pow(alpha, 2)*pow(y, 3);
+	comp_factor_repulsive /= pow((1.0 - y), 3);
 
 	comp_factor = comp_factor_repulsive + comp_factor_attractive;
 	return(comp_factor);
@@ -127,7 +127,7 @@ double h2_fugacity_shaw(double temperature, double pressure) {
 	C3 = exp(C3);
 	C3 *= 300.0;
 
-	fugacity_coefficient = C1*pressure - C2*pow(pressure, 2.0) + C3*exp(-pressure/300.0 - 1.0);
+	fugacity_coefficient = C1*pressure - C2*pow(pressure, 2) + C3*exp(-pressure/300.0 - 1.0);
 	fugacity_coefficient = exp(fugacity_coefficient);
 	fugacity = fugacity_coefficient*pressure;
 
@@ -144,10 +144,10 @@ double h2_fugacity_zhou(double temperature, double pressure) {
 	pressure *= ATM2PSI;
 
 	fugacity_coefficient = -1.38130e-4*pressure;
-	fugacity_coefficient += 4.67096e-8*pow(pressure, 2.0)/2;
-	fugacity_coefficient += 5.93690e-12*pow(pressure, 3.0)/3;
-	fugacity_coefficient += -3.24527e-15*pow(pressure, 4.0)/4;
-	fugacity_coefficient += 3.54211e-19*pow(pressure, 5.0)/5;
+	fugacity_coefficient += 4.67096e-8*pow(pressure, 2)/2;
+	fugacity_coefficient += 5.93690e-12*pow(pressure, 3)/3;
+	fugacity_coefficient += -3.24527e-15*pow(pressure, 4)/4;
+	fugacity_coefficient += 3.54211e-19*pow(pressure, 5)/5;
 
 	pressure /= ATM2PSI;
 
@@ -253,9 +253,9 @@ double ch4_comp_back(double temperature, double pressure) {
         alpha = BACK_CH4_ALPHA;
         y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
         comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-        comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-        comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-        comp_factor_repulsive /= pow((1.0 - y), 3.0);
+        comp_factor_repulsive += (3.0*pow(alpha, 2) - 3.0*alpha + 1.0)*pow(y, 2);
+        comp_factor_repulsive -= pow(alpha, 2)*pow(y, 3);
+        comp_factor_repulsive /= pow((1.0 - y), 3);
 
         comp_factor = comp_factor_repulsive + comp_factor_attractive;
         return(comp_factor);
@@ -446,9 +446,9 @@ double n2_comp_back(double temperature, double pressure) {
         alpha = BACK_N2_ALPHA;
         y = (M_PI*sqrt(2.0)/6.0)*(pressure*ATM2PASCALS*1.0e-6)/(NA*KB*temperature)*V0;
         comp_factor_repulsive = 1.0 + (3.0*alpha - 2.0)*y;
-        comp_factor_repulsive += (3.0*pow(alpha, 2.0) - 3.0*alpha + 1.0)*pow(y, 2.0);
-        comp_factor_repulsive -= pow(alpha, 2.0)*pow(y, 3.0);
-        comp_factor_repulsive /= pow((1.0 - y), 3.0);
+        comp_factor_repulsive += (3.0*pow(alpha, 2) - 3.0*alpha + 1.0)*pow(y, 2);
+        comp_factor_repulsive -= pow(alpha, 2)*pow(y, 3);
+        comp_factor_repulsive /= pow((1.0 - y), 3);
 
         comp_factor = comp_factor_repulsive + comp_factor_attractive;
         return(comp_factor);
@@ -537,10 +537,10 @@ double n2_fugacity_zhou(double temperature, double pressure) {
         pressure *= ATM2PSI;
 
         fugacity_coefficient = -1.38130e-4*pressure;
-        fugacity_coefficient += 4.67096e-8*pow(pressure, 2.0)/2;
-        fugacity_coefficient += 5.93690e-12*pow(pressure, 3.0)/3;
-        fugacity_coefficient += -3.24527e-15*pow(pressure, 4.0)/4;
-        fugacity_coefficient += 3.54211e-19*pow(pressure, 5.0)/5;
+        fugacity_coefficient += 4.67096e-8*pow(pressure, 2)/2;
+        fugacity_coefficient += 5.93690e-12*pow(pressure, 3)/3;
+        fugacity_coefficient += -3.24527e-15*pow(pressure, 4)/4;
+        fugacity_coefficient += 3.54211e-19*pow(pressure, 5)/5;
 
         pressure /= ATM2PSI;
 

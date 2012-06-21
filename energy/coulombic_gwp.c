@@ -130,23 +130,23 @@ double coulombic_real_gwp(system_t *system) {
 								first_derivative = -2.0*alpha*gaussian_term/(r*sqrt(M_PI)) - erfc_term/(r*r);
 
 								/* SECOND DERIVATIVE */
-								second_derivative = (4.0/sqrt(M_PI))*gaussian_term*(pow(alpha, 3.0) + pow(r, -2.0));
-								second_derivative += 2.0*erfc_term/pow(r, 3.0);
+								second_derivative = (4.0/sqrt(M_PI))*gaussian_term*(pow(alpha, 3) + pow(r, -2));
+								second_derivative += 2.0*erfc_term/pow(r, 3);
 
-								potential_fh_second_order = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*reduced_mass))*(second_derivative + 2.0*first_derivative/r);
+								potential_fh_second_order = pow(METER2ANGSTROM, 2)*(HBAR*HBAR/(24.0*KB*system->temperature*reduced_mass))*(second_derivative + 2.0*first_derivative/r);
 								pair_ptr->es_real_energy += potential_fh_second_order;
 
 								if(system->feynman_hibbs_order >= 4) {
 
 									/* THIRD DERIVATIVE */
-									third_derivative = (gaussian_term/sqrt(M_PI))*(-8.0*pow(alpha, 5.0)*r - 8.0*pow(alpha, 3.0)/r - 12.0*alpha/pow(r, 3.0));
-									third_derivative -= 6.0*erfc(alpha*r)/pow(r, 4.0);
+									third_derivative = (gaussian_term/sqrt(M_PI))*(-8.0*pow(alpha, 5)*r - 8.0*pow(alpha, 3)/r - 12.0*alpha/pow(r, 3));
+									third_derivative -= 6.0*erfc(alpha*r)/pow(r, 4);
 
 									/* FOURTH DERIVATIVE */
-									fourth_derivative = (gaussian_term/sqrt(M_PI))*( 8.0*pow(alpha, 5.0) + 16.0*pow(alpha, 7.0)*r*r + 32.0*pow(alpha, 3.0)/pow(r, 2.0) + 48.0/pow(r, 4.0) );
-									fourth_derivative += 24.0*erfc_term/pow(r, 5.0);
+									fourth_derivative = (gaussian_term/sqrt(M_PI))*( 8.0*pow(alpha, 5) + 16.0*pow(alpha, 7)*r*r + 32.0*pow(alpha, 3)/pow(r, 2) + 48.0/pow(r, 4) );
+									fourth_derivative += 24.0*erfc_term/pow(r, 5);
 
-									potential_fh_fourth_order = pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0)/(1152.0*pow(KB*system->temperature*reduced_mass, 2.0)))*(15.0*first_derivative/pow(r, 3.0) + 4.0*third_derivative/r + fourth_derivative);
+									potential_fh_fourth_order = pow(METER2ANGSTROM, 4)*(pow(HBAR, 4)/(1152.0*pow(KB*system->temperature*reduced_mass, 2)))*(15.0*first_derivative/pow(r, 3) + 4.0*third_derivative/r + fourth_derivative);
 									pair_ptr->es_real_energy += potential_fh_fourth_order;
 								}
 

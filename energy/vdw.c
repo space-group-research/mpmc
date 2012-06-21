@@ -360,7 +360,7 @@ double lr_vdw_corr ( system_t * system ) {
 					cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2;
 
 					// long-range correction
-					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3.0) / system->pbc->volume;
+					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3) / system->pbc->volume;
 			}
 		}
 	}
@@ -375,8 +375,8 @@ double e2body(system_t * system, atom_t * atom, pair_t * pair, double r) {
 	double lr = system->polar_damp * r;
 	double lr2 = lr*lr;
 	double lr3 = lr*lr2;
-	double Txx = pow(r,-3.0)*(-2.0+(0.5*lr3+lr2+2*lr+2)*exp(-lr));
-	double Tyy = pow(r,-3.0)*(1-(0.5*lr2+lr+1)*exp(-lr));
+	double Txx = pow(r,-3)*(-2.0+(0.5*lr3+lr2+2*lr+2)*exp(-lr));
+	double Tyy = pow(r,-3)*(1-(0.5*lr2+lr+1)*exp(-lr));
 	double * eigvals;
 	struct mtx * M = alloc_mtx(6);
 	
@@ -446,20 +446,20 @@ double fh_vdw_corr ( system_t * system ) {
 				//derivatives (Numerical Methods Using Matlab 4E 2004 Mathews/Fink 6.2)
 				dv = (E[3]-E[1])/(2.0*h);
 				d2v = (E[3]-2.0*E[2]+E[1])/(h*h);
-				d3v = (E[4]-2*E[3]+2*E[1]-E[0])/(2*pow(h,3.0));
-				d4v = (E[4]-4*E[3]+6*E[2]-4*E[1]+E[0])/pow(h,4.0);
+				d3v = (E[4]-2*E[3]+2*E[1]-E[0])/(2*pow(h,3));
+				d4v = (E[4]-4*E[3]+6*E[2]-4*E[1]+E[0])/pow(h,4);
 				
 				// reduced mass
 				rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
 					((molecule_ptr->mass)+(pair_ptr->molecule->mass));
 
 				//2nd order correction
-				corr_single = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
+				corr_single = pow(METER2ANGSTROM, 2)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
 				//4th order correction
 				if ( system->feynman_hibbs_order >= 4 )
-					corr_single += pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0) /
-						(1152.0*pow(KB*system->temperature*rm, 2.0))) *
-						(15.0*dv/pow(pair_ptr->rimg, 3.0) + 4.0*d3v/pair_ptr->rimg + d4v);
+					corr_single += pow(METER2ANGSTROM, 4)*(pow(HBAR, 4) /
+						(1152.0*pow(KB*system->temperature*rm, 2))) *
+						(15.0*dv/pow(pair_ptr->rimg, 3) + 4.0*d3v/pair_ptr->rimg + d4v);
 
 				corr += corr_single;
 			}
@@ -505,7 +505,7 @@ double fh_vdw_corr_2be ( system_t * system ) {
           ((molecule_ptr->mass)+(pair_ptr->molecule->mass));
 
         //derivatives 
-        dv = 6.0*cC*pow(pair_ptr->rimg,-7.0);
+        dv = 6.0*cC*pow(pair_ptr->rimg,-7);
         d2v= dv * (-7.0)/pair_ptr->rimg;
         if ( system->feynman_hibbs_order >= 4 ) {
           d3v= d2v* (-8.0)/pair_ptr->rimg;
@@ -513,12 +513,12 @@ double fh_vdw_corr_2be ( system_t * system ) {
         }
 
         //2nd order correction
-        corr_single = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
+        corr_single = pow(METER2ANGSTROM, 2)*(HBAR*HBAR/(24.0*KB*system->temperature*rm))*(d2v + 2.0*dv/pair_ptr->rimg);
         //4th order correction
         if ( system->feynman_hibbs_order >= 4 )
-          corr_single += pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0) /
-            (1152.0*pow(KB*system->temperature*rm, 2.0))) *
-            (15.0*dv/pow(pair_ptr->rimg, 3.0) + 4.0*d3v/pair_ptr->rimg + d4v);
+          corr_single += pow(METER2ANGSTROM, 4)*(pow(HBAR, 4) /
+            (1152.0*pow(KB*system->temperature*rm, 2))) *
+            (15.0*dv/pow(pair_ptr->rimg, 3) + 4.0*d3v/pair_ptr->rimg + d4v);
 
         corr += corr_single;
       }

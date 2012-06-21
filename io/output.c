@@ -74,18 +74,11 @@ int open_traj_file( system_t * system ) {
 		char * filename;
 		filename = make_filename(system->traj_output,rank);
 		system->file_pointers.fp_traj = fopen(filename, "w");
-		if(!system->file_pointers.fp_traj) {
-			sprintf(linebuf,"MC: could not open traj file [%d] for writing\n", rank);
-			error(linebuf);
-			return -1;
-		}
+		filecheck(system->file_pointers.fp_traj,filename, WRITE);
 		free(filename);
 #else
 		system->file_pointers.fp_traj = fopen(system->traj_output, "w");
-		if(!system->file_pointers.fp_traj) {
-			error("MC: could not open trajectory file for writing\n");
-			return -1;
-		}
+		filecheck(system->file_pointers.fp_traj,system->traj_output,WRITE);
 #endif /*MPI*/
 	}
 
@@ -96,55 +89,38 @@ int open_files(system_t *system) {
 
 	if(system->energy_output) {
 		system->file_pointers.fp_energy = fopen(system->energy_output, "w");
-		if(!system->file_pointers.fp_energy) {
-			error("MC: could not open energy file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_energy,system->energy_output,WRITE);
 		fprintf(system->file_pointers.fp_energy,
 			"#step #energy #coulombic #rd #polar #vdw #kinetic #temp #N #spin_ratio #volume\n");
 	}
 
 	if(system->energy_output_csv) {
 		system->file_pointers.fp_energy_csv = fopen(system->energy_output_csv, "w");
-		if(!system->file_pointers.fp_energy_csv) {
-			error("MC: could not open energy CSV file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_energy_csv,system->energy_output_csv,WRITE);
 		fprintf(system->file_pointers.fp_energy_csv,
 			"#step,#energy,#coulombic,#rd,#polar,#vdw,#kinetic,#temp,#N,#spin_ratio,#volume\n");
 	}
 
 	if(system->dipole_output) {
 		system->file_pointers.fp_dipole = fopen(system->dipole_output, "w");
-		if(!system->file_pointers.fp_dipole) {
-			error("MC: could not open dipole file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_dipole,system->dipole_output,WRITE);
 	}
 
 	if(system->field_output) {
 		system->file_pointers.fp_field = fopen(system->field_output, "w");
-		if(!system->file_pointers.fp_field) {
-			error("MC: could not open field file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_field,system->field_output,WRITE);
 	}
 
 	if(system->histogram_output) {
 		system->file_pointers.fp_histogram = fopen(system->histogram_output, "w");
-		if(!system->file_pointers.fp_histogram) {
-			error("MC: could not open energy file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_histogram,system->histogram_output,WRITE);
 	}
 
 	if(system->frozen_output) {
 		system->file_pointers.fp_frozen = fopen(system->frozen_output, "w");
-		if(!system->file_pointers.fp_frozen) {
-			error("MC: could not open frozen dx file for writing\n");
-			return(-1);
-		}
+		filecheck(system->file_pointers.fp_frozen,system->frozen_output,WRITE);
 		//go ahead and write the frozen lattice configuration now
+
 		if(system->file_pointers.fp_frozen) write_frozen(system->file_pointers.fp_frozen,system);
 		fclose(system->file_pointers.fp_frozen);
 	}
@@ -276,11 +252,7 @@ int write_molecules(system_t *system, char *filename) {
 	int ext_output = 0; // By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
 
 	fp = fopen(filename, "w");
-	if(!fp) {
-		sprintf(linebuf, "OUTPUT: could not write pqr to file %s\n", filename);
-		error(linebuf);
-		return(-1);
-	}
+	filecheck(fp,filename,WRITE);
 
 	/* Check if extended coordinate output is needed (CRC) */
 	if( (system->pbc->basis[0][0] >= 200.0) || (system->pbc->basis[0][1] >= 200.0) || (system->pbc->basis[0][2] >= 200.0) || 

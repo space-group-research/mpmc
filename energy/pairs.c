@@ -74,8 +74,8 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			}
 		} else { /* use waldman-hagler mixing rules */
 
-			si3 = pow(atom_i->sigma,3.0);
-			sj3 = pow(atom_j->sigma,3.0);
+			si3 = pow(atom_i->sigma,3);
+			sj3 = pow(atom_j->sigma,3);
 			si6 = si3*si3;
 			sj6 = sj3*sj3;
 
@@ -262,7 +262,7 @@ void pairs(system_t *system) {
 			for(j = 0; j < n; j++) {
 				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
 					for(p = 0, r = 0; p < 3; p++)
-						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2.0);
+						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2);
 					r = sqrt(r);
 					if(r < rmin) rmin = r;
 				}
@@ -274,7 +274,7 @@ void pairs(system_t *system) {
 			for(j = 0; j < n; j++) {
 				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
 					for(p = 0, r = 0; p < 3; p++)
-						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2.0);
+						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2);
 					r = sqrt(r);
 					if(r <= 1.5*rmin)
 						atom_array[i]->rank_metric += 1.0;

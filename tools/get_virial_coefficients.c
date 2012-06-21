@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 		/* calculate the classical part */
 		B_classical = 0;
 		for(r = r_min, i = 0; r < r_max; r += r_inc, i++) {
-			integrand = (exp(-fit_input[i]/temperature) - 1.0)*pow(r, 2.0)*r_inc;
+			integrand = (exp(-fit_input[i]/temperature) - 1.0)*pow(r, 2)*r_inc;
 
 			B_classical += integrand;
 		}
@@ -89,12 +89,12 @@ int main(int argc, char **argv) {
 
 			/* take the central derivative */
 			first_derivative = KB*(fit_input[i+1] - fit_input[i])/r_inc;
-			integrand = exp(-fit_input[i]/temperature)*pow(first_derivative*r, 2.0)*r_inc;
+			integrand = exp(-fit_input[i]/temperature)*pow(first_derivative*r, 2)*r_inc;
 
 			B_quantum_first += integrand;
 
 		}
-		B_quantum_first *= (H*H/H2_MASS)/(24.0*M_PI*pow(KB*temperature, 3.0));
+		B_quantum_first *= (H*H/H2_MASS)/(24.0*M_PI*pow(KB*temperature, 3));
 		B_quantum_first *= 1.0e-4*NA;	/* convert to cm^3/mol */
 
 
@@ -105,14 +105,14 @@ int main(int argc, char **argv) {
 			first_derivative = KB*(fit_input[i+1] - fit_input[i])/r_inc;
 			second_derivative =  KB*((fit_input[i+2] - fit_input[i+1])/r_inc - first_derivative)/r_inc;
 
-			integrand = pow(second_derivative, 2.0) + 2.0*pow((first_derivative/r), 2.0);
-			integrand += (10.0/(9.0*KB*temperature))*pow(first_derivative, 3.0)/r;
-			integrand -= (5.0/(36.0*pow(KB*temperature, 2.0)))*pow(first_derivative, 4.0)/r;
-			integrand *= exp(-fit_input[i]/temperature)*pow(r, 2.0)*r_inc;
+			integrand = pow(second_derivative, 2) + 2.0*pow((first_derivative/r), 2);
+			integrand += (10.0/(9.0*KB*temperature))*pow(first_derivative, 3)/r;
+			integrand -= (5.0/(36.0*pow(KB*temperature, 2)))*pow(first_derivative, 4)/r;
+			integrand *= exp(-fit_input[i]/temperature)*pow(r, 2)*r_inc;
 
 			B_quantum_second += integrand;
 		}
-		B_quantum_second *= pow(H*H/H2_MASS, 2.0)/(960.0*M_PI*M_PI*M_PI*pow(KB*temperature, 4.0));
+		B_quantum_second *= pow(H*H/H2_MASS, 2)/(960.0*M_PI*M_PI*M_PI*pow(KB*temperature, 4));
 		B_quantum_second *= -1.0e11*NA;
 
 		/* the exchange term for an ideal Bose-Einstein gas */

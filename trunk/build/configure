@@ -65,7 +65,7 @@ case "$HOSTNAME" in
 
 				CC="gcc"
 				CFLAGS="-O3 -std=c99"
-				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
+				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm -rdynamic"
 				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
@@ -198,7 +198,7 @@ case "$HOSTNAME" in
 			"gcc")
 				CC="gcc"
 				CFLAGS="-g"
-				EXTRA_LIBS="-lm"
+				EXTRA_LIBS="-lm -rdynamic"
 			;;
 			*)
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"

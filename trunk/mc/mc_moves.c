@@ -100,7 +100,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 
 	/* allocate the start of the new lists */
 	dst = calloc(1, sizeof(molecule_t));
-	memnullcheck(dst,sizeof(molecule_t),40);
+	memnullcheck(dst,sizeof(molecule_t),__LINE__-1, __FILE__);
 	/* copy molecule attributes */
 	dst->id = src->id;
 	strcpy(dst->moleculetype, src->moleculetype);
@@ -119,15 +119,15 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 #ifdef QM_ROTATION
 	if(system->quantum_rotation) {
 		dst->quantum_rotational_energies = calloc(system->quantum_rotation_level_max, sizeof(double));
-		memnullcheck(dst->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double),41);
+		memnullcheck(dst->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double),__LINE__-1, __FILE__);
 		dst->quantum_rotational_eigenvectors = calloc(system->quantum_rotation_level_max, sizeof(complex_t *));
-		memnullcheck(dst->quantum_rotational_eigenvectors,system->quantum_rotation_level_max*sizeof(complex_t *),42);
+		memnullcheck(dst->quantum_rotational_eigenvectors,system->quantum_rotation_level_max*sizeof(complex_t *),__LINE__-1, __FILE__);
 		for(i = 0; i < system->quantum_rotation_level_max; i++) {
 			dst->quantum_rotational_eigenvectors[i] = calloc((system->quantum_rotation_l_max + 1)*(system->quantum_rotation_l_max + 1), sizeof(complex_t));
-			memnullcheck(dst->quantum_rotational_eigenvectors[i],(system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1)*sizeof(complex_t),43);
+			memnullcheck(dst->quantum_rotational_eigenvectors[i],(system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1)*sizeof(complex_t),__LINE__-1, __FILE__);
 		}
 		dst->quantum_rotational_eigensymmetry = calloc(system->quantum_rotation_level_max, sizeof(int));
-		memnullcheck(dst->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),44);
+		memnullcheck(dst->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),__LINE__-1, __FILE__);
 
 		memcpy(dst->quantum_rotational_energies, src->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double));
 		for(i = 0; i < system->quantum_rotation_level_max; i++) {
@@ -146,7 +146,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 
 	/* new atoms list */
 	dst->atoms = calloc(1, sizeof(atom_t));
-	memnullcheck(dst->atoms,sizeof(atom_t),45);
+	memnullcheck(dst->atoms,sizeof(atom_t),__LINE__-1, __FILE__);
 	prev_atom_dst_ptr = dst->atoms;
 
 	for(atom_dst_ptr = dst->atoms, atom_src_ptr = src->atoms; atom_src_ptr; atom_dst_ptr = atom_dst_ptr->next, atom_src_ptr = atom_src_ptr->next) {
@@ -176,7 +176,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 		memcpy(atom_dst_ptr->new_mu, atom_src_ptr->new_mu, 3*sizeof(double));
 
 		atom_dst_ptr->pairs = calloc(1, sizeof(pair_t));
-		memnullcheck(atom_dst_ptr->pairs,sizeof(pair_t),46);
+		memnullcheck(atom_dst_ptr->pairs,sizeof(pair_t),__LINE__-1, __FILE__);
 		pair_dst_ptr = atom_dst_ptr->pairs;
 		prev_pair_dst_ptr = pair_dst_ptr;
 		for(pair_src_ptr = atom_src_ptr->pairs; pair_src_ptr; pair_src_ptr = pair_src_ptr->next) {
@@ -199,7 +199,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 			pair_dst_ptr->rimg = pair_src_ptr->rimg;
 
 			pair_dst_ptr->next = calloc(1, sizeof(pair_t));
-			memnullcheck(pair_dst_ptr->next,sizeof(pair_t),47);
+			memnullcheck(pair_dst_ptr->next,sizeof(pair_t),__LINE__-1, __FILE__);
 			prev_pair_dst_ptr = pair_dst_ptr;
 			pair_dst_ptr = pair_dst_ptr->next;
 
@@ -211,7 +211,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 
 		prev_atom_dst_ptr = atom_dst_ptr;
 		atom_dst_ptr->next = calloc(1, sizeof(atom_t));
-		memnullcheck(atom_dst_ptr->next,sizeof(atom_t),48);
+		memnullcheck(atom_dst_ptr->next,sizeof(atom_t),__LINE__-1, __FILE__);
 	}
 
 	prev_atom_dst_ptr->next = NULL;
@@ -267,7 +267,7 @@ void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
 		++n;
 	new_coord_array = calloc(n*3, sizeof(double));
-	memnullcheck(new_coord_array,n*3*sizeof(double),49);
+	memnullcheck(new_coord_array,n*3*sizeof(double),__LINE__-1, __FILE__);
 
 	/* save the com coordinate */
 	com[0] = molecule->com[0];
@@ -471,7 +471,7 @@ void make_move(system_t *system) {
 
 			/* make an array of possible insertion points */
 			cavities_array = calloc(system->cavities_open, sizeof(cavity_t));
-			memnullcheck(cavities_array,system->cavities_open*sizeof(cavity_t),50);
+			memnullcheck(cavities_array,system->cavities_open*sizeof(cavity_t),__LINE__-1, __FILE__);
 			for(i = 0, cavities_array_counter = 0; i < system->cavity_grid_size; i++) {
 				for(j = 0; j < system->cavity_grid_size; j++) {
 					for(k = 0; k < system->cavity_grid_size; k++) {
@@ -653,9 +653,9 @@ void checkpoint(system_t *system) {
 
 	/* go thru again, make an array of all eligible molecules */
 	ptr_array_exchange  = calloc(num_molecules_exchange,  sizeof(molecule_t *));
-	memnullcheck(ptr_array_exchange,num_molecules_exchange*sizeof(molecule_t *),51);
+	memnullcheck(ptr_array_exchange,num_molecules_exchange*sizeof(molecule_t *),__LINE__-1, __FILE__);
 	ptr_array_adiabatic = calloc(num_molecules_adiabatic, sizeof(molecule_t *));
-	memnullcheck(ptr_array_adiabatic,num_molecules_adiabatic*sizeof(molecule_t *), 52);
+	memnullcheck(ptr_array_adiabatic,num_molecules_adiabatic*sizeof(molecule_t *), __LINE__-1, __FILE__);
 	for(molecule_ptr = system->molecules, i_exchange = 0, i_adiabatic = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 
 		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic || molecule_ptr->target)) {

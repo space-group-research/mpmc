@@ -94,11 +94,11 @@ molecule_t *read_molecules(system_t *system) {
 
 	/* allocate the start of the list */
 	molecules = calloc(1, sizeof(molecule_t));
-	memnullcheck(molecules,sizeof(molecule_t),105);
+	memnullcheck(molecules,sizeof(molecule_t), __LINE__-1, __FILE__);
 	molecule_ptr = molecules;
 	molecule_ptr->id = 1;
 	molecule_ptr->atoms = calloc(1, sizeof(atom_t));
-	memnullcheck(molecule_ptr->atoms,sizeof(atom_t),106);
+	memnullcheck(molecule_ptr->atoms,sizeof(atom_t),__LINE__-1, __FILE__);
 	atom_ptr = molecule_ptr->atoms;
 	prev_atom_ptr = atom_ptr;
 
@@ -168,10 +168,10 @@ molecule_t *read_molecules(system_t *system) {
 
 			if(molecule_ptr->id != current_moleculeid) {
 				molecule_ptr->next = calloc(1, sizeof(molecule_t));
-				memnullcheck(molecule_ptr,sizeof(molecule_t),107);
+				memnullcheck(molecule_ptr,sizeof(molecule_t),__LINE__-1, __FILE__);
 				molecule_ptr = molecule_ptr->next;
 				molecule_ptr->atoms = calloc(1, sizeof(atom_t));
-				memnullcheck(molecule_ptr->atoms,sizeof(atom_t),108);
+				memnullcheck(molecule_ptr->atoms,sizeof(atom_t),__LINE__-1, __FILE__);
 				prev_atom_ptr->next = NULL;
 				free(atom_ptr);
 				atom_ptr = molecule_ptr->atoms;
@@ -191,17 +191,17 @@ molecule_t *read_molecules(system_t *system) {
 			if(system->quantum_rotation && !molecule_ptr->frozen) {
 
 				molecule_ptr->quantum_rotational_energies = calloc(system->quantum_rotation_level_max, sizeof(double));
-				memnullcheck(molecule_ptr->quantum_rotational_energies,system->quantum_rotation_level_max*sizeof(double),109);
+				memnullcheck(molecule_ptr->quantum_rotational_energies,system->quantum_rotation_level_max*sizeof(double),__LINE__-1, __FILE__);
 				molecule_ptr->quantum_rotational_eigenvectors = calloc(system->quantum_rotation_level_max, sizeof(complex_t *));
-				memnullcheck(molecule_ptr->quantum_rotational_eigenvectors,system->quantum_rotation_level_max*sizeof(complex_t *),110);
+				memnullcheck(molecule_ptr->quantum_rotational_eigenvectors,system->quantum_rotation_level_max*sizeof(complex_t *),__LINE__-1, __FILE__);
 				for(i = 0; i < system->quantum_rotation_level_max; i++){
 					molecule_ptr->quantum_rotational_eigenvectors[i] = 
 						calloc((system->quantum_rotation_l_max + 1)*(system->quantum_rotation_l_max + 1), sizeof(complex_t));
 					memnullcheck(molecule_ptr->quantum_rotational_eigenvectors[i],
-						(system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1)*sizeof(complex_t),111);
+						(system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1)*sizeof(complex_t),__LINE__-1, __FILE__);
 				}
 				molecule_ptr->quantum_rotational_eigensymmetry = calloc(system->quantum_rotation_level_max, sizeof(int));
-				memnullcheck(molecule_ptr->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),112);
+				memnullcheck(molecule_ptr->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),__LINE__-1, __FILE__);
 
 			}
 #endif /* QM_ROTATION */
@@ -211,17 +211,17 @@ molecule_t *read_molecules(system_t *system) {
 			if(system->quantum_vibration && !molecule_ptr->frozen) {
 
 				molecule_ptr->quantum_vibrational_energies = calloc(system->quantum_vibration_level_max, sizeof(double));
-				memnullcheck(molecule_ptr->quantum_vibrational_energies,system->quantum_vibration_level_max*sizeof(double),113);
+				memnullcheck(molecule_ptr->quantum_vibrational_energies,system->quantum_vibration_level_max*sizeof(double),__LINE__-1, __FILE__);
 				molecule_ptr->quantum_vibrational_eigenvectors = calloc(system->quantum_vibration_level_max, sizeof(complex_t *));
-				memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors,system->quantum_vibration_level_max*sizeof(complex_t *));
+				memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors,system->quantum_vibration_level_max*sizeof(complex_t *),__LINE__-1, __FILE__);
 				for(i = 0; i < system->quantum_vibration_level_max; i++) {
 					molecule_ptr->quantum_vibrational_eigenvectors[i] = 
 						calloc((system->quantum_vibration_l_max+1)*(system->quantum_vibration_l_max+1), sizeof(complex_t));
 					memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors[i],
-						(system->quantum_vibration_l_max+1)*(system->quantum_vibration_l_max+1)*sizeof(complex_t),114);
+						(system->quantum_vibration_l_max+1)*(system->quantum_vibration_l_max+1)*sizeof(complex_t),__LINE__-1, __FILE__);
 				}
 				molecule_ptr->quantum_vibrational_eigensymmetry = calloc(system->quantum_vibration_level_max, sizeof(int));
-				memnullcheck(molecule_ptr->quantum_vibrational_eigensymmetry, system->quantum_vibration_level_max*sizeof(int),115);
+				memnullcheck(molecule_ptr->quantum_vibrational_eigensymmetry, system->quantum_vibration_level_max*sizeof(int),__LINE__-1, __FILE__);
 
 			}
 #endif /* XXX */
@@ -264,7 +264,7 @@ molecule_t *read_molecules(system_t *system) {
 
 			atom_ptr->site_neighbor_id = current_site_neighbor;
 			atom_ptr->next = calloc(1, sizeof(atom_t));
-			memnullcheck(atom_ptr->next,sizeof(atom_t),116);
+			memnullcheck(atom_ptr->next,sizeof(atom_t),__LINE__-1, __FILE__);
 			prev_atom_ptr  = atom_ptr;
 			atom_ptr       = atom_ptr->next;
 		}
@@ -369,11 +369,11 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 	// allocate the start of the list 
 	molecules           = calloc(1, sizeof(molecule_t));
-	memnullcheck(molecules,sizeof(molecule_t),117);
+	memnullcheck(molecules,sizeof(molecule_t),__LINE__-1, __FILE__);
 	molecule_ptr        = molecules;
 	molecule_ptr->id    = 1;
 	molecule_ptr->atoms = calloc(1, sizeof(atom_t));
-	memnullcheck(molecule_ptr->atoms,sizeof(atom_t),118);
+	memnullcheck(molecule_ptr->atoms,sizeof(atom_t),__LINE__-1, __FILE__);
 	atom_ptr            = molecule_ptr->atoms;
 	prev_atom_ptr       = atom_ptr;
 	
@@ -457,10 +457,10 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 			if(molecule_ptr->id != current_moleculeid) {
 				molecule_ptr->next = calloc(1, sizeof(molecule_t));
-				memnullcheck(molecule_ptr->next,sizeof(molecule_t),119);
+				memnullcheck(molecule_ptr->next,sizeof(molecule_t),__LINE__-1, __FILE__);
 				molecule_ptr = molecule_ptr->next;
 				molecule_ptr->atoms = calloc(1, sizeof(atom_t));
-				memnullcheck(molecule_ptr->atoms,sizeof(atom_t),120);
+				memnullcheck(molecule_ptr->atoms,sizeof(atom_t),__LINE__-1, __FILE__);
 				prev_atom_ptr->next = NULL;
 				free(atom_ptr);
 				atom_ptr = molecule_ptr->atoms;
@@ -479,17 +479,17 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			if(system->quantum_rotation && !molecule_ptr->frozen) {
 
 				molecule_ptr->quantum_rotational_energies = calloc(system->quantum_rotation_level_max, sizeof(double));
-				memnullcheck(molecule_ptr->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double),121);
+				memnullcheck(molecule_ptr->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double),__LINE__-1, __FILE__);
 				molecule_ptr->quantum_rotational_eigenvectors = calloc(system->quantum_rotation_level_max, sizeof(complex_t *));
-				memnullcheck(molecule_ptr->quantum_rotational_eigenvectors, system->quantum_rotation_level_max*sizeof(complex_t *), 122);
+				memnullcheck(molecule_ptr->quantum_rotational_eigenvectors, system->quantum_rotation_level_max*sizeof(complex_t *), __LINE__-1, __FILE__);
 				for(i = 0; i < system->quantum_rotation_level_max; i++) {
 					molecule_ptr->quantum_rotational_eigenvectors[i] = 
 						calloc((system->quantum_rotation_l_max + 1)*(system->quantum_rotation_l_max + 1), sizeof(complex_t));
 					memnullcheck(molecule_ptr->quantum_rotational_eigenvectors[i],
-						(system->quantum_rotation_l_max + 1)*(system->quantum_rotation_l_max + 1)*sizeof(complex_t),123);
+						(system->quantum_rotation_l_max + 1)*(system->quantum_rotation_l_max + 1)*sizeof(complex_t),__LINE__-1, __FILE__);
 				}
 				molecule_ptr->quantum_rotational_eigensymmetry = calloc(system->quantum_rotation_level_max, sizeof(int));
-				memnullcheck(molecule_ptr->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),124);
+				memnullcheck(molecule_ptr->quantum_rotational_eigensymmetry,system->quantum_rotation_level_max*sizeof(int),__LINE__-1, __FILE__);
 
 			}
 #endif /* QM_ROTATION */
@@ -499,17 +499,17 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			if(system->quantum_vibration && !molecule_ptr->frozen) {
 
 				molecule_ptr->quantum_vibrational_energies = calloc(system->quantum_vibration_level_max, sizeof(double));
-				memnullcheck(molecule_ptr->quantum_vibrational_energies, system->quantum_vibration_level_max*sizeof(double), 125);
+				memnullcheck(molecule_ptr->quantum_vibrational_energies, system->quantum_vibration_level_max*sizeof(double), __LINE__-1, __FILE__);
 				molecule_ptr->quantum_vibrational_eigenvectors = calloc(system->quantum_vibration_level_max, sizeof(complex_t *));
-				memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors, system->quantum_vibration_level_max*sizeof(complex_t *), 126);
+				memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors, system->quantum_vibration_level_max*sizeof(complex_t *), __LINE__-1, __FILE__);
 				for(i = 0; i < system->quantum_vibration_level_max; i++) {
 					molecule_ptr->quantum_vibrational_eigenvectors[i] = 
 						calloc((system->quantum_vibration_l_max + 1)*(system->quantum_vibration_l_max + 1), sizeof(complex_t));
 					memnullcheck(molecule_ptr->quantum_vibrational_eigenvectors[i],
-						(system->quantum_vibration_l_max + 1)*(system->quantum_vibration_l_max + 1)*sizeof(complex_t), 127);
+						(system->quantum_vibration_l_max + 1)*(system->quantum_vibration_l_max + 1)*sizeof(complex_t), __LINE__-1, __FILE__);
 				}
 				molecule_ptr->quantum_vibrational_eigensymmetry = calloc(system->quantum_vibration_level_max, sizeof(int));
-				memnullcheck(molecule_ptr->quantum_vibrational_eigensymmetry, system->quantum_vibration_level_max*sizeof(int), 128);
+				memnullcheck(molecule_ptr->quantum_vibrational_eigensymmetry, system->quantum_vibration_level_max*sizeof(int), __LINE__-1, __FILE__);
 
 			}
 #endif /* XXX */
@@ -548,7 +548,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 			atom_ptr->site_neighbor_id = current_site_neighbor;
 			atom_ptr->next = calloc(1, sizeof(atom_t));
-			memnullcheck(atom_ptr->next,sizeof(atom_t),129);
+			memnullcheck(atom_ptr->next,sizeof(atom_t),__LINE__-1, __FILE__);
 			prev_atom_ptr  = atom_ptr;
 			atom_ptr       = atom_ptr->next;
 		}

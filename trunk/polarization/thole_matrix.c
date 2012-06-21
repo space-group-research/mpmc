@@ -41,7 +41,7 @@ void thole_amatrix(system_t *system) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
 
 			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1),59);
+			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
 			atom_array[N] = atom_ptr;
 
 		}
@@ -179,19 +179,19 @@ void thole_resize_matrices(system_t *system) {
 
 	//(RE)allocate the A matrix
 	system->A_matrix=calloc(N,sizeof(double*));
-	memnullcheck(system->A_matrix,N*sizeof(double*),60);
+	memnullcheck(system->A_matrix,N*sizeof(double*), __LINE__-1, __FILE__);
 	for (i=0; i< N; i++ ) {
 		system->A_matrix[i]=malloc(N*sizeof(double));
-		memnullcheck(system->A_matrix[i],N*sizeof(double), 61);
+		memnullcheck(system->A_matrix[i],N*sizeof(double), __LINE__-1, __FILE__);
 	}
 
 	//(RE)allocate the B matrix if not iterative
 	if (!system->polar_iterative) {
 		system->B_matrix=calloc(N,sizeof(double*));
-		memnullcheck(system->B_matrix,N*sizeof(double*),62);
+		memnullcheck(system->B_matrix,N*sizeof(double*), __LINE__-1, __FILE__);
 		for (i=0; i< N; i++ ) {
 			system->B_matrix[i]=malloc(N*sizeof(double));
-			memnullcheck(system->B_matrix[i],N*sizeof(double),63);
+			memnullcheck(system->B_matrix[i],N*sizeof(double),__LINE__-1, __FILE__);
 		}
 	}
 
@@ -229,7 +229,7 @@ void thole_bmatrix_dipoles(system_t *system) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
 
 			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1),74);
+			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
 			atom_array[N] = atom_ptr;
 
 		}
@@ -237,9 +237,9 @@ void thole_bmatrix_dipoles(system_t *system) {
 
 	/* allocate working arrays */
 	mu_array = calloc(3*N, sizeof(double));
-	memnullcheck(mu_array,3*N*sizeof(double),75);
+	memnullcheck(mu_array,3*N*sizeof(double), __LINE__-1, __FILE__);
 	field_array = calloc(3*N, sizeof(double));
-	memnullcheck(field_array,3*N*sizeof(double),76);
+	memnullcheck(field_array,3*N*sizeof(double), __LINE__-1, __FILE__);
 	
 	/* copy the field in */
 	for(i = 0; i < N; i++) {
@@ -282,7 +282,7 @@ void LU_decomp(double **a,int n,int *indx,double *d)
   double big,dum,sum,temp,*vv;
 
   vv=(double *)malloc(n*sizeof(double));
-	memnullcheck(vv,n*sizeof(double),77);
+	memnullcheck(vv,n*sizeof(double), __LINE__-1, __FILE__);
   *d=1.0;
   for (i=0;i<n;i++) {
     big=0.0;
@@ -360,9 +360,9 @@ void invert_matrix(int n,double **a,double **ai) {
   double *col,d;
 
   col  = (double *)malloc(n*sizeof(double));
-	memnullcheck(col, n*sizeof(double), 78);
+	memnullcheck(col, n*sizeof(double), __LINE__-1, __FILE__);
   indx = (int *)malloc(n*sizeof(int));
-	memnullcheck(indx, n*sizeof(int), 79);
+	memnullcheck(indx, n*sizeof(int), __LINE__-1, __FILE__);
 
   LU_decomp(a,n,indx,&d);
 

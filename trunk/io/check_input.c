@@ -568,7 +568,7 @@ void hist_options ( system_t * system ) {
 	else if(!system->histogram_output){
 		output("INPUT: no histogram outputfile selected, defaulting to histogram.dat\n");
 		system->histogram_output=calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->histogram_output,MAXLINE*sizeof(char),103);
+		memnullcheck(system->histogram_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		sprintf(system->histogram_output,"histogram.dat");
 	}
 	else{
@@ -585,7 +585,7 @@ void hist_options ( system_t * system ) {
 	if(!system->frozen_output){
 		output("INPUT: no frozen_output set! setting frozen coordinate output file to frozen.dx\n");
 		system->frozen_output = calloc(MAXLINE, sizeof(char));
-		memnullcheck(system->frozen_output,MAXLINE*sizeof(char),104);
+		memnullcheck(system->frozen_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		sprintf(system->frozen_output,"frozen.dx");
 	} else {
 		sprintf(linebuf, "INPUT: will be writing frozen coordinates to %s\n", system->frozen_output);
@@ -601,7 +601,7 @@ void io_files_options(system_t * system) {
 
 	if(!system->pqr_input) {
 		system->pqr_input = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->pqr_input,MAXLINE*sizeof(char),94);
+		memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		output("INPUT: input PQR file not specified\n");
 		strcpy(system->pqr_input,system->job_name);
 		strcat(system->pqr_input,".initial.pqr");
@@ -614,7 +614,7 @@ void io_files_options(system_t * system) {
 
 	if(!system->pqr_output) {	// (CRC)
 		system->pqr_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->pqr_output,MAXLINE*sizeof(char),94);
+		memnullcheck(system->pqr_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->pqr_output,system->job_name);
 		strcat(system->pqr_output,".final.pqr");
 		sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
@@ -629,7 +629,7 @@ void io_files_options(system_t * system) {
 
 	if(!system->pqr_restart) {	// (CRC)
 		system->pqr_restart = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),95);
+		memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->pqr_restart,system->job_name);
 		strcat(system->pqr_restart,".restart.pqr");
 		sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
@@ -645,7 +645,7 @@ void io_files_options(system_t * system) {
 	/* NEW: Energy output will default to on if not specified */
 	if(!system->energy_output) {	// (CRC)
 		system->energy_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->energy_output,MAXLINE*sizeof(char),97);
+		memnullcheck(system->energy_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->energy_output,system->job_name);
 		strcat(system->energy_output,".energy.dat");
 		sprintf(linebuf, "INPUT: will be writing energy output to %s\n", system->energy_output);
@@ -661,7 +661,7 @@ void io_files_options(system_t * system) {
 	/* NEW: Trajectory file will default to on if not specified */
 	if(!system->traj_output) {	// (CRC)
 		system->traj_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
+		memnullcheck(system->traj_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->traj_output,system->job_name);
 		strcat(system->traj_output,".traj.pqr");
 		sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
@@ -681,7 +681,7 @@ void io_files_options(system_t * system) {
 
 	if(system->polarization && !system->dipole_output) {	// (CRC)
 		system->dipole_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->dipole_output,MAXLINE*sizeof(char),96);
+		memnullcheck(system->dipole_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->dipole_output,system->job_name);
 		strcat(system->dipole_output,".dipole.dat");
 		sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
@@ -696,7 +696,7 @@ void io_files_options(system_t * system) {
 
 	if(system->polarization && !system->field_output) {	// (CRC)
 		system->field_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->field_output,MAXLINE*sizeof(char),96);
+		memnullcheck(system->field_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->field_output,system->job_name);
 		strcat(system->field_output,".field.dat");
 		sprintf(linebuf, "INPUT: field field will be written to %s\n", system->field_output);

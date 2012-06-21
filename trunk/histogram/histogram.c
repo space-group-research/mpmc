@@ -240,32 +240,32 @@ void allocate_histogram_grid(system_t *system)
 
 	/* allocate a 3D grid for the histogram */
 	system->grids->histogram->grid = calloc(x_dim, sizeof(int **));
-	memnullcheck(system->grids->histogram->grid, sizeof(int **)*x_dim,15);
+	memnullcheck(system->grids->histogram->grid, sizeof(int **)*x_dim, __LINE__-1, __FILE__);
 	for(i=0; i<x_dim; i++) {
 		system->grids->histogram->grid[i] = calloc(y_dim, sizeof(int *));
-		memnullcheck(system->grids->histogram->grid[i],sizeof(int *)*y_dim, 16);
+		memnullcheck(system->grids->histogram->grid[i],sizeof(int *)*y_dim, __LINE__-1, __FILE__);
 	}
 		
 
 	for(i=0; i<x_dim; i++){
 		for(j=0; j<y_dim; j++){
 			system->grids->histogram->grid[i][j] = calloc(z_dim, sizeof(int));
-			memnullcheck(system->grids->histogram->grid[i][j],sizeof(int)*z_dim,17);
+			memnullcheck(system->grids->histogram->grid[i][j],sizeof(int)*z_dim, __LINE__-1, __FILE__);
 		}
 	}
 
 	/* if root, allocate an avg_histogram grid */
 	if(!rank){
 		system->grids->avg_histogram->grid = calloc(x_dim, sizeof(int **));
-		memnullcheck(system->grids->avg_histogram->grid,x_dim*sizeof(int **),18);
+		memnullcheck(system->grids->avg_histogram->grid,x_dim*sizeof(int **),__LINE__-1, __FILE__);
 		for(i=0; i<x_dim; i++) {
 			system->grids->avg_histogram->grid[i] = calloc(y_dim, sizeof(int *));
-			memnullcheck(system->grids->avg_histogram->grid[i], y_dim*sizeof(int *), 19);	
+			memnullcheck(system->grids->avg_histogram->grid[i], y_dim*sizeof(int *), __LINE__-1, __FILE__);	
 		}
 		for(i=0; i<x_dim; i++){
 			for(j=0; j<y_dim; j++){
 				system->grids->avg_histogram->grid[i][j] = calloc(z_dim, sizeof(int));
-				memnullcheck(system->grids->avg_histogram->grid[i][j],z_dim*sizeof(int),20);
+				memnullcheck(system->grids->avg_histogram->grid[i][j],z_dim*sizeof(int), __LINE__-1, __FILE__);
 			}
 		}
 	}

@@ -49,7 +49,7 @@ void free_pairs(molecule_t *molecules) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
 				ptr_array = realloc(ptr_array, sizeof(pair_t *)*(i + 1));
-				memnullcheck(ptr_array,sizeof(pair_t *)*(i+1),34);
+				memnullcheck(ptr_array,sizeof(pair_t *)*(i+1),__LINE__-1, __FILE__);
 				ptr_array[i] = pair_ptr;
 				++i;
 
@@ -81,7 +81,7 @@ void free_atoms(molecule_t *molecules) {
 	for(molecule_ptr = molecules, i = 0, n = 0, ptr_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 			ptr_array = realloc(ptr_array, sizeof(atom_t *)*(i + 1));
-			memnullcheck(ptr_array,sizeof(atom_t *)*(i+1),35);
+			memnullcheck(ptr_array,sizeof(atom_t *)*(i+1), __LINE__-1, __FILE__);
 			ptr_array[i] = atom_ptr;
 			++i, ++n;
 		}
@@ -104,7 +104,7 @@ void free_molecules(molecule_t *molecules) {
 	/* build the ptr array */
 	for(molecule_ptr = molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		ptr_array = realloc(ptr_array, sizeof(molecule_t *)*(i + 1));
-		memnullcheck(ptr_array,sizeof(molecule_t *)*(i + 1),36);
+		memnullcheck(ptr_array,sizeof(molecule_t *)*(i + 1),__LINE__-1, __FILE__);
 		ptr_array[i] = molecule_ptr;
 		++i;
 	}
@@ -191,7 +191,7 @@ void free_vdw_eiso(vdw_t * vdw_eiso_info) {
 
 	for ( vp = vdw_eiso_info; vp; vp=vp->next ) {
 		varray = realloc(varray, sizeof(vdw_t *)*(i+1));
-		memnullcheck(varray,sizeof(vdw_t *)*(i+1),36);
+		memnullcheck(varray,sizeof(vdw_t *)*(i+1), __LINE__-1, __FILE__);
 		varray[i]=vp;
 		i++;
 	}

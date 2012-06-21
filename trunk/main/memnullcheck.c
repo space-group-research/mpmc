@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <mc.h>
 
-
+// include for gcc stack trace
+#ifdef __GNUC__ 
+#include <execinfo.h>
+#define STDERR 2
+#endif
 
 /* written to hopefully deal with some memory issues that have been plaguing very large
  * runs on PCN61. I believe that we may be running into memory fragmentation.
@@ -13,9 +17,18 @@
  * for larger requests.
 */
 
-// args are the pointer to check, the size of the memory requested and and
-// integer that identifies the parent function
-int memnullcheck ( void * ptr, int size, int parent ) {
+// args are the pointer to check, the size of the memory requested and
+// the last two parameters should be called with the macros __LINE__ and __FILE__
+// The first macro is replaced by the line number in source code, the latter
+// is replaced by name of the source file. 
+// Subtracting one from the __LINE__ macro will indicate that the mem
+// allocation failed on the line before the memnullcheck() call. 
+//
+// Eg:
+// int *ptr = malloc( sizeof(int) * 100 );
+// memnullcheck( ptr, sizeof(int)*100, __LINE__-1, __FILE__);
+
+int memnullcheck ( void * ptr, int size, int line, char *file ) {
 
 	if ( ptr != NULL ) return 0;
 
@@ -24,8 +37,20 @@ int memnullcheck ( void * ptr, int size, int parent ) {
 		if ( size == 0 ) return 0;
 
 		fprintf(stderr,"ERROR: Failed to allocate %d bytes.\n", size);
-		fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
-		fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
+		fprintf(stderr,"       File: %s\n", file );
+		fprintf(stderr,"       Line: %d\n", line );
+#ifdef __GNUC__
+		// Print a stack trace
+		// In gcc, must compile with -rdynamic option in order to see the function names
+		fprintf(stderr,"STACK_TRACE:\n" );
+		void *array[20];
+		size_t size;
+		size = backtrace(array, 20);
+		backtrace_symbols_fd(array, size, STDERR );
+		
+#endif
+		//fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
+		//fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
 
 		exit(-1);
 	}
@@ -53,22 +78,3 @@ int filecheck ( void * ptr, char * filename, int mode ) {
 
 }
 
-
-/* parent flag list:
- * 0-14 = pairs.c
- * 15-20 = histogram.c
- * 21-33 = main.c
- * 34-36 = cleanup.c
- * 37-39 = cavity.c
- * 40-52 = mc_moves.c
- * 53    = pimc.c
- * 54-55 = surface.c
- * 56-57 = surf_fit.c
- * 58    = thole_field.c
- * 59-79 = thole_matrix.c
- * 80-81 = thole_iterative.c
- * 82-90 = rotational_eigenspectrum.c
- * 91-92 = rotational_potential.c
- * 93-131 = input.c
- * 132-134 = output.c
-*/

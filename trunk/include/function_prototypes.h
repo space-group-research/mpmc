@@ -97,7 +97,7 @@ void free_matricies(system_t *system);
 void free_cavity_grid(system_t *system);
 void cleanup(system_t *);
 void terminate_handler(int, system_t *);
-int memnullcheck ( void *, int, int );
+int memnullcheck ( void *, int, int, char * );
 int filecheck ( void *, char *, int);
 
 /* mc */

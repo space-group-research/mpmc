@@ -588,7 +588,7 @@ int do_command (system_t * system, char ** token ) {
 	else if (!strcasecmp(token[0], "job_name")) {
 		if(!system->job_name) {
 			system->job_name = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->job_name,MAXLINE*sizeof(char),135);
+			memnullcheck(system->job_name,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->job_name,token[1]);
 		} else return 1;
 	}
@@ -596,77 +596,77 @@ int do_command (system_t * system, char ** token ) {
 	else if (!strcasecmp(token[0], "pqr_input")) {
 		if(!system->pqr_input) {
 			system->pqr_input = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pqr_input,MAXLINE*sizeof(char),93);
+			memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->pqr_input,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "pqr_output")) {
 		if(!system->pqr_output) {
 			system->pqr_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pqr_output,MAXLINE*sizeof(char),94);
+			memnullcheck(system->pqr_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->pqr_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "pqr_restart")) {
 		if(!system->pqr_restart) {
 			system->pqr_restart = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),95);
+			memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->pqr_restart,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "traj_output")) {
 		if(!system->traj_output) {
 			system->traj_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->traj_output,MAXLINE*sizeof(char),96);
+			memnullcheck(system->traj_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->traj_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "energy_output")) {
 		if(!system->energy_output) {
 			system->energy_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->energy_output,MAXLINE*sizeof(char),97);
+			memnullcheck(system->energy_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->energy_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "energy_output_csv")) {
 		if(!system->energy_output_csv) {
 			system->energy_output_csv = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->energy_output_csv,MAXLINE*sizeof(char),97);
+			memnullcheck(system->energy_output_csv,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->energy_output_csv,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "pop_histogram_output")) {
 		if(!system->histogram_output) {
 			system->histogram_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->histogram_output,MAXLINE*sizeof(char),98);
+			memnullcheck(system->histogram_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->histogram_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "dipole_output")) {
 		if(!system->dipole_output) {
 			system->dipole_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->dipole_output,MAXLINE*sizeof(char),99);
+			memnullcheck(system->dipole_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->dipole_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "field_output")) {
 		if(!system->field_output) {
 			system->field_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->field_output,MAXLINE*sizeof(char),101);
+			memnullcheck(system->field_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->field_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "frozen_output")) {
 		if(!system->frozen_output) {
 			system->frozen_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->frozen_output,MAXLINE*sizeof(char),101);
+			memnullcheck(system->frozen_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->frozen_output,token[1]);
 		} else return 1;
 	}
 	else if (!strcasecmp(token[0], "insert_input")) {
 		if(!system->insert_input) {
 			system->insert_input = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->insert_input,MAXLINE*sizeof(char),102);
+			memnullcheck(system->insert_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 			strcpy(system->insert_input,token[1]);
 		} else return 1;
 	}
@@ -830,10 +830,10 @@ system_t *read_config(char *input_file) {
 	int i, linenum;
 
 	system = calloc(1, sizeof(system_t));
-	memnullcheck(system,sizeof(system_t),-1);
+	memnullcheck(system,sizeof(system_t),__LINE__-1, __FILE__);
 
 	system->pbc = calloc(1, sizeof(pbc_t));
-	memnullcheck(system->pbc, sizeof(pbc_t),-2);
+	memnullcheck(system->pbc, sizeof(pbc_t),__LINE__-1, __FILE__);
 
 	/* open the config file or error */
 	fp = fopen(input_file, "r");
@@ -841,10 +841,10 @@ system_t *read_config(char *input_file) {
 
 	/* allocate space for tokens */
 	token = calloc(10, sizeof(char *));
-	memnullcheck(token, 10*sizeof(char *), 130);
+	memnullcheck(token, 10*sizeof(char *), __LINE__-1, __FILE__);
 	for ( i=0; i<10; i++ ) {
 		token[i] = calloc(MAXLINE, sizeof(char));
-		memnullcheck(token[i], MAXLINE*sizeof(char), 131);
+		memnullcheck(token[i], MAXLINE*sizeof(char), __LINE__-1, __FILE__);
 	}
 
 	/* set default vaules */

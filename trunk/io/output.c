@@ -32,7 +32,7 @@ char * make_filename ( char * basename, int fileno ) {
 
 	if ( ! strncmp("/dev/null",basename,9) ) {
 		rval = malloc(10*sizeof(char));
-		memnullcheck(rval,10*sizeof(char),134);
+		memnullcheck(rval,10*sizeof(char),__LINE__-1, __FILE__);
 		sprintf(rval,"/dev/null");
 		return rval;
 	}
@@ -49,7 +49,7 @@ char * make_filename ( char * basename, int fileno ) {
 				//set string length
 				outlen=strlen(START)+strlen(STOP)+7;
 				rval = malloc(outlen*sizeof(char));
-				memnullcheck(rval,outlen*sizeof(char),132);
+				memnullcheck(rval,outlen*sizeof(char),__LINE__-1, __FILE__);
 				//make filename
 				sprintf(rval,"%s-%05d%s", START, fileno, STOP);
 			}
@@ -58,7 +58,7 @@ char * make_filename ( char * basename, int fileno ) {
 	if ( rval == NULL ) {
 		outlen = len + 7;
 		rval = malloc(outlen*sizeof(char));
-		memnullcheck(rval,outlen*sizeof(char),133);
+		memnullcheck(rval,outlen*sizeof(char),__LINE__-1, __FILE__);
 		//make filename
 		sprintf(rval,"%s-%05d", basename, fileno);
 	}

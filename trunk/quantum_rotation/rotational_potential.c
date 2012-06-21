@@ -165,8 +165,9 @@ void rotate_spherical(molecule_t *molecule, double theta, double phi) {
 /* hindered potential of sin(theta)^2 */
 /* used for testing, compared with Curl, Hopkins, Pitzer,JCP (1968) 48:4064 */
 double hindered_potential(double theta) {
+	double rval = sin(theta);
 
-	return(pow(sin(theta), 2.0));
+	return rval*rval;
 
 }
 

@@ -68,10 +68,10 @@ double anharmonic_fk(double temperature, double mass, double k, double g, double
 	/* convert the mass to kg */
 	mass *= AMU2KG;
 
-	conversion_factor = pow(METER2ANGSTROM, 2.0)*pow(HBAR, 2.0)/(KB*mass);
+	conversion_factor = pow(METER2ANGSTROM, 2)*pow(HBAR, 2)/(KB*mass);
 
 	/* initial guess a^2 = beta/12 */
-	a_sq = pow(METER2ANGSTROM, 2.0)*pow(HBAR, 2.0)/(12.0*KB*temperature*mass);
+	a_sq = pow(METER2ANGSTROM, 2)*pow(HBAR, 2)/(12.0*KB*temperature*mass);
 
 	/* solve self-consistently */
 	keep_iterating = 1;
@@ -80,7 +80,7 @@ double anharmonic_fk(double temperature, double mass, double k, double g, double
 		/* save the last a_sq for tolerance */
 		prev_a_sq = a_sq;
 
-		omega_sq = conversion_factor*(k + 3.0*g*a_sq + 3.0*g*pow(x, 2.0)); omega = sqrt(omega_sq);
+		omega_sq = conversion_factor*(k + 3.0*g*a_sq + 3.0*g*pow(x, 2)); omega = sqrt(omega_sq);
 		a_sq = conversion_factor*(temperature/omega_sq)*((omega/(2.0*temperature))*(1.0/tanh(omega/(2.0*temperature))) - 1.0);
 
 		tolerance = fabs(prev_a_sq - a_sq);
@@ -89,7 +89,7 @@ double anharmonic_fk(double temperature, double mass, double k, double g, double
 
 	}
 
-	V_a = 0.5*a_sq*k + 0.75*g*pow(a_sq, 2.0) + 0.5*(k + 3.0*g*a_sq)*pow(x, 2.0) + 0.25*g*pow(x, 4.0);
+	V_a = 0.5*a_sq*k + 0.75*g*pow(a_sq, 2) + 0.5*(k + 3.0*g*a_sq)*pow(x, 2) + 0.25*g*pow(x, 4);
 
 	potential = temperature*log(sinh(omega/(2.0*temperature))/(omega/(2.0*temperature))) - 0.5*omega_sq*a_sq/conversion_factor + V_a;
 
@@ -106,10 +106,10 @@ double anharmonic_fh_second_order(double temperature, double mass, double k, dou
 
 	mass *= AMU2KG;
 
-	first_derivative = k*x + g*pow(x, 3.0);
-	second_derivative = k + 3.0*g*pow(x, 2.0);
+	first_derivative = k*x + g*pow(x, 3);
+	second_derivative = k + 3.0*g*pow(x, 2);
 
-	potential = pow(METER2ANGSTROM, 2.0)*pow(HBAR, 2.0)/(24.0*KB*temperature*mass)*(second_derivative + 2.0*first_derivative/x);
+	potential = pow(METER2ANGSTROM, 2)*pow(HBAR, 2)/(24.0*KB*temperature*mass)*(second_derivative + 2.0*first_derivative/x);
 
 	return(potential);
 
@@ -124,12 +124,12 @@ double anharmonic_fh_fourth_order(double temperature, double mass, double k, dou
 
 	mass *= AMU2KG;
 
-	first_derivative = k*x + g*pow(x, 3.0);
-	second_derivative = k + 3.0*g*pow(x, 2.0);
-	other_derivatives = 15.0*k/pow(x, 2.0) + 45.0*g;
+	first_derivative = k*x + g*pow(x, 3);
+	second_derivative = k + 3.0*g*pow(x, 2);
+	other_derivatives = 15.0*k/pow(x, 2) + 45.0*g;
 
-	potential = pow(METER2ANGSTROM, 2.0)*pow(HBAR, 2.0)/(24.0*KB*temperature*mass)*(second_derivative + 2.0*first_derivative/x);
-	potential += pow(METER2ANGSTROM, 4.0)*pow(HBAR, 4.0)/(1152.0*pow(KB*temperature*mass, 2.0))*other_derivatives;
+	potential = pow(METER2ANGSTROM, 2)*pow(HBAR, 2)/(24.0*KB*temperature*mass)*(second_derivative + 2.0*first_derivative/x);
+	potential += pow(METER2ANGSTROM, 4)*pow(HBAR, 4)/(1152.0*pow(KB*temperature*mass, 2))*other_derivatives;
 
 	return(potential);
 
@@ -140,7 +140,7 @@ double anharmonic_energy(double k, double g, double x) {
 
 	double potential;
 
-	potential = 0.5*k*pow(x, 2.0) + 0.25*g*pow(x, 4.0);
+	potential = 0.5*k*pow(x, 2) + 0.25*g*pow(x, 4);
 
 	return(potential);
 
@@ -163,7 +163,7 @@ double morse_energy(double k, double de, double r0, double r) {
 
 	a = sqrt(k/(2.0*de));
 
-	potential = (EV2K*de)*pow((1.0 - exp(-a*(r - r0))), 2.0);
+	potential = (EV2K*de)*pow((1.0 - exp(-a*(r - r0))), 2);
 
 	return(potential);
 

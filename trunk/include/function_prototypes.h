@@ -78,6 +78,7 @@ int open_traj_files(system_t *);
 int open_files(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles( system_t *, int );
+molecule_t *read_insertion_molecules(system_t *);
 
 /* main */
 void usage(char *);
@@ -97,6 +98,7 @@ void free_cavity_grid(system_t *system);
 void cleanup(system_t *);
 void terminate_handler(int, system_t *);
 int memnullcheck ( void *, int, int );
+int filecheck ( void *, char *, int);
 
 /* mc */
 void boltzmann_factor(system_t *, double, double);

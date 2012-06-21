@@ -203,9 +203,9 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		- avg_observables->energy*avg_observables->energy);
 
 	avg_observables->energy_sq_sq = factor*avg_observables->energy_sq_sq 
-		+ pow(observables->energy, 4.0) / ((double)counter);
+		+ pow(observables->energy, 4) / ((double)counter);
 	avg_observables->energy_sq_error = 0.5*sqrt(avg_observables->energy_sq_sq  
-		- pow(avg_observables->energy, 4.0));
+		- pow(avg_observables->energy, 4));
 
 	avg_observables->coulombic_energy = factor*avg_observables->coulombic_energy 
 		+ observables->coulombic_energy / ((double)counter);
@@ -341,7 +341,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		- avg_observables->energy*avg_observables->energy)/(system->temperature*system->temperature);
 
 	/* compressibility */
-	avg_observables->compressibility = ATM2PASCALS*(system->pbc->volume/pow(METER2ANGSTROM, 3.0))*(avg_observables->N_sq 
+	avg_observables->compressibility = ATM2PASCALS*(system->pbc->volume/pow(METER2ANGSTROM, 3))*(avg_observables->N_sq 
 		- avg_observables->N*avg_observables->N)/(KB*system->temperature*avg_observables->N*avg_observables->N);
 
 	/* we have a solid phase */

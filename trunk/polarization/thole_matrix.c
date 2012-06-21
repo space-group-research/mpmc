@@ -78,8 +78,8 @@ void thole_amatrix(system_t *system) {
 			if(pair_ptr->rimg == 0.)
 				r3 = r5 = MAXVALUE;
 			else {
-				r3 = pow(pair_ptr->rimg, -3.0);
-				r5 = pow(pair_ptr->rimg, -5.0);
+				r3 = pow(pair_ptr->rimg, -3);
+				r5 = pow(pair_ptr->rimg, -5);
 			}
 
 

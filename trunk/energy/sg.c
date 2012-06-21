@@ -44,16 +44,16 @@ double sg(system_t *system) {
 						/* classical pairwise part */
 						repulsive_term = exp(ALPHA - BETA*rimg - GAMMA*rimg*rimg);
 
-						r6 = pow(rimg, 6.0);
-						r8 = pow(rimg, 8.0);
-						r9 = pow(rimg, 9.0);
-						r10 = pow(rimg, 10.0);
+						r6 = pow(rimg, 6);
+						r8 = pow(rimg, 8);
+						r9 = pow(rimg, 9);
+						r10 = pow(rimg, 10);
 						multipole_term = C6/r6 + C8/r8 + C10/r10 - C9/r9;
 
 
 						r_rm = RM/rimg;
 						if(rimg < RM)
-							exponential_term = exp(-pow((r_rm - 1.0), 2.0));
+							exponential_term = exp(-pow((r_rm - 1.0), 2));
 						else
 							exponential_term = 1.0;
 
@@ -64,21 +64,21 @@ double sg(system_t *system) {
 
 							/* FIRST DERIVATIVE */
 							first_derivative = (-BETA -2.0*GAMMA*rimg)*repulsive_term;
-							first_derivative += (6.0*C6/pow(rimg, 7.0) + 8.0*C8/pow(rimg, 9.0) - 9.0*C9/pow(rimg, 10.0) + 10.0*C10/pow(rimg, 11.0))*exponential_term;
+							first_derivative += (6.0*C6/pow(rimg, 7) + 8.0*C8/pow(rimg, 9) - 9.0*C9/pow(rimg, 10) + 10.0*C10/pow(rimg, 11))*exponential_term;
 							first_r_diff_term = (r_rm*r_rm - r_rm)/rimg;
 							first_derivative += -2.0*multipole_term*exponential_term*first_r_diff_term;
 
 
 							/* SECOND DERIVATIVE */
-							second_derivative = (pow((BETA + 2.0*GAMMA*rimg), 2.0) - 2.0*GAMMA)*repulsive_term;
-							second_derivative += (-exponential_term)*(42.0*C6/pow(rimg, 8.0) + 72.0*C8/pow(rimg, 10.0) - 90.0*C9/pow(rimg,11.0) + 110.0*C10/pow(rimg, 10.0));
-							second_derivative += exponential_term*first_r_diff_term*(12.0*C6/pow(rimg, 7.0) + 16.0*C8/pow(rimg, 9.0) - 18.0*C9/pow(rimg,10.0) + 20.0*C10/pow(rimg, 11.0));
-							second_derivative += exponential_term*pow(first_r_diff_term, 2.0)*4.0*multipole_term;
+							second_derivative = (pow((BETA + 2.0*GAMMA*rimg), 2) - 2.0*GAMMA)*repulsive_term;
+							second_derivative += (-exponential_term)*(42.0*C6/pow(rimg, 8) + 72.0*C8/pow(rimg, 10) - 90.0*C9/pow(rimg,11) + 110.0*C10/pow(rimg, 10));
+							second_derivative += exponential_term*first_r_diff_term*(12.0*C6/pow(rimg, 7) + 16.0*C8/pow(rimg, 9) - 18.0*C9/pow(rimg,10) + 20.0*C10/pow(rimg, 11));
+							second_derivative += exponential_term*pow(first_r_diff_term, 2)*4.0*multipole_term;
 							second_r_diff_term = (3.0*r_rm*r_rm - 2.0*r_rm)/(rimg*rimg);
 							second_derivative += exponential_term*second_r_diff_term*2.0*multipole_term;
 
 
-							potential_fh_second_order = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*temperature*(AMU2KG*molecule_ptr->mass)))*(second_derivative + 2.0*first_derivative/rimg);
+							potential_fh_second_order = pow(METER2ANGSTROM, 2)*(HBAR*HBAR/(24.0*KB*temperature*(AMU2KG*molecule_ptr->mass)))*(second_derivative + 2.0*first_derivative/rimg);
 							pair_ptr->rd_energy += potential_fh_second_order;
 
 						}
@@ -127,17 +127,17 @@ double sg_nopbc(molecule_t *molecules) {
 					r = pair_ptr->r/AU2ANGSTROM;
 
 
-					r6 = pow(r, 6.0);
-					r8 = pow(r, 8.0);
-					r10 = pow(r, 10.0);
-					r9 = pow(r, 9.0);
+					r6 = pow(r, 6);
+					r8 = pow(r, 8);
+					r10 = pow(r, 10);
+					r9 = pow(r, 9);
 
 					multipole_term = C6/r6 + C8/r8 + C10/r10 - C9/r9;
 
 					if(r < RM) {
 						r_rm = RM/r;
 						r_rm -= 1.0;
-						r_rm_2 = pow(r_rm, 2.0);
+						r_rm_2 = pow(r_rm, 2);
 						r_rm_2 *= -1.0;
 						r_exp = exp(r_rm_2);
 

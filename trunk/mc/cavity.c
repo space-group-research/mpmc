@@ -24,9 +24,9 @@ int is_point_empty(system_t *system, double x, double y, double z) {
 
 				if(!system->cavity_grid[i][j][k].occupancy) {
 
-					r = pow((x - system->cavity_grid[i][j][k].pos[0]) , 2.0);
-					r += pow((y - system->cavity_grid[i][j][k].pos[1]) , 2.0);
-					r += pow((z - system->cavity_grid[i][j][k].pos[2]) , 2.0);
+					r = pow((x - system->cavity_grid[i][j][k].pos[0]) , 2);
+					r += pow((y - system->cavity_grid[i][j][k].pos[1]) , 2);
+					r += pow((z - system->cavity_grid[i][j][k].pos[2]) , 2);
 					r = sqrt(r);
 
 					if(r < system->cavity_radius)

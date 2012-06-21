@@ -126,19 +126,19 @@ double coulombic_real_FH(molecule_t * molecule_ptr, pair_t * pair_ptr, double ga
 	double reduced_mass = AMU2KG*molecule_ptr->mass*pair_ptr->molecule->mass/(molecule_ptr->mass+pair_ptr->molecule->mass);
 
 	du = -2.0*alpha*gaussian_term/(r*sqrt(M_PI)) - erfc_term/(rr);
-	d2u = (4.0/sqrt(M_PI))*gaussian_term*(pow(alpha, 3.0) + pow(r, -2.0)) + 2.0*erfc_term/rrr;
+	d2u = (4.0/sqrt(M_PI))*gaussian_term*(pow(alpha, 3) + pow(r, -2)) + 2.0*erfc_term/rrr;
 
-	fh_2nd_order = pow(METER2ANGSTROM, 2.0)*(HBAR*HBAR/(24.0*KB*system->temperature*reduced_mass))*(d2u + 2.0*du/r);
+	fh_2nd_order = pow(METER2ANGSTROM, 2)*(HBAR*HBAR/(24.0*KB*system->temperature*reduced_mass))*(d2u + 2.0*du/r);
 
 	if(order >= 4) {
 
-		d3u = (gaussian_term/sqrt(M_PI))*(-8.0*pow(alpha, 5.0)*r - 8.0*pow(alpha, 3.0)/r - 12.0*alpha/pow(r, 3.0)) 
-			- 6.0*erfc(alpha*r)/pow(r, 4.0);
-		d4u = (gaussian_term/sqrt(M_PI))*( 8.0*pow(alpha, 5.0) + 16.0*pow(alpha, 7.0)*r*r + 32.0*pow(alpha, 3.0)
-			/pow(r, 2.0) + 48.0/pow(r, 4.0) ) + 24.0*erfc_term/pow(r, 5.0);
+		d3u = (gaussian_term/sqrt(M_PI))*(-8.0*pow(alpha, 5)*r - 8.0*pow(alpha, 3)/r - 12.0*alpha/pow(r, 3)) 
+			- 6.0*erfc(alpha*r)/pow(r, 4);
+		d4u = (gaussian_term/sqrt(M_PI))*( 8.0*pow(alpha, 5) + 16.0*pow(alpha, 7)*r*r + 32.0*pow(alpha, 3)
+			/pow(r, 2) + 48.0/pow(r, 4) ) + 24.0*erfc_term/pow(r, 5);
 
-		fh_4th_order = pow(METER2ANGSTROM, 4.0)*(pow(HBAR, 4.0)/(1152.0*pow(KB*system->temperature*reduced_mass, 2.0)))
-			*(15.0*du/pow(r, 3.0) + 4.0*d3u/r + d4u);
+		fh_4th_order = pow(METER2ANGSTROM, 4)*(pow(HBAR, 4)/(1152.0*pow(KB*system->temperature*reduced_mass, 2)))
+			*(15.0*du/pow(r, 3) + 4.0*d3u/r + d4u);
 	}
 	else fh_4th_order = 0.0;
 

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <mc.h>
 
 
 
@@ -26,6 +27,27 @@ int memnullcheck ( void * ptr, int size, int parent ) {
 		fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
 		fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
 
+		exit(-1);
+	}
+
+}
+
+int filecheck ( void * ptr, char * filename, int mode ) {
+	char linebuf[MAXLINE]; 
+
+	if ( ptr != NULL ) return 0;
+	if ( ptr == NULL ) {
+		switch ( mode ) {
+			case READ:
+				sprintf(linebuf,"ERROR: Failed to open file %s for read\n", filename);
+				break;
+			case WRITE:
+				sprintf(linebuf,"ERROR: Failed to open file %s for write\n", filename);
+				break;
+			default:
+				sprintf(linebuf,"ERROR: Failed to open file %s\n", filename);
+		}
+		error(linebuf);
 		exit(-1);
 	}
 

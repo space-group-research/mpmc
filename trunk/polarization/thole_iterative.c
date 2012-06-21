@@ -123,10 +123,10 @@ int thole_iterative(system_t *system) {
 			/* mean square difference */
 			atom_array[i]->dipole_rrms = 0;
 			for(p = 0; p < 3; p++)
-				atom_array[i]->dipole_rrms += pow((atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p]), 2.0);
+				atom_array[i]->dipole_rrms += pow((atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p]), 2);
 
 			/* normalize */
-			atom_array[i]->dipole_rrms /=  pow(atom_array[i]->new_mu[0], 2.0) + pow(atom_array[i]->new_mu[1], 2.0) + pow(atom_array[i]->new_mu[2], 2.0);
+			atom_array[i]->dipole_rrms /=  pow(atom_array[i]->new_mu[0], 2) + pow(atom_array[i]->new_mu[1], 2) + pow(atom_array[i]->new_mu[2], 2);
 			atom_array[i]->dipole_rrms = sqrt(atom_array[i]->dipole_rrms);
 
 		}
@@ -146,8 +146,8 @@ int thole_iterative(system_t *system) {
 
 				/* get the change of dipole between iterations */
 				for(p = 0; p < 3; p++) {
-					error = pow((atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p]), 2.0);
-					if(error > pow(system->polar_precision*DEBYE2SKA, 2.0)) keep_iterating = 1;
+					error = pow((atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p]), 2);
+					if(error > system->polar_precision*system->polar_precision*DEBYE2SKA*DEBYE2SKA) keep_iterating = 1;
 				}
 
 			}

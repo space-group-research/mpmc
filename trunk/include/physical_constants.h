@@ -30,8 +30,8 @@
 #define RM			8.321			/* position of max well depth (a.u.) times 1.28 */
 //http://www.pnas.org/content/99/3/1129.full.pdf
 
-
 /* conversion factors */
+#define au2invseconds 4.13412763705666648752113572754445220741745180640e16 
 #define AU2ANGSTROM		0.529177249		/* convert from Bohr radii to angstroms */
 #define METER2ANGSTROM		1.0e10			/* convert from meters to angstroms */
 #define HARTREE2KELVIN		3.15774655e5		/* convert from Hartrees to Kelvin */
@@ -54,9 +54,6 @@
 #define EWALD_ALPHA                             0.5
 #define EWALD_KMAX                              7
 
-#define REAL                                    0
-#define IMAGINARY                               1
-
 #define MAXLINE                                 512
 
 #define MAXVALUE                                1.0e40
@@ -70,7 +67,6 @@
 #define QUANTUM_ROTATION_ANTISYMMETRIC          1
 #define QUANTUM_ROTATION_SYMMETRY_POINTS        64
 
-
 #define QUANTUM_ROTATION_LEVEL_MAX              36
 #define QUANTUM_ROTATION_L_MAX                  5
 #define QUANTUM_ROTATION_GRID                   16
@@ -80,3 +76,24 @@
 
 #define FEYNMAN_KLEINERT_TOLERANCE              1.0e-12                 /* tolerance in A^2 */
 #define SMALL_dR																1.0e-12 /*tolerance in r and r->img when comparisons are made for system->pbc->cutoff and similar boxsize issues*/
+
+enum { REAL, IMAGINARY };
+enum { READ, WRITE }; //file open modes for filecheck()
+enum {
+	ENSEMBLE_UVT,
+	ENSEMBLE_NVT,
+	ENSEMBLE_SURF,
+	ENSEMBLE_SURF_FIT,
+	ENSEMBLE_NVE,
+	ENSEMBLE_TE,
+	ENSEMBLE_NPT
+};
+enum {
+	MOVETYPE_INSERT,
+	MOVETYPE_REMOVE,
+	MOVETYPE_DISPLACE,
+	MOVETYPE_ADIABATIC,
+	MOVETYPE_SPINFLIP,
+	MOVETYPE_VOLUME
+};
+

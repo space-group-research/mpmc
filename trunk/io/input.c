@@ -200,6 +200,13 @@ int do_command (system_t * system, char ** token ) {
 			system->polarvdw = 0;
 		else return 1;
 	}
+	else if (!strcasecmp(token[0], "polar_ewald_full")) {
+		if (!strcasecmp(token[1], "on"))
+			system->polar_ewald_full = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->polar_ewald_full = 0;
+		else return 1;
+	}
 	else if (!strcasecmp(token[0], "polar_ewald")) {
 		if (!strcasecmp(token[1], "on"))
 			system->polar_ewald = 1;
@@ -208,6 +215,13 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 	//polar wolf shiz
+	else if (!strcasecmp(token[0], "polar_wolf_full")) {
+		if (!strcasecmp(token[1], "on"))
+			system->polar_wolf_full = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->polar_wolf_full = 0;
+		else return 1;
+	}
 	else if (!strcasecmp(token[0], "polar_wolf")) {
 		if (!strcasecmp(token[1], "on"))
 			system->polar_wolf = 1;
@@ -516,7 +530,9 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "polar_max_iter"))
 		{ if ( safe_atoi(token[1],&(system->polar_max_iter)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_damp_type")) {
-		if(!strcasecmp(token[1],"linear"))
+		if(!strcasecmp(token[1],"off"))
+			system->damp_type = DAMPING_OFF;
+		else if(!strcasecmp(token[1],"linear"))
 			system->damp_type = DAMPING_LINEAR;
 		else if (!strcasecmp(token[1],"exponential")) 
 			system->damp_type = DAMPING_EXPONENTIAL;
@@ -529,7 +545,14 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_self = 0;
 		else return 1;
 	}
-	
+	else if(!strcasecmp(token[0], "polar_rrms")) {
+		if(!strcasecmp(token[1],"on"))
+			system->polar_rrms = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->polar_rrms = 0;
+		else return 1;
+	}
+		
 	else if(!strcasecmp(token[0], "cuda")) {
 		if(!strcasecmp(token[1],"on"))
 			system->cuda = 1;
@@ -944,7 +967,7 @@ system_t *setup_system(char *input_file) {
 	}
 
 	/* allocate the necessary pairs */
-	setup_pairs(system->molecules);
+	setup_pairs(system);
 	output("INPUT: finished allocating pair lists\n");
 
 	/* calculate the periodic boundary conditions */

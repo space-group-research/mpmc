@@ -15,7 +15,7 @@ void flag_all_pairs(system_t *);
 void pair_exclusions(system_t *, molecule_t *, molecule_t *, atom_t *, atom_t *, pair_t *);
 void minimum_image(system_t *, atom_t *, atom_t *, pair_t *);
 void pairs(system_t *);
-void setup_pairs(molecule_t *);
+void setup_pairs(system_t *);
 void update_pairs_insert(system_t *);
 void update_pairs_remove(system_t *);
 void unupdate_pairs_insert(system_t *);
@@ -46,6 +46,7 @@ double h2_bond_energy(double r);
 int bessik(float, float, float *, float *, float *, float *);	/* NR function */
 double besselK(double, double);
 int getnatoms(system_t *);
+void rebuild_arrays (system_t *); //builds atom and molecule arrays for the current config
 
 /* io */
 system_t *read_config(char *);

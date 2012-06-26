@@ -277,9 +277,9 @@ void output_fit ( int nCurves, int nPoints, curveData_t * curve, double max_ener
 
 	int i, j;
 
-  printf( "r-value  " );
+  printf( "#r-value  " );
   for( i=0; i<nCurves; i++ )
-  	printf( "%s  ", curve[i].id );
+  	printf( "#%s  ", curve[i].id );
   printf( "\n" );
 
   for(i = 0; i < nPoints; i++)

@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -9,12 +8,62 @@ University of South Florida
 
 #include <mc.h>
 
+void free_my_pairs ( molecule_t * molecule ) {
+	int i = 0;
+	pair_t ** ptr_array = NULL;
+	atom_t * aptr;
+	pair_t * pptr;
+
+	//build an array of pairs
+	for ( aptr = molecule->atoms; aptr; aptr = aptr->next ) {
+		for ( pptr = aptr->pairs; pptr; pptr = pptr->next ) {
+			ptr_array = realloc(ptr_array, sizeof(pair_t *)*(i+1));
+			memnullcheck(ptr_array,sizeof(pair_t *)*(i+1),__LINE__-1, __FILE__);
+			ptr_array[i] = pptr;
+			++i;
+		}
+	}
+
+	//free the pairs
+	for (--i; i>=0; i--) free(ptr_array[i]);
+
+	//zero out the heads
+	for (aptr = molecule->atoms; aptr; aptr=aptr->next )
+		aptr->pairs = NULL;
+
+	//free the temp array
+	free(ptr_array);
+
+	return;
+}
+
+void free_my_atoms ( molecule_t * molecules ) {
+	int i = 0;
+	atom_t * aptr;
+	atom_t ** aarray = NULL;
+
+	//build an array of atoms
+	for ( aptr= molecules->atoms; aptr; aptr=aptr->next ) {
+		aarray = realloc(aarray, sizeof(atom_t *)*(i+1));
+		memnullcheck(aarray,sizeof(atom_t *)*(i+1), __LINE__-1, __FILE__);
+		aarray[i] = aptr;
+		i++;
+	}
+
+	//free the atoms
+	while ( i-- )
+		free(aarray[i]);
+
+	//free the temp array
+	free(aarray);
+
+	return;
+}
+
 /* free a molecule and all of it's associated stuff */
 void free_molecule(system_t *system, molecule_t *molecule) {
 
 	int i;
-
-	molecule->next = NULL;
 
 #ifdef QM_ROTATION
 	if(system->quantum_rotation && !molecule->frozen) {
@@ -28,81 +77,61 @@ void free_molecule(system_t *system, molecule_t *molecule) {
 	}
 #endif /* QM_ROTATION */
 
-	free_pairs(molecule);
-	free_atoms(molecule);
+	//free pairs belonging to this molecule only
+	free_my_pairs(molecule);
+	free_my_atoms(molecule);
 	free(molecule);
 
 }
+	
 
-
-void free_pairs(molecule_t *molecules) {
-
-	int i;
-	pair_t **ptr_array;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
+// free all pairs
+void free_all_pairs(system_t * system) {
+	int i, j;
 	pair_t *pair_ptr;
+	pair_t **ptr_array = NULL;
 
-	/* build an array of ptrs to be freed */
-	for(molecule_ptr = molecules, i = 0, ptr_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
-
-				ptr_array = realloc(ptr_array, sizeof(pair_t *)*(i + 1));
-				memnullcheck(ptr_array,sizeof(pair_t *)*(i+1),__LINE__-1, __FILE__);
-				ptr_array[i] = pair_ptr;
-				++i;
-
-			}
+	j=0; //pair array index
+	//build an array of all pair pointers
+	for ( i=0; i< system->natoms ; i++ ) {
+		for ( pair_ptr = system->atom_array[i]->pairs; pair_ptr; pair_ptr = pair_ptr->next ) {
+				ptr_array = realloc(ptr_array, sizeof(pair_t *)*(j + 1));
+				memnullcheck(ptr_array,sizeof(pair_t *)*(j+1),__LINE__-1, __FILE__);
+				ptr_array[j] = pair_ptr;
+				j++;
 		}
 	}
 
 	/* free the whole array of ptrs */
-	for(--i; i >= 0; i--) free(ptr_array[i]);
+	while ( j-- ) free(ptr_array[j]);
 
 	/* zero out the heads */
-	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-			atom_ptr->pairs = NULL;
+	for ( i=0; i< system->natoms; i++ ) 
+		system->atom_array[i]->pairs = NULL;
 
 	/* free our temporary array */
 	if(ptr_array) free(ptr_array);
-
 }
 
-void free_atoms(molecule_t *molecules) {
+// free all atoms
+void free_all_atoms(system_t * system) {
 
-	int i, n;
-	atom_t **ptr_array;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
-
-	/* build the ptr array */
-	for(molecule_ptr = molecules, i = 0, n = 0, ptr_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-			ptr_array = realloc(ptr_array, sizeof(atom_t *)*(i + 1));
-			memnullcheck(ptr_array,sizeof(atom_t *)*(i+1), __LINE__-1, __FILE__);
-			ptr_array[i] = atom_ptr;
-			++i, ++n;
-		}
-	}
-
+	int i;
 	/* free the whole array of ptrs */
-	for(i = 0; i < n; i++) free(ptr_array[i]);
+	for(i = 0; i < system->natoms; i++) free(system->atom_array[i]);
 
-	/* free our temporary array */
-	free(ptr_array);
-
+	return;
 }
 
-void free_molecules(molecule_t *molecules) {
+// free all molecules
+void free_all_molecules(system_t * system) {
 
 	int i;
 	molecule_t **ptr_array = NULL;
 	molecule_t *molecule_ptr;
 
-	/* build the ptr array */
-	for(molecule_ptr = molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+	/* build the ptr array */  // we can't free all of system->molecule_array since it's redundant
+	for(molecule_ptr = system->molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		ptr_array = realloc(ptr_array, sizeof(molecule_t *)*(i + 1));
 		memnullcheck(ptr_array,sizeof(molecule_t *)*(i + 1),__LINE__-1, __FILE__);
 		ptr_array[i] = molecule_ptr;
@@ -115,6 +144,7 @@ void free_molecules(molecule_t *molecules) {
 	/* free our temporary array */
 	free(ptr_array);
 
+	return;
 }
 
 /* free the polarization matrices */
@@ -146,6 +176,7 @@ void free_matrices(system_t *system) {
 	free(system->A_matrix);
 	free(system->B_matrix);
 
+	return;
 }
 
 /* free the cavity bias insertion grid */
@@ -216,10 +247,17 @@ void cleanup(system_t *system) {
 #endif /* QM_ROTATION */
 	if(system->polarization && !system->cuda) free_matrices(system);
 
+	//need to rebuild atom and pair arrays so we can free everything
+	rebuild_arrays(system);
 
-	free_pairs(system->molecules);
-	free_atoms(system->molecules);
-	free_molecules(system->molecules);
+	free_all_pairs(system);
+	free_all_atoms(system);
+	free_all_molecules(system);
+
+	//free our arrays
+	free(system->molecule_array);
+	free(system->atom_array);
+
 	free(system->pqr_input);
 	free(system->pqr_output);
 	free(system->energy_output);

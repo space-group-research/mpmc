@@ -9,6 +9,39 @@ University of South Florida
 
 #include <mc.h>
 
+void rebuild_arrays ( system_t * system ) {
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	int n = 0;
+
+	free(system->atom_array);
+	free(system->molecule_array);
+
+	//check the size
+	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) 
+			n++;
+
+	//allocate the arrays
+	system->molecule_array = malloc(n*sizeof(molecule_t *));
+	memnullcheck(system->molecule_array,n*sizeof(molecule_t *), __LINE__-1, __FILE__);
+	system->atom_array = malloc(n*sizeof(atom_t *));
+	memnullcheck(system->atom_array,n*sizeof(atom_t *), __LINE__-1, __FILE__);
+
+	n=0;
+	//build the arrays
+	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+			system->molecule_array[n] = molecule_ptr;
+			system->atom_array[n] = atom_ptr;
+			n++;
+		}
+	}
+	system->natoms = n;
+
+	return;
+}
+
 /* flag all pairs to have their energy calculated */
 /* needs to be called at simulation start, or can */
 /* be called to periodically keep the total energy */
@@ -194,19 +227,11 @@ void pairs(system_t *system) {
 	int p;
 	double r, rmin;
 
-	/* generate an array of atom ptrs */
-	for(molecule_ptr = system->molecules, n = 0, atom_array = NULL, molecule_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, n++) {
-			molecule_array = realloc(molecule_array, sizeof(molecule_t *)*(n + 1));
-			memnullcheck(molecule_array,sizeof(molecule_t *)*(n + 1),__LINE__-1,__FILE__);
-			molecule_array[n] = molecule_ptr;
-
-			atom_array = realloc(atom_array, sizeof(atom_t *)*(n + 1));
-			memnullcheck(atom_array, sizeof(atom_t *)*(n + 1), __LINE__-1, __FILE__);
-			atom_array[n] = atom_ptr;
-		}
-	}
-
+	// get array of atom ptrs
+	rebuild_arrays(system);
+	atom_array = system->atom_array; 
+	molecule_array = system->molecule_array;
+	n=system->natoms;
 
 	/* loop over all atoms and pair */
 	for(i = 0; i < (n - 1); i++) {
@@ -259,38 +284,7 @@ void pairs(system_t *system) {
 				}
 			}
 		}
-		
-/*
-		for(i = 0; i < n; i++) {
-			for(j = 0; j < n; j++) {
-				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
-					for(p = 0, r = 0; p < 3; p++)
-						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2);
-					r = sqrt(r);
-					if(r < rmin) rmin = r;
-				}
-			}
-		}
-
-		for(i = 0; i < n; i++) {
-			atom_array[i]->rank_metric = 0;
-			for(j = 0; j < n; j++) {
-				if((i != j) && (atom_array[i]->polarizability != 0.0) && (atom_array[j]->polarizability != 0.0) ) {
-					for(p = 0, r = 0; p < 3; p++)
-						r += pow( ( atom_array[i]->wrapped_pos[p] - atom_array[j]->wrapped_pos[p] ), 2);
-					r = sqrt(r);
-					if(r <= 1.5*rmin)
-						atom_array[i]->rank_metric += 1.0;
-				}
-			}
-		}
-*/
 	}
-
-	/* free our temporary arrays */
-	free(atom_array);
-	free(molecule_array);
-
 
 }
 
@@ -516,55 +510,36 @@ void unupdate_pairs_remove(system_t *system) {
 }
 
 /* allocate the pair lists */
-void setup_pairs(molecule_t *molecules) {
+void setup_pairs(system_t * system) {
 
 	int i, j, n;
 	molecule_t *molecule_ptr, **molecule_array;
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr, *prev_pair_ptr;
 
-	/* generate an array of atom ptrs */
-	for(molecule_ptr = molecules, n = 0, atom_array = NULL, molecule_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-
-			atom_array = realloc(atom_array, sizeof(atom_t *)*(n + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(n + 1), __LINE__-1, __FILE__);
-			atom_array[n] = atom_ptr;
-
-			molecule_array = realloc(molecule_array, sizeof(molecule_t *)*(n + 1));
-			memnullcheck(molecule_array,sizeof(molecule_t *)*(n + 1), __LINE__-1, __FILE__);
-			molecule_array[n] = molecule_ptr;
-
-			++n;
-
-		}
-	}
+	//build atom and molecule arrays
+	rebuild_arrays(system);
+	molecule_array = system->molecule_array;
+	atom_array = system->atom_array;
+	n=system->natoms;
 
 	/* setup the pairs, lower triangular */
 	for(i = 0; i < (n - 1); i++) {
-
 		atom_array[i]->pairs = calloc(1, sizeof(pair_t));
 		memnullcheck(atom_array[i]->pairs,sizeof(pair_t),__LINE__-1, __FILE__);	
 		pair_ptr = atom_array[i]->pairs;
 		prev_pair_ptr = pair_ptr;
 
 		for(j = (i + 1); j < n; j++) {
-
 			pair_ptr->next = calloc(1, sizeof(pair_t));
 			memnullcheck(pair_ptr->next,sizeof(pair_t),__LINE__-1, __FILE__);
 			prev_pair_ptr = pair_ptr;
 			pair_ptr = pair_ptr->next;
-
 		}
 
 		prev_pair_ptr->next = NULL;
 		free(pair_ptr);
-
 	}
-
-	free(atom_array);
-	free(molecule_array);
-
 
 }
 
@@ -579,8 +554,11 @@ void test_pairs(molecule_t *molecules) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
-				if(!(pair_ptr->frozen || pair_ptr->rd_excluded || pair_ptr->es_excluded)) printf("%d: charge = %f, epsilon = %f, sigma = %f, r = %f, rimg = %f\n", atom_ptr->id, pair_ptr->atom->charge, pair_ptr->epsilon, pair_ptr->sigma, pair_ptr->r, pair_ptr->rimg);fflush(stdout);
-
+				if(!(pair_ptr->frozen || pair_ptr->rd_excluded || pair_ptr->es_excluded)) 
+					printf("%d: charge = %f, epsilon = %f, sigma = %f, r = %f, rimg = %f\n", 
+						atom_ptr->id, pair_ptr->atom->charge, pair_ptr->epsilon, 
+						pair_ptr->sigma, pair_ptr->r, pair_ptr->rimg);
+					fflush(stdout);
 			}
 		}
 	}

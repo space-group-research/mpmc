@@ -53,9 +53,6 @@
 
 #define MAX_ITERATION_COUNT                     128
 
-#define DAMPING_LINEAR                          1
-#define DAMPING_EXPONENTIAL                     2
-
 #define EWALD_ALPHA                             0.5
 #define EWALD_KMAX                              7
 
@@ -64,9 +61,6 @@
 #define MAXVALUE                                1.0e40
 
 #define DARTSCALE                               0.1
-
-#define NUCLEAR_SPIN_PARA			0
-#define NUCLEAR_SPIN_ORTHO			1
 
 #define QUANTUM_ROTATION_SYMMETRIC              0
 #define QUANTUM_ROTATION_ANTISYMMETRIC          1
@@ -82,8 +76,11 @@
 #define FEYNMAN_KLEINERT_TOLERANCE              1.0e-12                 /* tolerance in A^2 */
 #define SMALL_dR																1.0e-12 /*tolerance in r and r->img when comparisons are made for system->pbc->cutoff and similar boxsize issues*/
 
+
 enum { REAL, IMAGINARY };
 enum { READ, WRITE }; //file open modes for filecheck()
+enum { DAMPING_OFF, DAMPING_LINEAR, DAMPING_EXPONENTIAL };
+enum { NUCLEAR_SPIN_PARA, NUCLEAR_SPIN_ORTHO };
 enum {
 	ENSEMBLE_UVT,
 	ENSEMBLE_NVT,

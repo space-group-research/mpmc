@@ -9,6 +9,143 @@ University of South Florida
 
 #include <mc.h>
 
+//set them to alpha*E_static
+void init_dipoles ( system_t * system ) {
+	int i, p;
+	atom_t ** aa = system->atom_array;
+
+	for ( i=0; i<system->natoms; i++ ) {
+		for ( p=0; p<3; p++ ) {
+			aa[i]->mu[p] = aa[i]->polarizability*aa[i]->ef_static[p];
+			if (!system->polar_sor) aa[i]->mu[p] *= system->polar_gamma;
+		}
+	}
+	return;
+}
+
+
+void contract_dipoles ( system_t * system, int * ranked_array ) {
+	int i, j, ii, jj, p, index;
+	atom_t ** aa = system->atom_array;
+
+	for(i = 0; i < system->natoms; i++) {
+		index = ranked_array[i]; //do them in the order of the ranked index
+		ii = index*3;
+		for(j = 0; j < system->natoms; j++) {
+			jj = j*3;
+			if(index != j) 
+				for(p = 0; p < 3; p++)
+					aa[index]->ef_induced[p] -= dddotprod((system->A_matrix[ii+p]+jj),aa[j]->mu);
+		} /* end j */
+
+		/* dipole is the sum of the static and induced parts */
+		for(p = 0; p < 3; p++) {
+			aa[index]->new_mu[p] = aa[index]->polarizability*(aa[index]->ef_static[p] + aa[index]->ef_static_self[p] + aa[index]->ef_induced[p]);
+
+			/* Gauss-Seidel */
+			if(system->polar_gs || system->polar_gs_ranked)
+				aa[index]->mu[p] = aa[index]->new_mu[p];
+		}
+
+	} /* end matrix multiply */
+
+	return;
+}
+
+void calc_dipole_rrms ( system_t * system ) {
+	int i, p;	
+	double carry;
+	atom_t ** aa = system->atom_array;
+
+	/* get the dipole RRMS */
+	for(i = 0; i < system->natoms; i++) {
+		/* mean square difference */
+		aa[i]->dipole_rrms = 0;
+		for(p = 0; p < 3; p++) {
+			carry = aa[i]->new_mu[p] - aa[i]->old_mu[p];
+			aa[i]->dipole_rrms += carry*carry;
+		}
+
+		/* normalize */
+		aa[i]->dipole_rrms /= dddotprod(aa[i]->new_mu,aa[i]->new_mu);
+		aa[i]->dipole_rrms = sqrt(aa[i]->dipole_rrms);
+	}
+
+	return;
+}
+
+int are_we_done_yet ( system_t * system, int iteration_counter ) {
+	int keep_iterating, i, p;
+	int N = system->natoms;
+	atom_t ** aa = system->atom_array;
+	double allowed_sqerr, error;
+	
+	if(system->polar_precision == 0.0) {	/* ... by fixed iteration ... */
+		if(iteration_counter != system->polar_max_iter)
+			return 1;
+	} 
+
+	else { /* ... or by dipole precision */
+		allowed_sqerr = system->polar_precision*system->polar_precision*DEBYE2SKA*DEBYE2SKA;
+		for(i = 0; i < N; i++) { //check the change in each dipole component
+			for(p = 0; p < 3; p++) {
+				error = aa[i]->new_mu[p] - aa[i]->old_mu[p];
+				if(error*error > allowed_sqerr)
+					return 1; //we broke tolerance
+			}
+		}
+	}
+
+	return 0;
+}
+
+void palmo_contraction ( system_t * system, int * ranked_array ) {
+	int i, j, ii, jj, index, p;
+	int N = system->natoms;
+	atom_t ** aa = system->atom_array; 
+
+	/* calculate change in induced field due to this iteration */
+	for(i = 0; i < N; i++) {
+		index = ranked_array[i];
+		ii = index*3;
+
+		for (p=0; p<3; p++ )
+			aa[index]->ef_induced_change[p] = -aa[index]->ef_induced[p];
+
+		for(j = 0; j < N; j++) {
+			jj = j*3;
+			if(index != j) 
+				for(p = 0; p < 3; p++)
+					aa[index]->ef_induced_change[p] -= dddotprod(system->A_matrix[ii+p]+jj,aa[j]->mu);
+		}
+	} 
+
+	return;
+}
+
+void update_ranking ( system_t * system, int * ranked_array ) {
+	int i, j, sorted, tmp;
+	int N = system->natoms; 
+	atom_t ** aa = system->atom_array;
+
+	/* rank the dipoles by bubble sort */
+	if(system->polar_gs_ranked) {
+		for(i = 0; i < N; i++) {
+			for(j = 0, sorted = 1; j < (N-1); j++) {
+				if(aa[ranked_array[j]]->rank_metric < aa[ranked_array[j+1]]->rank_metric) {
+					sorted = 0;
+					tmp = ranked_array[j];
+					ranked_array[j] = ranked_array[j+1];
+					ranked_array[j+1] = tmp;
+				}
+			}
+			if(sorted) break;
+		}
+	}
+
+	return;
+}
+
 
 /* iterative solver of the dipole field tensor */
 /* returns the number of iterations required */
@@ -17,207 +154,90 @@ int thole_iterative(system_t *system) {
 	int i, j, ii, jj, N, p, q, sorted;
 	int iteration_counter, keep_iterating;
 	double error, carry;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
+	atom_t ** aa; //atom array
 	int *ranked_array, ranked, tmp, index;
 
-
-	/* generate an array of atom ptrs */
-	for(molecule_ptr = system->molecules, N = 0, atom_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
-
-			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
-			atom_array[N] = atom_ptr;
-
-		}
-	}
+	aa = system->atom_array;
+	N = system->natoms;
 
 	/* array for ranking */
 	ranked_array = calloc(N, sizeof(int));
 	memnullcheck(ranked_array,N*sizeof(int),__LINE__-1, __FILE__);
 	for(i = 0; i < N; i++) ranked_array[i] = i;
 
-	/* initialize things */
-	for(i = 0; i < N; i++) {
-		for(p = 0; p < 3; p++) {
-
-			/* set the first guess to alpha*E */
-			atom_array[i]->mu[p] = atom_array[i]->polarizability*atom_array[i]->ef_static[p];
-			if(!system->polar_sor) atom_array[i]->mu[p] *= system->polar_gamma;
-
-		}
-	}
+	//set all dipoles to alpha*E_static (plus SOR perturbation if requested)
+	init_dipoles(system);
 
 	/* if ZODID is enabled, then stop here and just return the alpha*E dipoles */
 	if(system->polar_zodid) return(0);
 
 	/* iterative solver of the dipole field equations */
-	for(iteration_counter = 0, keep_iterating = 1; keep_iterating; iteration_counter++) {
+	keep_iterating = 1;
+	iteration_counter = 0;
+	while (keep_iterating) {
+		iteration_counter++;
 
 		/* divergence detection */
 		/* if we fail to converge, then return dipoles as alpha*E */
 		if(iteration_counter >= MAX_ITERATION_COUNT) {
-
 			for(i = 0; i < N; i++)
 				for(p = 0; p < 3; p++) {
-					atom_array[i]->mu[p] = atom_array[i]->polarizability*atom_array[i]->ef_static[p];
-					atom_array[i]->ef_induced_change[p] = 0.0; //so we don't break palmo
+					aa[i]->mu[p] = aa[i]->polarizability * aa[i]->ef_static[p];
+					aa[i]->ef_induced_change[p] = 0.0; //so we don't break palmo
 				}
-
 			//set convergence failure flag
 			system->iter_success = 1;
-
-			free(atom_array);
 			return(iteration_counter);
-
 		}
 
-		/* save the current dipole set and clear the induced field vectors */
-		for(i = 0; i < N; i++) {
-			for(p = 0; p < 3; p++) {
+		//zero out induced e-field 
+		for ( i=0; i<system->natoms; i++ ) 
+			for ( p=0; p<3; p++ ) 
+				aa[i]->ef_induced[p] = 0;
 
-				atom_array[i]->old_mu[p] = atom_array[i]->mu[p];
-				atom_array[i]->ef_induced[p] = 0;
-				atom_array[i]->ef_induced_change[p] = 0;
-
-			}
+		//save the current dipole information if we want to calculate precision (or if needed for relaxation)
+		if ( system->polar_rrms || system->polar_precision > 0 || system->polar_sor || system->polar_esor ) { 
+			for(i = 0; i < N; i++) 
+				for(p = 0; p < 3; p++) 
+					aa[i]->old_mu[p] = aa[i]->mu[p];
 		}
 
+		// contract the dipoles with the field tensor (gauss-seidel/gs-ranked optional)
+		contract_dipoles(system, ranked_array);
 
-		/* contract the dipoles with the field tensor */
-		for(i = 0; i < N; i++) {
-			index = ranked_array[i];
-			ii = index*3;
-
-			for(j = 0; j < N; j++) {
-				jj = j*3;
-
-				if(index != j) {
-
-					for(p = 0; p < 3; p++)
-						for(q = 0; q < 3; q++)
-							atom_array[index]->ef_induced[p] -= system->A_matrix[ii+p][jj+q]*atom_array[j]->mu[q];
-
-				}
-
-			} /* end j */
-
-
-			/* dipole is the sum of the static and induced parts */
-			for(p = 0; p < 3; p++) {
-
-				atom_array[index]->new_mu[p] = atom_array[index]->polarizability*(atom_array[index]->ef_static[p] + atom_array[index]->ef_static_self[p] + atom_array[index]->ef_induced[p]);
-
-				/* Gauss-Seidel */
-				if(system->polar_gs || system->polar_gs_ranked)
-					atom_array[index]->mu[p] = atom_array[index]->new_mu[p];
-
-			}
-
-		} /* end i */
-
-		/* get the dipole RRMS */
-		for(i = 0; i < N; i++) {
-
-			/* mean square difference */
-			atom_array[i]->dipole_rrms = 0;
-			for(p = 0; p < 3; p++) {
-				carry = atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p];
-				atom_array[i]->dipole_rrms += carry*carry;
-			}
-
-			/* normalize */
-			atom_array[i]->dipole_rrms /=  atom_array[i]->new_mu[0]*atom_array[i]->new_mu[0] 
-				+ atom_array[i]->new_mu[1]*atom_array[i]->new_mu[1] + atom_array[i]->new_mu[2]*atom_array[i]->new_mu[2];
-			atom_array[i]->dipole_rrms = sqrt(atom_array[i]->dipole_rrms);
-
-		}
+		if ( system->polar_rrms || system->polar_precision > 0 )
+			calc_dipole_rrms(system);
 
 		/* determine if we are done... */
-		if(system->polar_precision == 0.0) {	/* ... by fixed iteration ... */
+		keep_iterating = are_we_done_yet(system, iteration_counter);
 
-			if(iteration_counter == system->polar_max_iter)
-				keep_iterating = 0;
-			else
-				keep_iterating = 1;
+		// if we would be finished, we want to contract once more to get the next induced field for palmo
+		if(system->polar_palmo && !keep_iterating ) 
+			palmo_contraction(system, ranked_array);
 
-		} else { /* ... or by dipole precision */
-
-			/* immediately reiterate if any component broke tolerance, otherwise we are done */
-			for(i = 0, keep_iterating = 0; i < N; i++) {
-
-				/* get the change of dipole between iterations */
-				for(p = 0; p < 3; p++) {
-					carry = atom_array[i]->new_mu[p] - atom_array[i]->old_mu[p];
-					error = carry*carry;
-					if(error > system->polar_precision*system->polar_precision*DEBYE2SKA*DEBYE2SKA) keep_iterating = 1;
-				}
-
-			}
-		}
-
-		/* contract once more for the next induced field */
-		if(system->polar_palmo) {
-
-			/* calculate change in induced field due to this iteration */
-			for(i = 0; i < N; i++) {
-				index = ranked_array[i];
-				ii = index*3;
-
-	                        for(j = 0; j < N; j++) {
-					jj = j*3;
-
-					if(index != j) {
-
-						for(p = 0; p < 3; p++)
-							for(q = 0; q < 3; q++)
-								atom_array[index]->ef_induced_change[p] -= system->A_matrix[ii+p][jj+q]*atom_array[j]->mu[q];
-					}
-				}
-				for(p = 0; p < 3; p++)
-					atom_array[index]->ef_induced_change[p] -= atom_array[index]->ef_induced[p];
-			} /* end i */
-		} /* palmo */
-
-		/* rank the dipoles by bubble sort */
-		if(system->polar_gs_ranked) {
-			for(i = 0; i < N; i++) {
-				for(j = 0, sorted = 1; j < (N-1); j++) {
-					if(atom_array[ranked_array[j]]->rank_metric < atom_array[ranked_array[j+1]]->rank_metric) {
-						sorted = 0;
-						tmp = ranked_array[j];
-						ranked_array[j] = ranked_array[j+1];
-						ranked_array[j+1] = tmp;
-					}
-				}
-				if(sorted) break;
-			}
-		}
+		//new gs_ranking if needed
+		if ( system->polar_gs_ranked && keep_iterating )
+			update_ranking(system, ranked_array);
 
 		/* save the dipoles for the next pass */
 		for(i = 0; i < N; i++) {
 			for(p = 0; p < 3; p++) {
-
 				/* allow for different successive over-relaxation schemes */
 				if(system->polar_sor)
-					atom_array[i]->mu[p] = system->polar_gamma*atom_array[i]->new_mu[p] + (1.0 - system->polar_gamma)*atom_array[i]->old_mu[p];
+					aa[i]->mu[p] = system->polar_gamma*aa[i]->new_mu[p] + (1.0 - system->polar_gamma)*aa[i]->old_mu[p];
 				else if(system->polar_esor)
-					atom_array[i]->mu[p] = (1.0 - exp(-system->polar_gamma*iteration_counter))*atom_array[i]->new_mu[p] + exp(-system->polar_gamma*iteration_counter)*atom_array[i]->old_mu[p];
+					aa[i]->mu[p] = (1.0 - exp(-system->polar_gamma*iteration_counter))*aa[i]->new_mu[p] + exp(-system->polar_gamma*iteration_counter)*aa[i]->old_mu[p];
 				else
-					atom_array[i]->mu[p] = atom_array[i]->new_mu[p];
-
+					aa[i]->mu[p] = aa[i]->new_mu[p];
 			}
 		}
 
-	} /* end keep iterating */
+	} //end iterate
 
-	free(atom_array);
 	free(ranked_array);
 
 	/* return the iteration count */
 	return(iteration_counter);
-
 }
 
 

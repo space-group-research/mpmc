@@ -20,7 +20,7 @@ ENERGY_OBJ = bessel.o bond.o coulombic.o coulombic_gwp.o dreiding.o energy.o lj.
 IO_OBJ = average.o check_input.o dxwrite.o input.o mpi.o output.o read_pdb.o
 MAIN_OBJ = cleanup.o main.o memnullcheck.o rng.o usefulmath.o
 MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.o
-POLAR_OBJ = ewald_efield.o thole_field.o thole_iterative.o thole_matrix.o thole_polarizability.o
+POLAR_OBJ = thole_field.o thole_iterative.o thole_matrix.o thole_polarizability.o polar_ewald.o
 HIST_OBJ = histogram.o
 QROT_OBJ = rotational_basis.o rotational_eigenspectrum.o rotational_integrate.o rotational_potential.o
 

@@ -24,100 +24,108 @@ void print_matrix(int N, double **matrix) {
 
 }
 
-/* calculate the dipole field tensor */
-void thole_amatrix(system_t *system) {
-
-	int i, j, ii, jj, N, p, q;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
-	pair_t *pair_ptr;
-	double r, damping_term1, damping_term2;
-	double r3, r5, ir;
-	double v, s;
-	double rimg2;
-
-	/* generate an array of atom ptrs */
-	for(molecule_ptr = system->molecules, N = 0, atom_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
-
-			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
-			atom_array[N] = atom_ptr;
-
-		}
-	}
-
+void zero_out_amatrix ( system_t * system, int N ) {
+	int i, j;
 	/* zero out the matrix */
 	for(i = 0; i < 3*N; i++)
 		for(j = 0; j < 3*N; j++)
 			system->A_matrix[i][j] = 0;
+	return;
+}
+	
+/* calculate the dipole field tensor */
+void thole_amatrix(system_t *system) {
+
+	int i, j, ii, jj, N, p, q;
+	atom_t **atom_array;
+	pair_t *pair_ptr;
+	double damp1, damp2, wdamp1, wdamp2, v, s;
+	double r, r2, ir3, ir5, ir;
+	double rcut, rcut2, rcut3, rcut4, rcut5;
+	rcut = system->pbc->cutoff;
+	rcut2 = rcut*rcut; rcut3 = rcut2*rcut; rcut4 = rcut3*rcut; rcut5 = rcut4*rcut;
+	double l, l2, l3, l4;
+	l = system->polar_damp;
+	l2 = l*l; l3 = l2*l; l4 = l3*l;
+	double explr; //exp(-l*r)
+	double explrcut = exp(-l*rcut);
+
+	//array of atoms generated in pairs.c
+	atom_array = system->atom_array;
+	N = system->natoms;
+
+	zero_out_amatrix(system,N);
 
 	/* set the diagonal blocks */
 	for(i = 0; i < N; i++) {
 		ii = i*3;
-
 		for(p = 0; p < 3; p++) {
-
 			if(atom_array[i]->polarizability != 0.0)
 				system->A_matrix[ii+p][ii+p] = 1.0/atom_array[i]->polarizability;
 			else
 				system->A_matrix[ii+p][ii+p] = MAXVALUE;
-
 		}
-
 	}
 
 	/* calculate each Tij tensor component for each dipole pair */
 	for(i = 0; i < (N - 1); i++) {
 		ii = i*3;
-
 		for(j = (i + 1), pair_ptr = atom_array[i]->pairs; j < N; j++, pair_ptr = pair_ptr->next) {
 			jj = j*3;
 
+			r = pair_ptr->rimg;
+			r2 = r*r;
+
 			/* inverse displacements */
 			if(pair_ptr->rimg == 0.)
-				r3 = r5 = MAXVALUE;
+				ir3 = ir5 = MAXVALUE;
 			else {
-				ir = 1.0/pair_ptr->rimg;
-				r3 = ir*ir*ir;
-				r5 = r3*ir*ir;
+				ir = 1.0/r;
+				ir3 = ir*ir*ir;
+				ir5 = ir3*ir*ir;
 			}
 
-
-			/* set the damping function */
-			if(system->damp_type == DAMPING_LINEAR) { /* linear damping */
-
-				s = (system->polar_damp)*pow((atom_array[i]->polarizability*atom_array[j]->polarizability), (1.0/6.0));
-				v = pair_ptr->rimg/s;
-
-				if(pair_ptr->rimg < s) {
-					damping_term1 = (4.0*v*v*v - 3.0*v*v*v*v);
-					damping_term2 = v*v*v*v;
-				} else {
-					damping_term1 = 1.0;
-					damping_term2 = 1.0;
-				}
-
-			} else if(system->damp_type == DAMPING_EXPONENTIAL) { /* exponential damping */
-
-				rimg2 = pair_ptr->rimg * pair_ptr->rimg;
-
-				damping_term1 = 1.0 - exp(-system->polar_damp*pair_ptr->rimg)*(0.5*system->polar_damp*system->polar_damp*rimg2 + system->polar_damp*pair_ptr->rimg + 1.0);
-				damping_term2 = 1.0 - exp(-system->polar_damp*pair_ptr->rimg)*(system->polar_damp*system->polar_damp*system->polar_damp*rimg2*pair_ptr->rimg/6.0 + 0.5*system->polar_damp*system->polar_damp*rimg2 + system->polar_damp*pair_ptr->rimg + 1.0);
-
-
+			//evaluate damping factors
+			switch (system->damp_type) {
+				case DAMPING_OFF:
+					if ( pair_ptr->es_excluded )
+						damp1 = damp2 = wdamp1 = wdamp2 = 0.0; 
+					else 
+						damp1 = damp2 = wdamp1 = wdamp2 = 1.0; 
+					break;
+				case DAMPING_LINEAR:
+					s = l * pow(atom_array[i]->polarizability*atom_array[j]->polarizability, 1.0/6.0);
+					v = r/s;
+					if ( r < s ) {
+						damp1 = (4.0 - 3.0*v)*v*v*v;
+						damp2 = v*v*v*v;
+					} else {
+						damp1 = damp2 = 1.0;
+					}
+					break;
+				case DAMPING_EXPONENTIAL:
+					explr = exp(-l*r);
+					damp1 = 1.0 - explr*(0.5*l2*r2 + l*r + 1.0);
+					damp2 = damp1 - explr*(l3*r2*r/6.0);
+					if ( system->polar_wolf_full ) { //subtract off damped interaction at r_cutoff
+						wdamp1 = 1.0 - explrcut*(0.5*l2*rcut2+l*rcut+1.0);
+						wdamp2 = wdamp1 - explrcut*(l3*rcut3/6.0);
+					}
+					break;
+				default:
+					error("error: something unexpected happened in thole_matrix.c");
 			}
-
 
 			/* build the tensor */
 			for(p = 0; p < 3; p++) {
 				for(q = 0; q < 3; q++) {
-
-					system->A_matrix[ii+p][jj+q] = -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*damping_term2*r5;
+					system->A_matrix[ii+p][jj+q] = -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*damp2*ir5;
+					if (system->polar_wolf_full) system->A_matrix[ii+p][jj+q] -= -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*wdamp2/(rcut5);
 					/* additional diagonal term */
-					if(p == q)
-						system->A_matrix[ii+p][jj+q] += damping_term1*r3;
-
+					if(p == q) {
+						system->A_matrix[ii+p][jj+q] += damp1*ir3;
+						if ( system->polar_wolf_full ) system->A_matrix[ii+p][jj+q] -= wdamp1/(rcut3);
+					}	
 				}
 			}
 
@@ -126,12 +134,10 @@ void thole_amatrix(system_t *system) {
 				for(q = 0; q < 3; q++)
 					system->A_matrix[jj+p][ii+q] = system->A_matrix[ii+p][jj+q];
 
-
 		} /* end j */
 	} /* end i */
 
-	free(atom_array);
-
+	return;
 }
 
 /* returns the current number of atoms in the system */
@@ -220,20 +226,11 @@ void thole_bmatrix(system_t *system) {
 void thole_bmatrix_dipoles(system_t *system) {
 
 	int i, j, ii, p, N;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
+	atom_t **atom_array;
 	double *mu_array, *field_array;
 
-	/* generate an array of atom ptrs */
-	for(molecule_ptr = system->molecules, N = 0, atom_array = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, N++) {
-
-			atom_array = realloc(atom_array, sizeof(atom_t *)*(N + 1));
-			memnullcheck(atom_array,sizeof(atom_t *)*(N+1), __LINE__-1, __FILE__);
-			atom_array[N] = atom_ptr;
-
-		}
-	}
+	atom_array = system->atom_array;
+	N = system->natoms;
 
 	/* allocate working arrays */
 	mu_array = calloc(3*N, sizeof(double));
@@ -265,7 +262,6 @@ void thole_bmatrix_dipoles(system_t *system) {
 	}
 
 	/* free the working arrays */
-	free(atom_array);
 	free(mu_array);
 	free(field_array);
 
@@ -373,8 +369,8 @@ void invert_matrix(int n,double **a,double **ai) {
     for(j=0;j<n;j++) ai[j][i] = col[j];
   }
 
-  free(col);free(indx);
-
+  free(col);
+	free(indx);
 
 }
 

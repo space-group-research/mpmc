@@ -241,8 +241,11 @@ void polarization_options (system_t * system) {
 		exit(-1);
 	}
 
-	if(system->polar_wolf) {
-		output("INPUT: Polar wolf activated. Thole field calculated using wolf method.\n");
+	if(system->polar_wolf || system->polar_wolf_full) {
+		if ( system->polar_wolf )
+			output("INPUT: Polar wolf activated. Thole field calculated using wolf method.\n");
+		if ( system->polar_wolf_full ) 
+			output("INPUT: Full polar wolf treatment activated.\n");
 		if ( (system->polar_wolf_alpha >= 0 ) && ( system->polar_wolf_alpha <= 1 ) ) {
 			sprintf(linebuf,"INPUT: Polar wolf damping set to %lf. (0 is default)\n", system->polar_wolf_alpha);
 			output(linebuf);
@@ -254,9 +257,23 @@ void polarization_options (system_t * system) {
 
 	if(system->polar_ewald) 
 		output("INPUT: Polar ewald activated. Thole field calculated using ewald method.\n");
-		
+	
+	if(system->polar_ewald_full) {
+		output("INPUT: Full ewald polarization activated.\n");
+		if(!system->polar_max_iter)	{
+			output("INPUT: Setting polar_ewald_full max_iter to default value of 10.\n");
+			system->polar_max_iter = 20;
+		}
+		else if (system->polar_precision) {
+			error("INPUT: polar_ewald_full is not compat with polar_precision. Use polar_max_iter instead.\n");
+			exit(-1);
+		}
+	}
+	
 	if(system->damp_type == DAMPING_LINEAR)
 		output("INPUT: Thole linear damping activated\n");
+	else if (system->damp_type == DAMPING_OFF)
+		output("INPUT: Thole linear damping is OFF\n");
 	else if(system->damp_type == DAMPING_EXPONENTIAL)
 		output("INPUT: Thole exponential damping activated\n");
 	else {
@@ -291,10 +308,13 @@ void polarization_options (system_t * system) {
 			sprintf(linebuf, "INPUT: Thole iterative precision is %e A*sqrt(KA) (%e D)\n", system->polar_precision, system->polar_precision/DEBYE2SKA);
 			output(linebuf);
 		} else {
-		sprintf(linebuf, "INPUT: using polar max SCF iterations = %d\n", system->polar_max_iter);
+			sprintf(linebuf, "INPUT: using polar max SCF iterations = %d\n", system->polar_max_iter);
 			output(linebuf);
 		}
 
+		if(system->polar_precision > 0.0 || system->polar_rrms) 
+			output("INPUT: polar_rrms activated. Dipole rrms will be reported.\n");
+		
 		if(system->polar_sor && system->polar_esor) {
 			error("INPUT: cannot specify both SOR and ESOR SCF methods\n");
 			exit(-1);

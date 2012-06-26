@@ -400,6 +400,8 @@ int surface_dimer_parameters(system_t *system, param_t *params) {
         } // for atom_ptr
     } // for molecule_ptr
 
+    free(origin);
+
     return (0);
 }
 

@@ -563,7 +563,7 @@ void make_move(system_t *system) {
 				}
 			}
 			// Generate new pairs lists for all atoms in system
-			setup_pairs( system->molecules );
+			setup_pairs( system );
 		}
 		else		
 			update_pairs_insert(system);

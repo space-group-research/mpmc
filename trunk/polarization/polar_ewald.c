@@ -322,7 +322,7 @@ void induced_self_term(system_t * system) {
 	return;
 }
 
-void new_dipoles(system_t * system) {
+void new_dipoles(system_t * system, int count) {
 	molecule_t * mptr;
 	atom_t * aptr;
 	int p;
@@ -330,8 +330,43 @@ void new_dipoles(system_t * system) {
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( p=0; p<3; p++ ) {
-				aptr->mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
+
+				//set dipoles
+				aptr->old_mu[p] = aptr->mu[p];
+				if ( system->polar_sor ) {
+					aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
+					aptr->mu[p] = system->polar_gamma*aptr->new_mu[p] + (1.0-system->polar_gamma)*aptr->old_mu[p];
+				}
+				else if ( system->polar_esor ) {
+					aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
+					aptr->mu[p] = (1.0 - exp(-system->polar_gamma*(count+1)))*aptr->new_mu[p] +
+						exp(-system->polar_gamma*(count+1))*aptr->old_mu[p];
+				}
+				else {
+					//if no sor, still need new_mu for polar_palmo
+					aptr->mu[p] = aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
+				}
+			
+				//reset induced field
 				aptr->ef_induced[p] = 0;
+			}
+		}
+	}
+
+	return;
+}
+
+void get_delta_einduced ( system_t * system ) {
+	molecule_t * mptr;
+	atom_t * aptr;
+	int p;
+
+	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
+		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
+			if ( aptr->polarizability == 0 ) continue;
+			for ( p=0; p<3; p++ ) {
+				aptr->ef_induced_change[p] = //current induced - last induced (backed out from dipole values)
+					aptr->ef_induced[p] - (aptr->new_mu[p]/aptr->polarizability - aptr->ef_static[p]);
 			}
 		}
 	}
@@ -358,7 +393,14 @@ void ewald_full ( system_t * system ) {
 		induced_real_term(system);
 		induced_recip_term(system);
 		induced_self_term(system);
-		new_dipoles(system);
+		new_dipoles(system, i);
+	}
+
+	if ( system->polar_palmo ) {
+		induced_real_term(system);
+		induced_recip_term(system);
+		induced_self_term(system);
+		get_delta_einduced(system);
 	}
 
 	return;

@@ -229,6 +229,8 @@ double coulombic_nopbc(molecule_t * molecules) {
 	return(total_pe);
 }
 
+
+/*
 double coulombic_wolf(system_t * system ) {
 
 	molecule_t *molecule_ptr;
@@ -276,3 +278,47 @@ double coulombic_wolf(system_t * system ) {
 
 	return(pot);
 }
+*/
+
+double coulombic_wolf ( system_t * system ) {
+
+	molecule_t *mptr;
+	atom_t *aptr;
+	pair_t *pptr;
+	double pot = 0;
+	double alpha = system->ewald_alpha;
+	double R = system->pbc->cutoff;
+	double iR = 1.0/R;
+	double erfaRoverR = erf(alpha*R)/R;
+	
+	double r, ir;
+
+	for(mptr = system->molecules; mptr; mptr = mptr->next) {
+		for(aptr = mptr->atoms; aptr; aptr = aptr->next) {
+			for(pptr = aptr->pairs; pptr; pptr = pptr->next) {
+
+				if ( pptr->recalculate_energy ) {
+					pptr->es_real_energy = 0;
+
+					r = pptr->rimg;
+					ir = 1.0/r;
+					if( (!pptr->frozen) && (!pptr->es_excluded) && (r < R) ) {
+						pptr->es_real_energy = 
+							aptr->charge * pptr->atom->charge * (ir-erfaRoverR-iR*iR*(R-r));
+									
+						// get feynman-hibbs contribution
+						if(system->feynman_hibbs) {
+							fprintf(stderr,"sorry, never bothered writing FH for es_wolf :-(\n");
+							exit(-1);
+						} // FH
+					}  // r<cutoff
+
+				} //recalculate
+				pot += pptr->es_real_energy;
+			} //pair
+		} //atom
+	} //molecule
+
+	return(pot);
+}
+	

@@ -626,13 +626,12 @@ void io_files_options(system_t * system) {
 	if(!system->pqr_input) {
 		system->pqr_input = calloc(MAXLINE,sizeof(char));
 		memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-		output("INPUT: input PQR file not specified\n");
 		strcpy(system->pqr_input,system->job_name);
 		strcat(system->pqr_input,".initial.pqr");
-		sprintf(linebuf,"INPUT: will try to read coordinates from %s\n", system->pqr_input);
+		sprintf(linebuf,"INPUT: input PQR file not specified...will try to read coordinates from ./%s\n", system->pqr_input);
 		output(linebuf);
 	} else {
-		sprintf(linebuf, "INPUT: molecular coordinates are in %s\n", system->pqr_input);
+		sprintf(linebuf, "INPUT: initial molecular coordinates are in ./%s\n", system->pqr_input);
 		output(linebuf);
 	}
 
@@ -641,13 +640,13 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->pqr_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->pqr_output,system->job_name);
 		strcat(system->pqr_output,".final.pqr");
-		sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
+		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_output, "off")) {	// Optionally turn off final configuration output
 		error("INPUT: **Warning: PQR final configuration file unspecified; writing to /dev/null\n");
 		sprintf(system->pqr_output,"/dev/null");
 	} else {
-		sprintf(linebuf, "INPUT: will be writing final configuration to %s\n", system->pqr_output);
+		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
 		output(linebuf);
 	}
 
@@ -656,13 +655,13 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->pqr_restart,system->job_name);
 		strcat(system->pqr_restart,".restart.pqr");
-		sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
+		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_restart, "off")) {	// Optionally turn off restart configuration output
 		error("INPUT: **Warning: PQR restart file unspecified; writing to /dev/null\n");
 		sprintf(system->pqr_restart,"/dev/null");
 	} else {
-		sprintf(linebuf, "INPUT: will be writing restart configuration to %s\n", system->pqr_restart);
+		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
 		output(linebuf);
 	}
 
@@ -672,13 +671,13 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->energy_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->energy_output,system->job_name);
 		strcat(system->energy_output,".energy.dat");
-		sprintf(linebuf, "INPUT: will be writing energy output to %s\n", system->energy_output);
+		sprintf(linebuf, "INPUT: will be writing energy output to ./%s\n", system->energy_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->energy_output, "off")) {	// Optionally turn off energy printing
 		error("INPUT: energy file unspecified; writing to /dev/null\n");
 		sprintf(system->energy_output,"/dev/null");
 	} else {
-		sprintf(linebuf, "INPUT: will be writing energy output to %s\n", system->energy_output);
+		sprintf(linebuf, "INPUT: will be writing energy output to ./%s\n", system->energy_output);
 		output(linebuf);
 	}
 
@@ -688,18 +687,18 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->traj_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->traj_output,system->job_name);
 		strcat(system->traj_output,".traj.pqr");
-		sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
+		sprintf(linebuf, "INPUT: will be writing trajectory to ./%s\n", system->traj_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->traj_output, "off")) {	// Optionally turn off trajectory printing
 		error("INPUT: trajectory file will not be written\n");
 		sprintf(system->traj_output,"/dev/null"); //won't actually write (we check to see where we're writing before actually doing it for traj.pqr)
 	} else {
-		sprintf(linebuf, "INPUT: will be writing trajectory to %s\n", system->traj_output);
+		sprintf(linebuf, "INPUT: will be writing trajectory to ./%s\n", system->traj_output);
 		output(linebuf);
 	}
 
 	if(system->insert_input) {
-		sprintf( linebuf, "INPUT: inserted molecules will be selected from: %s\n", system->insert_input );
+		sprintf( linebuf, "INPUT: inserted molecules will be selected from ./%s\n", system->insert_input );
 		output( linebuf );
 	} 
 
@@ -708,13 +707,13 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->dipole_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->dipole_output,system->job_name);
 		strcat(system->dipole_output,".dipole.dat");
-		sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
+		sprintf(linebuf, "INPUT: dipole field will be written to ./%s\n", system->dipole_output);
 		output(linebuf);
 	} else if( (system->polarization) && (!strcasecmp(system->dipole_output, "off")) ) {
 		error("INPUT: dipole file unspecified; writing to /dev/null\n");
 		sprintf(system->dipole_output,"/dev/null");
 	} else if(system->polarization) {
-		sprintf(linebuf, "INPUT: dipole field will be written to %s\n", system->dipole_output);
+		sprintf(linebuf, "INPUT: dipole field will be written to ./%s\n", system->dipole_output);
 		output(linebuf);
 	}
 
@@ -723,13 +722,13 @@ void io_files_options(system_t * system) {
 		memnullcheck(system->field_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->field_output,system->job_name);
 		strcat(system->field_output,".field.dat");
-		sprintf(linebuf, "INPUT: field field will be written to %s\n", system->field_output);
+		sprintf(linebuf, "INPUT: field field will be written to ./%s\n", system->field_output);
 		output(linebuf);
 	} else if( (system->polarization) && (!strcasecmp(system->field_output, "off")) ) {
 		error("INPUT: field file unspecified; writing to /dev/null\n");
 		sprintf(system->field_output,"/dev/null");
 	} else if(system->polarization) {
-		sprintf(linebuf, "INPUT: field field will be written to %s\n", system->field_output);
+		sprintf(linebuf, "INPUT: field field will be written to ./%s\n", system->field_output);
 		output(linebuf);
 	}
 

@@ -180,7 +180,7 @@ case "$HOSTNAME" in
 			;;
 			"pgi")
 				CC="pgcc"
-				CFLAGS="-g0 -O3 -fastsse -Mipa=fast,inline,libinline"
+				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
 				EXTRA_LIBS="-lm"
 			;;
 			"icc")

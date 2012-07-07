@@ -694,6 +694,16 @@ int do_command (system_t * system, char ** token ) {
 		} else return 1;
 	}
 
+	// Force long (non-PDB compliant, %11.6f) output of coordinates
+	else if(!strcasecmp(token[0], "long_output")) {
+		if(!strcasecmp(token[1],"on")) {
+			system->long_output = 1;
+			output("INPUT: Long coordinate output requested.\n");
+		} else if (!strcasecmp(token[1],"off")) {
+			system->long_output = 0;
+		} else return 1;
+	}
+
 	// read box limits from pqr input
 	else if(!strcasecmp(token[0], "read_pqr_box")) {
 		if(!strcasecmp(token[1],"on"))

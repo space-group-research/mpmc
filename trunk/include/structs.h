@@ -360,6 +360,7 @@ typedef struct _system {
 	char *job_name; // (CRC)
         char *pqr_input, *pqr_output, *pqr_restart, *traj_output, *energy_output, *energy_output_csv;
         int read_pqr_box_on; //read box basis from pqr
+	int long_output; // prints extended (%11.6f) coordinates
 	char *dipole_output, *field_output, *histogram_output, *frozen_output;
 	char *insert_input;
 	double max_bondlength; /* threshold to bond (re:output files) */

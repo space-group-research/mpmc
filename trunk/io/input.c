@@ -31,7 +31,7 @@ int safe_atol ( char * a, long unsigned int * l ) {
 int do_command (system_t * system, char ** token ) {
 	// check for comment/blanks
 	if (!strncasecmp(token[0], "!", 1)) return 0;
-	else if (!strcasecmp(token[0],"#")) return 0;
+	else if (!strncasecmp(token[0],"#", 1)) return 0;
 	else if (!strcasecmp(token[0],"")) return 0;
 
 	// ensemble options
@@ -609,11 +609,8 @@ int do_command (system_t * system, char ** token ) {
 
 	// set job name (CRC)
 	else if (!strcasecmp(token[0], "job_name")) {
-		if(!system->job_name) {
-			system->job_name = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->job_name,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-			strcpy(system->job_name,token[1]);
-		} else return 1;
+		//already allocated
+		strcpy(system->job_name,token[1]);
 	}
 
 	else if (!strcasecmp(token[0], "pqr_input")) {
@@ -850,6 +847,11 @@ void setdefaults(system_t * system) {
 	system->quantum_rotation_phi_max = QUANTUM_ROTATION_PHI_MAX;
 	system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
 #endif /* QM_ROTATION */
+
+	//set default jobname
+	system->job_name = calloc(MAXLINE,sizeof(char));
+	memnullcheck(system->job_name,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+	sprintf(system->job_name,"untitled");
 
 	return;
 }

@@ -341,8 +341,13 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		- avg_observables->energy*avg_observables->energy)/(system->temperature*system->temperature);
 
 	/* compressibility */
-	avg_observables->compressibility = ATM2PASCALS*(system->pbc->volume/pow(METER2ANGSTROM, 3))*(avg_observables->N_sq 
-		- avg_observables->N*avg_observables->N)/(KB*system->temperature*avg_observables->N*avg_observables->N);
+	if ( system->ensemble != ENSEMBLE_NPT )
+		avg_observables->compressibility = ATM2PASCALS*(system->pbc->volume/pow(METER2ANGSTROM, 3))*(avg_observables->N_sq 
+			- avg_observables->N*avg_observables->N)/(KB*system->temperature*avg_observables->N*avg_observables->N);
+	else 
+		avg_observables->compressibility = ATM2PASCALS * pow(METER2ANGSTROM,-3) *
+			( avg_observables->volume_sq - avg_observables->volume * avg_observables->volume ) / 
+			( KB * system->temperature * avg_observables->volume );
 
 	/* we have a solid phase */
 	if(frozen_mass > 0.0) {

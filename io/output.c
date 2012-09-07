@@ -730,7 +730,7 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
 
 	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
-		printf("OUTPUT: heat capacity = %.3f +- kJ/mol K\n", averages->heat_capacity);
+		printf("OUTPUT: heat capacity = %.5f kJ/mol K\n", averages->heat_capacity);
 
 	if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
 		printf("OUTPUT: compressibility = %.6f atm^-1\n", averages->compressibility);

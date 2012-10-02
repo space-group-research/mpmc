@@ -732,11 +732,37 @@ void checkpoint(system_t *system) {
 		if( system->num_insertion_molecules && system->checkpoint->movetype == MOVETYPE_INSERT ) {
 			// If the move is an insertion and a molecule insertion list
 			// has been set up, then select a molecule from said list:
-			int    nInsertionMolecules   = system->num_insertion_molecules - 1;
-			double nInsertionMolecules_d = (double) nInsertionMolecules;
-			int    alt = nInsertionMolecules - (int)rint( nInsertionMolecules_d * get_rand());
-			system->checkpoint->molecule_altered = system->insertion_molecules_array[ alt ];
-			
+
+                        // Molecule is selected by a call to rand(), modded by the number of insertion molecules
+                        // from which to select. To avoid biasing in the form of low numbered molecules having a
+                        // VERY slightly greater chance of being picked due to them being repeated at most 1 extra
+                        // time in the list of possible number selections in the (repeating) number list formed by:
+                        //
+                        // [0..RAND_MAX] % nInsertionMolecules
+                        //
+                        // We will disregard any random numbers that are selected that fall in the top end of said 
+                        // list. For instance, if RAND_MAX is 10, and our number of insertion molecules is 4, our
+                        // list of possible random numbers will range from 0%4 to 10%4 :
+                        // rand() returns:      0  1  2  3  4  5  6  7  8  9  10  
+                        // rand() result % 4:   0  1  2  3  0  1  2  3  0  1   2
+                        //
+                        // You can see the odds of selecting 0, 1 or 2 is 3/11, whereas the odds of selecting 3 is
+                        // 2/11. By discarding any rand() result greater than 
+                        //
+                        // RAND_MAX - ((RAND_MAX%nInsertionMolecules) + 1) 
+                        //
+                 	// (in this example, 7) the bias is eliminated. This may needlessly subtract a number from 
+                        // RAND_MAX that is an even multiple of nInsertionMolecules, but to save a clock cycle or two 
+                        // (in the most common case), no check is made for this situation.
+ 
+                        long int My_MaxRand = RAND_MAX - ((RAND_MAX % system->num_insertion_molecules) + 1);
+                        long int My_Rand = rand();
+                        while( My_Rand > My_MaxRand )
+                                My_Rand = rand();
+
+                        int    alt = My_Rand % system->num_insertion_molecules;
+                        system->checkpoint->molecule_altered = system->insertion_molecules_array[ alt ];
+ 
 		} else {
 			// Otherwise, perform the original MPMC treatment:
 			--num_molecules_exchange;

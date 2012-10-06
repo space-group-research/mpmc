@@ -14,17 +14,32 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 
 	double delta_energy;
 	double u, g, partfunc_ratio;
-	double fugacity;
 	double v_new, v_old;
+	double fugacity;
+	int N; //number of a particular sorbate molecule
+	sorbateAverages_t * sptr;
+	int i;
 
 	delta_energy = final_energy - initial_energy;
 
-	if(system->h2_fugacity || system->co2_fugacity || system->ch4_fugacity || system->n2_fugacity)
-		fugacity = system->fugacity;
-	else
-		fugacity = system->pressure;
-
 	if(system->ensemble == ENSEMBLE_UVT) {
+
+		//obtain the correct fugacity value
+		if(system->h2_fugacity || system->co2_fugacity || system->ch4_fugacity || system->n2_fugacity )
+			fugacity = system->fugacities[0];
+		else if (system->user_fugacities) 
+			fugacity = system->fugacities[system->sorbateInsert];
+		else 
+			fugacity = system->pressure;
+
+		//obtain the correct sorbate molecule N (number sorbed/present)
+		if ( !system->user_fugacities )
+			N = system->observables->N;
+		else {
+			for ( i=0, sptr=system->sorbateStats.next; i < system->sorbateInsert ;sptr = sptr->next, i++ ); //fastforward
+			N = sptr->currentN;
+		}
+
 
 		/* if biased_move not set, no cavity available so do normal evaluation below */
 		if(system->cavity_bias && system->checkpoint->biased_move) {
@@ -33,10 +48,10 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
 				system->nodestats->boltzmann_factor = 
 					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED / 
-					(system->temperature*system->observables->N))*exp(-delta_energy/system->temperature);
+					(system->temperature*N))*exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
 				system->nodestats->boltzmann_factor = 
-					(system->temperature*(system->observables->N + 1)) / 
+					(system->temperature*(N + 1)) / 
 					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED) *
 					exp(-delta_energy/system->temperature);
 			} else {							/* DISPLACE */
@@ -47,11 +62,11 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 
 			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
 				system->nodestats->boltzmann_factor = 
-					(system->pbc->volume*fugacity*ATM2REDUCED/(system->temperature*system->observables->N)) *
+					(system->pbc->volume*fugacity*ATM2REDUCED/(system->temperature*N)) *
 					exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
 				system->nodestats->boltzmann_factor = 
-					(system->temperature*(system->observables->N + 1))/(system->pbc->volume*fugacity*ATM2REDUCED) *
+					(system->temperature*(N + 1))/(system->pbc->volume*fugacity*ATM2REDUCED) *
 					exp(-delta_energy/system->temperature);
 			} else if(system->checkpoint->movetype == MOVETYPE_DISPLACE) {	/* DISPLACE */
 				system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
@@ -119,7 +134,6 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 		system->nodestats->boltzmann_factor = pow((system->total_energy - final_energy), 3.0*system->N/2.0);
 		system->nodestats->boltzmann_factor /= pow((system->total_energy - initial_energy), 3.0*system->N/2.0);
 	}
-
 
 	return;
 }

@@ -132,6 +132,7 @@ typedef struct _observables {
 	double volume; /* for NPT */
 	double N, NU;
 	double spin_ratio;		/* ortho:para spin ratio */
+	double frozen_mass, total_mass; //updated in average.c
 } observables_t;
 
 typedef struct _avg_observables {
@@ -178,7 +179,9 @@ typedef struct _avg_observables {
 	/* these quantities are based on averages; the error is not easily calculated */
 	double qst;
 	double heat_capacity;
+	double heat_capacity_error;
 	double compressibility;
+	double compressibility_error;
 
 } avg_observables_t;
 
@@ -190,11 +193,12 @@ typedef struct _sorbateAverages {
 	double mass;             // mass of this sorbate.
 	int    currentN;         // sorbate count for the current step
 	double avgN;             // average sorbate count
-	double percent_wt;       // average weight percent for this sorbate
-	double percent_wt_me;    // current weight percent for this sorbate    
+	double percent_wt;       // weight percent for this sorbate (sorb_mass / total_mass)
+	double percent_wt_me;    // weight percent for this sorbate (sorb_mass / frozen_mass)
+	double excess_ratio;     // excess adsorption ratio
 	double sorbed_mass;      // absolute mass of this sorbate sorbed in system
-	double bulk_mass;        // bulk mass of the sorbate
 	double selectivity;      // sorbate's selectivity ratio relative to all other sorbates in the insert list.
+	double pore_density, density; // mass of sorbate / volume of pore OR volume of system
 	struct _sorbateAverages *next;
 } sorbateAverages_t; 
 
@@ -353,7 +357,7 @@ typedef struct _system {
 	int rd_lrc;
 
 	// uvt fugacity functions
-	int h2_fugacity, co2_fugacity, ch4_fugacity, n2_fugacity;
+	int h2_fugacity, co2_fugacity, ch4_fugacity, n2_fugacity, user_fugacities;
 
 	// i/o options
 	int wrapall;
@@ -383,7 +387,9 @@ typedef struct _system {
 	int n_histogram_bins;
 
 	//observables
-	double temperature, pressure, fugacity, free_volume, total_energy, N;
+	double temperature, pressure, free_volume, total_energy, N;
+	double * fugacities;
+	int fugacitiesCount;
 
 	//atom array
 	int natoms;
@@ -407,6 +413,7 @@ typedef struct _system {
 	// for each sorbate in the system.
 	int sorbateCount;                 // Number of sorbates in the system.
 	sorbateAverages_t sorbateStats;  // Linked List w/1 node per sorbate.
+	int sorbateInsert; //which sorbate was last inserted
 
 	checkpoint_t *checkpoint;
 	file_pointers_t file_pointers;

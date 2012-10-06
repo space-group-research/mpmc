@@ -466,6 +466,11 @@ void mc_options (system_t * system) {
 				sprintf(linebuf, "INPUT: fugacity[%d] is set to %.3f atm\n", i, system->fugacities[i]);
 				output(linebuf);
 			}
+			if ( system->pressure != 0.0 ) {
+				sprintf(linebuf, "INPUT: user defined fugacities are not compatible with pressure specification.\n");
+				output(linebuf);
+				exit(-1);
+			}
 		}
 		else if (system->pressure <= 0.0) {
 			error("INPUT: invalid pressure set for GCMC\n");

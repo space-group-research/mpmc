@@ -402,6 +402,7 @@ void write_pbc_info ( system_t * system ) {
 
 
 void mc_options (system_t * system) {
+	int i;
 	char linebuf[MAXLINE];
 
 	if(!system->seed) {
@@ -452,68 +453,106 @@ void mc_options (system_t * system) {
 			exit(-1);
 		} else {
 			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
-			sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity);
+//		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //???? shouldn't be set in NPT, right?
 			output(linebuf);
 		}
 	}
 
-	if((system->ensemble == ENSEMBLE_UVT) && (system->pressure <= 0.0)) {
-		error("INPUT: invalid pressure set for GCMC\n");
-		exit(-1);
-	} else {
-		if(system->ensemble == ENSEMBLE_UVT) {
-			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
-			sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity);
+	if(system->ensemble == ENSEMBLE_UVT) {
+		if(system->user_fugacities) {
+			sprintf(linebuf, "INPUT: user defined fugacities are in use.\n");
 			output(linebuf);
-		}
-
-		if(system->h2_fugacity) {
-
-			system->fugacity = h2_fugacity(system->temperature, system->pressure);
-			if(system->h2_fugacity == 0.0) {
-				error("INPUT: error in H2 fugacity assignment\n");
-				exit(-1);
+			for ( i=0; i<system->fugacitiesCount; i++ ) {
+				sprintf(linebuf, "INPUT: fugacity[%d] is set to %.3f atm\n", i, system->fugacities[i]);
+				output(linebuf);
 			}
-			sprintf(linebuf, "INPUT: H2 fugacity = %.3f atm\n", system->fugacity);
-			output(linebuf);
 		}
-
-		if(system->co2_fugacity) {
-
-			system->fugacity = co2_fugacity(system->temperature, system->pressure);
-			if(system->co2_fugacity == 0.0) {
-				error("INPUT: error in CO2 fugacity assignment\n");
-				exit(-1);
+		else if (system->pressure <= 0.0) {
+			error("INPUT: invalid pressure set for GCMC\n");
+			exit(-1);
+		} else {
+			if(system->ensemble == ENSEMBLE_UVT) {
+				sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
+	//		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //not yet set?
+				output(linebuf);
 			}
 
-			sprintf(linebuf, "INPUT: CO2 fugacity = %.3f atm\n", system->fugacity);
-			output(linebuf);
-		}
+			if(system->h2_fugacity) {
 
-		if(system->ch4_fugacity) {
+				if ( system->fugacities != NULL ) {
+					error("INPUT: h2_fugacity called, but fugacities are already set.\n");
+					exit(-1);
+				}
+				system->fugacities = malloc(sizeof(double));
+				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
 
-			system->fugacity = ch4_fugacity(system->temperature, system->pressure);
-			if(system->ch4_fugacity == 0.0) {
-				error("INPUT: error in CH4 fugacity assignment\n");
-				exit(-1);
+				system->fugacities[0] = h2_fugacity(system->temperature, system->pressure);
+				if(system->h2_fugacity == 0.0) {
+					error("INPUT: error in H2 fugacity assignment\n");
+					exit(-1);
+				}
+				sprintf(linebuf, "INPUT: H2 fugacity = %.3f atm\n", system->fugacities[0]);
+				output(linebuf);
 			}
 
-			sprintf(linebuf, "INPUT: CH4 fugacity = %.3f atm\n", system->fugacity);
-			output(linebuf);
-		}
+			if(system->co2_fugacity) {
 
-		if(system->n2_fugacity) {
+				if ( system->fugacities != NULL ) {
+					error("INPUT: co2_fugacity called, but fugacities are already set.\n");
+					exit(-1);
+				}
+				system->fugacities = malloc(sizeof(double));
+				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
 
-			system->fugacity = n2_fugacity(system->temperature, system->pressure);
-			if(system->n2_fugacity == 0.0) {
-				error("INPUT: error in N2 fugacity assignment\n");
-				exit(-1);
+				system->fugacities[0] = co2_fugacity(system->temperature, system->pressure);
+				if(system->co2_fugacity == 0.0) {
+					error("INPUT: error in CO2 fugacity assignment\n");
+					exit(-1);
+				}
+
+				sprintf(linebuf, "INPUT: CO2 fugacity = %.3f atm\n", system->fugacities[0]);
+				output(linebuf);
 			}
 
-			sprintf(linebuf, "INPUT: N2 fugacity = %.3f atm\n", system->fugacity);
-			output(linebuf);
-		}
-	}
+			if(system->ch4_fugacity) {
+
+				if ( system->fugacities != NULL ) {
+					error("INPUT: ch4_fugacity called, but fugacities are already set.\n");
+					exit(-1);
+				}
+				system->fugacities = malloc(sizeof(double));
+				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
+
+				system->fugacities[0] = ch4_fugacity(system->temperature, system->pressure);
+				if(system->ch4_fugacity == 0.0) {
+					error("INPUT: error in CH4 fugacity assignment\n");
+					exit(-1);
+				}
+
+				sprintf(linebuf, "INPUT: CH4 fugacity = %.3f atm\n", system->fugacities[0]);
+				output(linebuf);
+			}
+
+			if(system->n2_fugacity) {
+
+				if ( system->fugacities != NULL ) {
+					error("INPUT: n2_fugacity called, but fugacities are already set.\n");
+					exit(-1);
+				}
+				system->fugacities = malloc(sizeof(double));
+				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
+
+				system->fugacities[0] = n2_fugacity(system->temperature, system->pressure);
+				if(system->n2_fugacity == 0.0) {
+					error("INPUT: error in N2 fugacity assignment\n");
+					exit(-1);
+				}
+
+				sprintf(linebuf, "INPUT: N2 fugacity = %.3f atm\n", system->fugacities[0]);
+				output(linebuf);
+			}
+		} //calculated fugacities
+	} //ensemble UVT
 
 	if ( system->ensemble != ENSEMBLE_TE ) {
 

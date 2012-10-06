@@ -105,6 +105,7 @@ void update_sorbate_stats( system_t *system )
 {
 
 	static int counter = 0;
+	int i;
 	counter++;
 	double factor = ((double)(counter-1))/((double)(counter));
 	sorbateAverages_t *sorbate_ptr;
@@ -161,8 +162,18 @@ void update_sorbate_stats( system_t *system )
 		sorbate_ptr->percent_wt_me = 100.0 * sorbed_mass/frozen_mass;
 
 		// bulk mass -- mass in present in system-sized container under ideal conditions.
-		sorbate_ptr->bulk_mass =   (system->free_volume * system->pressure * sorbate_ptr->mass)  
-		                         / (system->temperature * R * A3PerLiter );
+//		sorbate_ptr->bulk_mass =   (system->free_volume * system->pressure * sorbate_ptr->mass)  
+//		                         / (system->temperature * R * A3PerLiter );
+
+		// excess ratio
+		sorbate_ptr->excess_ratio=1000*sorbate_ptr->mass * 
+			(sorbate_ptr->avgN - sorbate_ptr->mass*system->free_volume*system->pressure*ATM2REDUCED/system->temperature);
+
+		// density & pore density
+		sorbate_ptr->density = sorbate_ptr->sorbed_mass/(system->avg_observables->volume*NA*A32CM3);
+		sorbate_ptr->pore_density = sorbate_ptr->sorbed_mass/(system->free_volume*NA*A32CM3);
+
+
 
 		// Selectivity
 		// The denominator is temporarily collected in sorbate_ptr->selectivity, and is a sum of all the
@@ -186,10 +197,12 @@ void update_sorbate_stats( system_t *system )
 void update_root_averages(system_t *system, observables_t *observables, avg_nodestats_t *avg_nodestats, avg_observables_t *avg_observables) {
 
 	double particle_mass, frozen_mass, curr_density;
+	sorbateAverages_t *sptr;
 
 	molecule_t *molecule_ptr;
 	static int counter = 0;
 	double factor;
+	double gammaratio;
 
 	++counter;
 	factor = ((double)(counter - 1))/((double)(counter));
@@ -319,16 +332,21 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 
 
 	/* get the mass of the two phases */
+	system->observables->total_mass = 0;
 	for(molecule_ptr = system->molecules, particle_mass = 0, frozen_mass = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		if(molecule_ptr->frozen || molecule_ptr->adiabatic)
 			frozen_mass += molecule_ptr->mass;
-		else
+		else { 
 			particle_mass = molecule_ptr->mass;
+			system->observables->total_mass += particle_mass;
+		}
 	}
+	system->observables->frozen_mass = frozen_mass; //store this for sorbate calculations
+	system->observables->total_mass += frozen_mass;
 
 	/* density in g/cm^3 */ //had to modify since density isn't neccessarily constant since adding NPT
 	curr_density = observables->N * particle_mass / (system->pbc->volume*NA*A32CM3);
-//	avg_observables->density = avg_observables->N*particle_mass/(system->pbc->volume*NA*A32CM3);
+
 	avg_observables->density = factor*avg_observables->density 
 		+ curr_density/((double)counter);
 	avg_observables->density_sq = factor * avg_observables->density_sq 
@@ -336,9 +354,14 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 	avg_observables->density_error = 0.5*sqrt(avg_observables->density_sq 
 		- (avg_observables->density)*(avg_observables->density) );
 
+	/* needed for calculating sstdev (stdev of stdev) */
+	gammaratio = tgamma(0.5*(double)counter) / tgamma(0.5*((double)counter-1));
+	gammaratio = sqrt(1.0/counter * ((double)counter - 1.0 - 2.0*gammaratio*gammaratio) );
 	/* heat capacity in kJ/mol K */
 	avg_observables->heat_capacity = (KB*NA/1000.0)*(avg_observables->energy_sq 
 		- avg_observables->energy*avg_observables->energy)/(system->temperature*system->temperature);
+	/* error in heat capacity is the standard deviation of the variance, = 2*sstdev */
+	avg_observables->heat_capacity_error = 2.0 * gammaratio * avg_observables->heat_capacity;
 
 	/* compressibility */
 	if ( system->ensemble != ENSEMBLE_NPT )
@@ -348,6 +371,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		avg_observables->compressibility = ATM2PASCALS * pow(METER2ANGSTROM,-3) *
 			( avg_observables->volume_sq - avg_observables->volume * avg_observables->volume ) / 
 			( KB * system->temperature * avg_observables->volume );
+	avg_observables->compressibility_error = 2.0 * gammaratio * avg_observables->compressibility;
 
 	/* we have a solid phase */
 	if(frozen_mass > 0.0) {
@@ -365,17 +389,17 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		/* excess weight mg/g */
 		if(system->free_volume > 0.0) {
 
-			if(system->fugacity > 0.0)
+			if(system->fugacities)
 				avg_observables->excess_ratio = 1000.0*(avg_observables->N*particle_mass 
-					- (particle_mass*system->free_volume*system->fugacity*ATM2REDUCED)/system->temperature)/frozen_mass;
+					- (particle_mass*system->free_volume*system->fugacities[0]*ATM2REDUCED)/system->temperature)/frozen_mass;
 			else
 				avg_observables->excess_ratio = 1000.0*(avg_observables->N*particle_mass 
 					- (particle_mass*system->free_volume*system->pressure*ATM2REDUCED)/system->temperature)/frozen_mass;
 			avg_observables->excess_ratio_error = 1000.0*avg_observables->N_error*particle_mass/frozen_mass;
 
 
-			/* pore density */
-			avg_observables->pore_density = avg_observables->N*particle_mass/(system->free_volume*NA*A32CM3);
+			/* pore density */ //only valid for constant V, pure systems
+			avg_observables->pore_density = curr_density * system->pbc->volume / system->free_volume;
 			avg_observables->pore_density_error = avg_observables->N_error*particle_mass/(system->free_volume*NA*A32CM3);
 
 		}

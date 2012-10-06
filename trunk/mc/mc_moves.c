@@ -762,6 +762,8 @@ void checkpoint(system_t *system) {
 
                         int    alt = My_Rand % system->num_insertion_molecules;
                         system->checkpoint->molecule_altered = system->insertion_molecules_array[ alt ];
+												//needed to calculate boltzmann factor
+												system->sorbateInsert = alt;
  
 		} else {
 			// Otherwise, perform the original MPMC treatment:

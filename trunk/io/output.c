@@ -709,33 +709,31 @@ int write_averages(system_t *system) {
 			averages->temperature, 0.5*averages->temperature);
 	}
 
-
 	printf("OUTPUT: N = %.3f +- %.3f molecules\n", averages->N, 0.5*averages->N_error);
-	printf("OUTPUT: density = %.5f +- %.5f g/cm^3\n", averages->density, 0.5*averages->density_error);
-	if(averages->pore_density != 0.0)
-		printf("OUTPUT: pore density = %.5f +- %.5f g/cm^3\n", averages->pore_density, 0.5*averages->pore_density_error);
 
-	if(averages->percent_wt > 0.0) {
-		printf("OUTPUT: wt %% = %.5f +- %.5f %%\n", averages->percent_wt, 0.5*averages->percent_wt_error);
-		printf("OUTPUT: wt %% (ME) = %.5f +- %.5f %%\n", averages->percent_wt_me, 0.5*averages->percent_wt_me_error);
+	if ( system->sorbateCount == 1 ) { //all based on calculations with assume only one type of sorbate
+		printf("OUTPUT: density = %.5f +- %.5f g/cm^3\n", averages->density, 0.5*averages->density_error);
+		if(averages->pore_density != 0.0 && system->ensemble != ENSEMBLE_NPT)
+			printf("OUTPUT: pore density = %.5f +- %.5f g/cm^3\n", averages->pore_density, 0.5*averages->pore_density_error);
+		if(averages->percent_wt > 0.0 ) {
+			printf("OUTPUT: wt %% = %.5f +- %.5f %%\n", averages->percent_wt, 0.5*averages->percent_wt_error);
+			printf("OUTPUT: wt %% (ME) = %.5f +- %.5f %%\n", averages->percent_wt_me, 0.5*averages->percent_wt_me_error);
+		}
+		if(averages->excess_ratio > 0.0)
+			printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
+		if((averages->qst > 0.0) && isfinite(averages->qst))
+			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
+		if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
+			printf("OUTPUT: heat capacity = %.5f +- %.5f kJ/mol K\n", averages->heat_capacity, averages->heat_capacity_error);
+		if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
+			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, averages->compressibility_error);
+			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility, 
+				ATM2PASCALS*1.0e-9/averages->compressibility_error);
+		}
 	}
-
-	if(averages->excess_ratio > 0.0)
-		printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
-
-	if((averages->qst > 0.0) && isfinite(averages->qst))
-		printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
 
 	if(system->ensemble == ENSEMBLE_NPT)
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
-
-	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
-		printf("OUTPUT: heat capacity = %.5f kJ/mol K\n", averages->heat_capacity);
-
-	if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
-		printf("OUTPUT: compressibility = %.6f atm^-1\n", averages->compressibility);
-		printf("OUTPUT: bulk modulus = %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility);
-	}
 
 	if(averages->spin_ratio > 0.0) {
 		printf("OUTPUT: ortho spin ratio = %.3f +- %.3f %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
@@ -745,10 +743,14 @@ int write_averages(system_t *system) {
 		sorbateAverages_t *sorbate_ptr;
 		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 			printf( "OUTPUT: Stats for %s\n", sorbate_ptr->id  );
-			printf( "             Average_N(%s)= %lf\n",         sorbate_ptr->id, sorbate_ptr->avgN          );
-			printf( "             Sorbed_Mass(%s)= %lf g/mol\n", sorbate_ptr->id, sorbate_ptr->sorbed_mass   );
-			printf( "             Bulk_Mass(%s)= %E g\n",        sorbate_ptr->id, sorbate_ptr->bulk_mass     );
-			printf( "             Selectivity(%s)= %lf\n",       sorbate_ptr->id, sorbate_ptr->selectivity   );
+			printf( "             Average_N(%s)= %lf\n",          sorbate_ptr->id, sorbate_ptr->avgN          );
+			printf( "             Sorbed_Mass(%s)= %lf g/mol\n",  sorbate_ptr->id, sorbate_ptr->sorbed_mass   );
+			printf( "             density(%s)= %E g/cm^3\n",      sorbate_ptr->id, sorbate_ptr->density       );
+			printf( "             pore_density(%s)= %E g/cm^3\n", sorbate_ptr->id, sorbate_ptr->pore_density  );
+			printf( "             excess_ratio(%s)= %E g/cm^3\n", sorbate_ptr->id, sorbate_ptr->excess_ratio  );
+			printf( "             wt_%%(%s)= %lf %%\n",           sorbate_ptr->id, sorbate_ptr->percent_wt    );
+			printf( "             wt_%%_(ME)(%s)= %lf %%\n",      sorbate_ptr->id, sorbate_ptr->percent_wt_me );
+			printf( "             Selectivity(%s)= %lf\n",        sorbate_ptr->id, sorbate_ptr->selectivity   );
 		}
 	}
 	

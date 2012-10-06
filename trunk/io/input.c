@@ -29,6 +29,8 @@ int safe_atol ( char * a, long unsigned int * l ) {
 
 /* check each input command and set system flags */
 int do_command (system_t * system, char ** token ) {
+	int i;
+
 	// check for comment/blanks
 	if (!strncasecmp(token[0], "!", 1)) return 0;
 	else if (!strncasecmp(token[0],"#", 1)) return 0;
@@ -301,8 +303,12 @@ int do_command (system_t * system, char ** token ) {
 			system->co2_fugacity = 0;
 		else return 1;
 	}
-	else if(!strcasecmp(token[0], "co2fug"))
-		{ if ( safe_atof(token[1],&(system->fugacity)) ) return 1; }
+	else if(!strcasecmp(token[0], "co2fug")) { 
+		system->fugacities = calloc(1,sizeof(double));
+		memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
+		if ( safe_atof(token[1],&(system->fugacities[0])) ) 
+			return 1; 
+	}
 	else if(!strcasecmp(token[0], "ch4_fugacity")) {
 		if(!strcasecmp(token[1], "on"))
 			system->ch4_fugacity = 1;
@@ -316,6 +322,17 @@ int do_command (system_t * system, char ** token ) {
 		else if(!strcasecmp(token[1],"off"))
 			system->n2_fugacity = 0;
 		else return 1;
+	}
+	else if(!strcasecmp(token[0], "user_fugacities")) { //read in a list of user-defined fugacities
+		system->user_fugacities = 1;
+		for ( i=0; strlen(token[i+1]) > 0; i++ );
+		if ( i == 0 ) return 1;
+		system->fugacitiesCount = i;
+		system->fugacities = calloc(i,sizeof(double));
+		memnullcheck(system->fugacities,i*sizeof(double),__LINE__-1, __FILE__);
+		for ( i=0; strlen(token[i+1]) > 0; i++ )
+			if ( safe_atof(token[i+1], &(system->fugacities[i])) )
+				return 1;
 	}
 
 	else if(!strcasecmp(token[0], "free_volume"))
@@ -976,6 +993,18 @@ system_t *setup_system(char *input_file) {
 			return(NULL);
 		} else
 			output("INPUT: finished reading in insertion molecules\n");
+	} 
+	else //else only 1 sorbate type
+		system->sorbateCount = 1;
+	
+	//once we've counted the number of sorbates, we need to see if that matches the number of fugacities if user_fugacities is set
+	//can't be checked in check_config, etc. because we need to have read the insertion molecules stuff first
+	if ( system->user_fugacities ) {
+		if ( system->fugacitiesCount != system->sorbateCount ) {
+			sprintf(linebuf, "INPUT: fugacities defined do not match the number of sorbates.");
+			output(linebuf);
+			exit(-1);
+		}
 	}
 
 	/* allocate the necessary pairs */

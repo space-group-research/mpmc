@@ -723,14 +723,15 @@ int write_averages(system_t *system) {
 			printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
 		if((averages->qst > 0.0) && isfinite(averages->qst))
 			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
-		if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
-			printf("OUTPUT: heat capacity = %.5f +- %.5f kJ/mol K\n", averages->heat_capacity, averages->heat_capacity_error);
 		if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
 			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, averages->compressibility_error);
 			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility, 
-				ATM2PASCALS*1.0e-9/averages->compressibility_error);
+				ATM2PASCALS*1.0e-9*averages->compressibility_error/averages->compressibility/averages->compressibility);
 		}
 	}
+
+	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
+		printf("OUTPUT: heat capacity = %.5f +- %.5f kJ/mol K\n", averages->heat_capacity, averages->heat_capacity_error);
 
 	if(system->ensemble == ENSEMBLE_NPT)
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);

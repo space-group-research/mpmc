@@ -4,7 +4,8 @@
 #########################################
 
 TOP=..
-INCLUDES=-I$(TOP)/include
+INCLUDES=-I$(TOP)/include 
+MTINCLUDES=-I$(TOP)/mersenne
 
 ENERGY=$(TOP)/energy
 IO=$(TOP)/io
@@ -12,23 +13,25 @@ MAIN=$(TOP)/main
 MC=$(TOP)/mc
 POLAR=$(TOP)/polarization
 HIST=$(TOP)/histogram
-QROT =$(TOP)/quantum_rotation
+QROT=$(TOP)/quantum_rotation
+MT=$(TOP)/mersenne
 
 TARGET=mpmc
 
 ENERGY_OBJ = bessel.o bond.o coulombic.o coulombic_gwp.o dreiding.o energy.o lj.o pairs.o pbc.o polar.o sg.o vdw.o
 IO_OBJ = average.o check_input.o dxwrite.o input.o mpi.o output.o read_pqr.o
-MAIN_OBJ = cleanup.o main.o memnullcheck.o rng.o usefulmath.o
-MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.o
+MAIN_OBJ = cleanup.o main.o memnullcheck.o usefulmath.o
+MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.o checkpoint.o
 POLAR_OBJ = thole_field.o thole_iterative.o thole_matrix.o thole_polarizability.o polar_ewald.o
 HIST_OBJ = histogram.o
 QROT_OBJ = rotational_basis.o rotational_eigenspectrum.o rotational_integrate.o rotational_potential.o
+MT_OBJ = dSFMT.o mt.o
 
 ifeq ($(QM_ROTATION),yes)
-all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(QROT_OBJ)
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(QROT_OBJ) $(MT_OBJ)
 	$(CC) $(CFLAGS) $(DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o $(TARGET)  $(GCC_EXTRA_LIBS)
 else
-all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) 
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(MT_OBJ)
 	$(CC) $(CFLAGS) $(DEFINES) $(LIBS) $(EXTRA_LIBS) *.o -o $(TARGET) $(GCC_EXTRA_LIBS)
 endif
 
@@ -66,3 +69,7 @@ hist: $(HIST_OBJ)
 qrot: $(QROT_OBJ) 
 %.o: $(QROT)/%.c $(DEPS)
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
+# mersenne twister random number generator
+mt: $(MT_OBJ)
+%.o: $(MT)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(MTFLAGS) $(DEFINES) $(MTINCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<

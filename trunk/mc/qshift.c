@@ -22,12 +22,12 @@ void qshift_do(
 	}
 
 	if ( FLAG==0 ) {
-		fprintf(stderr,"SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
+		error("SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
 		exit(-1);
 	}
 	if ( xH2Qold==0 ) {
-		fprintf(stderr, "SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0."
-				" ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
+		error( "SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0.\n");
+		error( "ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
 		exit(-1);
 	}
 
@@ -61,17 +61,17 @@ double calcquadrupole ( system_t * system ) {
 	}
 			
 	if ( FLAG==0 ) {
-		fprintf(stderr,"SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
+		error("SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
 		exit(-1);
 	}
 	if ( q==0 ) {
-		fprintf(stderr,"SURFACE: QSHIFT ERROR: H2Q HAS CHARGE == 0."
+		error("SURFACE: QSHIFT ERROR: H2Q HAS CHARGE == 0."
 				" WHAT THE HECK?\n");
 		exit(-1);
 	}
 	if ( x==0 ) {
-		fprintf(stderr,"SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0."
-				" ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
+		error("SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0.");
+		error(" ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
 		exit(-1);
 	}
 

@@ -7,6 +7,29 @@ University of South Florida
 
 */
 
+/* note on multiple sorbate systems:
+
+N1 -> N1 + 1
+prob(N1,N2) = exp(Beta*(mu1*N1+mu2*N2))V^N f(E) / (LAMBDA^3N * N1! * N2!)
+bias = 1/2 (when inserting, 50% it's an N1)
+
+N1' + 1 -> N1'
+prob(N1'+1,N2) = exp(Beta*(mu1*(N1'+1)+mu2*N2))V^(N'+1) f(E) / (LAMBDA^3(N'+1) * (N1'+1)! * N2!)
+bias = (N1' + 1)/(N'+1) (we pick a molecule randomly from the system, then delete)
+
+following receipe in Frenkel p 129.
+insertion: 
+substitute N = N'-1
+acc_rate = 2.0 * exp(beta*mu1)V/(LAMBDA^3 * N)
+deletion:
+substitute N' = N+1
+acc_rate = 0.5 * exp(-beta*mu1) * (LAMBDA^3 * (N+1))/V
+
+This result was verified via ideal gas (non-interacting system). See tools/ideal_GCMC.c.
+--kmclaugh 2012-10-17
+*/
+
+
 #include <mc.h>
 
 /* the prime quantity of interest */
@@ -16,128 +39,125 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 	double u, g, partfunc_ratio;
 	double v_new, v_old;
 	double fugacity;
-	int N; //number of a particular sorbate molecule
 	sorbateAverages_t * sptr;
-	int i;
 
 	delta_energy = final_energy - initial_energy;
 
-	if(system->ensemble == ENSEMBLE_UVT) {
+	switch ( system->ensemble ) {
 
-		//obtain the correct fugacity value
-		if(system->h2_fugacity || system->co2_fugacity || system->ch4_fugacity || system->n2_fugacity )
-			fugacity = system->fugacities[0];
-		else if (system->user_fugacities) 
-			fugacity = system->fugacities[system->sorbateInsert];
-		else 
-			fugacity = system->pressure;
+		case ENSEMBLE_UVT :
+			//obtain the correct fugacity value
+			if(system->h2_fugacity || system->co2_fugacity || system->ch4_fugacity || system->n2_fugacity )
+				fugacity = system->fugacities[0];
+			else if (system->user_fugacities)
+				fugacity = system->fugacities[system->sorbateInsert];
+			else
+				fugacity = system->pressure;
+			/* if biased_move not set, no cavity available so do normal evaluation below */
+			if(system->cavity_bias && system->checkpoint->biased_move) {
+				/* modified metropolis function */
+				switch ( system->checkpoint->movetype ) {
+					case MOVETYPE_INSERT :
+						system->nodestats->boltzmann_factor = 
+							(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED / 
+							(system->temperature*system->observables->N))*exp(-delta_energy/system->temperature) * system->sorbateCount;
+						break;
+					case MOVETYPE_REMOVE :
+						system->nodestats->boltzmann_factor = 
+							(system->temperature*(system->observables->N + 1.0)) / 
+							(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED) *
+							exp(-delta_energy/system->temperature) / system->sorbateCount;
+						break;
+					case MOVETYPE_DISPLACE :
+						system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
+						break;
+					default :
+						error("MC: invalid mc move (not implemented for biased moves?)\n");
+						exit(-1);
+				} //mc move switch
+			} //end biased move
+			else {
+				switch ( system->checkpoint->movetype ) {
+					case MOVETYPE_INSERT :
+						system->nodestats->boltzmann_factor =
+							system->pbc->volume * fugacity * ATM2REDUCED/(system->temperature * (double)(system->observables->N)) *
+							exp(-delta_energy/system->temperature) *
+							(double)(system->sorbateCount); //for add/delete bias
+					break;
+					case MOVETYPE_REMOVE :
+						system->nodestats->boltzmann_factor =
+							system->temperature * ((double)(system->observables->N) + 1.0)/(system->pbc->volume*fugacity*ATM2REDUCED) *
+							exp(-delta_energy/system->temperature) /
+						  (double)(system->sorbateCount); //for add/delete bias
+					break;
+					case MOVETYPE_DISPLACE :
+						system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
+					break;
+					case MOVETYPE_SPINFLIP :
+						g = system->checkpoint->molecule_altered->rot_partfunc_g;
+						u = system->checkpoint->molecule_altered->rot_partfunc_u;
+						if ( system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA ) 
+							partfunc_ratio = g/(g+u);
+						else
+							partfunc_ratio = u/(g+u);
+						/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
+						system->nodestats->boltzmann_factor = partfunc_ratio;
+						break;
+					default:
+						error("MC: invalid mc move (not implemented for binary mixtures?)\n");
+						exit(-1);
+				}//MC move switch
+			} //end biased or not?
+		break; //end UVT
 
-		//obtain the correct sorbate molecule N (number sorbed/present)
-		if ( !system->user_fugacities )
-			N = system->observables->N;
-		else {
-			for ( i=0, sptr=system->sorbateStats.next; i < system->sorbateInsert ;sptr = sptr->next, i++ ); //fastforward
-			N = sptr->currentN;
-		}
-
-
-		/* if biased_move not set, no cavity available so do normal evaluation below */
-		if(system->cavity_bias && system->checkpoint->biased_move) {
-
-			/* modified metropolis function */
-			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
-				system->nodestats->boltzmann_factor = 
-					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED / 
-					(system->temperature*N))*exp(-delta_energy/system->temperature);
-			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
-				system->nodestats->boltzmann_factor = 
-					(system->temperature*(N + 1)) / 
-					(system->cavity_volume*system->avg_nodestats->cavity_bias_probability*fugacity*ATM2REDUCED) *
-					exp(-delta_energy/system->temperature);
-			} else {							/* DISPLACE */
-				system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
+		case ENSEMBLE_NVT :
+			switch ( system->checkpoint->movetype) {
+				case MOVETYPE_SPINFLIP : 
+					g = system->checkpoint->molecule_altered->rot_partfunc_g;
+					u = system->checkpoint->molecule_altered->rot_partfunc_u;
+					if ( system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA ) 
+						partfunc_ratio = g/(g+u);
+					else
+						partfunc_ratio = u/(g+u);
+					/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
+					system->nodestats->boltzmann_factor = partfunc_ratio;
+				break;
+				default: /*DISPLACE*/
+					system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
 			}
+		break; //end NVT
 
-		} else {
-
-			if(system->checkpoint->movetype == MOVETYPE_INSERT) {		/* INSERT */
-				system->nodestats->boltzmann_factor = 
-					(system->pbc->volume*fugacity*ATM2REDUCED/(system->temperature*N)) *
-					exp(-delta_energy/system->temperature);
-			} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* REMOVE */
-				system->nodestats->boltzmann_factor = 
-					(system->temperature*(N + 1))/(system->pbc->volume*fugacity*ATM2REDUCED) *
-					exp(-delta_energy/system->temperature);
-			} else if(system->checkpoint->movetype == MOVETYPE_DISPLACE) {	/* DISPLACE */
-				system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
-			} else if(system->checkpoint->movetype == MOVETYPE_SPINFLIP) {	/* SPINFLIP */
-
-				/* the molecular partition funcs for g/u symmetry species */
-				g = system->checkpoint->molecule_altered->rot_partfunc_g;
-				u = system->checkpoint->molecule_altered->rot_partfunc_u;
-
-				/* determine which way the spin was flipped */
-				if(system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA)             /* ortho -> para */
-					partfunc_ratio = g/(g+u);
-				else if (system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_ORTHO)      /* para -> ortho */
-					partfunc_ratio = u/(g+u);
-
-				/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
-				system->nodestats->boltzmann_factor = partfunc_ratio;
-
-			}
-
-		}
-
-	} else if(system->ensemble == ENSEMBLE_NVT) {
-
-		if(system->checkpoint->movetype == MOVETYPE_SPINFLIP) {	/* SPINFLIP */
-
-			/* the molecular partition funcs for g/u symmetry species */
-			g = system->checkpoint->molecule_altered->rot_partfunc_g;
-			u = system->checkpoint->molecule_altered->rot_partfunc_u;
-
-			/* determine which way the spin was flipped */
-			if(system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA)             /* ortho -> para */
-				partfunc_ratio = g/(g+u);
-			else if (system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_ORTHO)      /* para -> ortho */
-				partfunc_ratio = u/(g+u);
-
-			/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
-			system->nodestats->boltzmann_factor = partfunc_ratio;
-
-		} else	/* DISPLACE */
-			system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
-
-
-
-	} else if(system->ensemble == ENSEMBLE_NPT) {
-
-		if ( system->checkpoint->movetype == MOVETYPE_VOLUME ) { /*shrink/grow simulation box*/
-			v_old = system->checkpoint->observables->volume;
-			v_new = system->observables->volume;
-			//boltzmann factor for log volume changes
-			system->nodestats->boltzmann_factor = 
-				exp(-(		delta_energy 
+		case ENSEMBLE_NPT : 
+			//either displace or change volume
+			switch ( system->checkpoint->movetype) {
+				case MOVETYPE_VOLUME : 
+			
+					v_old = system->checkpoint->observables->volume;
+					v_new = system->observables->volume;
+					system->nodestats->boltzmann_factor = 
+						exp(-( delta_energy 
 							+ system->pressure * ATM2REDUCED * (v_new-v_old) 
 							- (system->observables->N + 1) * system->temperature * log(v_new/v_old)
-						 )/system->temperature);
+						)/system->temperature);
+				break;
+				default:	/*displace*/
+					system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
+			}
+		break;
 
-		}
+		case ENSEMBLE_NVE :
+			system->nodestats->boltzmann_factor = pow((system->total_energy - final_energy), 3.0*system->N/2.0);
+			system->nodestats->boltzmann_factor /= pow((system->total_energy - initial_energy), 3.0*system->N/2.0);
+		break;
 
-		else 	/* DISPLACE */
-			system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
-
-
-
-	} else if(system->ensemble == ENSEMBLE_NVE) {
-		system->nodestats->boltzmann_factor = pow((system->total_energy - final_energy), 3.0*system->N/2.0);
-		system->nodestats->boltzmann_factor /= pow((system->total_energy - initial_energy), 3.0*system->N/2.0);
-	}
+		default:
+			error("MC: invalid ensemble. aborting.\n");
+			exit(-1);
+		}	
 
 	return;
 }
-
+	
 /* keep track of which specific moves were accepted */
 void register_accept(system_t *system) {
 
@@ -203,10 +223,10 @@ int mc(system_t *system) {
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
 	char *snd_strct, *rcv_strct;
+	char linebuf[MAXLINE];
 #ifdef MPI
 	MPI_Datatype msgtype;
 #endif /* MPI */
-
 
 	/* allocate the statistics structures */
 	observables_mpi = calloc(1, sizeof(observables_t));
@@ -325,13 +345,7 @@ int mc(system_t *system) {
 		} else boltzmann_factor(system, initial_energy, final_energy);
 
 		/* Metropolis function */
-		if(get_rand() < system->nodestats->boltzmann_factor) {	/* ACCEPT */
-			// if iterative solver failed, but we are still accepting this move, issue a warning.
-			// note: I don't really know the correct way to handle this.
-			if ( system->iter_success == 1 ) {
-				fprintf(stderr,"warning: iterative solver failed on accepted mc step (step %d)\n", system->step);
-				system->iter_success = 0;
-			}
+		if((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0) ) {	/* ACCEPT */
 
 			/* checkpoint */
 			checkpoint(system);
@@ -342,7 +356,12 @@ int mc(system_t *system) {
 					system->temperature = system->simulated_annealing_target + 
 						(system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
 
-		} else {						/* REJECT */
+			} else {						/* REJECT */
+
+			if ( system->iter_success == 1 )  {
+				sprintf(linebuf,"MC: iterative solver failed on accepted mc step (step %d)\n", system->step);
+				error(linebuf);
+			}
 
 			//reset the polar iterative failure flag
 			system->iter_success = 0;
@@ -438,6 +457,7 @@ int mc(system_t *system) {
 				}
 
 			} /* !rank */
+
 		} /* corrtime */
 	} /* main loop */
 

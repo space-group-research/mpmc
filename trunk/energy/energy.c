@@ -9,6 +9,28 @@ University of South Florida
 
 #include <mc.h>
 
+/* count the number of molecules currently in the system excluding frozen, adiabatic, etc.*/
+void countN ( system_t * system ) {
+	molecule_t * molecule_ptr;
+
+	system->observables->N = 0;
+	system->observables->spin_ratio = 0;
+	for(molecule_ptr = system->molecules, system->observables->N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+
+		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic || molecule_ptr->target)) {
+			/* update the molecule counter */
+			system->observables->N += 1.0;
+			/* update the nuclear spin ratio */
+			if(molecule_ptr->nuclear_spin == NUCLEAR_SPIN_ORTHO)
+				system->observables->spin_ratio += 1.0;
+		}
+
+		if(system->ensemble == ENSEMBLE_NVE) system->N = system->observables->N;
+	}
+
+	return;
+}
+
 
 /*check cavity_autoreject_absolute 
 -- probably not the most efficient place to put this, but likely the safest*/
@@ -49,7 +71,6 @@ double energy(system_t *system) {
 	double kinetic_energy;
 	struct timeval old_time, new_time;
 	char linebuf[MAXLINE];
-
 
 	/* zero the initial values */
 	potential_energy = 0;
@@ -113,14 +134,13 @@ double energy(system_t *system) {
 			/* XXX uncomment for timing */
 //			output(linebuf);
 
-
 			system->observables->polarization_energy = polar_energy;
 
 		}
 		if (system->polarvdw) {
 #ifdef CUDA
 			if (system->cuda) {
-				fprintf(stderr,"error: cuda polarvdw not yet implemented!\n");
+				error("error: cuda polarvdw not yet implemented!\n");
 				exit(-1);
 			}
 			else
@@ -139,24 +159,7 @@ double energy(system_t *system) {
 	if(system->gwp) potential_energy += kinetic_energy;
 	system->observables->energy = potential_energy;
 
-	/* count the number of molecules currently in the system */
-	system->observables->N = 0;
-	system->observables->spin_ratio = 0;
-	for(molecule_ptr = system->molecules, system->observables->N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
-		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic || molecule_ptr->target)) {
-
-			/* update the molecule counter */
-			system->observables->N += 1.0;
-
-			/* update the nuclear spin ratio */
-			if(molecule_ptr->nuclear_spin == NUCLEAR_SPIN_ORTHO)
-				system->observables->spin_ratio += 1.0;
-
-		}
-
-		if(system->ensemble == ENSEMBLE_NVE) system->N = system->observables->N;
-	}
+	countN(system);
 	system->observables->spin_ratio /= system->observables->N;
 
 	/* for NVE */

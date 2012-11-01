@@ -154,6 +154,7 @@ double * lapack_diag ( struct mtx * M, int jobtype ) {
 	int lwork; //size of work array
 	int rval; //returned from dsyev_
 	double * eigvals;
+	char linebuf[MAXLINE];
 
 	//eigenvectors or no?
 	if ( jobtype = 2 ) job='V';
@@ -177,7 +178,8 @@ double * lapack_diag ( struct mtx * M, int jobtype ) {
 	dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);
 
 	if ( rval != 0 ) {
-		fprintf(stderr,"error: LAPACK: dsyev returned error: %d\n", rval);
+		sprintf(linebuf,"error: LAPACK: dsyev returned error: %d\n", rval);
+		error(linebuf);
 		die(-1);
 	}
 
@@ -249,6 +251,7 @@ double calc_e_iso ( system_t * system, double * sqrtKinv, molecule_t * mptr ) {
 //go through each molecule and determine the VDW energy associated with each isolated molecule
 double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
 
+	char linebuf[MAXLINE];
 	double e_iso = 0;
 	molecule_t * mp;
 	atom_t * ap;
@@ -283,7 +286,8 @@ double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
 			strncpy(vpscan->mtype,mp->moleculetype,MAXLINE); //assign moleculetype
 			vpscan->energy = calc_e_iso(system,sqrtKinv,mp); //assign energy
 			if ( isfinite(vpscan->energy) == 0 ) { //if nan, then calc_e_iso failed
-				fprintf(stderr,"VDW: ERROR: Problem in calc_e_iso.\n");
+				sprintf(linebuf,"VDW: Problem in calc_e_iso.\n");
+				output(linebuf);
 				die(-1);
 			}
 			//otherwise count the energy and move to the next molecule
@@ -339,7 +343,7 @@ double lr_vdw_corr ( system_t * system ) {
 
 	//skip if PBC isn't set-up
 	if ( system->pbc->volume == 0 ) {
-		fprintf(stderr,"VDW: PBC not set-up. Did you define your basis? Skipping LRC.\n");
+		error("VDW: PBC not set-up. Did you define your basis? Skipping LRC.\n");
 		return 0;
 	}
 

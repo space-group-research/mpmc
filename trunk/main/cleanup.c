@@ -113,36 +113,27 @@ void free_all_pairs(system_t * system) {
 	if(ptr_array) free(ptr_array);
 }
 
-// free all atoms
-void free_all_atoms(system_t * system) {
-
-	int i;
-	/* free the whole array of ptrs */
-	for(i = 0; i < system->natoms; i++) free(system->atom_array[i]);
-
-	return;
-}
-
 // free all molecules
-void free_all_molecules(system_t * system) {
+void free_all_molecules(system_t * system, molecule_t * molecules) {
 
-	int i;
-	molecule_t **ptr_array = NULL;
-	molecule_t *molecule_ptr;
+	int i, j;
+	molecule_t **marray = NULL;
+	molecule_t *mptr;
 
 	/* build the ptr array */  // we can't free all of system->molecule_array since it's redundant
-	for(molecule_ptr = system->molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		ptr_array = realloc(ptr_array, sizeof(molecule_t *)*(i + 1));
-		memnullcheck(ptr_array,sizeof(molecule_t *)*(i + 1),__LINE__-1, __FILE__);
-		ptr_array[i] = molecule_ptr;
-		++i;
+	for(mptr = molecules, i = 0; mptr; mptr = mptr->next) {
+		free_my_atoms(mptr);
+		marray = realloc(marray, sizeof(molecule_t *)*(i + 1));
+		memnullcheck(marray,sizeof(molecule_t *)*(i + 1),__LINE__-1, __FILE__);
+		marray[i] = mptr;
+		i++;
 	}
 
 	/* free the whole array of ptrs */
-	for(--i; i >= 0; i--) free(ptr_array[i]);
+	for(--i; i >= 0; i--) free(marray[i]);
 
-	/* free our temporary array */
-	free(ptr_array);
+	/* free our temporary arrays */
+	free(marray);
 
 	return;
 }
@@ -241,6 +232,7 @@ void free_vdw_eiso(vdw_t * vdw_eiso_info) {
 void cleanup(system_t *system) {
 
 	int i,j;
+	sorbateAverages_t *sptr, *sptr_last;
 
 #ifdef QM_ROTATION
 	if(system->quantum_rotation) free_rotational(system);
@@ -251,8 +243,7 @@ void cleanup(system_t *system) {
 	rebuild_arrays(system);
 
 	free_all_pairs(system);
-	free_all_atoms(system);
-	free_all_molecules(system);
+	free_all_molecules(system, system->molecules);
 
 	//free our arrays
 	free(system->molecule_array);
@@ -271,6 +262,20 @@ void cleanup(system_t *system) {
 	if(system->cavity_bias) free_cavity_grid(system);
 
 	if ( system->vdw_eiso_info ) free_vdw_eiso(system->vdw_eiso_info);
+
+	/* free multi sorbate stuff */
+	if ( system->user_fugacities )
+		free(system->fugacities);
+	if(system->insert_input) free(system->insert_input);
+	//insert.pdb arrays and shit
+	if(system->insertion_molecules_array) free(system->insertion_molecules_array);
+	if(system->insertion_molecules) free_all_molecules(system, system->insertion_molecules);
+	// free sorbate stat linked list
+	sptr_last = NULL;
+	for ( sptr = system->sorbateStats.next; sptr; sptr=sptr->next ) {
+		free(sptr_last);
+		sptr_last = sptr;
+	} free(sptr_last);
 
 	/* free statistics */
 	free(system->nodestats);
@@ -325,6 +330,8 @@ void cleanup(system_t *system) {
 	free(system->pbc);
 
 	free(system->job_name); // (CRC)
+
+	kill_rng();
 
 	free(system);
 

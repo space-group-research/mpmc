@@ -193,12 +193,13 @@ typedef struct _sorbateAverages {
 	double mass;             // mass of this sorbate.
 	int    currentN;         // sorbate count for the current step
 	double avgN;             // average sorbate count
+	double avgNsq, avgNerr; 
 	double percent_wt;       // weight percent for this sorbate (sorb_mass / total_mass)
 	double percent_wt_me;    // weight percent for this sorbate (sorb_mass / frozen_mass)
 	double excess_ratio;     // excess adsorption ratio
-	double sorbed_mass;      // absolute mass of this sorbate sorbed in system
 	double selectivity;      // sorbate's selectivity ratio relative to all other sorbates in the insert list.
-	double pore_density, density; // mass of sorbate / volume of pore OR volume of system
+	double selectivity_err; 
+	double pore_density, density, density_err; // mass of sorbate / volume of pore OR volume of system
 	struct _sorbateAverages *next;
 } sorbateAverages_t; 
 
@@ -293,8 +294,11 @@ typedef struct _system {
 
 	int ensemble;
 	int gwp;
-	long unsigned int seed;
 	int cuda;
+
+	//for manual specification of random seeds
+	int preset_seeds_on;
+	uint32_t preset_seeds[4];
 
 	//surface fitting options
 	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;

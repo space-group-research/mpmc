@@ -3,6 +3,7 @@
 int read_pqr_box ( system_t * system ) {
 
 	char buffer[MAXLINE], token[7][MAXLINE];
+	char errormsg[MAXLINE];
 	int basis_set[3]; 
 	FILE * fp;
 
@@ -49,15 +50,24 @@ int read_pqr_box ( system_t * system ) {
 	if (basis_set[0] == 1)
 		printf("INPUT: basis[0] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[0] from pqr file.\n");
+		else {
+			sprintf(errormsg,"INPUT: unable to read basis[0] from pqr file.\n");
+			error(errormsg);
+		}	
 	if (basis_set[1] == 1)
 		printf("INPUT: basis[1] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[1] from pqr file.\n");
+		else {
+			sprintf(errormsg,"INPUT: unable to read basis[1] from pqr file.\n");
+			error(errormsg);
+		}	
 	if (basis_set[2] == 1)
 		printf("INPUT: basis[2] successfully read from pqr {%.5lf %.5lf %.5lf}\n", 
 			system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
-		else fprintf(stderr,"INPUT: unable to read basis[2] from pqr file.\n");
+		else {
+			sprintf(errormsg,"INPUT: unable to read basis[2] from pqr file.\n");
+			error(errormsg);
+		}	
 
 	fclose(fp);
 	return 0;
@@ -247,11 +257,13 @@ molecule_t *read_molecules(system_t *system) {
 			//it's an unneeded parameter, complicates the mixing rules and can break LRC
 			if ( system->polarvdw ){
 				if ( current_epsilon == 0 && current_sigma != 0 ) { //otherwise we break LRC
-					fprintf(stderr,"INPUT: site %d has epsilon == 0. setting sigma = 0.\n", atom_ptr->id);
-					atom_ptr->sigma=0;
+					sprintf(linebuf, "INPUT: site %d has epsilon == 0, but sigma != 0.\n", atom_ptr->id);
+					error(linebuf);
+					return(NULL);
 				}
 				if ( current_epsilon != 0 && current_sigma != 1 ) { //keeps mixing rules simple
-					fprintf(stderr,"INPUT: site has epsilon != 0, but sigma != 1.\n");
+					sprintf(linebuf,"INPUT: site has epsilon != 0, but sigma != 1.\n");
+					error(linebuf);
 					return(NULL);
 				}	
 			}
@@ -534,8 +546,9 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			//if polarvdw is on, we want sigma = 1
 			//it's an unneeded parameter, and complicates the mixing rules
 			if ( system->polarvdw && current_sigma != 1 ) {
-				fprintf(stderr,"INPUT: WARNING POLARVDW REQUIRES SIGMA = 1.\n"
-					"INPUT: INPUT VALUE OF %lf IGNORED.\n", current_sigma);
+				error("INPUT: WARNING POLARVDW REQUIRES SIGMA = 1.\n");
+				sprintf(linebuf,"INPUT: INPUT VALUE OF %lf IGNORED.\n", current_sigma);
+				error(linebuf);
 				current_sigma   = 1;
 				atom_ptr->sigma = 1;
 			}
@@ -611,6 +624,8 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	 //   WHAT'S ALLOWED/DISALLOWED FOR INSERTED MOLECULES?
 	/////////////////////////////////////////////////////////
 
+	//close your god damned file
+	fclose(fp);
 	
 	return(molecules);
 }
@@ -652,7 +667,7 @@ int addSorbateToList( sorbateAverages_t *sorbateList, char *sorbate_type ){
 	}
 
 	// allocate a new node for the sorbate
-	sorbate->next = malloc( sizeof( sorbateAverages_t ));
+	sorbate->next = calloc(1, sizeof( sorbateAverages_t ));
 	sorbate = sorbate->next;
 	
 	// return 0 upon failure to allcoate

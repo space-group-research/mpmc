@@ -14,9 +14,15 @@ int safe_atof ( char * a, double * f ) {
  	return 0; //success
 }
 	
-//convert string *a to a double and store at the address of f.
+//convert string *a to an int and store at the address of f.
 int safe_atoi ( char * a, int * i ) {
 	if ( sscanf(a,"%d",i) == 0 ) return 1; //failure
+ 	return 0; //success
+}
+
+//convert string *a to an unsigned int and store at the address of f.
+int safe_atou ( char * a, uint32_t * i ) {
+	if ( sscanf(a,"%u",i) == 0 ) return 1; //failure
  	return 0; //success
 }
 
@@ -52,6 +58,22 @@ int do_command (system_t * system, char ** token ) {
 			system->ensemble = ENSEMBLE_TE;
 		else if (!strcasecmp(token[1],"npt"))
 			system->ensemble = ENSEMBLE_NPT;
+	}
+
+	// random seed options
+	else if (!strcasecmp(token[0],"preset_seeds")) {
+		{ if ( safe_atou(token[1],&(system->preset_seeds[0])) ) return 1; }
+		{ if ( safe_atou(token[2],&(system->preset_seeds[1])) ) return 1; }
+		{ if ( safe_atou(token[3],&(system->preset_seeds[2])) ) return 1; }
+		{ if ( safe_atou(token[4],&(system->preset_seeds[3])) ) return 1; }
+		system->preset_seeds_on = 1;
+	}
+
+	//deprecated seed option
+	else if (!strcasecmp(token[0],"seed")) {
+		error( "INPUT: seed is deprecated\n" );
+		error( "INPUT: use \"preset_seeds <int> <int> <int> <int>\" to *manually* seed the rng.\n" );
+		exit(-1);
 	}
 
 	//surf options
@@ -116,7 +138,7 @@ int do_command (system_t * system, char ** token ) {
 	}
 	else if(!strcasecmp(token[0], "surf_preserve_rotation")) {
 		if(system->surf_preserve_rotation_on != NULL) {
-			fprintf(stderr,"ERROR: surf_preserve_rotationalready set.\n");
+			error("INPUT: surf_preserve_rotationalready set.\n");
 			return 1;
 		}
 		system->surf_preserve_rotation_on = malloc(6*sizeof(double));
@@ -239,9 +261,6 @@ int do_command (system_t * system, char ** token ) {
 	/*set total energy for NVE*/
 	else if(!strcasecmp(token[0], "total_energy"))
 		{ if ( safe_atof(token[1],&(system->total_energy)) ) return 1; }
-
-	else if(!strcasecmp(token[0], "seed")) 
-		{ if ( safe_atol(token[1],&(system->seed)) ) return 1; }
 
 	else if(!strcasecmp(token[0], "numsteps"))
 		{ if ( safe_atoi(token[1],&(system->numsteps)) ) return 1; }
@@ -877,6 +896,7 @@ system_t *read_config(char *input_file) {
 
 	system_t *system;
 	char linebuffer[MAXLINE], *n;
+	char errormsg[MAXLINE];
 	char ** token;
 	FILE *fp;
 	int i, linenum;
@@ -919,8 +939,10 @@ system_t *read_config(char *input_file) {
 
 		//parse and apply a command
 		if ( do_command(system, token) != 0 ) {
-			fprintf(stderr,"INPUT: ERROR: invalid command on line %d.\n", linenum);
-			fprintf(stderr,"> %s\n", linebuffer);
+			sprintf(errormsg,"INPUT: invalid command on line %d.\n", linenum);
+			error(errormsg);
+			sprintf(errormsg,"> %s\n", linebuffer);
+			error(errormsg);
 			return(NULL);
 		}	
 

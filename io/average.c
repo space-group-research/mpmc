@@ -100,14 +100,7 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 
 }
 
-// update the stats for the individual sorbates
-void update_sorbate_stats( system_t *system )
-{
-
-	static int counter = 0;
-	int i;
-	counter++;
-	double factor = ((double)(counter-1))/((double)(counter));
+void count_sorbates( system_t *system ) {
 	sorbateAverages_t *sorbate_ptr;
 	sorbateAverages_t *sorb_ptr;
 	molecule_t        *molecule_ptr;
@@ -126,14 +119,35 @@ void update_sorbate_stats( system_t *system )
 			}
 		}	
 	}
+
+	return;
+}
+	
+
+// update the stats for the individual sorbates
+void update_sorbate_stats( system_t *system )
+{
+
+	static int counter = 0;
+	int i;
+	double err, val;
+	counter++;
+	double factor = ((double)(counter-1))/((double)(counter));
+	sorbateAverages_t *sorbate_ptr;
+	sorbateAverages_t *sorb_ptr;
+	molecule_t        *molecule_ptr;
+
+	//update the number of particles of each sorbate
+	count_sorbates(system);
 	
 	// Using the current sorbate count (currentN), the number of readings
 	// contributing to the average N (count) and the old average N (avgN)
 	// (via "factor"), calculate the new average N (avgN). 
 	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 		sorbate_ptr->avgN = factor * sorbate_ptr->avgN + ((double) sorbate_ptr->currentN)/((double)(counter));
+		sorbate_ptr->avgNsq = factor * sorbate_ptr->avgNsq + sorbate_ptr->currentN*sorbate_ptr->currentN/((double)(counter));
+		sorbate_ptr->avgNerr = 0.5*sqrt(sorbate_ptr->avgNsq - sorbate_ptr->avgN*sorbate_ptr->avgN);
 	}
-
 
 	// Calculate the weight percent and sorbed mass of each sorbate
 
@@ -149,48 +163,41 @@ void update_sorbate_stats( system_t *system )
 	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 		
 		// sorbed_mass 
-		double sorbed_mass =
-		       sorbate_ptr->sorbed_mass = 
-                       sorbate_ptr->avgN * sorbate_ptr->mass; 
+		double sorbed_mass = sorbate_ptr->avgN * sorbate_ptr->mass;
+		double sorbed_mass_err = sorbate_ptr->avgNerr * sorbate_ptr->mass;
+		       
 		double R          = 0.8205746; //  L*atm/(mol*K)
 		double A3PerLiter = 1.0e27;    //  A^3/L  (cubic angstroms per liter)
 		
 		// weight% 
-		sorbate_ptr->percent_wt    = 100.0 * sorbed_mass/(frozen_mass + sorbed_mass);
+		sorbate_ptr->percent_wt    = 100.0 * sorbed_mass/(system->observables->total_mass);
 		
-		// weight% (ME) 
-		sorbate_ptr->percent_wt_me = 100.0 * sorbed_mass/frozen_mass;
-
-		// bulk mass -- mass in present in system-sized container under ideal conditions.
-//		sorbate_ptr->bulk_mass =   (system->free_volume * system->pressure * sorbate_ptr->mass)  
-//		                         / (system->temperature * R * A3PerLiter );
-
 		// excess ratio
 		sorbate_ptr->excess_ratio=1000*sorbate_ptr->mass * 
 			(sorbate_ptr->avgN - sorbate_ptr->mass*system->free_volume*system->pressure*ATM2REDUCED/system->temperature);
 
 		// density & pore density
-		sorbate_ptr->density = sorbate_ptr->sorbed_mass/(system->avg_observables->volume*NA*A32CM3);
-		sorbate_ptr->pore_density = sorbate_ptr->sorbed_mass/(system->free_volume*NA*A32CM3);
-
-
+		sorbate_ptr->density = sorbed_mass/(system->avg_observables->volume*NA*A32CM3);
+		sorbate_ptr->density_err = sorbed_mass_err/(system->avg_observables->volume*NA*A32CM3);
+		sorbate_ptr->pore_density = sorbed_mass/(system->free_volume*NA*A32CM3);
 
 		// Selectivity
-		// The denominator is temporarily collected in sorbate_ptr->selectivity, and is a sum of all the
-		// avgN values for every sorbate in the system. Then, the avgN value for THIS sorbate is divided
-		// by said total to yield selectivity for THIS sorbate. If the denominator is 0, selectivity is 
-		// assigned a value of positive infinity.
-
-		sorbate_ptr->selectivity = 0;
+		val = err = 0;
 		for( sorb_ptr = system->sorbateStats.next; sorb_ptr; sorb_ptr = sorb_ptr->next ) {
 			if(  strcasecmp(sorbate_ptr->id, sorb_ptr->id)  &&  (sorb_ptr->avgN != 0)  ) {
-				sorbate_ptr->selectivity += sorb_ptr->avgN;
+				val += sorb_ptr->avgN;
+				err += sorb_ptr->avgNerr * sorb_ptr->avgNerr; //add in quadrature
 			} 
 		}
-		if( sorbate_ptr->selectivity == 0 )
+		if( val == 0 ) {
 			sorbate_ptr->selectivity = atof( "+Inf" );
-		else 
-			sorbate_ptr->selectivity = sorbate_ptr->avgN / sorbate_ptr->selectivity;
+			sorbate_ptr->selectivity_err = atof( "+Inf" );
+		} else {
+			sorbate_ptr->selectivity = sorbate_ptr->avgN / val;
+			//calc error
+			err = sorbate_ptr->avgNerr*sorbate_ptr->avgNerr / (sorbate_ptr->avgN*sorbate_ptr->avgN) + err / (val*val);
+			sorbate_ptr->selectivity_err = sorbate_ptr->selectivity * sqrt(err);
+		}
 	}
 }
 

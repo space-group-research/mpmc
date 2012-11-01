@@ -24,15 +24,8 @@ void usage(char *progname) {
 
 }
 
-void seed_rng(long int seed) {
-	rule30_rng(seed);
-}
-
-double get_rand(void) {
-	return(rule30_rng(0));
-}
-
 int main(int argc, char **argv) {
+
 	printf("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
 	int i, j, N;
 	molecule_t *molecule_ptr;
@@ -147,8 +140,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* seed the rng */
-	seed_rng(system->seed + rank);
-	output("MAIN: the random seeds on the compute cores are all set\n");
+	seed_rng(system, rank);
 
 #ifdef MPI
 	MPI_Barrier(MPI_COMM_WORLD);

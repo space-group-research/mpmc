@@ -62,13 +62,8 @@ case "$HOSTNAME" in
 	"circe") #USF research computing
 		case "$COMPILER" in
 			"gcc")
-
-				CC="gcc"
-				CFLAGS="-O3 -std=c99"
-				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm -rdynamic"
-				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
-				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
-				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
+				exit 1
 			;;
 			"pgi")
 				CC="pgcc"
@@ -289,6 +284,11 @@ if [ $COMPILER = "gcc" ]; then
 else
 	GCC_EXTRA_LIBS=
 	EXTRA_LIBS=$EXTRA_LIBS
+fi
+
+## Some Mersenne Twister optimizations. Compiles fine without.
+if [ $COMPILER = "gcc" ]; then
+	MTFLAGS="-finline-functions -fomit-frame-pointer -fno-strict-aliasing --param max-inline-insns-single=1800 -std=c99"
 fi
 
 cat > Makefile << EOF

@@ -37,8 +37,7 @@ int memnullcheck ( void * ptr, int size, int line, char *file ) {
 		if ( size == 0 ) return 0;
 
 		fprintf(stderr,"ERROR: Failed to allocate %d bytes.\n", size);
-		fprintf(stderr,"       File: %s\n", file );
-		fprintf(stderr,"       Line: %d\n", line );
+		fprintf(stderr,"       Check %s:%d\n", file, line );
 #ifdef __GNUC__
 		// Print a stack trace
 		// In gcc, must compile with -rdynamic option in order to see the function names

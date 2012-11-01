@@ -405,14 +405,6 @@ void mc_options (system_t * system) {
 	int i;
 	char linebuf[MAXLINE];
 
-	if(!system->seed) {
-		error("INPUT: no seed specified\n");
-		exit(-1);
-	} else {
-		sprintf(linebuf, "INPUT: rng seed is %lu\n", system->seed);
-		output(linebuf);
-	}
-
 	if((system->numsteps < 1) && (system->ensemble != ENSEMBLE_TE) ) {
 		error("INPUT: improper numsteps specified\n");
 		exit(-1);

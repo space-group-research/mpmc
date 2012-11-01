@@ -10,6 +10,7 @@ double lj(system_t *);
 double lj_nopbc(system_t *);
 double dreiding(system_t *);
 double dreiding_nopbc(molecule_t *);
+void countN(system_t *);
 void update_com(molecule_t *);
 void flag_all_pairs(system_t *);
 void pair_exclusions(system_t *, molecule_t *, molecule_t *, atom_t *, atom_t *, pair_t *);
@@ -80,12 +81,14 @@ int open_files(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles( system_t *, int );
 molecule_t *read_insertion_molecules(system_t *);
+void count_sorbates( system_t * );
 
 /* main */
 void usage(char *);
-double get_rand(void);
-double rule30_rng(long int);
-void seed_rng(long int);
+double get_rand();
+void seed_rng(system_t *, int);
+void kill_rng();
+//double rule30_rng(long int);
 #ifdef QM_ROTATION
 void free_rotational(system_t *);
 #endif /* QM_ROTATION */

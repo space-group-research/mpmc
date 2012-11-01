@@ -736,22 +736,26 @@ int write_averages(system_t *system) {
 	if(system->ensemble == ENSEMBLE_NPT)
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
 
-	if(averages->spin_ratio > 0.0) {
+	if(averages->spin_ratio > 0.0) 
 		printf("OUTPUT: ortho spin ratio = %.3f +- %.3f %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
-	}
 	
 	if( system->sorbateCount > 1 ){
 		sorbateAverages_t *sorbate_ptr;
 		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
-			printf( "OUTPUT: Stats for %s\n", sorbate_ptr->id  );
-			printf( "             Average_N(%s)= %lf\n",          sorbate_ptr->id, sorbate_ptr->avgN          );
-			printf( "             Sorbed_Mass(%s)= %lf g/mol\n",  sorbate_ptr->id, sorbate_ptr->sorbed_mass   );
-			printf( "             density(%s)= %E g/cm^3\n",      sorbate_ptr->id, sorbate_ptr->density       );
-			printf( "             pore_density(%s)= %E g/cm^3\n", sorbate_ptr->id, sorbate_ptr->pore_density  );
-			printf( "             excess_ratio(%s)= %E g/cm^3\n", sorbate_ptr->id, sorbate_ptr->excess_ratio  );
-			printf( "             wt_%%(%s)= %lf %%\n",           sorbate_ptr->id, sorbate_ptr->percent_wt    );
-			printf( "             wt_%%_(ME)(%s)= %lf %%\n",      sorbate_ptr->id, sorbate_ptr->percent_wt_me );
-			printf( "             Selectivity(%s)= %lf\n",        sorbate_ptr->id, sorbate_ptr->selectivity   );
+			printf( "OUTPUT: Stats for %s\n", sorbate_ptr->id);
+			printf( "             Average_N(%s)= %.3lf +- %.3lf\n", 
+				sorbate_ptr->id, sorbate_ptr->avgN, sorbate_ptr->avgNerr);
+			printf( "             Sorbed_Mass(%s)= %.3lf +- %.3lf g/mol\n",
+				sorbate_ptr->id, sorbate_ptr->avgN*sorbate_ptr->mass, sorbate_ptr->avgNerr*sorbate_ptr->mass);
+			printf( "             density(%s)= %.3le +- %.3le g/cm^3\n",
+				sorbate_ptr->id, sorbate_ptr->density, sorbate_ptr->density_err);
+			if ( system->observables->frozen_mass > 0 ) {
+				printf( "             pore_density(%s)= %.3le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->pore_density  );
+				printf( "             excess_ratio(%s)= %.3le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->excess_ratio  );
+				printf( "             wt_%%(%s)= %.3lf %%\n",          sorbate_ptr->id, sorbate_ptr->percent_wt    );
+			}
+			printf( "             Selectivity(%s)= %.4lf +- %.4lf\n", 
+				sorbate_ptr->id, sorbate_ptr->selectivity, sorbate_ptr->selectivity_err);
 		}
 	}
 	

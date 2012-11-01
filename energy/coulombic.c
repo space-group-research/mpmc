@@ -308,7 +308,7 @@ double coulombic_wolf ( system_t * system ) {
 									
 						// get feynman-hibbs contribution
 						if(system->feynman_hibbs) {
-							fprintf(stderr,"sorry, never bothered writing FH for es_wolf :-(\n");
+							error("COULOMBIC: FH + es_wolf is not implemented\n");
 							exit(-1);
 						} // FH
 					}  // r<cutoff

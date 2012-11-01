@@ -122,11 +122,12 @@ struct particle_t *initialize_system(int trotter) {
 	struct particle_t *particle_array = NULL;	/* particle array pointer */
 	struct bead_t *current_bead_ptr;		/* current working bead pointer */
 	double random_theta, random_phi;		/* random angles */
+	char linebuf[MAXLINE];
 
 	/* allocate the particle array */
 	particle_array = calloc(sizeof(struct particle_t), 1);		/* a single particle */
 	if(!particle_array) {
-		fprintf(stderr, "initialize_system: couldn't allocate particle array\n");
+		error("initialize_system: couldn't allocate particle array\n");
 		return(NULL);
 	}
 	particle_array[0].mass = ELECTRON_MASS;					/* set the particle mass */
@@ -136,7 +137,7 @@ struct particle_t *initialize_system(int trotter) {
 	particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1);	/* start with the first one */
 	current_bead_ptr = particle_array[0].bead_list;
 	if(!current_bead_ptr) {
-		fprintf(stderr, "initialize_system: couldn't allocate first bead element\n");
+		error("initialize_system: couldn't allocate first bead element\n");
 		return(NULL);
 	}
 	current_bead_ptr->x = BOHR_RADIUS;
@@ -146,7 +147,8 @@ struct particle_t *initialize_system(int trotter) {
 		current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
 		current_bead_ptr = current_bead_ptr->next;
 		if(!current_bead_ptr) {
-			fprintf(stderr, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+			sprintf(linebuf, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+			error(linebuf);
 			return(NULL);
 		}
 		current_bead_ptr->x = BOHR_RADIUS;
@@ -160,20 +162,21 @@ struct particle_t *initialize_system(int trotter) {
 	/* setup the space for saving/restoring the system state */
 	saved_particle_array = calloc(sizeof(struct particle_t), 1);
 	if(!saved_particle_array) {
-		fprintf(stderr, "initialize_system: couldn't allocate saved particle array\n");
+		error( "initialize_system: couldn't allocate saved particle array\n");
 		return(NULL);
 	}
 	saved_particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1);
 	current_bead_ptr = saved_particle_array[0].bead_list;
 	if(!current_bead_ptr) {
-		fprintf(stderr, "initialize_system: couldn't allocate first saved bead element\n");
+		error("initialize_system: couldn't allocate first saved bead element\n");
 		return(NULL);
 	}
 	for(i = 0; i < (trotter - 1); i++) {
 		current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
 		current_bead_ptr = current_bead_ptr->next;
 		if(!current_bead_ptr) {
-			fprintf(stderr, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+			sprintf(linebuf, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+			error(linebuf);
 			return(NULL);
 		}
 	}
@@ -359,13 +362,13 @@ int do_pimc(struct particle_t *particle_array, double Z, double temperature, dou
 	struct bead_t *cur_ptr;					/* used for radius calculation */
 
 	if(!particle_array || (num_steps <= 0)) {
-		fprintf(stderr, "do_pimc: invalid input parameters passed\n");
+		error( "do_pimc: invalid input parameters passed\n");
 		return(-1);
 	}
 
 	/* set the temperature */
 	if(temperature < 0.0) {
-		fprintf(stderr, "do_pimc: invalid temperature specified\n");
+		error("do_pimc: invalid temperature specified\n");
 		return(-1);
 	}
 
@@ -500,13 +503,16 @@ void free_particle(struct particle_t *particle_array) {
 /* provide usage information for the user */
 void usage(char *progname) {
 
-	fprintf(stderr, "usage: %s <Z> <trot> <temp> <scale> <steps> <corr>\n", progname);
-	fprintf(stderr, "\t<Z>\t\t\t = atomic number\n");
-	fprintf(stderr, "\t<trot>\t\t\t = Trotter number of beads\n");
-	fprintf(stderr, "\t<temp>\t\t\t = temperature of the system (K)\n");
-	fprintf(stderr, "\t<scale>\t\t\t = bead move scaling parameter\n");
-	fprintf(stderr, "\t<steps>\t\t\t = number of MC steps to perform\n");
-	fprintf(stderr, "\t<corr>\t\t\t = interval of configuration sampling\n\n");
+	char linebuf[MAXLINE];
+
+	sprintf(linebuf, "usage: %s <Z> <trot> <temp> <scale> <steps> <corr>\n", progname);
+	error(linebuf);
+	error("\t<Z>\t\t\t = atomic number\n");
+	error("\t<trot>\t\t\t = Trotter number of beads\n");
+	error("\t<temp>\t\t\t = temperature of the system (K)\n");
+	error("\t<scale>\t\t\t = bead move scaling parameter\n");
+	error("\t<steps>\t\t\t = number of MC steps to perform\n");
+	error("\t<corr>\t\t\t = interval of configuration sampling\n\n");
 	exit(1);
 }
 
@@ -519,6 +525,7 @@ int main(int argc, char **argv) {
 	double scale;				/* amount to scale the bead moves by */
 	struct particle_t *particle_array;	/* particle array, currently just a single particle */
 	double Z;				/* atomic number */
+	char linebuf[MAXLINE];
 
 	/* read cmd line args */
 	if(argc != 7)
@@ -532,54 +539,62 @@ int main(int argc, char **argv) {
 	/* get the atomic number */
 	Z = atof(argv[1]);
 	if(Z < 0) {
-		fprintf(stderr, "%s: ERROR: invalid Z specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid Z specified\n", argv[0]);
+		error(linebuf);
 		usage(argv[0]);
 	}
 
 	/* get the Trotter number */
 	trotter = atoi(argv[2]);
 	if(trotter < 0) {
-		fprintf(stderr, "%s: ERROR: invalid Trotter number specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid Trotter number specified\n", argv[0]);
+		error(linebuf);
 		usage(argv[0]);
 	}
 
 	/* get the temperature */
 	temperature = atof(argv[3]);
 	if(temperature < 0.0) {
-		fprintf(stderr, "%s: ERROR: invalid temperature specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid temperature specified\n", argv[0]);
+		error(linebuf);
 		usage(argv[0]);
 	}
 
 	/* get the amount to scale the beads by */
 	scale = atof(argv[4]);
 	if(scale <= 0.0) {
-		fprintf(stderr, "%s: ERROR: invalid bead scaling specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid bead scaling specified\n", argv[0]);
+		error(linebuf);
 		exit(1);
 	}
 
 	/* get the number of MC steps to perform */
 	num_steps = atoi(argv[5]);
 	if(num_steps <= 0) {
-		fprintf(stderr, "%s: ERROR: invalid number of MC steps specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid number of MC steps specified\n", argv[0]);
+		error(linebuf);
 		exit(1);
 	}
 
 	/* get the correlation interval for sampling */
 	corr_time = atoi(argv[6]);
 	if(corr_time <= 0) {
-		fprintf(stderr, "%s: ERROR: invalid correlation time specified\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: invalid correlation time specified\n", argv[0]);
+		error(linebuf);
 		exit(1);
 	}
 
 	particle_array = initialize_system(trotter);
 	if(!particle_array) {
-		fprintf(stderr, "%s: ERROR: couldn't initialize the system\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: couldn't initialize the system\n", argv[0]);
+		error(linebuf);
 		exit(1);
 	}
 
 	/* start the path integral monte carlo */
 	if(do_pimc(particle_array, Z, temperature, scale, num_steps, corr_time) < 0) {
-		fprintf(stderr, "%s: ERROR: path integral MC loop died\n", argv[0]);
+		sprintf(linebuf, "%s: ERROR: path integral MC loop died\n", argv[0]);
+		error(linebuf);
 		exit(1);
 	}
 

@@ -461,364 +461,159 @@ void make_move(system_t *system) {
 		system->checkpoint->biased_move = 0;
 	}
 
-	if(system->checkpoint->movetype == MOVETYPE_INSERT) {	/* insert a molecule at a random position and orientation */
+	switch ( system->checkpoint->movetype ) {
 
-		/* umbrella sampling */
-		if(system->cavity_bias && system->cavities_open) {
+		case MOVETYPE_INSERT :  /* insert a molecule at a random pos and orientation */
+			/* umbrella sampling */
+			if(system->cavity_bias && system->cavities_open) {
+				/* doing a biased move - this flag lets mc.c know about it */
+				system->checkpoint->biased_move = 1;
+				/* make an array of possible insertion points */
+				cavities_array = calloc(system->cavities_open, sizeof(cavity_t));
+				memnullcheck(cavities_array,system->cavities_open*sizeof(cavity_t),__LINE__-1, __FILE__);
+				for(i = 0, cavities_array_counter = 0; i < system->cavity_grid_size; i++) {
+					for(j = 0; j < system->cavity_grid_size; j++) {
+						for(k = 0; k < system->cavity_grid_size; k++) {
+							if(!system->cavity_grid[i][j][k].occupancy) {
+								for(p = 0; p < 3; p++)
+									cavities_array[cavities_array_counter].pos[p] = system->cavity_grid[i][j][k].pos[p];
+								++cavities_array_counter;
+							}
+						} /* end k */
+					} /* end j */
+				} /* end i */
+				/* insert randomly at one of the free cavity points */
+				random_index = (system->cavities_open - 1) - (int)rint(((double)(system->cavities_open - 1))*get_rand());
+				for(p = 0; p < 3; p++)
+					com[p] = cavities_array[random_index].pos[p];
+				/* free the insertion array */
+				free(cavities_array);
+			} // end umbrella
 
-			/* doing a biased move - this flag lets mc.c know about it */
-			system->checkpoint->biased_move = 1;
-
-			/* make an array of possible insertion points */
-			cavities_array = calloc(system->cavities_open, sizeof(cavity_t));
-			memnullcheck(cavities_array,system->cavities_open*sizeof(cavity_t),__LINE__-1, __FILE__);
-			for(i = 0, cavities_array_counter = 0; i < system->cavity_grid_size; i++) {
-				for(j = 0; j < system->cavity_grid_size; j++) {
-					for(k = 0; k < system->cavity_grid_size; k++) {
-
-						if(!system->cavity_grid[i][j][k].occupancy) {
-
-							for(p = 0; p < 3; p++)
-								cavities_array[cavities_array_counter].pos[p] = system->cavity_grid[i][j][k].pos[p];
-
-							++cavities_array_counter;
-						}
-
-
-					} /* end k */
-				} /* end j */
-			} /* end i */
-
-
-			/* insert randomly at one of the free cavity points */
-			random_index = (system->cavities_open - 1) - (int)rint(((double)(system->cavities_open - 1))*get_rand());
-			for(p = 0; p < 3; p++)
-				com[p] = cavities_array[random_index].pos[p];
-
-			/* free the insertion array */
-			free(cavities_array);
-
-		} else {
-
-			/* insert the molecule to a random location within the unit cell */
-			for(p = 0; p < 3; p++)
-				rand[p] = 0.5 - get_rand();
-
-			for(p = 0; p < 3; p++)
-				for(q = 0, com[p] = 0; q < 3; q++)
-					com[p] += system->pbc->basis[p][q]*rand[q];
-
-		}
-
-		/* process the inserted molecule */
-		for(atom_ptr = system->checkpoint->molecule_backup->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-
-			/* move the molecule back to the origin and then assign it to com */
-			for(p = 0; p < 3; p++)
-				atom_ptr->pos[p] += com[p] - system->checkpoint->molecule_backup->com[p];
-
-		}
-
-		/* update the molecular com */
-		for(p = 0; p < 3; p++)
-			system->checkpoint->molecule_backup->com[p] = com[p];
-
-		/* give it a random orientation */
-		rotate(system->checkpoint->molecule_backup, system->pbc, 1.0);
-
-
-		// insert into the list 
-		
-		if( system->num_insertion_molecules ) {
-
-			// If inserting a molecule from an insertion list, we will always insert at the end
-			system->checkpoint->head->next = system->checkpoint->molecule_backup;
-			system->checkpoint->molecule_backup->next = NULL;
-			
-		} else {
-
-			if(!system->checkpoint->head) {      // if we're at the start of the list:
-				system->molecules = system->checkpoint->molecule_backup;		
-			} else {
-				system->checkpoint->head->next = system->checkpoint->molecule_backup;
+			else {
+				/* insert the molecule to a random location within the unit cell */
+				for(p = 0; p < 3; p++)
+					rand[p] = 0.5 - get_rand();
+				for(p = 0; p < 3; p++)
+					for(q = 0, com[p] = 0; q < 3; q++)
+						com[p] += system->pbc->basis[p][q]*rand[q];
 			}
-			system->checkpoint->molecule_backup->next = system->checkpoint->molecule_altered;
-		}
 
-	
-		/* set new altered and tail to reflect the insertion */
-		system->checkpoint->molecule_altered = system->checkpoint->molecule_backup;
-		system->checkpoint->tail = system->checkpoint->molecule_altered->next;
-		system->checkpoint->molecule_backup = NULL;
-		if( system->num_insertion_molecules ) {
-			// Free all pair memory in the list
-			for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
-				for( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-					pair_ptr = atom_ptr->pairs;
-					while( pair_ptr ) {
-						pair_t *temp = pair_ptr;
-						pair_ptr = pair_ptr->next;
-						free( temp );
+			/* process the inserted molecule */
+			for(atom_ptr = system->checkpoint->molecule_backup->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+				/* move the molecule back to the origin and then assign it to com */
+				for(p = 0; p < 3; p++)
+					atom_ptr->pos[p] += com[p] - system->checkpoint->molecule_backup->com[p];
+			}
+
+			/* update the molecular com */
+			for(p = 0; p < 3; p++)
+				system->checkpoint->molecule_backup->com[p] = com[p];
+			/* give it a random orientation */
+			rotate(system->checkpoint->molecule_backup, system->pbc, 1.0);
+
+			// insert into the list 
+			if( system->num_insertion_molecules ) {
+				// If inserting a molecule from an insertion list, we will always insert at the end
+				system->checkpoint->head->next = system->checkpoint->molecule_backup;
+				system->checkpoint->molecule_backup->next = NULL;
+			} else {
+				if(!system->checkpoint->head) {      // if we're at the start of the list:
+					system->molecules = system->checkpoint->molecule_backup;		
+				} else {
+					system->checkpoint->head->next = system->checkpoint->molecule_backup;
+				}
+				system->checkpoint->molecule_backup->next = system->checkpoint->molecule_altered;
+			}
+
+			/* set new altered and tail to reflect the insertion */
+			system->checkpoint->molecule_altered = system->checkpoint->molecule_backup;
+			system->checkpoint->tail = system->checkpoint->molecule_altered->next;
+			system->checkpoint->molecule_backup = NULL;
+
+			if( system->num_insertion_molecules ) { //multi sorbate
+				// Free all pair memory in the list
+				for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
+					for( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
+						pair_ptr = atom_ptr->pairs;
+						while( pair_ptr ) {
+							pair_t *temp = pair_ptr;
+							pair_ptr = pair_ptr->next;
+							free( temp );
+						}
 					}
 				}
+				// Generate new pairs lists for all atoms in system
+				setup_pairs( system );
+			} // only one sorbate
+			else		
+				update_pairs_insert(system);
+
+		break;
+		case MOVETYPE_REMOVE : /* remove a randomly chosen molecule */
+	
+			if(system->cavity_bias) {
+				if(get_rand() < pow((1.0 - system->avg_observables->cavity_bias_probability), 
+					((double)system->cavity_grid_size*system->cavity_grid_size*system->cavity_grid_size)))
+					system->checkpoint->biased_move = 0;
+				else
+					system->checkpoint->biased_move = 1;
 			}
-			// Generate new pairs lists for all atoms in system
-			setup_pairs( system );
-		}
-		else		
-			update_pairs_insert(system);
+	
+			/* remove 'altered' from the list */
+			if(!system->checkpoint->head) {	/* handle the case where we're removing from the start of the list */
+				system->checkpoint->molecule_altered = system->molecules;
+				system->molecules = system->molecules->next;
+			} else {
+				system->checkpoint->head->next = system->checkpoint->tail;
+			}
+			free_molecule(system, system->checkpoint->molecule_altered);
+			update_pairs_remove(system);
 
-
-	} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {	/* remove a randomly chosen molecule */
-
-		if(system->cavity_bias) {
-
-			if(get_rand() < pow((1.0 - system->avg_observables->cavity_bias_probability), ((double)system->cavity_grid_size*system->cavity_grid_size*system->cavity_grid_size)))
-				system->checkpoint->biased_move = 0;
-			else
-				system->checkpoint->biased_move = 1;
-
-		}
-
-		/* remove 'altered' from the list */
-		if(!system->checkpoint->head) {	/* handle the case where we're removing from the start of the list */
-			system->checkpoint->molecule_altered = system->molecules;
-			system->molecules = system->molecules->next;
-		} else {
-			system->checkpoint->head->next = system->checkpoint->tail;
-		}
-		free_molecule(system, system->checkpoint->molecule_altered);
-		update_pairs_remove(system);
-
-	} else if(system->checkpoint->movetype == MOVETYPE_DISPLACE) {
-
-		/* change coords of 'altered' */
-		if(system->rd_anharmonic)
-			displace_1D(system, system->checkpoint->molecule_altered, system->move_probability);
-		else if(system->spectre)
-			spectre_displace(system, system->checkpoint->molecule_altered, system->move_probability, system->spectre_max_charge, system->spectre_max_target);
-		else if(system->gwp) {
-
-			if(system->checkpoint->molecule_altered->atoms->gwp_spin) {
-				displace(system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_probability);
-				displace_gwp(system->checkpoint->molecule_altered, system->gwp_probability);
+		break;
+		case MOVETYPE_DISPLACE :	
+	
+			/* change coords of 'altered' */
+			if(system->rd_anharmonic)
+				displace_1D(system, system->checkpoint->molecule_altered, system->move_probability);
+			else if(system->spectre)
+				spectre_displace(system, system->checkpoint->molecule_altered, system->move_probability, 
+					system->spectre_max_charge, system->spectre_max_target);
+			else if(system->gwp) {
+				if(system->checkpoint->molecule_altered->atoms->gwp_spin) {
+					displace(system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_probability);
+					displace_gwp(system->checkpoint->molecule_altered, system->gwp_probability);
+				} else
+					displace(system->checkpoint->molecule_altered, system->pbc, system->move_probability, system->rot_probability);
 			} else
 				displace(system->checkpoint->molecule_altered, system->pbc, system->move_probability, system->rot_probability);
 
-		} else
-			displace(system->checkpoint->molecule_altered, system->pbc, system->move_probability, system->rot_probability);
-
-
-
-	} else if(system->checkpoint->movetype == MOVETYPE_ADIABATIC) {
-
-		/* change coords of 'altered' */
-		displace(system->checkpoint->molecule_altered, system->pbc, system->adiabatic_probability, 1.0);
-
-	} else if(system->checkpoint->movetype == MOVETYPE_SPINFLIP) {
-
-		/* XXX - should have separate function do spinfip move */
-		if(system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA)
-			system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_ORTHO;
-		else
-			system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_PARA;
-
-	} else if (system->checkpoint->movetype == MOVETYPE_VOLUME)
-		volume_change(system); // I don't want to contribute to the god damned mess -- kmclaugh
-
-}
-
-/* this function (a) determines what move will be made next time make_move() is called and (b) backups up the state to be restore upon rejection */
-void checkpoint(system_t *system) {
-
-	int i_exchange, i_adiabatic;
-	int num_molecules_exchange, num_molecules_adiabatic, altered;
-	double num_molecules_exchange_double, num_molecules_adiabatic_double;
-	molecule_t **ptr_array_exchange, **ptr_array_adiabatic;
-	molecule_t *molecule_ptr, *prev_molecule_ptr;
-
-	/* save the current observables */
-	memcpy(system->checkpoint->observables, system->observables, sizeof(observables_t));
-
-	/* count exchangeable and adiabatic molecules */
-	num_molecules_exchange  = 0;
-	num_molecules_adiabatic = 0;
-	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic || molecule_ptr->target)) 
-			++num_molecules_exchange;
-		if(molecule_ptr->adiabatic) 
-			++num_molecules_adiabatic;
-	}
-
-
-	/* go thru again, make an array of all eligible molecules */
-	ptr_array_exchange  = calloc(num_molecules_exchange,  sizeof(molecule_t *));
-	memnullcheck(ptr_array_exchange,num_molecules_exchange*sizeof(molecule_t *),__LINE__-1, __FILE__);
-	ptr_array_adiabatic = calloc(num_molecules_adiabatic, sizeof(molecule_t *));
-	memnullcheck(ptr_array_adiabatic,num_molecules_adiabatic*sizeof(molecule_t *), __LINE__-1, __FILE__);
-	for(molecule_ptr = system->molecules, i_exchange = 0, i_adiabatic = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
-		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic || molecule_ptr->target)) {
-			ptr_array_exchange[i_exchange] = molecule_ptr;
-			++i_exchange;
-		}
-
-		if(molecule_ptr->adiabatic) {
-			ptr_array_adiabatic[i_adiabatic] = molecule_ptr;
-			++i_adiabatic;
-		}
-	}
-
-
-	/* determine what kind of move to do */
-	if(system->ensemble == ENSEMBLE_UVT) {	/* UVT */
-
-		if(get_rand() < system->insert_probability) {	/* do a particle insertion/deletion move */
-
-			if(get_rand() < 0.5) {	/* INSERT */
-				system->checkpoint->movetype = MOVETYPE_INSERT;
-			} else {		/* REMOVE */
-				system->checkpoint->movetype = MOVETYPE_REMOVE;
-			}
-
-		} else if(system->quantum_rotation) {
-
-			if(get_rand() < system->spinflip_probability)			/* SPINFLIP */
-				system->checkpoint->movetype = MOVETYPE_SPINFLIP;
-			else {
-				if(num_molecules_adiabatic && (get_rand() < 0.5))	/* DISPLACE */
-					system->checkpoint->movetype = MOVETYPE_ADIABATIC;	/* for the adiabatic mole fraction */
-				else
-					system->checkpoint->movetype = MOVETYPE_DISPLACE;
-			}
-
-		} else { /* DISPLACE */
-			if(num_molecules_adiabatic && (get_rand() < 0.5))	/* DISPLACE */
-				system->checkpoint->movetype = MOVETYPE_ADIABATIC;	/* for the adiabatic mole fraction */
+		break;
+		case MOVETYPE_ADIABATIC :
+			/* change coords of 'altered' */
+			displace(system->checkpoint->molecule_altered, system->pbc, system->adiabatic_probability, 1.0);
+	
+		break;
+		case MOVETYPE_SPINFLIP :
+	
+			/* XXX - should have separate function do spinfip move */
+			if(system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA)
+				system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_ORTHO;
 			else
-				system->checkpoint->movetype = MOVETYPE_DISPLACE;
-		}
+				system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_PARA;
+	
+		break;
+		case MOVETYPE_VOLUME :
+	
+			volume_change(system); // I don't want to contribute to the god damned mess -- kmclaugh
 
-	} else if((system->ensemble == ENSEMBLE_NVT) || (system->ensemble == ENSEMBLE_NVE)){
-
-		if(system->quantum_rotation && (get_rand() < system->spinflip_probability))
-			system->checkpoint->movetype = MOVETYPE_SPINFLIP;
-		else
-			system->checkpoint->movetype = MOVETYPE_DISPLACE;
-
-	} else if( system->ensemble == ENSEMBLE_NPT ) {
-
-		if ( system->volume_probability == 0.0 ) { //if volume probability isn't set, then do volume moves with prob = 1/nmolecules
-			if ( get_rand() < 1.0 / system->observables->N ) system->checkpoint->movetype = MOVETYPE_VOLUME;
-				else system->checkpoint->movetype = MOVETYPE_DISPLACE;
-		}
-		else { //if volume probability IS set
-			if ( get_rand() < system->volume_probability ) system->checkpoint->movetype = MOVETYPE_VOLUME;
-				else system->checkpoint->movetype = MOVETYPE_DISPLACE;
-		}
-	}
-			
-	/* if we have any adiabatic molecules, then we have to do some special stuff */
-        /* randomly pick a (moveable) atom */
-	if(system->checkpoint->movetype == MOVETYPE_ADIABATIC) {
-
-		--num_molecules_adiabatic;
-		num_molecules_adiabatic_double = (double)num_molecules_adiabatic;
-		altered = num_molecules_adiabatic - (int)rint(num_molecules_adiabatic_double*get_rand());
-		system->checkpoint->molecule_altered = ptr_array_adiabatic[altered];
-
-	} else {
-		
-		if( system->num_insertion_molecules && system->checkpoint->movetype == MOVETYPE_INSERT ) {
-			// If the move is an insertion and a molecule insertion list
-			// has been set up, then select a molecule from said list:
-
-                        // Molecule is selected by a call to rand(), modded by the number of insertion molecules
-                        // from which to select. To avoid biasing in the form of low numbered molecules having a
-                        // VERY slightly greater chance of being picked due to them being repeated at most 1 extra
-                        // time in the list of possible number selections in the (repeating) number list formed by:
-                        //
-                        // [0..RAND_MAX] % nInsertionMolecules
-                        //
-                        // We will disregard any random numbers that are selected that fall in the top end of said 
-                        // list. For instance, if RAND_MAX is 10, and our number of insertion molecules is 4, our
-                        // list of possible random numbers will range from 0%4 to 10%4 :
-                        // rand() returns:      0  1  2  3  4  5  6  7  8  9  10  
-                        // rand() result % 4:   0  1  2  3  0  1  2  3  0  1   2
-                        //
-                        // You can see the odds of selecting 0, 1 or 2 is 3/11, whereas the odds of selecting 3 is
-                        // 2/11. By discarding any rand() result greater than 
-                        //
-                        // RAND_MAX - ((RAND_MAX%nInsertionMolecules) + 1) 
-                        //
-                 	// (in this example, 7) the bias is eliminated. This may needlessly subtract a number from 
-                        // RAND_MAX that is an even multiple of nInsertionMolecules, but to save a clock cycle or two 
-                        // (in the most common case), no check is made for this situation.
- 
-                        long int My_MaxRand = RAND_MAX - ((RAND_MAX % system->num_insertion_molecules) + 1);
-                        long int My_Rand = rand();
-                        while( My_Rand > My_MaxRand )
-                                My_Rand = rand();
-
-                        int    alt = My_Rand % system->num_insertion_molecules;
-                        system->checkpoint->molecule_altered = system->insertion_molecules_array[ alt ];
-												//needed to calculate boltzmann factor
-												system->sorbateInsert = alt;
- 
-		} else {
-			// Otherwise, perform the original MPMC treatment:
-			--num_molecules_exchange;
-			num_molecules_exchange_double = (double)num_molecules_exchange;
-			altered = num_molecules_exchange - (int)rint(num_molecules_exchange_double*get_rand());
-			system->checkpoint->molecule_altered = ptr_array_exchange[altered];
-		}
-
+		break;
+		default:
+			error("MC_MOVES: invaid mc move\n");
+			exit(-1);
 	}
 
-	/* free our temporary eligibility lists */
-	free(ptr_array_exchange);
-	if(ptr_array_adiabatic) free(ptr_array_adiabatic);
-
-	/* never completely empty the list */
-	if(!num_molecules_exchange && system->checkpoint->movetype == MOVETYPE_REMOVE) {
-		if(system->quantum_rotation && (get_rand() < system->spinflip_probability))
-			system->checkpoint->movetype = MOVETYPE_SPINFLIP;
-		else
-			system->checkpoint->movetype = MOVETYPE_DISPLACE;
-	}
-
-	// Determine the head and tail of the selected molecule
-	if( system->num_insertion_molecules && system->checkpoint->movetype == MOVETYPE_INSERT ) {
-
-		// When using an insertion list, we will always insert at the end of the list.
-		
-		// Advance to the end of the list
-		molecule_ptr = system->molecules;
-		while( molecule_ptr->next )
-			molecule_ptr = molecule_ptr->next; 
-
-		// Set head to the last molecule in the list, tail to the list terminator.
-		system->checkpoint->head = molecule_ptr;
-		system->checkpoint->tail = NULL;
-
-	} else {
-		// If this is not a insertion using an insertion list, perform the original MPMC treatment:
-		for(molecule_ptr = system->molecules, prev_molecule_ptr = NULL; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
-			if(molecule_ptr == system->checkpoint->molecule_altered) {
-				system->checkpoint->head = prev_molecule_ptr;
-				system->checkpoint->tail = molecule_ptr->next;
-			}
-			prev_molecule_ptr = molecule_ptr;
-		}
-	}
-
-
-	/* if we have a molecule already backed up (from a previous accept), go ahead and free it */
-	if(system->checkpoint->molecule_backup) free_molecule(system, system->checkpoint->molecule_backup);
-	/* backup the state that will be altered */
-	system->checkpoint->molecule_backup = copy_molecule(system, system->checkpoint->molecule_altered);
-
+	return;
 }
 
 /* this function (a) undoes what make_move() did and (b) determines the next move sequence by calling checkpoint() */
@@ -828,55 +623,61 @@ void restore(system_t *system) {
 	atom_t *atom_ptr;
 	pair_t *prev_pair_ptr, *pair_ptr;
 
-
 	/* restore the remaining observables */
 	memcpy(system->observables, system->checkpoint->observables, sizeof(observables_t));
 
 	/* restore state by undoing the steps of make_move() */
-	if(system->checkpoint->movetype == MOVETYPE_INSERT) {
+	switch ( system->checkpoint->movetype ) {
 
-		/* take altered out of the list */
-		if(!system->checkpoint->head) {	/* handle the case where we inserted at the head of the list */
-			system->molecules = system->molecules->next;
-		} else {
-			system->checkpoint->head->next = system->checkpoint->tail;
-		}
-		unupdate_pairs_insert(system);
-		free_molecule(system, system->checkpoint->molecule_altered);
+		case MOVETYPE_INSERT : 
+	
+			/* take altered out of the list */
+			if(!system->checkpoint->head) {	/* handle the case where we inserted at the head of the list */
+				system->molecules = system->molecules->next;
+			} else {
+				system->checkpoint->head->next = system->checkpoint->tail;
+			}
+			unupdate_pairs_insert(system);
+			free_molecule(system, system->checkpoint->molecule_altered);
 
-	} else if(system->checkpoint->movetype == MOVETYPE_REMOVE) {
+		break;
+		case MOVETYPE_REMOVE :
+	
+			/* put backup back into the list */
+			if(!system->checkpoint->head) {
+				system->molecules = system->checkpoint->molecule_backup;
+			} else {
+				system->checkpoint->head->next = system->checkpoint->molecule_backup;
+			}
+			system->checkpoint->molecule_backup->next = system->checkpoint->tail;
+			unupdate_pairs_remove(system);
+			system->checkpoint->molecule_backup = NULL;
 
-		/* put backup back into the list */
-		if(!system->checkpoint->head) {
-			system->molecules = system->checkpoint->molecule_backup;
-		} else {
-			system->checkpoint->head->next = system->checkpoint->molecule_backup;
-		}
-		system->checkpoint->molecule_backup->next = system->checkpoint->tail;
-		unupdate_pairs_remove(system);
-		system->checkpoint->molecule_backup = NULL;
+		break;
+		case MOVETYPE_VOLUME :
+	
+			revert_volume_change(system);
 
-	} else if((system->checkpoint->movetype == MOVETYPE_DISPLACE) || (system->checkpoint->movetype == MOVETYPE_ADIABATIC) || (system->checkpoint->movetype == MOVETYPE_SPINFLIP)) {
+		break;
+		default :
 
-		/* link the backup into the working list again */
-		if(!system->checkpoint->head)
-			system->molecules = system->checkpoint->molecule_backup;
-		else
-			system->checkpoint->head->next = system->checkpoint->molecule_backup;
-		system->checkpoint->molecule_backup->next = system->checkpoint->tail;
-		free_molecule(system, system->checkpoint->molecule_altered);
-		system->checkpoint->molecule_backup = NULL;
+			/* link the backup into the working list again */
+			if(!system->checkpoint->head)
+				system->molecules = system->checkpoint->molecule_backup;
+			else
+				system->checkpoint->head->next = system->checkpoint->molecule_backup;
+			system->checkpoint->molecule_backup->next = system->checkpoint->tail;
+			free_molecule(system, system->checkpoint->molecule_altered);
+			system->checkpoint->molecule_backup = NULL;
 
-
-	} else if ( system->checkpoint->movetype == MOVETYPE_VOLUME ) {
-		revert_volume_change(system);
-	}
-
+	}	
+	
 	/* renormalize charges */
 	if(system->spectre) spectre_charge_renormalize(system);
 
 	/* establish the previous checkpoint again */
 	checkpoint(system);
 
+	return;
 }
 

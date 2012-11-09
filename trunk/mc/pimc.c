@@ -513,7 +513,7 @@ void usage(char *progname) {
 	error("\t<scale>\t\t\t = bead move scaling parameter\n");
 	error("\t<steps>\t\t\t = number of MC steps to perform\n");
 	error("\t<corr>\t\t\t = interval of configuration sampling\n\n");
-	exit(1);
+	die(1);
 }
 
 int main(int argc, char **argv) {
@@ -565,7 +565,7 @@ int main(int argc, char **argv) {
 	if(scale <= 0.0) {
 		sprintf(linebuf, "%s: ERROR: invalid bead scaling specified\n", argv[0]);
 		error(linebuf);
-		exit(1);
+		die(1);
 	}
 
 	/* get the number of MC steps to perform */
@@ -573,7 +573,7 @@ int main(int argc, char **argv) {
 	if(num_steps <= 0) {
 		sprintf(linebuf, "%s: ERROR: invalid number of MC steps specified\n", argv[0]);
 		error(linebuf);
-		exit(1);
+		die(1);
 	}
 
 	/* get the correlation interval for sampling */
@@ -581,25 +581,25 @@ int main(int argc, char **argv) {
 	if(corr_time <= 0) {
 		sprintf(linebuf, "%s: ERROR: invalid correlation time specified\n", argv[0]);
 		error(linebuf);
-		exit(1);
+		die(1);
 	}
 
 	particle_array = initialize_system(trotter);
 	if(!particle_array) {
 		sprintf(linebuf, "%s: ERROR: couldn't initialize the system\n", argv[0]);
 		error(linebuf);
-		exit(1);
+		die(1);
 	}
 
 	/* start the path integral monte carlo */
 	if(do_pimc(particle_array, Z, temperature, scale, num_steps, corr_time) < 0) {
 		sprintf(linebuf, "%s: ERROR: path integral MC loop died\n", argv[0]);
 		error(linebuf);
-		exit(1);
+		die(1);
 	}
 
 	free_particle(particle_array);
-	exit(0);
+	die(0);
 
 }
 

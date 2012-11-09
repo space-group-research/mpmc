@@ -141,7 +141,7 @@ double energy(system_t *system) {
 #ifdef CUDA
 			if (system->cuda) {
 				error("error: cuda polarvdw not yet implemented!\n");
-				exit(-1);
+				die(-1);
 			}
 			else
 			vdw_energy = vdw(system);

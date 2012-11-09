@@ -51,7 +51,7 @@ int memnullcheck ( void * ptr, int size, int line, char *file ) {
 		//fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
 		//fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
 
-		exit(-1);
+		die(-1);
 	}
 
 }
@@ -72,7 +72,7 @@ int filecheck ( void * ptr, char * filename, int mode ) {
 				sprintf(linebuf,"ERROR: Failed to open file %s\n", filename);
 		}
 		error(linebuf);
-		exit(-1);
+		die(-1);
 	}
 
 }

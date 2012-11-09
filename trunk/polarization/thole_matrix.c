@@ -287,7 +287,7 @@ void LU_decomp(double **a,int n,int *indx,double *d)
 /* note big cannot be zero */
     if(big == 0.0) {
 	printf("LU_decomp: matrix to invert can't be singular!\n");
-	exit(0);
+	die(0);
     }
     vv[i]=1.0/big;
   }

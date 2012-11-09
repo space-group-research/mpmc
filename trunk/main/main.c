@@ -11,17 +11,18 @@ int rank, size;
 
 #include <mc.h>
 
+//kill MPI before quitting, when neccessary
+void die( int code ){
+#ifdef MPI
+	MPI_Finalize();
+#endif
+	exit(code);
+}
 
 void usage(char *progname) {
 
 	if(!rank) fprintf(stderr, "usage: %s <config>\n", progname);
-
-#ifdef MPI
-	MPI_Finalize();
-#else
 	exit(1);
-#endif /* MPI */
-
 }
 
 int main(int argc, char **argv) {
@@ -39,11 +40,6 @@ int main(int argc, char **argv) {
 
 	/* check args */
 	if(argc < 2) usage(argv[0]);
-
-	if(!argv[1]) {
-		error("MAIN: invalid config file specified");
-		exit(1);
-	}
 
 	/* start up the MPI chain */
 #ifdef MPI
@@ -70,11 +66,7 @@ int main(int argc, char **argv) {
 	system = setup_system(input_file);
 	if(!system) {
 		error("MAIN: could not initialize the simulation\n");
-#ifdef MPI
-		MPI_Finalize();
-#else
-		exit(1);
-#endif /* MPI */
+		die(1);
 	} else {
 		output("MAIN: the simulation has been initialized\n");
 	}
@@ -180,11 +172,7 @@ int main(int argc, char **argv) {
 
 		if(mc(system) < 0) {
 			error("MAIN: MC failed on error, exiting\n");
-#ifdef MPI
-			MPI_Finalize();
-#else
-			exit(1);
-#endif /* MPI */
+			die(1);
 		} else {
 			if(system->ensemble == ENSEMBLE_UVT) {
 				output("MAIN: ********************************************************\n");
@@ -205,11 +193,7 @@ int main(int argc, char **argv) {
 
 		if(surface(system) < 0) {
 			error("MAIN: surface module failed on error, exiting\n");
-#ifdef MPI
-			MPI_Finalize();
-#else
-			exit(1);
-#endif /* MPI */
+			die(1);
 		} else {
 			output("MAIN: ******************************************************\n");
 			output("MAIN: *** finishing potential energy surface calculation ***\n");
@@ -220,11 +204,7 @@ int main(int argc, char **argv) {
 
 		if(surface_fit(system) < 0) {
 			error("MAIN: surface fitting module failed on error, exiting\n");
-#ifdef MPI
-			MPI_Finalize();
-#else
-			exit(1);
-#endif /* MPI */
+			die(1);
 		} else {
 			output("MAIN: **************************************************************\n");
 			output("MAIN: *** finishing potential energy surface fitting calculation ***\n");
@@ -241,11 +221,7 @@ int main(int argc, char **argv) {
 	output("...done\n");
 
 	output("MAIN: simulation exiting successfully\n\n");
-#ifdef MPI
-	MPI_Finalize();
-#else
-	exit(0);
-#endif /* MPI */
+	die(0);
 
 }
 

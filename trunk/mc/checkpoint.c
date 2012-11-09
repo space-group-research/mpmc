@@ -98,7 +98,7 @@ void checkpoint(system_t *system) {
 		break;
 		default:
 			error("CHECKPOINT: invalid ensemble\n");
-			exit(-1);
+			die(-1);
 		
 	}
 				

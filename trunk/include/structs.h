@@ -4,6 +4,14 @@ typedef struct _complex_t {
 	double imaginary;
 } complex_t;
 
+/*
+//used for calculation of ETA and sec/step
+typedef struct timeval {
+	long tv_sec; //seconds
+	long tv_usec; //microseconds
+} timeval_t;
+*/
+
 typedef struct _pair {
 	int frozen; //are they both MOF atoms, for instance
 	int rd_excluded, es_excluded;

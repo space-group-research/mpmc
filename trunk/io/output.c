@@ -516,18 +516,22 @@ void write_states(FILE *fp, system_t * system) {
 
 }
 
+double calctimediff(struct timeval a, struct timeval b) {
+	return a.tv_sec - b.tv_sec + 1.0e-6 * (a.tv_usec - b.tv_usec);
+}
+
 int write_performance(int i, system_t *system) {
 
+	static struct timeval current_time, last_time;
+
 	char linebuf[MAXLINE];
-	time_t current_time;
 	double sec_step;
-	static time_t last_time;
 	static int last_step;
 
-	current_time = time(NULL);
+	gettimeofday(&current_time,NULL);
 	if(i > system->corrtime) {
 
-		sec_step = difftime(current_time, last_time)/((double)(i - last_step));
+		sec_step = calctimediff(current_time, last_time) / ((double)(i - last_step));
 
 		if(system->ensemble == ENSEMBLE_UVT) {
 			sprintf(linebuf, "OUTPUT: Grand Canonical Monte Carlo simulation running on %d cores\n", size);
@@ -536,22 +540,22 @@ int write_performance(int i, system_t *system) {
 			sprintf(linebuf, "OUTPUT: Canonical Monte Carlo simulation running on %d cores\n", size);
 			output(linebuf);
 		}
-		float nsf = system->numsteps; /* numsteps as a float (nsf) */
-		sprintf(linebuf, "OUTPUT: Root collecting statistics at %s", ctime(&current_time));
+		sprintf(linebuf, "OUTPUT: Root collecting statistics at %s", ctime(&(current_time.tv_sec)));
 		output(linebuf);
-		sprintf(linebuf, "OUTPUT: Completed step %d/%d  (%.3f %%)\n", i, system->numsteps, (i/nsf)*100);
+		sprintf(linebuf, "OUTPUT: Completed step %d/%d  (%.3f %%)\n", i, system->numsteps, (i/(double)(system->numsteps))*100);
 		output(linebuf);
-		sprintf(linebuf, "OUTPUT: %f sec/step, ETA = %.3f hrs\n", sec_step, sec_step*(system->numsteps - i)/3600.0);
+		sprintf(linebuf, "OUTPUT: %.3lf sec/step, ETA = %.3lf hrs\n", sec_step, sec_step*(system->numsteps - i)/3600.0);
 		output(linebuf);
 		if ( system->simulated_annealing) {
 			sprintf(linebuf, "OUTPUT: Current temperature = %.5f\n", system->temperature);
 			output(linebuf);
 		}
 
-	}
+	}	
 
 	last_step = i;
-	last_time = current_time;
+	last_time.tv_sec = current_time.tv_sec;
+	last_time.tv_usec = current_time.tv_usec;
 
 	return(0);
 

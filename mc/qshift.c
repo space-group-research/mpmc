@@ -23,12 +23,12 @@ void qshift_do(
 
 	if ( FLAG==0 ) {
 		error("SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
-		exit(-1);
+		die(-1);
 	}
 	if ( xH2Qold==0 ) {
 		error( "SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0.\n");
 		error( "ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
-		exit(-1);
+		die(-1);
 	}
 
 	// use surf_scale_r and get_rand to adjust position of H2Q
@@ -62,17 +62,17 @@ double calcquadrupole ( system_t * system ) {
 			
 	if ( FLAG==0 ) {
 		error("SURFACE: QSHIFT ERROR: NOT ATOM WITH LABEL H2Q. TURN OFF QSHIFT!\n");
-		exit(-1);
+		die(-1);
 	}
 	if ( q==0 ) {
 		error("SURFACE: QSHIFT ERROR: H2Q HAS CHARGE == 0."
 				" WHAT THE HECK?\n");
-		exit(-1);
+		die(-1);
 	}
 	if ( x==0 ) {
 		error("SURFACE: QSHIFT ERROR: H2Q HAS POSITION->X == 0.");
 		error(" ALIGN YOUR LINEAR MOLECULE ALONG THE X-AXIS\n");
-		exit(-1);
+		die(-1);
 	}
 
 	return 2.0*x*x*q;

@@ -22,14 +22,6 @@ energy calculation.
 #define au2invsec 4.13412763705e16 //s^-1 a.u.^-1
 #define FINITE_DIFF 0.01 //too small -> vdw calc noises becomes a problem
 
-//kill MPI before quitting, when neccessary
-void die( int code ){
-#ifdef MPI
-	MPI_Finalize();
-#endif
-	exit(code);
-}
-
 //check that the memory is properly allocated
 void checknull ( void * ptr, char * ptr_name, int size ) {
 	char errmsg[512];

@@ -73,7 +73,7 @@ int do_command (system_t * system, char ** token ) {
 	else if (!strcasecmp(token[0],"seed")) {
 		error( "INPUT: seed is deprecated\n" );
 		error( "INPUT: use \"preset_seeds <int> <int> <int> <int>\" to *manually* seed the rng.\n" );
-		exit(-1);
+		die(-1);
 	}
 
 	//surf options
@@ -1025,7 +1025,7 @@ system_t *setup_system(char *input_file) {
 		if ( system->fugacitiesCount != system->sorbateCount ) {
 			sprintf(linebuf, "INPUT: fugacities defined do not match the number of sorbates.");
 			output(linebuf);
-			exit(-1);
+			die(-1);
 		}
 	}
 

@@ -84,6 +84,7 @@ molecule_t *read_insertion_molecules(system_t *);
 void count_sorbates( system_t * );
 
 /* main */
+void die(int);
 void usage(char *);
 double get_rand();
 void seed_rng(system_t *, int);

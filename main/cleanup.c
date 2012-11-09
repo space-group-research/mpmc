@@ -350,9 +350,8 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 			cleanup(system);
 #ifdef MPI
 			if(!rank) close_files(sys_ptr);
-			MPI_Finalize();
 #else
-			exit(1);
+			die(1);
 #endif /* MPI */
 			break;
 
@@ -362,9 +361,8 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 			cleanup(system);
 #ifdef MPI
 			if(!rank) close_files(sys_ptr);
-			MPI_Finalize();
 #else
-			exit(1);
+			die(1);
 #endif /* MPI */
 			break;
 
@@ -374,9 +372,8 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 			cleanup(system);
 #ifdef MPI
 			if(!rank) close_files(sys_ptr);
-			MPI_Finalize();
 #else
-			exit(1);
+			die(1);
 #endif /* MPI */
 			break;
 		case -1: /* install the static ptr */

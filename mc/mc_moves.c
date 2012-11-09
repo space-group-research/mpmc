@@ -610,7 +610,7 @@ void make_move(system_t *system) {
 		break;
 		default:
 			error("MC_MOVES: invaid mc move\n");
-			exit(-1);
+			die(-1);
 	}
 
 	return;

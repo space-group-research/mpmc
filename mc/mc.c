@@ -73,7 +73,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 						break;
 					default :
 						error("MC: invalid mc move (not implemented for biased moves?)\n");
-						exit(-1);
+						die(-1);
 				} //mc move switch
 			} //end biased move
 			else {
@@ -105,7 +105,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 						break;
 					default:
 						error("MC: invalid mc move (not implemented for binary mixtures?)\n");
-						exit(-1);
+						die(-1);
 				}//MC move switch
 			} //end biased or not?
 		break; //end UVT
@@ -152,7 +152,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 
 		default:
 			error("MC: invalid ensemble. aborting.\n");
-			exit(-1);
+			die(-1);
 		}	
 
 	return;

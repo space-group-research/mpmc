@@ -29,7 +29,7 @@ void check_ensemble ( system_t * system, int ensemble ) {
 			break;
 		default:
 			error("INPUT: improper ensemble specified\n");
-			exit(-1);
+			die(-1);
 	}
 	
 	return;
@@ -42,13 +42,13 @@ void ensemble_surf_fit_options ( system_t * system ) {
 
 	if( !nCurves ) {
 		error( "INPUT: There were no fit_input files specified in the main input file.\n" );
-		exit(-1);
+		die(-1);
 	}
 
 	if( nCurves < 2 ) {
 		error( "INPUT: There were less than two fit_input files specified in the main input file.\n" );
 		error( "       A minimum of two fit_input files are required for surface-fit calculations.\n" );
-		exit(-1);
+		die(-1);
 	}
 
 	return;
@@ -59,7 +59,7 @@ void ensemble_surf_options ( system_t * system ) {
 	char linebuf[MAXLINE];
 	if(system->surf_max < system->surf_min) {
 		error("INPUT: surf_max is greater than surf_min\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: minimum surface coordinate is %.3f\n", system->surf_min);
 		output(linebuf);
@@ -69,7 +69,7 @@ void ensemble_surf_options ( system_t * system ) {
 
 	if(system->surf_inc <= 0.0) {
 		error("INPUT: surf_inc is less than or equal to 0\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: incremental surface displacement coordinate is %.3f\n", system->surf_inc);
 		output(linebuf);
@@ -77,7 +77,7 @@ void ensemble_surf_options ( system_t * system ) {
 
 	if(!system->surf_preserve && (system->surf_ang <= 0.0)) {
 		error("INPUT: surf_ang is less than or equal to 0\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: incremental surface angle coordinate is %.3f\n", system->surf_ang);
 		output(linebuf);
@@ -92,7 +92,7 @@ void spectre_options (system_t * system) {
 	char linebuf[MAXLINE];
 	if(system->ensemble != ENSEMBLE_NVT) {
 		error("INPUT: SPECTRE algorithm requires canonical ensemble\n");
-		exit(-1);
+		die(-1);
 	} else {
 		output("INPUT: SPECTRE algorithm activated\n");
 		sprintf(linebuf, "INPUT: SPECTRE max charge = %.3f\n", system->spectre_max_charge);
@@ -114,7 +114,7 @@ void feynman_hibbs_options ( system_t * system ) {
 
 		if(!system->rd_anharmonic) {
 			error("INPUT: Feynman-Kleinert iteration only implemented for anharmonic oscillator\n");
-			exit(-1);
+			die(-1);
 		}
 	} 
 	else {
@@ -136,7 +136,7 @@ void feynman_hibbs_options ( system_t * system ) {
 	//if using polarvdw and FH, cavity_autoreject_absolute must be on (otherwise shit blows up)
 	if ( (system->polarvdw) && !(system->cavity_autoreject_absolute) ) {
 		error("INPUT: cavity_autoreject_absolute must be used with polarvdw + Feynman Hibbs.\n");
-		exit(-1);
+		die(-1);
 	}
 	return;
 }
@@ -147,7 +147,7 @@ void qrot_options(system_t * system) {
 	output("INPUT: Quantum rotational eigenspectrum calculation enabled\n");
 	if(system->quantum_rotation_B <= 0.0) {
 		error("INPUT: invalid quantum rotational constant B specified\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Quantum rotational constant B = %.3f K (%.3f cm^-1)\n", system->quantum_rotation_B, system->quantum_rotation_B*KB/(100.0*H*C));
 		output(linebuf);
@@ -155,7 +155,7 @@ void qrot_options(system_t * system) {
 
 	if(system->quantum_rotation_level_max <= 0) {
 		error("INPUT: invalid quantum rotation level max\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Quantum rotation level max = %d\n", system->quantum_rotation_level_max);
 		output(linebuf);
@@ -163,7 +163,7 @@ void qrot_options(system_t * system) {
 
 	if(system->quantum_rotation_l_max <= 0) {
 		error("INPUT: invalid quantum rotation l_max\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Quantum rotation l_max = %d\n", system->quantum_rotation_l_max);
 		output(linebuf);
@@ -171,12 +171,12 @@ void qrot_options(system_t * system) {
 
 	if(system->quantum_rotation_level_max > (system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1)) {
 		error("INPUT: quantum rotational levels cannot exceed l_max + 1 X l_max +1\n");
-		exit(-1);
+		die(-1);
 	}
 
 	if(system->quantum_rotation_sum <= 0) {
 		error("INPUT: quantum rotational sum for partition function invalid\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Quantum rotation sum = %d\n", system->quantum_rotation_sum);
 		output(linebuf);
@@ -192,7 +192,7 @@ void simulated_annealing_options( system_t * system) {
 
 	if((system->simulated_annealing_schedule < 0.0) || (system->simulated_annealing_schedule > 1.0)) {
 		error("INPUT: invalid simulated annealing temperature schedule specified\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Simulated annealing temperature schedule = %.3f\n", system->simulated_annealing_schedule);
 		output(linebuf);
@@ -200,7 +200,7 @@ void simulated_annealing_options( system_t * system) {
 
 	if(system->simulated_annealing_target < 0.0) {
 		error("INPUT: invalid simulated annealing target specified\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Simulated annealing target %lfK.", system->simulated_annealing_target);
 		output(linebuf);
@@ -219,26 +219,26 @@ void polarization_options (system_t * system) {
 	if(system->cuda) {
 		if(!system->polar_iterative) {
 			error("INPUT: CUDA GPU acceleration available for iterative Thole only\n");
-			exit(-1);
+			die(-1);
 		} else if(system->damp_type != DAMPING_EXPONENTIAL) {
 			error("INPUT: CUDA GPU accleration available for exponential Thole damping only\n");
-			exit(-1);
+			die(-1);
 		} else if(!system->polar_max_iter) {
 			/* XXX disable for 1 iter testing */
 			//error("INPUT: Must set polar_max_iter for CUDA GPU acceleration\n");
-			//exit(-1);
+			//die(-1);
 		} else
 			output("INPUT: CUDA GPU Thole SCF solver activated\n");
 	}
 
 	if(system->polar_iterative && system->polarizability_tensor) {
 		error("INPUT: iterative polarizability tensor method not implemented\n");
-		exit(-1);
+		die(-1);
 	}
 
 	if(!system->polar_iterative && system->polar_zodid) {
 		error("INPUT: ZODID and matrix inversion cannot both be set!\n");
-		exit(-1);
+		die(-1);
 	}
 
 	if(system->polar_wolf || system->polar_wolf_full) {
@@ -251,7 +251,7 @@ void polarization_options (system_t * system) {
 			output(linebuf);
 		} else {
 			error("INPUT: 1 >= polar_wolf_alpha >= 0 is required.\n");
-			exit(-1);
+			die(-1);
 		}
 	}
 
@@ -266,11 +266,11 @@ void polarization_options (system_t * system) {
 		}
 		else if (system->polar_precision) {
 			error("INPUT: polar_ewald_full is not compat with polar_precision. Use polar_max_iter instead.\n");
-			exit(-1);
+			die(-1);
 		}
 		else if (system->polar_rrms ) {
 			error("INPUT: polar_ewald_full is not compat with polar_rrms. Deal with it.\n");
-			exit(-1);
+			die(-1);
 		}
 	}
 	
@@ -282,12 +282,12 @@ void polarization_options (system_t * system) {
 		output("INPUT: Thole exponential damping activated\n");
 	else {
 		error("INPUT: Thole damping method not specified\n");
-		exit(-1);
+		die(-1);
 	}
 
 	if(system->polar_damp <= 0.0) {
 		error("INPUT: damping factor must be specified\n");
-		exit(-1);
+		die(-1);
 	} else {
 		sprintf(linebuf, "INPUT: Thole damping parameter is %.4f\n", system->polar_damp);
 		output(linebuf);
@@ -302,12 +302,12 @@ void polarization_options (system_t * system) {
 
 		if((system->polar_precision > 0.0) && (system->polar_max_iter > 0)) {
 			error("INPUT: cannot specify both polar_precision and polar_max_iter, must pick one\n");
-			exit(-1);
+			die(-1);
 		}
 	
 		if(system->polar_precision < 0.0) {
 			error("INPUT: invalid polarization iterative precision specified\n");
-			exit(-1);
+			die(-1);
 		} else if(system->polar_precision > 0.0) {
 			sprintf(linebuf, "INPUT: Thole iterative precision is %e A*sqrt(KA) (%e D)\n", system->polar_precision, system->polar_precision/DEBYE2SKA);
 			output(linebuf);
@@ -321,7 +321,7 @@ void polarization_options (system_t * system) {
 		
 		if(system->polar_sor && system->polar_esor) {
 			error("INPUT: cannot specify both SOR and ESOR SCF methods\n");
-			exit(-1);
+			die(-1);
 		}
 
 		if(system->polar_sor) output("INPUT: SOR SCF scheme active\n");
@@ -329,7 +329,7 @@ void polarization_options (system_t * system) {
 
 		if(system->polar_gamma < 0.0) {
 			error("INPUT: invalid Pre-cond/SOR/ESOR gamma set\n");
-			exit(-1);
+			die(-1);
 		} else {
 			sprintf(linebuf, "INPUT: Pre-cond/SOR/ESOR gamma = %.3f\n", system->polar_gamma);
 			output(linebuf);
@@ -337,7 +337,7 @@ void polarization_options (system_t * system) {
 
 		if(system->polar_gs && system->polar_gs_ranked) {
 			error("INPUT: both polar_gs and polar_gs_ranked cannot be set\n");
-			exit(-1);
+			die(-1);
 		}
 
 		if(system->polar_gs)
@@ -407,7 +407,7 @@ void mc_options (system_t * system) {
 
 	if((system->numsteps < 1) && (system->ensemble != ENSEMBLE_TE) ) {
 		error("INPUT: improper numsteps specified\n");
-		exit(-1);
+		die(-1);
 	} else if (system->ensemble != ENSEMBLE_TE) {
 		sprintf(linebuf, "INPUT: each core performing %d simulation steps\n", system->numsteps);
 		output(linebuf);
@@ -415,7 +415,7 @@ void mc_options (system_t * system) {
 	
 	if((system->corrtime < 1) && (system->ensemble != ENSEMBLE_TE) )  {
 		error("INPUT: improper corrtime specified\n");
-		exit(-1);
+		die(-1);
 	} else if (system->ensemble != ENSEMBLE_TE) {
 		sprintf(linebuf, "INPUT: system correlation time is %d steps\n", system->corrtime);
 		output(linebuf);
@@ -424,7 +424,7 @@ void mc_options (system_t * system) {
 	if((system->ensemble != ENSEMBLE_NVE) && (system->ensemble != ENSEMBLE_TE) ) {
 		if(system->temperature <= 0.0) {
 			error("INPUT: invalid temperature specified\n");
-			exit(-1);
+			die(-1);
 		} else {
 			sprintf(linebuf, "INPUT: system temperature is %.3f K\n", system->temperature);
 			output(linebuf);
@@ -442,7 +442,7 @@ void mc_options (system_t * system) {
 	if((system->ensemble == ENSEMBLE_NPT)) {
 		if (system->pressure <= 0.0) {
 			error("INPUT: invalid pressure set for NPT\n");
-			exit(-1);
+			die(-1);
 		} else {
 			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
 //		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //???? shouldn't be set in NPT, right?
@@ -461,12 +461,12 @@ void mc_options (system_t * system) {
 			if ( system->pressure != 0.0 ) {
 				sprintf(linebuf, "INPUT: user defined fugacities are not compatible with pressure specification.\n");
 				output(linebuf);
-				exit(-1);
+				die(-1);
 			}
 		}
 		else if (system->pressure <= 0.0) {
 			error("INPUT: invalid pressure set for GCMC\n");
-			exit(-1);
+			die(-1);
 		} else {
 			if(system->ensemble == ENSEMBLE_UVT) {
 				sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
@@ -478,7 +478,7 @@ void mc_options (system_t * system) {
 
 				if ( system->fugacities != NULL ) {
 					error("INPUT: h2_fugacity called, but fugacities are already set.\n");
-					exit(-1);
+					die(-1);
 				}
 				system->fugacities = malloc(sizeof(double));
 				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
@@ -486,7 +486,7 @@ void mc_options (system_t * system) {
 				system->fugacities[0] = h2_fugacity(system->temperature, system->pressure);
 				if(system->h2_fugacity == 0.0) {
 					error("INPUT: error in H2 fugacity assignment\n");
-					exit(-1);
+					die(-1);
 				}
 				sprintf(linebuf, "INPUT: H2 fugacity = %.3f atm\n", system->fugacities[0]);
 				output(linebuf);
@@ -496,7 +496,7 @@ void mc_options (system_t * system) {
 
 				if ( system->fugacities != NULL ) {
 					error("INPUT: co2_fugacity called, but fugacities are already set.\n");
-					exit(-1);
+					die(-1);
 				}
 				system->fugacities = malloc(sizeof(double));
 				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
@@ -504,7 +504,7 @@ void mc_options (system_t * system) {
 				system->fugacities[0] = co2_fugacity(system->temperature, system->pressure);
 				if(system->co2_fugacity == 0.0) {
 					error("INPUT: error in CO2 fugacity assignment\n");
-					exit(-1);
+					die(-1);
 				}
 
 				sprintf(linebuf, "INPUT: CO2 fugacity = %.3f atm\n", system->fugacities[0]);
@@ -515,7 +515,7 @@ void mc_options (system_t * system) {
 
 				if ( system->fugacities != NULL ) {
 					error("INPUT: ch4_fugacity called, but fugacities are already set.\n");
-					exit(-1);
+					die(-1);
 				}
 				system->fugacities = malloc(sizeof(double));
 				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
@@ -523,7 +523,7 @@ void mc_options (system_t * system) {
 				system->fugacities[0] = ch4_fugacity(system->temperature, system->pressure);
 				if(system->ch4_fugacity == 0.0) {
 					error("INPUT: error in CH4 fugacity assignment\n");
-					exit(-1);
+					die(-1);
 				}
 
 				sprintf(linebuf, "INPUT: CH4 fugacity = %.3f atm\n", system->fugacities[0]);
@@ -534,7 +534,7 @@ void mc_options (system_t * system) {
 
 				if ( system->fugacities != NULL ) {
 					error("INPUT: n2_fugacity called, but fugacities are already set.\n");
-					exit(-1);
+					die(-1);
 				}
 				system->fugacities = malloc(sizeof(double));
 				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
@@ -542,7 +542,7 @@ void mc_options (system_t * system) {
 				system->fugacities[0] = n2_fugacity(system->temperature, system->pressure);
 				if(system->n2_fugacity == 0.0) {
 					error("INPUT: error in N2 fugacity assignment\n");
-					exit(-1);
+					die(-1);
 				}
 
 				sprintf(linebuf, "INPUT: N2 fugacity = %.3f atm\n", system->fugacities[0]);

@@ -22,11 +22,11 @@ uint32_t getseed(void) {
 	urand = open("/dev/urandom", O_RDONLY);
 	if (urand <= 0 ) {
 		error( "MT: failed to open /dev/urandom\n" );
-		exit(-1);
+		die(-1);
 	}
 	if ( ! read(urand, &rval, sizeof(rval)) ) {
 		error( "MT: failed to read from /dev/urandom\n" );
-		exit(-1);
+		die(-1);
 	}	
 	close(urand);
 

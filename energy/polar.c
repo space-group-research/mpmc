@@ -74,7 +74,7 @@ double polar(system_t *system) {
 			output("POLAR: B matrix:\n");
 			print_matrix(3*((int)system->checkpoint->N_atom), system->B_matrix);
 			thole_polarizability_tensor(system);
-			exit(0);
+			die(0);
 		}
 	}
 

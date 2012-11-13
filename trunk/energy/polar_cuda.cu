@@ -13,7 +13,6 @@ University of South Florida
 #include <signal.h>
 #include <math.h>
 
-#include <physical_constants.h>
 #include <structs.h>
 
 #include <cuda.h>

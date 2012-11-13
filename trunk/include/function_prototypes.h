@@ -51,8 +51,10 @@ void rebuild_arrays (system_t *); //builds atom and molecule arrays for the curr
 
 /* io */
 system_t *read_config(char *);
+int setup_simulation_box(FILE *, system_t *);
 int check_config(system_t *);
-molecule_t *read_molecules(system_t *);
+molecule_t *read_molecules(FILE *, system_t *);
+int read_pqr_box(FILE *, system_t *);
 system_t *setup_system(char *);
 void error(char *);
 void output(char *);
@@ -64,6 +66,7 @@ void track_ar(nodestats_t *);
 void update_nodestats(nodestats_t *, avg_nodestats_t *);
 void update_root_averages(system_t *, observables_t *, avg_nodestats_t *, avg_observables_t *);
 int write_performance(int, system_t *);
+int print_observables(system_t *);
 int write_averages(system_t *);
 int write_molecules(system_t *, char *);
 void write_observables(FILE *, system_t *, observables_t *);
@@ -98,7 +101,7 @@ void free_atoms(molecule_t *);
 void free_molecule(system_t *, molecule_t *);
 void free_molecules(molecule_t *);
 void free_averages(system_t *system);
-void free_matricies(system_t *system);
+void free_matrices(system_t *system);
 void free_cavity_grid(system_t *system);
 void cleanup(system_t *);
 void terminate_handler(int, system_t *);
@@ -151,8 +154,13 @@ void get_curves ( system_t *, int, curveData_t *, double, double, double );
 void revert_parameters ( system_t *, param_t *);
 void new_global_min ( system_t *, int, int, curveData_t * );
 
+/* other "ensembles" */
+int replay_trajectory ( system_t * );
+int calculate_te ( system_t * );
+
 /* polarization */
 double polar(system_t *);
+void allocate_thole_matricies(system_t *);
 void thole_amatrix(system_t *);
 void thole_bmatrix(system_t *);
 void thole_bmatrix_dipoles(system_t *);

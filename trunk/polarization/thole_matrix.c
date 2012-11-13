@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -8,6 +7,36 @@ University of South Florida
 */
 
 #include <mc.h>
+
+void allocate_thole_matrices(system_t * system ) {
+
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
+	int N, i;
+
+	/* count the number of atoms initially in the system */
+	for(molecule_ptr = system->molecules, N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+			++N;
+
+	system->A_matrix = calloc(3*N, sizeof(double *));
+	memnullcheck(system->A_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
+	for(i = 0; i < 3*N; i++) {
+		system->A_matrix[i] = calloc(3*N, sizeof(double));
+		memnullcheck(system->A_matrix[i],3*N*sizeof(double), __LINE__-1, __FILE__);
+	}
+
+	if(!system->polar_iterative) {
+		system->B_matrix = calloc(3*N, sizeof(double *));
+		memnullcheck(system->B_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
+		for(i = 0; i < 3*N; i++) {
+			system->B_matrix[i] = calloc(3*N, sizeof(double));
+			memnullcheck(system->B_matrix[i],3*N*sizeof(double),__LINE__-1, __FILE__);
+		}
+	}
+
+	return;
+}
 
 void print_matrix(int N, double **matrix) {
 

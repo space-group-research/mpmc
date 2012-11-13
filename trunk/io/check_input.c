@@ -27,6 +27,9 @@ void check_ensemble ( system_t * system, int ensemble ) {
 		case ENSEMBLE_NPT:
 			output("INPUT: Isobaric-Isothermal ensemble\n");
 			break;
+		case ENSEMBLE_REPLAY:
+			output("INPUT: Replaying trajectory\n");
+			break;
 		default:
 			error("INPUT: improper ensemble specified\n");
 			die(-1);
@@ -83,8 +86,12 @@ void ensemble_surf_options ( system_t * system ) {
 		output(linebuf);
 	}
 
-	return;
+	if (system->read_pqr_box_on) {
+		error("INPUT: read_pqr_box is not compatible with surf.\n");
+		die(-1);
+	}
 
+	return;
 }
 
 void spectre_options (system_t * system) {
@@ -138,6 +145,12 @@ void feynman_hibbs_options ( system_t * system ) {
 		error("INPUT: cavity_autoreject_absolute must be used with polarvdw + Feynman Hibbs.\n");
 		die(-1);
 	}
+
+	if ( system->temperature <= 0 ) {
+		error("INPUT: feynman_hibbs requires positive temperature.\n");
+		die(-1);
+	}
+
 	return;
 }
 
@@ -400,28 +413,56 @@ void write_pbc_info ( system_t * system ) {
 	return;
 }
 
+void ensemble_te_options(system_t * system) {
+
+	//nothing to do
+
+	return;
+}
+
+void ensemble_replay_options(system_t * system) {
+	char linebuf[MAXLINE];
+
+	if (system->calc_pressure) {
+		output("INPUT: pressure calculator is on\n");
+		if ( system->calc_pressure_dv == 0 ) {
+			sprintf(linebuf, "INPUT: calc_pressure is on, but calc_pressure_dv is not set\n");
+			error(linebuf);
+			die(-1);
+		}
+		sprintf(linebuf, "INPUT: pressure calculator dV = %lf\n", system->calc_pressure_dv);
+		output(linebuf);
+		if ( system->temperature <= 0 ) {
+			sprintf(linebuf, "INPUT: pressure calculator requires non-zero temperature\n");
+			output(linebuf);
+			die(-1);
+		}
+	}
+
+	return;
+}
 
 void mc_options (system_t * system) {
 	int i;
 	char linebuf[MAXLINE];
 
-	if((system->numsteps < 1) && (system->ensemble != ENSEMBLE_TE) ) {
+	if (system->numsteps < 1) {
 		error("INPUT: improper numsteps specified\n");
 		die(-1);
-	} else if (system->ensemble != ENSEMBLE_TE) {
+	} else {
 		sprintf(linebuf, "INPUT: each core performing %d simulation steps\n", system->numsteps);
 		output(linebuf);
 	}
-	
-	if((system->corrtime < 1) && (system->ensemble != ENSEMBLE_TE) )  {
+
+	if (system->corrtime < 1)  {
 		error("INPUT: improper corrtime specified\n");
 		die(-1);
-	} else if (system->ensemble != ENSEMBLE_TE) {
+	} else {
 		sprintf(linebuf, "INPUT: system correlation time is %d steps\n", system->corrtime);
 		output(linebuf);
 	}
 
-	if((system->ensemble != ENSEMBLE_NVE) && (system->ensemble != ENSEMBLE_TE) ) {
+	if(system->ensemble != ENSEMBLE_NVE) {
 		if(system->temperature <= 0.0) {
 			error("INPUT: invalid temperature specified\n");
 			die(-1);
@@ -447,6 +488,10 @@ void mc_options (system_t * system) {
 			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
 //		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //???? shouldn't be set in NPT, right?
 			output(linebuf);
+		}
+		if ( system->ewald_alpha != EWALD_ALPHA ) {
+			error("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
+			die(-1);
 		}
 	}
 
@@ -551,30 +596,26 @@ void mc_options (system_t * system) {
 		} //calculated fugacities
 	} //ensemble UVT
 
-	if ( system->ensemble != ENSEMBLE_TE ) {
+	sprintf(linebuf, "INPUT: insert probability is %.3f\n", system->insert_probability);
+	output(linebuf);
+	sprintf(linebuf, "INPUT: move probability is %.3f\n", system->move_probability);
+	output(linebuf);
+	sprintf(linebuf, "INPUT: gwp probability is %.3f\n", system->gwp_probability);
+	output(linebuf);
+	sprintf(linebuf, "INPUT: rotation probability is %.3f\n", system->rot_probability);
+	output(linebuf);
+	sprintf(linebuf, "INPUT: spinflip probability is %.3f\n", system->spinflip_probability);
+	output(linebuf);
 
-		sprintf(linebuf, "INPUT: insert probability is %.3f\n", system->insert_probability);
-		output(linebuf);
-		sprintf(linebuf, "INPUT: move probability is %.3f\n", system->move_probability);
-		output(linebuf);
-		sprintf(linebuf, "INPUT: gwp probability is %.3f\n", system->gwp_probability);
-		output(linebuf);
-		sprintf(linebuf, "INPUT: rotation probability is %.3f\n", system->rot_probability);
-		output(linebuf);
-		sprintf(linebuf, "INPUT: spinflip probability is %.3f\n", system->spinflip_probability);
+	if ( system->ensemble == ENSEMBLE_NPT ) {
+		if ( system->volume_probability == 0.0 )
+			sprintf(linebuf, "INPUT: volume change probability is 1/N_molecules.\n");
+		else
+			sprintf(linebuf, "INPUT: volume change probability is %.3f\n", system->volume_probability);
 		output(linebuf);
 
-		if ( system->ensemble == ENSEMBLE_NPT ) {
-			if ( system->volume_probability == 0.0 )
-				sprintf(linebuf, "INPUT: volume change probability is 1/N_molecules.\n");
-			else
-				sprintf(linebuf, "INPUT: volume change probability is %.3f\n", system->volume_probability);
-			output(linebuf);
-
-			sprintf(linebuf, "INPUT: volume change factor is %lf.\n", system->volume_change_factor);
-			output(linebuf);
-		}
-
+		sprintf(linebuf, "INPUT: volume change factor is %lf.\n", system->volume_change_factor);
+		output(linebuf);
 	}
 
 	/* autoreject insertions closer than some scaling factor of sigma */
@@ -780,7 +821,10 @@ int check_system(system_t *system) {
 	check_ensemble(system,system->ensemble);
 
 	if(system->ensemble == ENSEMBLE_SURF_FIT) ensemble_surf_fit_options(system);
-	if(system->ensemble == ENSEMBLE_SURF) ensemble_surf_options(system);
+	else if(system->ensemble == ENSEMBLE_SURF) ensemble_surf_options(system);
+	else if(system->ensemble == ENSEMBLE_TE) ensemble_te_options(system);
+	else if(system->ensemble == ENSEMBLE_REPLAY) ensemble_replay_options(system);
+	else mc_options(system);
 	if(system->spectre) spectre_options(system);
 	if(system->rd_only) output("INPUT: calculating repulsion/dispersion only\n");
 	if(system->wolf) output("INPUT: ES Wolf summation active\n");
@@ -791,7 +835,6 @@ int check_system(system_t *system) {
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");
 	if(system->feynman_hibbs) feynman_hibbs_options(system);
 	if(system->simulated_annealing) simulated_annealing_options(system);
-	if((system->ensemble != ENSEMBLE_SURF) && (system->ensemble != ENSEMBLE_SURF_FIT)) mc_options(system);	
 	if(system->calc_hist) hist_options(system);
 	if(system->polarization) polarization_options(system);
 #ifdef QM_ROTATION
@@ -853,7 +896,4 @@ int check_system(system_t *system) {
 	}
 
 	return(0);
-
 }
-
-

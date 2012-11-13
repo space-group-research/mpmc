@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -27,7 +26,7 @@ void usage(char *progname) {
 
 int main(int argc, char **argv) {
 
-	printf("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
+	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
 	int i, j, N;
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
@@ -49,8 +48,9 @@ int main(int argc, char **argv) {
 	output(linebuf);
 #endif /* MPI */
 
-	printf("For version info, use \"svn info\"\n" );
+	output("For version info, use \"svn info\"\n" );
 	sprintf(linebuf, "MAIN: processes started on %d cores\n", size);
+	output(linebuf);
 
 	/* get the config file arg */
 	strcpy(input_file, argv[1]);
@@ -58,9 +58,7 @@ int main(int argc, char **argv) {
 	output(linebuf);
 
 	/* output warning about PDB --> PQR change */
-	printf("MAIN: *** PLEASE NOTE THAT THE PDB FILE FORMAT IS NO LONGER SUPPORTED IN MPMC ***\n" );
-
-	// moved this allocation, because we'd like to set system->obsevables->volume during setup_system
+	output("MAIN: *** PLEASE NOTE THAT THE PDB FILE FORMAT IS NO LONGER SUPPORTED IN MPMC ***\n" );
 
 	/* read the input files and setup the simulation */
 	system = setup_system(input_file);
@@ -99,31 +97,8 @@ int main(int argc, char **argv) {
 	memnullcheck(system->grids->avg_histogram,sizeof(histogram_t), __LINE__-1, __FILE__);
 
 	/* if polarization active, allocate the necessary matrices */
-	if(system->polarization && !system->cuda) {
-
-		/* count the number of atoms initially in the system */
-		for(molecule_ptr = system->molecules, N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
-			for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-				++N;
-
-		system->A_matrix = calloc(3*N, sizeof(double *));
-		memnullcheck(system->A_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
-		for(i = 0; i < 3*N; i++) {
-			system->A_matrix[i] = calloc(3*N, sizeof(double));
-			memnullcheck(system->A_matrix[i],3*N*sizeof(double), __LINE__-1, __FILE__);
-		}
-
-		if(!system->polar_iterative) {
-			system->B_matrix = calloc(3*N, sizeof(double *));
-			memnullcheck(system->B_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
-			for(i = 0; i < 3*N; i++) {
-				system->B_matrix[i] = calloc(3*N, sizeof(double));
-				memnullcheck(system->B_matrix[i],3*N*sizeof(double),__LINE__-1, __FILE__);
-			}
-		}
-
-
-	}
+	if(system->polarization && !system->cuda)
+		allocate_thole_matrices(system);
 
 	/* if histogram calculation flag is set, allocate grid */
 	if(system->calc_hist){
@@ -131,15 +106,15 @@ int main(int argc, char **argv) {
 		allocate_histogram_grid(system);
 	}
 
-	/* seed the rng */
-	seed_rng(system, rank);
+	/* seed the rng if neccessary */
+	if ( system->ensemble != ENSEMBLE_TE && system->ensemble != ENSEMBLE_REPLAY )
+		seed_rng(system, rank);
 
 #ifdef MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 	sprintf(linebuf, "MAIN: all %d cores are in sync\n", size);
 	output(linebuf);
 #endif /* MPI */
-
 
 	/* start the MC simulation */
 	if(system->ensemble == ENSEMBLE_UVT) {
@@ -158,6 +133,10 @@ int main(int argc, char **argv) {
 		output("MAIN: *****************************************************\n");
 		output("MAIN: *** starting potential energy surface calculation ***\n");
 		output("MAIN: *****************************************************\n");
+	} else if(system->ensemble == ENSEMBLE_REPLAY) {	/* surface fitting run */
+		output("MAIN: **********************************\n");
+		output("MAIN: *** starting trajectory replay ***\n");
+		output("MAIN: **********************************\n");
 	} else if(system->ensemble == ENSEMBLE_SURF_FIT) {	/* surface fitting run */
 		output("MAIN: *************************************************************\n");
 		output("MAIN: *** starting potential energy surface fitting calculation ***\n");
@@ -168,52 +147,36 @@ int main(int argc, char **argv) {
 		output("MAIN: *************************************************\n");
 	}
 
-	if(!((system->ensemble == ENSEMBLE_SURF) || (system->ensemble == ENSEMBLE_SURF_FIT))) {
-
-		if(mc(system) < 0) {
-			error("MAIN: MC failed on error, exiting\n");
-			die(1);
-		} else {
-			if(system->ensemble == ENSEMBLE_UVT) {
-				output("MAIN: ********************************************************\n");
-				output("MAIN: *** finishing Grand Canonical Monte Carlo simulation ***\n");
-				output("MAIN: ********************************************************\n\n");
-			} else if(system->ensemble == ENSEMBLE_NVT) {
-				output("MAIN: **************************************************\n");
-				output("MAIN: *** finishing Canonical Monte Carlo simulation ***\n");
-				output("MAIN: **************************************************\n\n");
-			} else if(system->ensemble == ENSEMBLE_NVE) {
-				output("MAIN: *******************************************************\n");
-				output("MAIN: *** finishing Microcanonical Monte Carlo simulation ***\n");
-				output("MAIN: *******************************************************\n\n");
-			}
-		}
-
-	} else if(system->ensemble == ENSEMBLE_SURF) { /* surface */
-
+	if(system->ensemble == ENSEMBLE_SURF) { /* surface */
 		if(surface(system) < 0) {
 			error("MAIN: surface module failed on error, exiting\n");
 			die(1);
-		} else {
-			output("MAIN: ******************************************************\n");
-			output("MAIN: *** finishing potential energy surface calculation ***\n");
-			output("MAIN: ******************************************************\n");
 		}
-
-	} else if(system->ensemble == ENSEMBLE_SURF_FIT) { /* surface fitting */
-
+	}
+	else if(system->ensemble == ENSEMBLE_SURF_FIT) { /* surface fitting */
 		if(surface_fit(system) < 0) {
 			error("MAIN: surface fitting module failed on error, exiting\n");
 			die(1);
-		} else {
-			output("MAIN: **************************************************************\n");
-			output("MAIN: *** finishing potential energy surface fitting calculation ***\n");
-			output("MAIN: **************************************************************\n");
 		}
-
 	}
-
-
+	else if(system->ensemble == ENSEMBLE_REPLAY) { /* replay trajectory and recalc energies, etc. */
+		if(replay_trajectory(system) < 0) {
+			error("MAIN: trajectory replay failed, exiting\n");
+			die(1);
+		}
+	}
+	else if(system->ensemble == ENSEMBLE_TE) {
+		if(calculate_te(system) < 0) {
+			error("MAIN: single-point energy calculation failed, exiting\n");
+			die(1);
+		}
+	}
+	else { //else run monte carlo
+		if(mc(system) < 0) {
+			error("MAIN: MC failed on error, exiting\n");
+			die(1);
+		}
+	}
 
 	/* cleanup */
 	output("MAIN: freeing all data structures....");
@@ -224,4 +187,3 @@ int main(int argc, char **argv) {
 	die(0);
 
 }
-

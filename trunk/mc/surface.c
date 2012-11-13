@@ -11,7 +11,6 @@ University of South Florida
 /* this file is rather sloppy, but got the job done */
 
 #include <mc.h>
-#include <surf_const.h>
 
 /* calculate the energy for the surface scan - same as function energy() but without observables */
 double surface_energy(system_t *system, int energy_type) {

@@ -1,6 +1,5 @@
 /*
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -101,6 +100,9 @@ int open_files(system_t *system) {
 			"#step,#energy,#coulombic,#rd,#polar,#vdw,#kinetic,#temp,#N,#spin_ratio,#volume\n");
 	}
 
+	// if we're just calculating energy or replaying a trajectory, we need no other output files
+	if ( system->ensemble == ENSEMBLE_REPLAY || system->ensemble == ENSEMBLE_TE ) return 0;
+
 	if(system->dipole_output) {
 		system->file_pointers.fp_dipole = fopen(system->dipole_output, "w");
 		filecheck(system->file_pointers.fp_dipole,system->dipole_output,WRITE);
@@ -126,7 +128,6 @@ int open_files(system_t *system) {
 	}
 
 	return(0);
-
 }
 
 void close_files(system_t *system) {
@@ -141,6 +142,7 @@ void close_files(system_t *system) {
 // no need to keep this file open the whole time (afaik) --kmclaugh
 //if(system->file_pointers.fp_frozen) fclose(system->file_pointers.fp_frozen);
 	if(system->file_pointers.fp_traj) fclose(system->file_pointers.fp_traj);
+	if(system->file_pointers.fp_traj_replay) fclose(system->file_pointers.fp_traj_replay);
 
 }
 
@@ -638,6 +640,39 @@ void write_field(FILE *fp_field, molecule_t *molecules) {
 }
 
 
+int print_observables(system_t *system) {
+
+	observables_t * o = system->observables;
+	
+	if(system->gwp) printf("OUTPUT: total energy = %.5lf eV\n", o->energy/EV2K);
+	else printf("OUTPUT: potential energy = %.5lf K\n", o->energy);
+
+	if(o->coulombic_energy != 0.0) {
+		if(system->gwp) printf("OUTPUT: electrostatic energy = %.5lf eV\n", o->coulombic_energy/EV2K);
+		else 	printf("OUTPUT: electrostatic energy = %.5lf K\n",	o->coulombic_energy);
+	}
+
+	if(o->rd_energy != 0.0)
+		printf("OUTPUT: repulsion/dispersion energy = %.5lf K\n", o->rd_energy);
+
+	if(o->polarization_energy != 0.0)
+		printf("OUTPUT: polarization energy = %.5f K\n", o->polarization_energy);
+
+#ifdef VDW
+		printf("OUTPUT: (coupled-dipole) vdw energy = %.5f K\n", o->vdw_energy);
+#endif
+
+	printf("OUTPUT: N = %.5lf molecules\n", o->N);
+
+	printf("OUTPUT: volume = %.5f A^3\n", system->pbc->volume);
+
+	if(o->spin_ratio > 0.0) printf("OUTPUT: ortho spin ratio = %.5lf %%\n", o->spin_ratio*100.0);
+	
+	printf("\n");
+	fflush(stdout);
+
+	return(0);
+}
 
 int write_averages(system_t *system) {
 
@@ -646,15 +681,15 @@ int write_averages(system_t *system) {
 	averages = system->avg_observables;
 
 	if(averages->boltzmann_factor > 0.0)
-		printf("OUTPUT: BF = %.3f +- %.3f\n", averages->boltzmann_factor, 0.5*averages->boltzmann_factor_error);
+		printf("OUTPUT: BF = %.5lf +- %.5lf\n", averages->boltzmann_factor, 0.5*averages->boltzmann_factor_error);
 
 	if(averages->acceptance_rate > 0.0) {
-		printf("OUTPUT: AR = %.3f (%.3f I/ %.3f R/ %.3f D", 
+		printf("OUTPUT: AR = %.5lf (%.5lf I/ %.5lf R/ %.5lf D", 
 			averages->acceptance_rate, averages->acceptance_rate_insert, 
 			averages->acceptance_rate_remove, averages->acceptance_rate_displace);
-		if(averages->acceptance_rate_adiabatic > 0.0) printf("/ %.3f A", averages->acceptance_rate_adiabatic);
-		if(averages->acceptance_rate_spinflip > 0.0) printf("/ %.3f S", averages->acceptance_rate_spinflip);
-		if(averages->acceptance_rate_volume > 0.0) printf("/ %.3f V", averages->acceptance_rate_volume);
+		if(averages->acceptance_rate_adiabatic > 0.0) printf("/ %.5lf A", averages->acceptance_rate_adiabatic);
+		if(averages->acceptance_rate_spinflip > 0.0) printf("/ %.5lf S", averages->acceptance_rate_spinflip);
+		if(averages->acceptance_rate_volume > 0.0) printf("/ %.5lf V", averages->acceptance_rate_volume);
 		printf(")\n");
 	}
 
@@ -663,21 +698,21 @@ int write_averages(system_t *system) {
 			averages->cavity_bias_probability, 0.5*averages->cavity_bias_probability_error);
 
 	if(system->gwp) 
-		printf("OUTPUT: total energy = %.3f +- %.3f eV\n", averages->energy/EV2K, 0.5*averages->energy_error/EV2K);
+		printf("OUTPUT: total energy = %.5lf +- %.5lf eV\n", averages->energy/EV2K, 0.5*averages->energy_error/EV2K);
 	else
-		printf("OUTPUT: potential energy = %.3f +- %.3f K\n", averages->energy, 0.5*averages->energy_error);
+		printf("OUTPUT: potential energy = %.5lf +- %.5lf K\n", averages->energy, 0.5*averages->energy_error);
 
 	if(averages->coulombic_energy != 0.0) {
 		if(system->gwp) 
-			printf("OUTPUT: electrostatic energy = %.3f +- %.3f eV\n",
+			printf("OUTPUT: electrostatic energy = %.5lf +- %.5lf eV\n",
 				averages->coulombic_energy/EV2K, 0.5*averages->coulombic_energy_error/EV2K);
 		else
-			printf("OUTPUT: electrostatic energy = %.3f +- %.3f K\n",
+			printf("OUTPUT: electrostatic energy = %.5lf +- %.5lf K\n",
 				averages->coulombic_energy, 0.5*averages->coulombic_energy_error);
 	}
 
 	if(averages->rd_energy != 0.0)
-		printf("OUTPUT: repulsion/dispersion energy = %.3f +- %.3f K\n", 
+		printf("OUTPUT: repulsion/dispersion energy = %.5lf +- %.5lf K\n", 
 			averages->rd_energy, 0.5*averages->rd_energy_error);
 
 	if(averages->polarization_energy != 0.0) {
@@ -703,17 +738,17 @@ int write_averages(system_t *system) {
 
 	if(averages->kinetic_energy > 0.0) {
 		if(system->gwp)
-			printf("OUTPUT: kinetic energy = %.3f +- %.3f eV\n", 
+			printf("OUTPUT: kinetic energy = %.5lf +- %.5lf eV\n", 
 				averages->kinetic_energy/EV2K, 0.5*averages->kinetic_energy_error/EV2K);
 		else
-			printf("OUTPUT: kinetic energy = %.3f +- %.3f K\n", 
+			printf("OUTPUT: kinetic energy = %.5lf +- %.5lf K\n", 
 				averages->kinetic_energy, 0.5*averages->kinetic_energy_error);
 
-		printf("OUTPUT: temperature = %.3f +- %.3f K\n", 
+		printf("OUTPUT: temperature = %.5lf +- %.5lf K\n", 
 			averages->temperature, 0.5*averages->temperature);
 	}
 
-	printf("OUTPUT: N = %.3f +- %.3f molecules\n", averages->N, 0.5*averages->N_error);
+	printf("OUTPUT: N = %.5lf +- %.5lf molecules\n", averages->N, 0.5*averages->N_error);
 
 	if ( system->sorbateCount == 1 ) { //all based on calculations with assume only one type of sorbate
 		printf("OUTPUT: density = %.5f +- %.5f g/cm^3\n", averages->density, 0.5*averages->density_error);
@@ -726,7 +761,7 @@ int write_averages(system_t *system) {
 		if(averages->excess_ratio > 0.0)
 			printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, 0.5*averages->excess_ratio_error);
 		if((averages->qst > 0.0) && isfinite(averages->qst))
-			printf("OUTPUT: qst = %.3f kJ/mol\n", averages->qst);
+			printf("OUTPUT: qst = %.5lf kJ/mol\n", averages->qst);
 		if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
 			printf("OUTPUT: compressibility = %.6f +- %.6f atm^-1\n", averages->compressibility, averages->compressibility_error);
 			printf("OUTPUT: bulk modulus = %.6f +- %.6f GPa\n", ATM2PASCALS*1.0e-9/averages->compressibility, 
@@ -737,26 +772,26 @@ int write_averages(system_t *system) {
 	if((averages->heat_capacity > 0.0) && (isfinite(averages->heat_capacity)))
 		printf("OUTPUT: heat capacity = %.5f +- %.5f kJ/mol K\n", averages->heat_capacity, averages->heat_capacity_error);
 
-	if(system->ensemble == ENSEMBLE_NPT)
+	if(system->ensemble == ENSEMBLE_NPT || system->ensemble == ENSEMBLE_REPLAY)
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, 0.5*averages->volume_error);
 
 	if(averages->spin_ratio > 0.0) 
-		printf("OUTPUT: ortho spin ratio = %.3f +- %.3f %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
+		printf("OUTPUT: ortho spin ratio = %.5lf +- %.5lf %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
 	
 	if( system->sorbateCount > 1 ){
 		sorbateAverages_t *sorbate_ptr;
 		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 			printf( "OUTPUT: Stats for %s\n", sorbate_ptr->id);
-			printf( "             Average_N(%s)= %.3lf +- %.3lf\n", 
+			printf( "             Average_N(%s)= %.5lf +- %.5lf\n", 
 				sorbate_ptr->id, sorbate_ptr->avgN, sorbate_ptr->avgNerr);
-			printf( "             Sorbed_Mass(%s)= %.3lf +- %.3lf g/mol\n",
+			printf( "             Sorbed_Mass(%s)= %.5lf +- %.5lf g/mol\n",
 				sorbate_ptr->id, sorbate_ptr->avgN*sorbate_ptr->mass, sorbate_ptr->avgNerr*sorbate_ptr->mass);
-			printf( "             density(%s)= %.3le +- %.3le g/cm^3\n",
+			printf( "             density(%s)= %.5le +- %.5le g/cm^3\n",
 				sorbate_ptr->id, sorbate_ptr->density, sorbate_ptr->density_err);
 			if ( system->observables->frozen_mass > 0 ) {
-				printf( "             pore_density(%s)= %.3le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->pore_density  );
-				printf( "             excess_ratio(%s)= %.3le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->excess_ratio  );
-				printf( "             wt_%%(%s)= %.3lf %%\n",          sorbate_ptr->id, sorbate_ptr->percent_wt    );
+				printf( "             pore_density(%s)= %.5le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->pore_density  );
+				printf( "             excess_ratio(%s)= %.5le g/cm^3\n",sorbate_ptr->id, sorbate_ptr->excess_ratio  );
+				printf( "             wt_%%(%s)= %.5lf %%\n",          sorbate_ptr->id, sorbate_ptr->percent_wt    );
 			}
 			printf( "             Selectivity(%s)= %.4lf +- %.4lf\n", 
 				sorbate_ptr->id, sorbate_ptr->selectivity, sorbate_ptr->selectivity_err);

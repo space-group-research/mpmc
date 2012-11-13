@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -308,13 +307,6 @@ int mc(system_t *system) {
 	/* all nodes need a trajectory file */
 	if (open_traj_file(system) < 0)
 			error("MC: could not open trajectory files\n");
-
-	if ( system->ensemble == ENSEMBLE_TE ) { //per Chris's request that energy_output be written for TE runs.
-		write_observables(system->file_pointers.fp_energy, system, system->observables);
-		if ( system->file_pointers.fp_energy_csv ) {
-			write_observables_csv(system->file_pointers.fp_energy_csv, system, system->observables);
-		}
-	}
 
 	/* save the initial state */
 	checkpoint(system);

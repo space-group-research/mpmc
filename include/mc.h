@@ -16,7 +16,7 @@ extern int rank, size;
 #include <mpi.h>
 #endif /* MPI */
 
-#include <physical_constants.h>
+#include <defines.h>
 #include <structs.h>
 #include <function_prototypes.h>
 

@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida

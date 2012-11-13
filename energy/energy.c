@@ -87,8 +87,10 @@ double energy(system_t *system) {
 
 	/* only on the first simulation step, make sure that all recalculate flags are set */
 	if(system->observables->energy == 0.0) flag_all_pairs(system);
-	/* if we made a volume change (or just reverted from one) set recalculate flags */
-	if ( system->last_volume != system->pbc->volume ) //we set last_volume at the end of this function
+
+	/* if we made a volume change (or just reverted from one) set recalculate flags OR if replaying a trajectory */
+	// we set last_volume at the end of this function
+	if ( system->last_volume != system->pbc->volume || system->ensemble==ENSEMBLE_REPLAY ) 
 		flag_all_pairs(system);
 
 	/* get the repulsion/dispersion potential */

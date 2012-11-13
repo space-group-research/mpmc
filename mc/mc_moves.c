@@ -21,8 +21,13 @@ void volume_change( system_t * system ) {
 	int i,j;
 
 	// figure out what the new volume will be
-	log_new_volume=log(system->pbc->volume) + (get_rand()-0.5)*system->volume_change_factor;
-	new_volume=exp(log_new_volume);
+	if ( system->ensemble == ENSEMBLE_REPLAY )
+		//if ensemble replay, then we're just trying to calculate the pressure via dV change
+		new_volume = system->pbc->volume + system->calc_pressure_dv;
+	else {
+		log_new_volume=log(system->pbc->volume) + (get_rand()-0.5)*system->volume_change_factor;
+		new_volume=exp(log_new_volume);
+	}
 
 	//scale basis
 	basis_scale_factor = pow(new_volume/system->pbc->volume,1.0/3.0);

@@ -58,6 +58,8 @@ int do_command (system_t * system, char ** token ) {
 			system->ensemble = ENSEMBLE_TE;
 		else if (!strcasecmp(token[1],"npt"))
 			system->ensemble = ENSEMBLE_NPT;
+		else if (!strcasecmp(token[1],"replay"))
+			system->ensemble = ENSEMBLE_REPLAY;
 	}
 
 	// random seed options
@@ -257,6 +259,17 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_wolf_alpha"))  //same as polar_wolf_damp
 		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
+
+	// replay options
+	else if (!strcasecmp(token[0], "calc_pressure")) {
+		if (!strcasecmp(token[1], "on"))
+			system->calc_pressure = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->calc_pressure = 0;
+		else return 1;
+	}
+	else if (!strcasecmp(token[0], "calc_pressure_dv")) 
+		{ if ( safe_atof(token[1],&(system->calc_pressure_dv)) ) return 1; }
 
 	/*set total energy for NVE*/
 	else if(!strcasecmp(token[0], "total_energy"))
@@ -677,6 +690,13 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->traj_output,token[1]);
 		} else return 1;
 	}
+	else if (!strcasecmp(token[0], "traj_input")) {
+		if(!system->traj_input) { 
+			system->traj_input = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->traj_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->traj_input,token[1]);
+		} else return 1;
+	}
 	else if (!strcasecmp(token[0], "energy_output")) {
 		if(!system->energy_output) {
 			system->energy_output = calloc(MAXLINE,sizeof(char));
@@ -967,9 +987,10 @@ system_t *setup_system(char *input_file) {
 
 	system_t *system;
 	char linebuf[MAXLINE];
+	FILE * finput;
 
-	/* read in all of the tokens and parameters from the config file */
-	system = read_config(input_file);
+	//read the main input file and sets values to flags and sets options
+	system = read_config(input_file); 
 	if(!system) {
    	// error message generated in read_config()
 		return(NULL);
@@ -983,59 +1004,26 @@ system_t *setup_system(char *input_file) {
 	} else
 		output("INPUT: config file validated\n");
 
-	/* if read_pqr_box is set, then read basis from pqr input file */
-	if(system->read_pqr_box_on)
-		read_pqr_box(system);
-
-	/* calculate things related to the periodic boundary conditions */
-	pbc(system);
-
-	if((system->pbc->volume < 0.0) || (system->pbc->cutoff < 0.0))
-		error("INPUT: something is wrong with the periodic boundary conditions\n");
-		else write_pbc_info(system);
-
-//no better place to put this (too many conflicts)
-	if ((system->ewald_alpha != EWALD_ALPHA) && (system->ensemble == ENSEMBLE_NPT)) {
-		printf("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
-	}	
-	
-	/* read in the input pqr and setup the data structures */
-	system->molecules = read_molecules(system);
-	if(!system->molecules) {
-		error("INPUT: error reading in molecules\n");
-		return(NULL);
-	} else
-		output("INPUT: finished reading in molecules\n");
-
-	// Read in the insertion molecules
-	if( system->insert_input ) {
-		system->insertion_molecules = read_insertion_molecules(system);
-		if(!system->insertion_molecules) {
-			error("INPUT: error reading in insertion molecules\n");
-			return(NULL);
-		} else
-			output("INPUT: finished reading in insertion molecules\n");
-	} 
-	else //else only 1 sorbate type
-		system->sorbateCount = 1;
-	
-	//once we've counted the number of sorbates, we need to see if that matches the number of fugacities if user_fugacities is set
-	//can't be checked in check_config, etc. because we need to have read the insertion molecules stuff first
-	if ( system->user_fugacities ) {
-		if ( system->fugacitiesCount != system->sorbateCount ) {
-			sprintf(linebuf, "INPUT: fugacities defined do not match the number of sorbates.");
-			output(linebuf);
-			die(-1);
-		}
+	/* set up the simulation box: pbc and read in molecules */
+	if ( system->ensemble == ENSEMBLE_REPLAY ) {
+		finput = fopen(system->traj_input,"r");
+		filecheck(finput,system->traj_input,READ);
 	}
+	else {
+		finput = fopen(system->pqr_input,"r");
+		filecheck(finput,system->pqr_input,READ);
+	}
+	rewind(finput);
+	if(setup_simulation_box(finput,system) <0) {
+		error("INPUT: error setting up simulation box.\n");
+		return(NULL);
+	}	else
+		output("INPUT: simulation box configured.\n");
+	fclose(finput);
 
 	/* allocate the necessary pairs */
 	setup_pairs(system);
 	output("INPUT: finished allocating pair lists\n");
-
-	/* calculate the periodic boundary conditions */
-	pbc(system);
-	output("INPUT: finished calculating periodic boundary conditions\n");
 
 	/* get all of the pairwise interactions, exclusions, etc. */
 	if(system->cavity_bias) setup_cavity_grid(system);
@@ -1044,10 +1032,6 @@ system_t *setup_system(char *input_file) {
 	/* set all pairs to initially have their energies calculated */
 	flag_all_pairs(system);
 	output("INPUT: finished calculating pairwise interactions\n");
-
-	/* set the ewald gaussian width appropriately */ //redundant in NPT
-	if(system->ewald_alpha == EWALD_ALPHA)
-		system->ewald_alpha = 3.5/system->pbc->cutoff;
 
 	if(!(system->sg || system->rd_only)) {
 		sprintf(linebuf, "INPUT: Ewald gaussian width = %f A\n", system->ewald_alpha);
@@ -1062,9 +1046,6 @@ system_t *setup_system(char *input_file) {
 	return(system);
 
 }
-
-
-
 
 
 // readFitInputFiles() stores all of data points found in the fit input files

@@ -108,18 +108,18 @@ void pbc(system_t * system) {
 
 	pbc_t * pbc = system->pbc;
 
+	if ( (pbc->cutoff != 0.0) && (system->checkpoint->movetype != MOVETYPE_VOLUME) && system->ensemble != ENSEMBLE_REPLAY )
+		return; //nothing to do
+
 	/* get the unit cell volume and cutoff */
 	pbc->volume = pbc_volume(pbc);
 
-	if( (pbc->cutoff == 0.0) || (system->ensemble == ENSEMBLE_NPT) )
-		pbc->cutoff = pbc_cutoff(pbc);
+	pbc->cutoff = pbc_cutoff(pbc);
+	if ( system->ewald_alpha == EWALD_ALPHA || system->ensemble == ENSEMBLE_NPT || system->ensemble == ENSEMBLE_REPLAY ) 
+		system->ewald_alpha = 3.5/system->pbc->cutoff;
 
 	/* get the reciprocal space lattice */
 	pbc_reciprocal(pbc);
 
-	/* if NPT, recalculate ewald alpha */
-	if (system->ensemble == ENSEMBLE_NPT) {
-		system->ewald_alpha = 3.5/system->pbc->cutoff;
-	}
-
+	return;
 }

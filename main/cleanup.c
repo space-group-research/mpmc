@@ -142,21 +142,17 @@ void free_all_molecules(system_t * system, molecule_t * molecules) {
 void free_matrices(system_t *system) {
 
 	int i, N;
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;
 
-	N = 3*system->checkpoint->N_atom;
+	if ( !system->A_matrix && !system->B_matrix )
+		return; //nothing to do
 
-	if ( system->ensemble == ENSEMBLE_SURF_FIT ) {
-		//N_atom checkpoint is not set
-		//Need to manually count
-		atom_t * atom_ptr;
-		molecule_t * mole_ptr;
-		N=0;
-		for (mole_ptr = system->molecules; mole_ptr; mole_ptr = mole_ptr->next ) {
-			for (atom_ptr = mole_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next ) {
-				N+=3;
-			}
-		}
-	}
+	for(molecule_ptr = system->molecules, N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+			++N;
+
+	N *= 3;
 
 	for(i = 0; i < N; i++) {
 		free(system->A_matrix[i]);
@@ -166,6 +162,7 @@ void free_matrices(system_t *system) {
 
 	free(system->A_matrix);
 	free(system->B_matrix);
+	system->A_matrix = system->B_matrix = NULL;
 
 	return;
 }
@@ -255,6 +252,7 @@ void cleanup(system_t *system) {
 	free(system->energy_output_csv);
 
 	if(system->traj_output) free(system->traj_output);
+	if(system->traj_input) free(system->traj_input);
 	if(system->dipole_output) free(system->dipole_output);
 	if(system->field_output) free(system->field_output);
 	if(system->frozen_output) free(system->frozen_output);

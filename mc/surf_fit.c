@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mc.h>
-#include <surf_const.h>
 
 void surface_curve(system_t *system, double r_min, double r_max, double r_inc, double *curve) {
 	int i;

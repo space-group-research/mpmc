@@ -74,9 +74,9 @@ void temper_system ( system_t * system, double current_energy ) {
 	else if ( is_master[rank] == 1 ) {
 		//master receives energy from slave
 		MPI_Recv(&slave_energy, 1, MPI_DOUBLE, partner_list[rank], 0, MPI_COMM_WORLD, &status); 
-		//calculate boltzmann factor
-		boltzmann_factor = exp(-(current_energy-slave_energy)/ 
-			(system->ptemp->templist[rank] - system->ptemp->templist[partner_list[rank]]));
+		//calculate boltzmann factor exp(dE*dB)
+		boltzmann_factor = exp((current_energy-slave_energy)*
+			(1.0/system->ptemp->templist[rank] - 1.0/system->ptemp->templist[partner_list[rank]]));
 		if ( get_rand() < boltzmann_factor ) accept_move = 1;
 		else accept_move = 0;
 		//communicate the move result to slave

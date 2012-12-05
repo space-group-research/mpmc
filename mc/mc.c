@@ -218,9 +218,10 @@ void register_reject(system_t *system) {
 int mc(system_t *system) {
 
 	int j, msgsize;
-	double initial_energy, final_energy, delta_energy;
+	double initial_energy, final_energy, delta_energy, current_energy;
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
+	double *temperature_mpi;
 	char *snd_strct, *rcv_strct;
 	char linebuf[MAXLINE];
 #ifdef MPI
@@ -229,11 +230,9 @@ int mc(system_t *system) {
 
 	/* allocate the statistics structures */
 	observables_mpi = calloc(1, sizeof(observables_t));
+	memnullcheck(observables_mpi, sizeof(observables_t), __LINE__-1, __FILE__-1);
 	avg_nodestats_mpi = calloc(1, sizeof(avg_nodestats_t));
-	if(!(observables_mpi && avg_nodestats_mpi)) {
-		error("MC: couldn't allocate space for statistics\n");
-		return(-1);
-	}
+	memnullcheck(avg_nodestats_mpi, sizeof(avg_nodestats_t), __LINE__-1, __FILE__-1);
 
 	/* if MPI not defined, then compute message size like dis */
 	msgsize = sizeof(observables_t) + sizeof(avg_nodestats_t);
@@ -246,17 +245,12 @@ int mc(system_t *system) {
 
 	/* allocate MPI structures */
 	snd_strct = calloc(msgsize, 1);
-	if(!snd_strct) {
-		error("MC: couldn't allocate MPI message send space!\n");
-		return(-1);
-	}
-
+	memnullcheck(snd_strct,sizeof(msgsize), __LINE__-1, __FILE__-1);
 	if(!rank) {
 		rcv_strct = calloc(size, msgsize);
-		if(!rcv_strct) {
-			error("MC: root couldn't allocate MPI message receive space!\n");
-			return(-1);
-		}
+		memnullcheck(rcv_strct, size*sizeof(msgsize), __LINE__-1, __FILE__-1);
+		temperature_mpi = calloc(size, sizeof(double));
+		memnullcheck(temperature_mpi, size*sizeof(double), __LINE__-1, __FILE__-1);
 	}
 
 	/* clear our statistics */
@@ -289,24 +283,24 @@ int mc(system_t *system) {
 		system->observables->energy = MAXVALUE;
 	}
 
-	/* set the initial values */
-	track_ar(system->nodestats);
-	update_nodestats(system->nodestats, system->avg_nodestats);
-	update_root_averages(system, system->observables, system->avg_nodestats, system->avg_observables);
-	update_sorbate_stats( system );
-
 	/* if root, open necessary output files */
-	if(!rank) {
+	if (!rank) if(open_files(system) < 0) {
+		error("MC: could not open files\n");
+		return(-1);
+	}
+
+	// write initial observables to stdout and logs
+	if ( !rank ) {
+		// average in the initial values once  (we don't want to double-count the initial state when using MPI)
+		update_root_averages(system, system->observables, system->avg_observables);
+		// write initial observables exactly once
+		if(system->file_pointers.fp_energy) 
+			write_observables(system->file_pointers.fp_energy, system, system->observables, system->temperature);
+		if(system->file_pointers.fp_energy_csv) 
+			write_observables_csv(system->file_pointers.fp_energy_csv, system, system->observables, system->temperature);
 		output("MC: initial values:\n");
 		write_averages(system);
-		if(open_files(system) < 0) {
-			error("MC: could not open files\n");
-			return(-1);
-		}
 	}
-	/* all nodes need a trajectory file */
-	if (open_traj_file(system) < 0)
-			error("MC: could not open trajectory files\n");
 
 	/* save the initial state */
 	checkpoint(system);
@@ -339,16 +333,20 @@ int mc(system_t *system) {
 		/* Metropolis function */
 		if((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0) ) {	/* ACCEPT */
 
+			current_energy = final_energy;
+
 			/* checkpoint */
 			checkpoint(system);
 			register_accept(system);
 
 			/* SA */
-			if(system->simulated_annealing)
+			if(system->simulated_annealing) 
 					system->temperature = system->simulated_annealing_target + 
 						(system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
 
 			} else {						/* REJECT */
+
+			current_energy = initial_energy; //used in parallel tempering
 
 			if ( system->iter_success == 1 )  {
 				sprintf(linebuf,"MC: iterative solver failed on accepted mc step (step %d)\n", system->step);
@@ -363,6 +361,11 @@ int mc(system_t *system) {
 			register_reject(system);
 
 		}
+
+		// perform parallel_tempering
+		if ( (system->parallel_tempering) && (system->step % system->ptemp_freq == 0) )
+			temper_system(system, current_energy);
+				
 
 		/* track the acceptance_rate */
 		track_ar(system->nodestats);
@@ -381,14 +384,12 @@ int mc(system_t *system) {
 			}
 
 			/*write trajectory files for each node*/
-			if(system->file_pointers.fp_traj) 
-				write_states(system->file_pointers.fp_traj, system);
-
+			write_states(system);
 
 			/* zero the send buffer */
 			memset(snd_strct, 0, msgsize);
 			memcpy(snd_strct, system->observables, sizeof(observables_t));
-                        memcpy((snd_strct + sizeof(observables_t)), system->avg_nodestats, sizeof(avg_nodestats_t));
+			memcpy((snd_strct + sizeof(observables_t)), system->avg_nodestats, sizeof(avg_nodestats_t));
 			if(system->calc_hist)
 				mpi_copy_histogram_to_sendbuffer(snd_strct + sizeof(observables_t) + sizeof(avg_nodestats_t), 
 					system->grids->histogram->grid, system);
@@ -396,34 +397,46 @@ int mc(system_t *system) {
 
 #ifdef MPI
 			MPI_Gather(snd_strct, 1, msgtype, rcv_strct, 1, msgtype, 0, MPI_COMM_WORLD);
-
-			// MPI Stuff for collecting sorbate stats from workers
-			// should go here. 
-
+			MPI_Gather(&(system->temperature), 1, MPI_DOUBLE, temperature_mpi, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			//need to gather shit for sorbate stats also
 #else
 			memcpy(rcv_strct, snd_strct, msgsize);
+			temperature_mpi[0] = system->temperature;
 #endif /* MPI */
 			/* head node collects all observables and averages */
 			if(!rank) {
-				for(j = 0; j < size; j++) {
+				/* clear avg_nodestats to avoid double-counting */
+				clear_avg_nodestats(system);
+				//loop for each core -> shift data into variable_mpi, then average into avg_observables
+				for(j = 0; j < size; j++) { 
 					/* copy from the mpi buffer */
 					memcpy(observables_mpi, rcv_strct + j*msgsize, sizeof(observables_t));
 					memcpy(avg_nodestats_mpi, rcv_strct + j*msgsize + sizeof(observables_t), sizeof(avg_nodestats_t));
 					if(system->calc_hist)
 						mpi_copy_rcv_histogram_to_data(rcv_strct + j*msgsize + sizeof(observables_t) 
 							+ sizeof(avg_nodestats_t), system->grids->histogram->grid, system);
+					/* write observables */
+					if(system->file_pointers.fp_energy) 
+						write_observables(system->file_pointers.fp_energy, system, observables_mpi, temperature_mpi[j]);
+					if(system->file_pointers.fp_energy_csv) 
+						write_observables_csv(system->file_pointers.fp_energy_csv, system, observables_mpi, temperature_mpi[j]);
 					/* collect the averages */
-					update_root_averages(system, observables_mpi, avg_nodestats_mpi, system->avg_observables);
-					if(system->calc_hist) update_root_histogram(system);
-					if(system->file_pointers.fp_energy) write_observables(system->file_pointers.fp_energy, system, observables_mpi);
-					if(system->file_pointers.fp_energy_csv) write_observables_csv(system->file_pointers.fp_energy_csv, system, observables_mpi);
-
-					// calculate stats for each individual sorbate
-					update_sorbate_stats( system );
-		
+					/* if parallel tempering, we will collect obserables from the coldest bath. this can't be done for
+					 * nodestats though, since nodestats are averaged over each corrtime, rather than based on a single 
+					 * taken at the corrtime */
+					update_root_nodestats(system, avg_nodestats_mpi, system->avg_observables);
+					if ( ! system->parallel_tempering ) {
+						update_root_averages(system, observables_mpi, system->avg_observables);
+						if(system->calc_hist) update_root_histogram(system);
+					}
+					else if ( system->ptemp->index[j] == 0 ) {
+						update_root_averages(system, observables_mpi, system->avg_observables);
+						if(system->calc_hist) update_root_histogram(system);
+					}
 				}
-			//	/* XXX - this needs to be fixed, currently only writing the root node's states */
-			//	if(system->file_pointers.fp_traj) write_states(system->file_pointers.fp_traj, system);
+
+				//this needs to be re-written to be useful in parallel jobs
+				update_sorbate_stats( system );
 
 				/* write the averages to stdout */
 				if(system->file_pointers.fp_histogram)
@@ -444,27 +457,24 @@ int mc(system_t *system) {
 				}
 
 				if(system->polarization) {
-					write_dipole(system->file_pointers.fp_dipole, system->molecules);
-					write_field(system->file_pointers.fp_field, system->molecules);
+					write_dipole(system);
+					write_field(system);
 				}
 
 			} /* !rank */
-
 		} /* corrtime */
 	} /* main loop */
 
 	/* write output, close any open files */
 	free(snd_strct);
 	if(!rank) {
-
 		if(write_molecules(system, system->pqr_output) < 0) {
 			error("MC: could not write final state to disk\n");
 			return(-1);
 		}
-
 		close_files(system);
 		free(rcv_strct);
-
+		free(temperature_mpi);
 	}
 
 		free(observables_mpi);

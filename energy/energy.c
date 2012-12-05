@@ -170,10 +170,6 @@ double energy(system_t *system) {
 		system->observables->temperature = (2.0/3.0)*system->observables->kinetic_energy/system->observables->N;
 	}
 
-	/* SA */
-	if(system->simulated_annealing)
-		system->observables->temperature = system->temperature;
-
 	/* need this for the isosteric heat */
 	system->observables->NU = system->observables->N*system->observables->energy;
 

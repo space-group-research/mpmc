@@ -12,6 +12,129 @@ University of South Florida
 
 #include <mc.h>
 
+// parallel tempering stuff
+/* parallel tempering is treated differently than the other types of MC moves, because it is done
+ * IN ADDITION to any other moves: i.e. some random move is performed and the energy is calculated
+ * before and after. once that is all figured out, we then perform a temper step. The boltzmann factor
+ * that is calculated will NOT be averaged into the BF quantity. It can be, but care must be taken so
+ * there is no double-counting, and it really isn't so important to do so. */
+void temper_system ( system_t * system, double current_energy ) {
+#ifdef MPI
+	// system->ptemp->index[j] is a mapping from core -> bath_index (bath_index 0 is lowest temperature, etc.)
+	// bath2core maps from bath_index -> core 
+	// only half of the cores will be responsible for carrying out the calculations
+	// partner_list maps from core -> swap partner, if core is a master. core -> -1, if core is a slave.
+	int * bath2core, * partner_list, * is_master, master, slave, * update_index, new_index_val;
+	double slave_energy, boltzmann_factor, *update_templist, new_templist_val;
+	int i, j, lucky, accept_move;
+	MPI_Status status;
+
+	slave_energy = 0;
+
+	//make the bath index
+	bath2core = calloc(size, sizeof(int));
+	memnullcheck(bath2core, size*sizeof(int),__LINE__-1,__FILE__-1);
+	for ( i=0; i<size; i++ )
+		for ( j=0; j<size; j++ )
+			if ( system->ptemp->index[j] == i ) bath2core[i] = j;
+
+	//choose the lucky bath. it's not really lucky.. this is just the first bath that we consider for swapping
+	if ( !rank ) lucky = floor(get_rand() * size);
+	MPI_Bcast(&lucky, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+	//we will use this array to designate whether a particular core is a master or slave
+	is_master = calloc(size,sizeof(int));
+	memnullcheck(is_master,size*sizeof(int),__LINE__-1,__FILE__-1);
+
+	//build the partner list
+	partner_list = calloc(size, sizeof(int));
+	memnullcheck(partner_list, size*sizeof(int),__LINE__-1,__FILE__-1);
+	master = lucky;
+	slave = (lucky+1) % size; //this assigns the slave bath index to the variable
+	do {
+		partner_list[bath2core[slave]] = bath2core[master]; //partner_list maps slave to master core
+		partner_list[bath2core[master]]= bath2core[slave]; //partner_list maps master to slave
+		is_master[bath2core[master]] = 1; //master flag is on
+		is_master[bath2core[slave]] = 0; //master flag is off
+		//now generate the next master
+		master = (master+2) % size;
+		slave = (slave+2) % size;
+	} while ( (master != lucky) && (slave != lucky) );
+	if ( slave == lucky )  {
+		partner_list[bath2core[master]] = -1; //if odd # of cores, we have one member unassigned
+		is_master[bath2core[master]] = -1; //neither master nor slave
+	}
+	//all cores (except 1 if size is odd) are mapped
+
+	//communicate the energy to the master nodes
+	if ( ! is_master[rank] ) {
+		MPI_Send(&current_energy, 1, MPI_DOUBLE, partner_list[rank], 0, MPI_COMM_WORLD); //slave sends it's energy
+		MPI_Recv(&accept_move, 1, MPI_INT, partner_list[rank], 1, MPI_COMM_WORLD, &status); //receive result (accept/reject)
+	}
+	else if ( is_master[rank] == 1 ) {
+		//master receives energy from slave
+		MPI_Recv(&slave_energy, 1, MPI_DOUBLE, partner_list[rank], 0, MPI_COMM_WORLD, &status); 
+		//calculate boltzmann factor
+		boltzmann_factor = exp(-(current_energy-slave_energy)/ 
+			(system->ptemp->templist[rank] - system->ptemp->templist[partner_list[rank]]));
+		if ( get_rand() < boltzmann_factor ) accept_move = 1;
+		else accept_move = 0;
+		//communicate the move result to slave
+		MPI_Send(&accept_move, 1, MPI_INT, partner_list[rank], 1, MPI_COMM_WORLD);
+	} else
+		accept_move = 0; //no partner
+	
+	if ( accept_move ) {
+		//reassign local temperature
+		system->temperature = system->ptemp->templist[partner_list[rank]];
+		//update our temperature and index values to prepare for transmission to root
+		new_templist_val = system->ptemp->templist[partner_list[rank]];
+		new_index_val = system->ptemp->index[partner_list[rank]];
+		//reassign fugacities
+		if ( ! system->user_fugacities && system->fugacities )	{
+				MPI_Send(system->fugacities, 1, MPI_DOUBLE, partner_list[rank], 2, MPI_COMM_WORLD); //send fugacity
+				MPI_Recv(system->fugacities, 1, MPI_DOUBLE, partner_list[rank], 2, MPI_COMM_WORLD, &status); //receive fugacity
+		}				
+	} else { //reject
+		new_templist_val = system->ptemp->templist[rank];
+		new_index_val = system->ptemp->index[rank];
+	}
+
+	//now we need to update the templist and index on each core
+	update_templist = calloc(size,sizeof(double));
+	update_index = calloc(size,sizeof(int));
+	memnullcheck(update_templist, size*sizeof(double), __LINE__-1, __FILE__-1);
+	memnullcheck(update_index, size*sizeof(int), __LINE__-1, __FILE__-1);
+	// create updated arrays on head node
+	MPI_Gather(&new_templist_val, 1, MPI_DOUBLE, update_templist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Gather(&new_index_val, 1, MPI_INT, update_index, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	// build the updated array
+	if ( ! rank ) {
+		for ( i=0; i<size; i++ ) {
+			system->ptemp->templist[i]=update_templist[i];
+			system->ptemp->index[i]=update_index[i];
+		}
+	}
+	// transmit to each core
+	MPI_Bcast(system->ptemp->templist, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(system->ptemp->index, size, MPI_INT, 0, MPI_COMM_WORLD);
+
+	if ( accept_move ) 
+		system->nodestats->accept_ptemp++;
+	else if ( is_master[rank] != -1 )
+		system->nodestats->reject_ptemp++;
+
+	
+	free(update_templist);
+	free(update_index);
+	free(bath2core);
+	free(is_master);
+	free(partner_list);
+#endif //MPI
+	return;
+}
+
+
 /* scale the volume : used in NPT ensemble */
 void volume_change( system_t * system ) {
 	molecule_t * m;
@@ -301,9 +424,12 @@ void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 	for(atom_ptr = molecule->atoms, i = 0; atom_ptr; atom_ptr = atom_ptr->next, i++) {
 
 		ii = i*3;
-		new_coord_array[ii+0] = rotation_matrix[0][0]*atom_ptr->pos[0] + rotation_matrix[0][1]*atom_ptr->pos[1] + rotation_matrix[0][2]*atom_ptr->pos[2];
-		new_coord_array[ii+1] = rotation_matrix[1][0]*atom_ptr->pos[0] + rotation_matrix[1][1]*atom_ptr->pos[1] + rotation_matrix[1][2]*atom_ptr->pos[2];
-		new_coord_array[ii+2] = rotation_matrix[2][0]*atom_ptr->pos[0] + rotation_matrix[2][1]*atom_ptr->pos[1] + rotation_matrix[2][2]*atom_ptr->pos[2];
+		new_coord_array[ii+0] = 
+			rotation_matrix[0][0]*atom_ptr->pos[0] + rotation_matrix[0][1]*atom_ptr->pos[1] + rotation_matrix[0][2]*atom_ptr->pos[2];
+		new_coord_array[ii+1] = 
+			rotation_matrix[1][0]*atom_ptr->pos[0] + rotation_matrix[1][1]*atom_ptr->pos[1] + rotation_matrix[1][2]*atom_ptr->pos[2];
+		new_coord_array[ii+2] = 
+			rotation_matrix[2][0]*atom_ptr->pos[0] + rotation_matrix[2][1]*atom_ptr->pos[1] + rotation_matrix[2][2]*atom_ptr->pos[2];
 
 	}
 
@@ -352,23 +478,18 @@ void displace(molecule_t *molecule, pbc_t *pbc, double trans_scale, double rot_s
 /* perform a perturbation to a gaussian width */
 void displace_gwp(molecule_t *molecule, double scale) {
 
-        atom_t *atom_ptr;
+	atom_t *atom_ptr;
 	double perturb;
 
 	for(atom_ptr = molecule->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 
 		if(atom_ptr->gwp_spin) {
-
 			perturb = scale*(get_rand() - 0.5);
 			atom_ptr->gwp_alpha += perturb;
-
 			/* make sure the width remains positive */
 			atom_ptr->gwp_alpha = fabs(atom_ptr->gwp_alpha);
-
 		}
-
 	}
-
 
 }
 
@@ -627,8 +748,9 @@ void restore(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *prev_pair_ptr, *pair_ptr;
+	double keep_temperature;
 
-	/* restore the remaining observables */
+	// restore the remaining observables 
 	memcpy(system->observables, system->checkpoint->observables, sizeof(observables_t));
 
 	/* restore state by undoing the steps of make_move() */

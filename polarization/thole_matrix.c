@@ -148,12 +148,16 @@ void thole_amatrix(system_t *system) {
 			/* build the tensor */
 			for(p = 0; p < 3; p++) {
 				for(q = 0; q < 3; q++) {
+
 					system->A_matrix[ii+p][jj+q] = -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*damp2*ir5;
-					if (system->polar_wolf_full) system->A_matrix[ii+p][jj+q] -= -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*wdamp2/(rcut5);
+					if (system->polar_wolf_full) 
+						system->A_matrix[ii+p][jj+q] -= -3.0*pair_ptr->dimg[p]*pair_ptr->dimg[q]*wdamp2*ir*ir/rcut3;
+
 					/* additional diagonal term */
 					if(p == q) {
 						system->A_matrix[ii+p][jj+q] += damp1*ir3;
 						if ( system->polar_wolf_full ) system->A_matrix[ii+p][jj+q] -= wdamp1/(rcut3);
+
 					}	
 				}
 			}

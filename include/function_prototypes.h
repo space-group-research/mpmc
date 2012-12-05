@@ -56,30 +56,28 @@ int check_config(system_t *);
 molecule_t *read_molecules(FILE *, system_t *);
 int read_pqr_box(FILE *, system_t *);
 system_t *setup_system(char *);
+char * make_filename(char *, int);
 void error(char *);
 void output(char *);
 void clear_nodestats(nodestats_t *);
 void clear_node_averages(avg_nodestats_t *);
 void clear_observables(observables_t *);
 void clear_root_averages(avg_observables_t *);
+void clear_avg_nodestats(system_t *); 
 void track_ar(nodestats_t *);
 void update_nodestats(nodestats_t *, avg_nodestats_t *);
-void update_root_averages(system_t *, observables_t *, avg_nodestats_t *, avg_observables_t *);
+void update_root_averages(system_t *, observables_t *, avg_observables_t *);
+void update_root_nodestats(system_t *, avg_nodestats_t *, avg_observables_t *);
 int write_performance(int, system_t *);
 int print_observables(system_t *);
 int write_averages(system_t *);
 int write_molecules(system_t *, char *);
-void write_observables(FILE *, system_t *, observables_t *);
-void write_dipole(FILE *, molecule_t *);
-void write_field(FILE *, molecule_t *);
-#ifdef MPI
-	void write_states_MPI(MPI_File *, system_t *);
-#else
-	void write_states(FILE *, system_t *);
-#endif
+void write_observables(FILE *, system_t *, observables_t *, double);
+void write_dipole(system_t *);
+void write_field(system_t *);
+void write_states(system_t *);
 int wrapall(molecule_t *, pbc_t *);
 void spectre_wrapall(system_t *);
-int open_traj_files(system_t *);
 int open_files(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles( system_t *, int );

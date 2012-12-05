@@ -62,6 +62,12 @@ void track_ar(nodestats_t *ns) {
 	else
 		ns->acceptance_rate_volume = 0;
 
+	if(ns->accept_ptemp + ns->reject_ptemp)
+		ns->acceptance_rate_ptemp = ((double)ns->accept_ptemp) / ((double)(ns->accept_ptemp + ns->reject_ptemp));
+	else
+		ns->acceptance_rate_ptemp = 0;
+		
+
 }
 
 /* update node statistics related to the processing */
@@ -70,7 +76,7 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 	static int counter = 0;
 	double factor;
 
-	++counter;
+	counter++;
 	factor = ((double)(counter - 1))/((double)(counter));
 
 	avg_nodestats->boltzmann_factor = factor*avg_nodestats->boltzmann_factor 
@@ -86,6 +92,7 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 	avg_nodestats->acceptance_rate_adiabatic = nodestats->acceptance_rate_adiabatic;
 	avg_nodestats->acceptance_rate_spinflip = nodestats->acceptance_rate_spinflip;
 	avg_nodestats->acceptance_rate_volume = nodestats->acceptance_rate_volume;
+	avg_nodestats->acceptance_rate_ptemp = nodestats->acceptance_rate_ptemp;
 
 	avg_nodestats->cavity_bias_probability = factor*avg_nodestats->cavity_bias_probability 
 		+ nodestats->cavity_bias_probability / ((double)counter);
@@ -131,6 +138,7 @@ void update_sorbate_stats( system_t *system )
 	int i;
 	double err, val;
 	counter++;
+	double sdom = 1.0 / sqrt((double)counter - 1.0);
 	double factor = ((double)(counter-1))/((double)(counter));
 	sorbateAverages_t *sorbate_ptr;
 	sorbateAverages_t *sorb_ptr;
@@ -145,7 +153,7 @@ void update_sorbate_stats( system_t *system )
 	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
 		sorbate_ptr->avgN = factor * sorbate_ptr->avgN + ((double) sorbate_ptr->currentN)/((double)(counter));
 		sorbate_ptr->avgNsq = factor * sorbate_ptr->avgNsq + sorbate_ptr->currentN*sorbate_ptr->currentN/((double)(counter));
-		sorbate_ptr->avgNerr = 0.5*sqrt(sorbate_ptr->avgNsq - sorbate_ptr->avgN*sorbate_ptr->avgN);
+		sorbate_ptr->avgNerr = sdom*sqrt(sorbate_ptr->avgNsq - sorbate_ptr->avgN*sorbate_ptr->avgN);
 	}
 
 	// Calculate the weight percent and sorbed mass of each sorbate
@@ -164,12 +172,13 @@ void update_sorbate_stats( system_t *system )
 		// sorbed_mass 
 		double sorbed_mass = sorbate_ptr->avgN * sorbate_ptr->mass;
 		double sorbed_mass_err = sorbate_ptr->avgNerr * sorbate_ptr->mass;
-		       
+
 		double R          = 0.8205746; //  L*atm/(mol*K)
 		double A3PerLiter = 1.0e27;    //  A^3/L  (cubic angstroms per liter)
 		
 		// weight% 
 		sorbate_ptr->percent_wt    = 100.0 * sorbed_mass/(system->observables->total_mass);
+		sorbate_ptr->percent_wt_me = 100.0 * sorbed_mass/(system->observables->frozen_mass);
 		
 		// excess ratio
 		sorbate_ptr->excess_ratio=1000*sorbate_ptr->mass * 
@@ -196,21 +205,24 @@ void update_sorbate_stats( system_t *system )
 			//calc error
 			err = sorbate_ptr->avgNerr*sorbate_ptr->avgNerr / (sorbate_ptr->avgN*sorbate_ptr->avgN) + err / (val*val);
 			sorbate_ptr->selectivity_err = sorbate_ptr->selectivity * sqrt(err);
+			//we will report as SDOM
+			sorbate_ptr->selectivity_err /= sqrt(round((double)system->step/(double)system->corrtime));
 		}
 	}
 }
 
-void update_root_averages(system_t *system, observables_t *observables, avg_nodestats_t *avg_nodestats, avg_observables_t *avg_observables) {
+void update_root_averages(system_t *system, observables_t *observables, avg_observables_t *avg_observables) {
 
 	double particle_mass, frozen_mass, curr_density;
 	sorbateAverages_t *sptr;
 
 	molecule_t *molecule_ptr;
 	static int counter = 0;
-	double m, factor, gammaratio;
+	double m, factor, gammaratio, sdom;
 
 	++counter;
 	m = (double)counter;
+	sdom = 1.0/sqrt(m-1.0);
 	factor = (m - 1.0)/m;
 
 	/* the physical observables */
@@ -218,124 +230,86 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		+ observables->energy / m;
 	avg_observables->energy_sq = factor*avg_observables->energy_sq 
 		+ (observables->energy*observables->energy) / m;
-	avg_observables->energy_error = 0.5*sqrt(avg_observables->energy_sq  
+	avg_observables->energy_error = sdom * sqrt(avg_observables->energy_sq  
 		- avg_observables->energy*avg_observables->energy);
 
 	avg_observables->energy_sq_sq = factor*avg_observables->energy_sq_sq 
 		+ pow(observables->energy, 4) / m;
-	avg_observables->energy_sq_error = 0.5*sqrt(avg_observables->energy_sq_sq  
+	avg_observables->energy_sq_error = sdom*sqrt(avg_observables->energy_sq_sq  
 		- pow(avg_observables->energy, 4));
 
 	avg_observables->coulombic_energy = factor*avg_observables->coulombic_energy 
 		+ observables->coulombic_energy / m;
 	avg_observables->coulombic_energy_sq = factor*avg_observables->coulombic_energy_sq 
 		+ (observables->coulombic_energy*observables->coulombic_energy) / m;
-	avg_observables->coulombic_energy_error = 0.5*sqrt(avg_observables->coulombic_energy_sq  
+	avg_observables->coulombic_energy_error = sdom*sqrt(avg_observables->coulombic_energy_sq  
 		- avg_observables->coulombic_energy*avg_observables->coulombic_energy);
 
 	avg_observables->rd_energy = factor*avg_observables->rd_energy 
 		+ observables->rd_energy / m;
 	avg_observables->rd_energy_sq = factor*avg_observables->rd_energy_sq 
 		+ (observables->rd_energy*observables->rd_energy) / m;
-	avg_observables->rd_energy_error = 0.5*sqrt(avg_observables->rd_energy_sq  
+	avg_observables->rd_energy_error = sdom*sqrt(avg_observables->rd_energy_sq  
 		- avg_observables->rd_energy*avg_observables->rd_energy);
 
 	avg_observables->polarization_energy = factor*avg_observables->polarization_energy 
 		+ observables->polarization_energy / m;
 	avg_observables->polarization_energy_sq = factor*avg_observables->polarization_energy_sq 
 		+ (observables->polarization_energy*observables->polarization_energy) / m;
-	avg_observables->polarization_energy_error = 0.5*sqrt(avg_observables->polarization_energy_sq  
+	avg_observables->polarization_energy_error = sdom*sqrt(avg_observables->polarization_energy_sq  
 		- avg_observables->polarization_energy*avg_observables->polarization_energy);
 
 	avg_observables->vdw_energy = factor*avg_observables->vdw_energy 
 		+ observables->vdw_energy / m;
 	avg_observables->vdw_energy_sq = factor*avg_observables->vdw_energy_sq 
 		+ (observables->vdw_energy*observables->vdw_energy) / m;
-	avg_observables->vdw_energy_error = 0.5*sqrt(avg_observables->vdw_energy_sq  
+	avg_observables->vdw_energy_error = sdom*sqrt(avg_observables->vdw_energy_sq  
 		- avg_observables->vdw_energy*avg_observables->vdw_energy);
 
 	avg_observables->dipole_rrms = factor*avg_observables->dipole_rrms 
 		+ observables->dipole_rrms / m;
 	avg_observables->dipole_rrms_sq = factor*avg_observables->dipole_rrms_sq 
 		+ (observables->dipole_rrms*observables->dipole_rrms) / m;
-	avg_observables->dipole_rrms_error = 0.5*sqrt(avg_observables->dipole_rrms_sq  
+	avg_observables->dipole_rrms_error = sdom*sqrt(avg_observables->dipole_rrms_sq  
 		- avg_observables->dipole_rrms*avg_observables->dipole_rrms);
 
 	avg_observables->kinetic_energy = factor*avg_observables->kinetic_energy 
 		+ observables->kinetic_energy / m;
 	avg_observables->kinetic_energy_sq = factor*avg_observables->kinetic_energy_sq 
 		+ (observables->kinetic_energy*observables->kinetic_energy) / m;
-	avg_observables->kinetic_energy_error = 0.5*sqrt(avg_observables->kinetic_energy_sq  
+	avg_observables->kinetic_energy_error = sdom*sqrt(avg_observables->kinetic_energy_sq  
 		- avg_observables->kinetic_energy*avg_observables->kinetic_energy);
 
 	avg_observables->temperature = factor*avg_observables->temperature 
 		+ observables->temperature / m;
 	avg_observables->temperature_sq = factor*avg_observables->temperature_sq 
 		+ (observables->temperature*observables->temperature) / m;
-	avg_observables->temperature_error = 0.5*sqrt(avg_observables->temperature_sq 
+	avg_observables->temperature_error = sdom*sqrt(avg_observables->temperature_sq 
 		- avg_observables->temperature*avg_observables->temperature);
 
 	avg_observables->volume = factor*avg_observables->volume 
 		+ observables->volume / m;
 	avg_observables->volume_sq = factor*avg_observables->volume_sq 
 		+ (observables->volume*observables->volume) / m;
-	avg_observables->volume_error = 0.5*sqrt(avg_observables->volume_sq  
+	avg_observables->volume_error = sdom*sqrt(avg_observables->volume_sq  
 		- avg_observables->volume*avg_observables->volume);
 
 	avg_observables->N = factor*avg_observables->N 
 		+ observables->N / m;
 	avg_observables->N_sq = factor*avg_observables->N_sq 
 		+ (observables->N*observables->N) / m;
-	avg_observables->N_error = 0.5*sqrt(avg_observables->N_sq  
+	avg_observables->N_error = sdom*sqrt(avg_observables->N_sq  
 		- avg_observables->N*avg_observables->N);
 
 	avg_observables->spin_ratio = factor*avg_observables->spin_ratio 
 		+ observables->spin_ratio / m;
 	avg_observables->spin_ratio_sq = factor*avg_observables->spin_ratio_sq 
 		+ (observables->spin_ratio*observables->spin_ratio) / m;
-	avg_observables->spin_ratio_error = 0.5*sqrt(avg_observables->spin_ratio_sq  
+	avg_observables->spin_ratio_error = sdom*sqrt(avg_observables->spin_ratio_sq  
 		- avg_observables->spin_ratio*avg_observables->spin_ratio);
 
 	avg_observables->NU = factor*avg_observables->NU 
 		+ observables->NU / m;
-
-	/* avg in nodestats */
-	avg_observables->boltzmann_factor = factor*avg_observables->boltzmann_factor 
-		+ avg_nodestats->boltzmann_factor / m;
-	avg_observables->boltzmann_factor_sq = factor*avg_observables->boltzmann_factor_sq 
-		+ avg_nodestats->boltzmann_factor_sq / m;
-	avg_observables->boltzmann_factor_error = 0.5*sqrt(avg_observables->boltzmann_factor_sq 
-		- avg_observables->boltzmann_factor*avg_observables->boltzmann_factor);
-
-	avg_observables->acceptance_rate = factor*avg_observables->acceptance_rate 
-		+ avg_nodestats->acceptance_rate / m;
-	avg_observables->acceptance_rate_insert = factor*avg_observables->acceptance_rate_insert 
-		+ avg_nodestats->acceptance_rate_insert / m;
-	avg_observables->acceptance_rate_remove = factor*avg_observables->acceptance_rate_remove 
-		+ avg_nodestats->acceptance_rate_remove / m;
-	avg_observables->acceptance_rate_displace = factor*avg_observables->acceptance_rate_displace 
-		+ avg_nodestats->acceptance_rate_displace / m;
-	avg_observables->acceptance_rate_adiabatic = factor*avg_observables->acceptance_rate_adiabatic 
-		+ avg_nodestats->acceptance_rate_adiabatic / m;
-	avg_observables->acceptance_rate_spinflip = factor*avg_observables->acceptance_rate_spinflip 
-		+ avg_nodestats->acceptance_rate_spinflip / m;
-	avg_observables->acceptance_rate_volume = factor*avg_observables->acceptance_rate_volume 
-		+ avg_nodestats->acceptance_rate_volume / m;
-
-	avg_observables->cavity_bias_probability = factor*avg_observables->cavity_bias_probability 
-		+ avg_nodestats->cavity_bias_probability / m;
-	avg_observables->cavity_bias_probability_sq = factor*avg_observables->cavity_bias_probability_sq 
-		+ avg_nodestats->cavity_bias_probability_sq / m;
-	avg_observables->cavity_bias_probability_error = 0.5*sqrt(avg_observables->cavity_bias_probability_sq 
-		- avg_observables->cavity_bias_probability*avg_observables->cavity_bias_probability);
-
-	avg_observables->polarization_iterations = factor*avg_observables->polarization_iterations 
-		+ avg_nodestats->polarization_iterations / m;
-	avg_observables->polarization_iterations_sq = factor*avg_observables->polarization_iterations_sq 
-		+ avg_nodestats->polarization_iterations_sq / m;
-	avg_observables->polarization_iterations_error = 0.5*sqrt(avg_observables->polarization_iterations_sq 
-		- avg_observables->polarization_iterations*avg_observables->polarization_iterations);
-
 
 	/* get the mass of the two phases */
 	system->observables->total_mass = 0;
@@ -357,7 +331,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		+ curr_density/m;
 	avg_observables->density_sq = factor * avg_observables->density_sq 
 		+ (curr_density*curr_density)/m;
-	avg_observables->density_error = 0.5*sqrt(avg_observables->density_sq 
+	avg_observables->density_error = sdom*sqrt(avg_observables->density_sq 
 		- (avg_observables->density)*(avg_observables->density) );
 
 	/* needed for calculating sstdev (stdev of stdev) */
@@ -373,7 +347,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 	avg_observables->heat_capacity = (KB*NA/1000.0)*(avg_observables->energy_sq 
 		- avg_observables->energy*avg_observables->energy)/(system->temperature*system->temperature);
 	/* error in heat capacity is the standard deviation of the variance, = 2*sstdev */
-	avg_observables->heat_capacity_error = 2.0 * gammaratio * avg_observables->heat_capacity;
+	avg_observables->heat_capacity_error = sdom * 2.0 * gammaratio * avg_observables->heat_capacity;
 
 	/* compressibility */
 	if ( system->ensemble != ENSEMBLE_NPT )
@@ -383,7 +357,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		avg_observables->compressibility = ATM2PASCALS * pow(METER2ANGSTROM,-3) *
 			( avg_observables->volume_sq - avg_observables->volume * avg_observables->volume ) / 
 			( KB * system->temperature * avg_observables->volume );
-	avg_observables->compressibility_error = 2.0 * gammaratio * avg_observables->compressibility;
+	avg_observables->compressibility_error = sdom * 2.0 * gammaratio * avg_observables->compressibility;
 
 	/* we have a solid phase */
 	if(frozen_mass > 0.0) {
@@ -391,12 +365,12 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 		/* percent weight */
 		avg_observables->percent_wt = 100.0*avg_observables->N*particle_mass/(frozen_mass 
 			+ avg_observables->N*particle_mass);
-		avg_observables->percent_wt_error = 100.0*avg_observables->N_error*particle_mass/(frozen_mass 
+		avg_observables->percent_wt_error = sdom * 100.0*avg_observables->N_error*particle_mass/(frozen_mass 
 			+ avg_observables->N_error*particle_mass);
 
 		/* percent weight like ME*/
 		avg_observables->percent_wt_me = 100.0*avg_observables->N*particle_mass/frozen_mass;
-		avg_observables->percent_wt_me_error = 100.0*avg_observables->N_error*particle_mass/frozen_mass;
+		avg_observables->percent_wt_me_error = sdom * 100.0*avg_observables->N_error*particle_mass/frozen_mass;
 
 		/* excess weight mg/g */
 		if(system->free_volume > 0.0) {
@@ -407,12 +381,12 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 			else
 				avg_observables->excess_ratio = 1000.0*(avg_observables->N*particle_mass 
 					- (particle_mass*system->free_volume*system->pressure*ATM2REDUCED)/system->temperature)/frozen_mass;
-			avg_observables->excess_ratio_error = 1000.0*avg_observables->N_error*particle_mass/frozen_mass;
+			avg_observables->excess_ratio_error = sdom * 1000.0*avg_observables->N_error*particle_mass/frozen_mass;
 
 
 			/* pore density */ //only valid for constant V, pure systems
 			avg_observables->pore_density = curr_density * system->pbc->volume / system->free_volume;
-			avg_observables->pore_density_error = avg_observables->N_error*particle_mass/(system->free_volume*NA*A32CM3);
+			avg_observables->pore_density_error = sdom * avg_observables->N_error*particle_mass/(system->free_volume*NA*A32CM3);
 
 		}
 
@@ -427,6 +401,86 @@ void update_root_averages(system_t *system, observables_t *observables, avg_node
 	}
 
 
+}
+
+
+void clear_avg_nodestats(system_t * system) {
+
+	avg_observables_t * avg_observables = system->avg_observables;
+	avg_nodestats_t * avg_nodestats = system->avg_nodestats;
+
+	avg_nodestats->counter = 0;
+
+	avg_observables->boltzmann_factor = 0;
+	avg_observables->boltzmann_factor_sq = 0;
+
+	avg_observables->acceptance_rate = 0;
+	avg_observables->acceptance_rate_insert = 0;
+	avg_observables->acceptance_rate_remove = 0;
+	avg_observables->acceptance_rate_displace = 0;
+	avg_observables->acceptance_rate_adiabatic = 0;
+	avg_observables->acceptance_rate_spinflip = 0;
+	avg_observables->acceptance_rate_volume = 0;
+	avg_observables->acceptance_rate_ptemp = 0;
+
+	avg_observables->cavity_bias_probability = 0;
+	avg_observables->cavity_bias_probability_sq = 0;
+
+	avg_observables->polarization_iterations = 0;
+	avg_observables->polarization_iterations_sq = 0;
+
+	return;
+}
+
+
+void update_root_nodestats(system_t *system, avg_nodestats_t *avg_nodestats, avg_observables_t *avg_observables) {
+
+	double m, factor, sdom;
+
+	m = (double)(++system->avg_nodestats->counter);
+	sdom = 1.0/sqrt(floor((double)((system->step+1.0)*size)/(double)(system->corrtime))-1.0);
+	factor = (m - 1.0)/m;
+
+	avg_observables->boltzmann_factor = factor*avg_observables->boltzmann_factor 
+		+ avg_nodestats->boltzmann_factor / m;
+	avg_observables->boltzmann_factor_sq = factor*avg_observables->boltzmann_factor_sq 
+		+ avg_nodestats->boltzmann_factor_sq / m;
+	avg_observables->boltzmann_factor_error = sdom*sqrt(avg_observables->boltzmann_factor_sq 
+		- avg_observables->boltzmann_factor*avg_observables->boltzmann_factor);
+
+	avg_observables->acceptance_rate = factor*avg_observables->acceptance_rate 
+		+ avg_nodestats->acceptance_rate / m;
+	avg_observables->acceptance_rate_insert = factor*avg_observables->acceptance_rate_insert 
+		+ avg_nodestats->acceptance_rate_insert / m;
+	avg_observables->acceptance_rate_remove = factor*avg_observables->acceptance_rate_remove 
+		+ avg_nodestats->acceptance_rate_remove / m;
+	avg_observables->acceptance_rate_displace = factor*avg_observables->acceptance_rate_displace 
+		+ avg_nodestats->acceptance_rate_displace / m;
+	avg_observables->acceptance_rate_adiabatic = factor*avg_observables->acceptance_rate_adiabatic 
+		+ avg_nodestats->acceptance_rate_adiabatic / m;
+	avg_observables->acceptance_rate_spinflip = factor*avg_observables->acceptance_rate_spinflip 
+		+ avg_nodestats->acceptance_rate_spinflip / m;
+	avg_observables->acceptance_rate_volume = factor*avg_observables->acceptance_rate_volume 
+		+ avg_nodestats->acceptance_rate_volume / m;
+	avg_observables->acceptance_rate_ptemp = factor*avg_observables->acceptance_rate_ptemp 
+		+ avg_nodestats->acceptance_rate_ptemp / m;
+
+	avg_observables->cavity_bias_probability = factor*avg_observables->cavity_bias_probability 
+		+ avg_nodestats->cavity_bias_probability / m;
+	avg_observables->cavity_bias_probability_sq = factor*avg_observables->cavity_bias_probability_sq 
+		+ avg_nodestats->cavity_bias_probability_sq / m;
+	avg_observables->cavity_bias_probability_error = sdom*sqrt(avg_observables->cavity_bias_probability_sq 
+		- avg_observables->cavity_bias_probability*avg_observables->cavity_bias_probability);
+
+	avg_observables->polarization_iterations = factor*avg_observables->polarization_iterations 
+		+ avg_nodestats->polarization_iterations / m;
+	avg_observables->polarization_iterations_sq = factor*avg_observables->polarization_iterations_sq 
+		+ avg_nodestats->polarization_iterations_sq / m;
+	avg_observables->polarization_iterations_error = sdom*sqrt(avg_observables->polarization_iterations_sq 
+		- avg_observables->polarization_iterations*avg_observables->polarization_iterations);
+
+
+	return;
 }
 
 

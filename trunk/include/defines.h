@@ -74,11 +74,14 @@
 #define QUANTUM_ROTATION_SUM			10
 
 #define FEYNMAN_KLEINERT_TOLERANCE              1.0e-12                 /* tolerance in A^2 */
-#define SMALL_dR																1.0e-12 /*tolerance in r and r->img when comparisons are made for system->pbc->cutoff and similar boxsize issues*/
+/*tolerance in r and r->img when comparisons are made for system->pbc->cutoff and similar boxsize issues*/
+#define SMALL_dR																1.0e-12 
+/*default frequency for parallel tempering bath swaps*/
+#define PTEMP_FREQ_DEFAULT 20
 
 
 enum { REAL, IMAGINARY };
-enum { READ, WRITE }; //file open modes for filecheck()
+enum { READ, WRITE, APPEND }; //file open modes for filecheck()
 enum { DAMPING_OFF, DAMPING_LINEAR, DAMPING_EXPONENTIAL };
 enum { NUCLEAR_SPIN_PARA, NUCLEAR_SPIN_ORTHO };
 enum {

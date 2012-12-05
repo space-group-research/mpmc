@@ -443,7 +443,7 @@ void ensemble_replay_options(system_t * system) {
 }
 
 void mc_options (system_t * system) {
-	int i;
+	int i, j;
 	char linebuf[MAXLINE];
 
 	if (system->numsteps < 1) {
@@ -461,6 +461,56 @@ void mc_options (system_t * system) {
 		sprintf(linebuf, "INPUT: system correlation time is %d steps\n", system->corrtime);
 		output(linebuf);
 	}
+
+#ifdef MPI
+	if(system->parallel_tempering ) {
+		if (!system->ptemp_freq) system->ptemp_freq = PTEMP_FREQ_DEFAULT;
+		system->ptemp = calloc(1,sizeof(ptemp_t));
+		memnullcheck(system->ptemp, sizeof(ptemp_t), __LINE__-1, __FILE__);
+		system->ptemp->templist = calloc(size,sizeof(double)); //size is an MPI variable
+		memnullcheck(system->ptemp->templist,size*sizeof(double),__LINE__-1,__FILE__);
+		if ( system->max_temperature > system->temperature ) {
+			output("INPUT: parallel tempering activated\n");
+			sprintf(linebuf, "INPUT: parallel tempering frequency set to %d steps.\n", system->ptemp_freq);
+			output(linebuf);
+		}
+		else {
+			error("INPUT: parallel tempering requires max_temperature > temperature\n");
+			die(-1);
+		}
+		if ( system->ensemble == ENSEMBLE_NVE ) {
+			error("INPUT: parallel tempering is not implemented for NVE\n");
+			die(-1);
+		}
+		if ( system->simulated_annealing ) {
+			error("INPUT: parallel tempering is incompatible with simulated annealing\n");
+			die(-1);
+		}
+		if ( size < 2 ) {
+			error("INPUT: you need more than 1 core to perform parallel tempering, idiot\n");
+			die(-1);
+		}
+		if ( system->feynman_hibbs ) {
+			error("INPUT: parallel_tempering not compatible with temperature-dependent potential (Feynman Hibbs)\n");
+			die(-1);
+		}
+		/* set temperature of baths */
+		system->ptemp->index = calloc(size,sizeof(int));
+		memnullcheck(system->ptemp->index, size*sizeof(int), __LINE__-1, __FILE__-1);
+		for ( j=0; j<size; j++ ) {
+			system->ptemp->templist[j] = system->temperature * 
+				pow(pow(system->max_temperature/system->temperature,1.0/(size-1)), j);
+			system->ptemp->index[j] = j;
+		}
+		//set local temperature
+		system->temperature = system->ptemp->templist[rank];
+	}	
+#else
+	if(system->parallel_tempering) {
+		error("INPUT: parallel tempering can only be used when running in parallel\n");
+		die(-1);
+	}
+#endif
 
 	if(system->ensemble != ENSEMBLE_NVE) {
 		if(system->temperature <= 0.0) {
@@ -486,7 +536,6 @@ void mc_options (system_t * system) {
 			die(-1);
 		} else {
 			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
-//		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //???? shouldn't be set in NPT, right?
 			output(linebuf);
 		}
 		if ( system->ewald_alpha != EWALD_ALPHA ) {
@@ -515,7 +564,6 @@ void mc_options (system_t * system) {
 		} else {
 			if(system->ensemble == ENSEMBLE_UVT) {
 				sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
-	//		sprintf(linebuf, "INPUT: fugacity is set to %.3f\n", system->fugacity); //not yet set?
 				output(linebuf);
 			}
 

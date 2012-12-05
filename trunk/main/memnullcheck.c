@@ -68,6 +68,9 @@ int filecheck ( void * ptr, char * filename, int mode ) {
 			case WRITE:
 				sprintf(linebuf,"ERROR: Failed to open file %s for write\n", filename);
 				break;
+			case APPEND:
+				sprintf(linebuf,"ERROR: Failed to open file %s for append\n", filename);
+				break;
 			default:
 				sprintf(linebuf,"ERROR: Failed to open file %s\n", filename);
 		}

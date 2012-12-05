@@ -298,7 +298,20 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->volume_probability)) ) return 1; }
 	else if(!strcasecmp(token[0], "volume_change_factor")) 
 		{ if ( safe_atof(token[1],&(system->volume_change_factor)) ) return 1; }
+	else if(!strcasecmp(token[0], "ptemp_freq")) 
+		{ if ( safe_atoi(token[1],&(system->ptemp_freq)) ) return 1; }
 	/*end setting MC options*/
+
+	/* parallel tempering options */
+	else if(!strcasecmp(token[0], "parallel_tempering")) {
+		if(!strcasecmp(token[1], "on")) 
+			system->parallel_tempering = 1;
+		else if(!strcasecmp(token[1], "off")) 
+			system->parallel_tempering = 0;
+		else return 1; //no match
+	}
+	else if(!strcasecmp(token[0], "max_temperature")) 
+		{ if ( safe_atof(token[1],&(system->max_temperature)) ) return 1; }
 
 	else if(!strcasecmp(token[0], "temperature")) 
 		{ if ( safe_atof(token[1],&(system->temperature)) ) return 1; }

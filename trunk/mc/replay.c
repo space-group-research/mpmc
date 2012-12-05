@@ -59,13 +59,14 @@ int replay_trajectory (system_t * system) {
 		if(system->quantum_rotation) quantum_system_rotational_energies(system);
 #endif // QM_ROTATION
 
-		update_root_averages(system, system->observables, system->avg_nodestats, system->avg_observables);
+		update_root_nodestats(system, system->avg_nodestats, system->avg_observables);
+		update_root_averages(system, system->observables, system->avg_observables);
 		update_sorbate_stats(system);
 
 		if ( system->file_pointers.fp_energy ) 
-			write_observables(system->file_pointers.fp_energy, system, system->observables);
+			write_observables(system->file_pointers.fp_energy, system, system->observables, system->temperature);
 		if ( system->file_pointers.fp_energy_csv ) 
-			write_observables_csv(system->file_pointers.fp_energy_csv, system, system->observables);
+			write_observables_csv(system->file_pointers.fp_energy_csv, system, system->observables, system->temperature);
 
 		// calculate pressure if requested
 		if ( system->calc_pressure ) {

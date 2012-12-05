@@ -4,13 +4,10 @@ typedef struct _complex_t {
 	double imaginary;
 } complex_t;
 
-/*
-//used for calculation of ETA and sec/step
-typedef struct timeval {
-	long tv_sec; //seconds
-	long tv_usec; //microseconds
-} timeval_t;
-*/
+typedef struct _ptemp {
+	int * index; 
+	double * templist;
+} ptemp_t;
 
 typedef struct _pair {
 	int frozen; //are they both MOF atoms, for instance
@@ -112,21 +109,22 @@ typedef struct _spherical_harmonic {
 
 typedef struct _nodestats {
 	int accept, reject;
-	int accept_insert, accept_remove, accept_displace, accept_adiabatic, accept_spinflip, accept_volume;
-	int reject_insert, reject_remove, reject_displace, reject_adiabatic, reject_spinflip, reject_volume;
+	int accept_insert, accept_remove, accept_displace, accept_adiabatic, accept_spinflip, accept_volume, accept_ptemp;
+	int reject_insert, reject_remove, reject_displace, reject_adiabatic, reject_spinflip, reject_volume, reject_ptemp;
 	double boltzmann_factor;
 	double acceptance_rate;
 	double acceptance_rate_insert, acceptance_rate_remove, acceptance_rate_displace;
-	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume;
+	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume, acceptance_rate_ptemp;
 	double cavity_bias_probability;
 	double polarization_iterations;
 } nodestats_t;
 
 typedef struct _avg_nodestats {
+	int counter;
 	double boltzmann_factor, boltzmann_factor_sq;
 	double acceptance_rate;
-	double acceptance_rate_insert, acceptance_rate_remove, acceptance_rate_displace;
-	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume;
+	double acceptance_rate_insert, acceptance_rate_remove, acceptance_rate_displace, acceptance_rate_ptemp;
+	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume, acceprance_rate_ptemp;
 	double cavity_bias_probability, cavity_bias_probability_sq;
 	double polarization_iterations, polarization_iterations_sq;
 } avg_nodestats_t;
@@ -182,7 +180,7 @@ typedef struct _avg_observables {
 
 	double acceptance_rate;
 	double acceptance_rate_insert, acceptance_rate_remove, acceptance_rate_displace;
-	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume;
+	double acceptance_rate_adiabatic, acceptance_rate_spinflip, acceptance_rate_volume, acceptance_rate_ptemp;
 
 	/* these quantities are based on averages; the error is not easily calculated */
 	double qst;
@@ -254,11 +252,10 @@ typedef struct _param {
 typedef struct _file_pointers {
 	FILE *fp_energy;
 	FILE *fp_energy_csv;
-	FILE *fp_dipole;
 	FILE *fp_field;
 	FILE *fp_histogram;
 	FILE *fp_frozen;
-	FILE *fp_traj;
+//	FILE *fp_traj; //unused
 	FILE *fp_traj_replay;
 } file_pointers_t;
 
@@ -324,12 +321,17 @@ typedef struct _system {
 
 	//monte carlo controls
 	int numsteps, corrtime, step;
+	int ptemp_freq;
 	double move_probability, rot_probability, insert_probability;
 	double adiabatic_probability, spinflip_probability, gwp_probability, volume_probability;
 	double volume_change_factor, last_volume; //NPT
 	//auto-reject options
 	//first is in terms of sigma and only applies to LJ; latter is in Angstroms and applies to all pairs
 	int cavity_autoreject, cavity_autoreject_absolute; 
+	//parallel tempering options
+	int parallel_tempering;
+	double max_temperature;
+	ptemp_t * ptemp;
 
 	//cavity stuff
 	int cavity_bias, cavity_grid_size;

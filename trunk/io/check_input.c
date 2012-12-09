@@ -91,6 +91,18 @@ void ensemble_surf_options ( system_t * system ) {
 		die(-1);
 	}
 
+	/* Surface trajectory file */
+	if(system->surf_output) {
+		sprintf(linebuf, "INPUT: will be writing surface trajectory to ./%s\n", system->surf_output);
+		output(linebuf);
+		/* Set default surf_print_level */
+		if(!system->surf_print_level)
+			system->surf_print_level = 3;
+
+		sprintf(linebuf, "INPUT: surface print level is %d\n", system->surf_print_level);
+		output(linebuf);
+	}
+
 	return;
 }
 

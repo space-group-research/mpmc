@@ -137,6 +137,7 @@ void molecule_rotate(molecule_t *molecule, double alpha, double beta, double gam
 int surface(system_t *system) {
 
 	int i;
+	int ao, bo, go, am, bm, gm, surf_print; /* for surf_output */
 	int avg_counter;
 	double avg_factor;
 	double r, pe_es, pe_rd, pe_polar, pe_vdw, pe_total;
@@ -144,6 +145,11 @@ int surface(system_t *system) {
 	double alpha_origin, beta_origin, gamma_origin;
 	double alpha_move, beta_move, gamma_move;
 
+	/* open surface trajectory file */
+	if(system->surf_output) {
+		if(open_surf_traj_file(system) < 0)
+			error("Surface: could not open surface trajectory file\n");
+	}
 
 	/* output the potential energy curve */
 	if(system->surf_preserve) {	/* preserve the orientation and only calculate based on displacement */
@@ -198,6 +204,13 @@ int surface(system_t *system) {
 			pe_rd_avg = 0;
 			pe_polar_avg = 0;
 			pe_vdw_avg = 0;
+			ao = 0;
+			bo = 0;
+			go = 0;
+			am = 0;
+			bm = 0;
+			gm = 0;
+			surf_print = 0;
 
 			/* average over the angles */
 			for(alpha_origin = 0; alpha_origin <= 2.0*M_PI; alpha_origin += system->surf_ang) {
@@ -207,10 +220,19 @@ int surface(system_t *system) {
 							for(beta_move = 0; beta_move <= M_PI; beta_move += system->surf_ang) {
 								for(gamma_move = 0; gamma_move <= 2.0*M_PI; gamma_move += system->surf_ang) {
 
+									++gm;
 									++avg_counter;
 									avg_factor = ((double)(avg_counter - 1))/((double)(avg_counter));
 
 									surface_dimer_geometry(system, r, alpha_origin, beta_origin, gamma_origin, alpha_move, beta_move, gamma_move);
+
+									if(system->surf_print_level == 6)
+										surf_print = 1;
+
+									if(system->surf_output && surf_print == 1)
+										write_surface_traj(system->file_pointers.fp_surf, system);
+
+									surf_print = 0; /* turn off printing */
 
 									if(system->surf_decomp) {
 
@@ -235,10 +257,25 @@ int surface(system_t *system) {
 									surface_dimer_geometry(system, 0.0, -alpha_origin, -beta_origin, -gamma_origin, -alpha_move, -beta_move, -gamma_move);
 
 								} /* end gamma_move */
+								++bm;
+								if(system->surf_print_level == 5)
+									surf_print = 1;
 							} /* end beta_move */
+							++am;
+							if(system->surf_print_level == 4)
+								surf_print = 1;
 						} /* end alpha_move */
+						++go;
+						if(system->surf_print_level == 3)
+							surf_print = 1;
 					} /* end gamma_origin */
+					++bo;
+					if(system->surf_print_level == 2)
+						surf_print = 1;
 				} /* end beta_origin */
+				++ao;
+				if (system->surf_print_level == 1)
+					surf_print = 1;
 			} /* end alpha_origin */
 
 			if(system->surf_decomp) {

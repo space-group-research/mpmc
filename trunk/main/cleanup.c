@@ -251,6 +251,7 @@ void cleanup(system_t *system) {
 	free(system->energy_output);
 	free(system->energy_output_csv);
 
+	if(system->surf_output) free(system->surf_output);
 	if(system->traj_output) free(system->traj_output);
 	if(system->traj_input) free(system->traj_input);
 	if(system->dipole_output) free(system->dipole_output);

@@ -94,6 +94,8 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->surf_inc)) ) return 1; }
 	else if(!strcasecmp(token[0], "surf_ang" ))
 		{ if ( safe_atof(token[1],&(system->surf_ang)) ) return 1; }
+	else if(!strcasecmp(token[0], "surf_print_level" ))
+		{ if ( safe_atoi(token[1],&(system->surf_print_level)) ) return 1; }
 	//allows us to specify the surf-fit scales in the input file
 	else if(!strcasecmp(token[0], "surf_weight_constant")) {
 		{ if ( safe_atof(token[1],&(system->surf_weight_constant)) ) return 1; }
@@ -150,6 +152,13 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[4],&(system->surf_preserve_rotation_on->alpha2)) ) return 1; }
 		{ if ( safe_atof(token[5],&(system->surf_preserve_rotation_on->beta2)) ) return 1; }
 		{ if ( safe_atof(token[6],&(system->surf_preserve_rotation_on->gamma2)) ) return 1; }
+	}
+	else if (!strcasecmp(token[0], "surf_output")) {
+		if(!system->surf_output) {
+			system->surf_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->surf_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->surf_output,token[1]);
+		} else return 1;
 	}
 
 	//spectre options

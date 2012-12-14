@@ -254,7 +254,7 @@ int surface(system_t *system) {
 
 									}
 									//unrotate (not the most efficent thing to be doing, but oh well)
-									surface_dimer_geometry(system, 0.0, -alpha_origin, -beta_origin, -gamma_origin, -alpha_move, -beta_move, -gamma_move);
+									surface_dimer_geometry(system, 0.0, -gamma_origin, -beta_origin, -alpha_origin, -gamma_move, -beta_move, -alpha_move);
 
 								} /* end gamma_move */
 								++bm;

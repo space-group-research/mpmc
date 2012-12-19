@@ -219,6 +219,7 @@ void thole_resize_matrices(system_t *system) {
 	//(RE)allocate the A matrix
 	system->A_matrix=calloc(N,sizeof(double*));
 	memnullcheck(system->A_matrix,N*sizeof(double*), __LINE__-1, __FILE__);
+
 	for (i=0; i< N; i++ ) {
 		system->A_matrix[i]=malloc(N*sizeof(double));
 		memnullcheck(system->A_matrix[i],N*sizeof(double), __LINE__-1, __FILE__);

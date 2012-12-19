@@ -169,7 +169,10 @@ int thole_iterative(system_t *system) {
 	init_dipoles(system);
 
 	/* if ZODID is enabled, then stop here and just return the alpha*E dipoles */
-	if(system->polar_zodid) return(0);
+	if(system->polar_zodid) {
+		free(ranked_array);
+		return(0);
+	}
 
 	/* iterative solver of the dipole field equations */
 	keep_iterating = 1;
@@ -187,6 +190,8 @@ int thole_iterative(system_t *system) {
 				}
 			//set convergence failure flag
 			system->iter_success = 1;
+			
+			free(ranked_array);
 			return(iteration_counter);
 		}
 

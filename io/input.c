@@ -424,6 +424,15 @@ int do_command (system_t * system, char ** token ) {
 			system->rd_lrc = 0;
 		else return 1;
 	}
+	else if(!strcasecmp(token[0], "rd_crystal")) {
+		if(!strcasecmp(token[1], "on"))
+			system->rd_crystal = 1;
+		else if(!strcasecmp(token[1], "off"))
+			system->rd_crystal = 0;
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "rd_crystal_order"))
+		{ if ( safe_atoi(token[1],&(system->rd_crystal_order)) ) return 1; }
 	else if(!strcasecmp(token[0], "rd_anharmonic")) {
 		if(!strcasecmp(token[1], "on"))
 			system->rd_anharmonic = 1;

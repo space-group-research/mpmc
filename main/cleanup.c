@@ -148,11 +148,7 @@ void free_matrices(system_t *system) {
 	if ( !system->A_matrix && !system->B_matrix )
 		return; //nothing to do
 
-	for(molecule_ptr = system->molecules, N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-			++N;
-
-	N *= 3;
+	N = 3*system->checkpoint->N_atom;
 
 	for(i = 0; i < N; i++) {
 		free(system->A_matrix[i]);

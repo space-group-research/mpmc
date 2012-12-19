@@ -349,7 +349,7 @@ int mc(system_t *system) {
 			current_energy = initial_energy; //used in parallel tempering
 
 			if ( system->iter_success == 1 )  {
-				sprintf(linebuf,"MC: iterative solver failed on accepted mc step (step %d)\n", system->step);
+				sprintf(linebuf,"MC: iterative solver failed on mc step (step %d)\n", system->step);
 				error(linebuf);
 			}
 
@@ -385,6 +385,18 @@ int mc(system_t *system) {
 
 			/*write trajectory files for each node*/
 			write_states(system);
+
+			/*restart files for each node*/
+			if(write_molecules(system, system->pqr_restart) < 0) {
+				error("MC: could not write restart state to disk\n");
+				return(-1);
+			}
+
+			/*dipole/field data for each node*/
+			if(system->polarization) {
+				write_dipole(system);
+				write_field(system);
+			}
 
 			/* zero the send buffer */
 			memset(snd_strct, 0, msgsize);
@@ -451,36 +463,25 @@ int mc(system_t *system) {
 					return(-1);
 				}
 
-				if(write_molecules(system, system->pqr_restart) < 0) {
-					error("MC: could not write restart state to disk\n");
-					return(-1);
-				}
-
-				if(system->polarization) {
-					write_dipole(system);
-					write_field(system);
-				}
-
 			} /* !rank */
 		} /* corrtime */
 	} /* main loop */
 
 	/* write output, close any open files */
 	free(snd_strct);
+	if(write_molecules(system, system->pqr_output) < 0) {
+		error("MC: could not write final state to disk\n");
+		return(-1);
+	}
 	if(!rank) {
-		if(write_molecules(system, system->pqr_output) < 0) {
-			error("MC: could not write final state to disk\n");
-			return(-1);
-		}
 		close_files(system);
 		free(rcv_strct);
 		free(temperature_mpi);
 	}
 
-		free(observables_mpi);
-		free(avg_nodestats_mpi);
+	free(observables_mpi);
+	free(avg_nodestats_mpi);
 
 	return(0);
-
 }
 

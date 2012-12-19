@@ -890,6 +890,16 @@ int check_system(system_t *system) {
 	if(system->wolf) output("INPUT: ES Wolf summation active\n");
 	if(system->rd_lrc) output("INPUT: rd long-range corrections are ON\n");
 		else output("INPUT: rd long-range corrections are OFF\n");
+	if(system->rd_crystal) {
+		if(system->rd_crystal_order <= 0) {
+			error("INPUT: rd crystal order must be positive\n");
+			return(-1);
+		}
+		else {
+			sprintf(linebuf,"INPUT: rd crystal order set to %d.\n", system->rd_crystal_order);
+			output(linebuf);
+		}
+	}
 	if(system->sg) output("INPUT: Molecular potential is Silvera-Goldman\n");
 	if(system->waldmanhagler) output("INPUT: Using Waldman-Hagler mixing rules for LJ-interactions.\n");
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");

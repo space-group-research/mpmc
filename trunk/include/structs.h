@@ -370,7 +370,7 @@ typedef struct _system {
 	// energy-corrections
 	int feynman_hibbs, feynman_kleinert, feynman_hibbs_order;
 	int vdw_fh_2be; //2BE method for polarvdw 
-	int rd_lrc;
+	int rd_lrc, rd_crystal, rd_crystal_order;
 
 	// uvt fugacity functions
 	int h2_fugacity, co2_fugacity, ch4_fugacity, n2_fugacity, user_fugacities;

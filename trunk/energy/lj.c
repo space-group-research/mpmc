@@ -45,7 +45,7 @@ double lj_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_p
 	return corr;
 }
 
-double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr ) {
+double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr, double cutoff ) {
 
 	double sig_cut, sig3, sig_cut3, sig_cut9;
 	double corr;
@@ -60,7 +60,7 @@ double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr ) {
 
 		pair_ptr->last_volume = system->pbc->volume;
 
-		sig_cut = fabs(pair_ptr->sigma)/system->pbc->cutoff;
+		sig_cut = fabs(pair_ptr->sigma)/cutoff;
 		sig3 = fabs(pair_ptr->sigma);
 		sig3 *= sig3*sig3;
 		sig_cut3 = sig_cut*sig_cut*sig_cut;
@@ -76,7 +76,7 @@ double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr ) {
 	return corr;
 }
 
-double lj_lrc_self ( system_t * system, atom_t * atom_ptr ) {
+double lj_lrc_self ( system_t * system, atom_t * atom_ptr, double cutoff ) {
 	double sig_cut, sig3, sig_cut3, sig_cut9;
 	double corr = 0;
 
@@ -84,7 +84,7 @@ double lj_lrc_self ( system_t * system, atom_t * atom_ptr ) {
 		 !(atom_ptr->frozen) && //not frozen
 		 !(atom_ptr->spectre) ) { //not spectre 
 		
-		sig_cut = fabs(atom_ptr->sigma)/system->pbc->cutoff;
+		sig_cut = fabs(atom_ptr->sigma)/cutoff;
 		sig3 = fabs(atom_ptr->sigma);
 		sig3 *= sig3*sig3;
 		sig_cut3 = sig_cut*sig_cut*sig_cut;
@@ -106,8 +106,15 @@ double lj(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6, sigma_over_r6;
-	double potential, potential_classical;
+	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12;
+	double potential, potential_classical, cutoff;
+	int i,j,k;
+
+	//set the cutoff
+	if ( system->rd_crystal )
+		cutoff = 2.0 * system->pbc->cutoff * ((double)system->rd_crystal_order - 0.5);
+	else
+		cutoff = system->pbc->cutoff;
 
 	potential = 0;
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
@@ -118,17 +125,40 @@ double lj(system_t *system) {
 
 					pair_ptr->rd_energy = 0;
 
-					/* make sure we're not excluded or beyond the cutoff */
-					if(!((pair_ptr->rimg - SMALL_dR > system->pbc->cutoff) || pair_ptr->rd_excluded || pair_ptr->frozen)) {
+					// pair LRC (lj_crystal option should check that rd_lrc is off)
+					if ( system->rd_lrc ) pair_ptr->lrc = lj_lrc_corr(system,atom_ptr,pair_ptr,cutoff);
 
-						sigma_over_r = fabs(pair_ptr->sigma)/pair_ptr->rimg;
-						sigma_over_r6 = sigma_over_r*sigma_over_r*sigma_over_r;
-						sigma_over_r6 *= sigma_over_r6;
+					// to include a contribution, we require
+					if ( 	( pair_ptr->rimg - SMALL_dR < cutoff ) && //inside cutoff?
+								! pair_ptr->rd_excluded	 && //not excluded
+								! pair_ptr->frozen ) { //not frozen
+
+						//loop over unit cells
+						if ( system->rd_crystal ) {
+							sigma_over_r6 = 0;
+							sigma_over_r12 = 0;
+							for ( i = -system->rd_crystal_order+1; i<=system->rd_crystal_order-1; i++ )
+							for ( j = -system->rd_crystal_order+1; j<=system->rd_crystal_order-1; j++ )
+							for ( k = -system->rd_crystal_order+1; k<=system->rd_crystal_order-1; k++ ) {
+								sigma_over_r = fabs(pair_ptr->sigma)/sqrt(
+									pow(atom_ptr->pos[0] - pair_ptr->atom->pos[0] + i*system->pbc->basis[0][0],2) +
+									pow(atom_ptr->pos[1] - pair_ptr->atom->pos[1] + j*system->pbc->basis[1][1],2) +
+									pow(atom_ptr->pos[2] - pair_ptr->atom->pos[2] + k*system->pbc->basis[2][2],2) );
+								sigma_over_r6 += pow(sigma_over_r,6);
+								sigma_over_r12 += pow(sigma_over_r,12);
+							}
+						}
+						else { //otherwise, calculate as normal
+							sigma_over_r = fabs(pair_ptr->sigma)/pair_ptr->rimg;
+							sigma_over_r6 = sigma_over_r*sigma_over_r*sigma_over_r;
+							sigma_over_r6 *= sigma_over_r6;
+							sigma_over_r12 = sigma_over_r6 * sigma_over_r6;
+						}
 
 						/* the LJ potential */
 						if(system->spectre) {
 							term6 = 0;
-							term12 = system->scale_rd*sigma_over_r6*sigma_over_r6;
+							term12 = system->scale_rd*sigma_over_r12;
 							potential_classical = term12;
 						} 
 						else {
@@ -139,7 +169,7 @@ double lj(system_t *system) {
 								}
 
 							if(pair_ptr->attractive_only) term12 = 0;
-								else term12 = sigma_over_r6*sigma_over_r6;
+								else term12 = sigma_over_r12;
 
 							potential_classical = 4.0*pair_ptr->epsilon*(term12 - term6);
 						}
@@ -156,8 +186,6 @@ double lj(system_t *system) {
 
 					}
 
-					// pair LRC
-					if ( system->rd_lrc ) pair_ptr->lrc = lj_lrc_corr(system,atom_ptr,pair_ptr);
 
 				} /* if recalculate */
 
@@ -172,7 +200,7 @@ double lj(system_t *system) {
 	if ( system->rd_lrc ) 
 		for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)
 			for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-				potential += lj_lrc_self(system,atom_ptr);
+				potential += lj_lrc_self(system,atom_ptr,cutoff);
 
 	return(potential);
 

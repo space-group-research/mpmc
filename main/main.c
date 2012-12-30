@@ -56,9 +56,6 @@ int main(int argc, char **argv) {
 	sprintf(linebuf, "MAIN: running parameters found in %s\n", input_file);
 	output(linebuf);
 
-	/* output warning about PDB --> PQR change */
-	output("MAIN: *** PLEASE NOTE THAT THE PDB FILE FORMAT IS NO LONGER SUPPORTED IN MPMC ***\n" );
-
 	/* read the input files and setup the simulation */
 	system = setup_system(input_file);
 	if(!system) {

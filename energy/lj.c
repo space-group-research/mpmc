@@ -100,15 +100,68 @@ double lj_lrc_self ( system_t * system, atom_t * atom_ptr, double cutoff ) {
 }
 
 
+double rd_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
+
+	double curr_pot, term12, term6;
+	double sigma_over_r6, sigma_over_r12, sigma_over_r, r;
+	int i[3], p, q;
+	double a[3];
+	double prefactor;
+
+	if ( aptr->sigma == 0 && aptr->epsilon == 0 ) return 0; //skip if no LJ interaction
+
+	sigma_over_r6 = 0;
+	sigma_over_r12 = 0; //need to init these guys
+
+	for ( i[0] = -(system->rd_crystal_order-1); i[0]<=system->rd_crystal_order-1; i[0]++ )
+	for ( i[1] = -(system->rd_crystal_order-1); i[1]<=system->rd_crystal_order-1; i[1]++ )
+	for ( i[2] = -(system->rd_crystal_order-1); i[2]<=system->rd_crystal_order-1; i[2]++ ) {
+		if ( !i[0] && !i[1] && !i[2] ) continue; //no (0,0,0)
+		//calculate pair separation (atom with it's image)
+		for ( p=0; p<3; p++ ) {
+			a[p] = 0;
+			for ( q=0; q<3; q++ )
+				a[p] += system->pbc->basis[q][p] * i[q];
+		}
+		r = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
+
+		if ( r > cutoff ) continue; //too far away! will be included in LRC if enabled
+		sigma_over_r = fabs(aptr->sigma)/r;
+		sigma_over_r6 += 0.5*pow(sigma_over_r,6); //multiply by 0.5 to get counting correct
+		sigma_over_r12 += 0.5*pow(sigma_over_r,12);
+	}
+
+	if(system->spectre) {
+		term6 = 0;
+		term12 = system->scale_rd*sigma_over_r12;
+		curr_pot = term12;
+	} 
+	else {
+		if ( system->polarvdw ) term6=0; //vdw calc'd by vdw.c
+			else {
+				term6 = sigma_over_r6;
+				term6 *= system->scale_rd;
+			}
+
+		if(aptr->sigma < 0.0) term12 = 0; //attractive only
+			else term12 = sigma_over_r12;
+
+		curr_pot = 4.0*aptr->epsilon*(term12 - term6);
+	}
+	return curr_pot;
+}
+
+
 /* Lennard-Jones repulsion/dispersion */
 double lj(system_t *system) {
 
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12;
+	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12, r;
 	double potential, potential_classical, cutoff;
-	int i,j,k;
+	int i[3], p, q;
+	double a[3];
 
 	//set the cutoff
 	if ( system->rd_crystal )
@@ -125,25 +178,33 @@ double lj(system_t *system) {
 
 					pair_ptr->rd_energy = 0;
 
-					// pair LRC (lj_crystal option should check that rd_lrc is off)
+					// pair LRC 
 					if ( system->rd_lrc ) pair_ptr->lrc = lj_lrc_corr(system,atom_ptr,pair_ptr,cutoff);
 
 					// to include a contribution, we require
 					if ( 	( pair_ptr->rimg - SMALL_dR < cutoff ) && //inside cutoff?
-								! pair_ptr->rd_excluded	 && //not excluded
+								( !pair_ptr->rd_excluded	|| system->rd_crystal ) && //either not excluded OR rd_crystal is ON
 								! pair_ptr->frozen ) { //not frozen
 
 						//loop over unit cells
 						if ( system->rd_crystal ) {
 							sigma_over_r6 = 0;
 							sigma_over_r12 = 0;
-							for ( i = -system->rd_crystal_order+1; i<=system->rd_crystal_order-1; i++ )
-							for ( j = -system->rd_crystal_order+1; j<=system->rd_crystal_order-1; j++ )
-							for ( k = -system->rd_crystal_order+1; k<=system->rd_crystal_order-1; k++ ) {
-								sigma_over_r = fabs(pair_ptr->sigma)/sqrt(
-									pow(atom_ptr->pos[0] - pair_ptr->atom->pos[0] + i*system->pbc->basis[0][0],2) +
-									pow(atom_ptr->pos[1] - pair_ptr->atom->pos[1] + j*system->pbc->basis[1][1],2) +
-									pow(atom_ptr->pos[2] - pair_ptr->atom->pos[2] + k*system->pbc->basis[2][2],2) );
+							for ( i[0] = -(system->rd_crystal_order-1); i[0]<=system->rd_crystal_order-1; i[0]++ )
+							for ( i[1] = -(system->rd_crystal_order-1); i[1]<=system->rd_crystal_order-1; i[1]++ )
+							for ( i[2] = -(system->rd_crystal_order-1); i[2]<=system->rd_crystal_order-1; i[2]++ ) {
+								if ( !i[0] && !i[1] && !i[2] && pair_ptr->rd_excluded ) continue; //no i=j=k=0 for excluded pairs (intra-molecular)
+								//calculate pair separation (atom with it's image)
+								for ( p=0; p<3; p++ ) {
+									a[p] = 0;
+									for ( q=0; q<3; q++ )
+										a[p] += system->pbc->basis[q][p] * i[q];
+									a[p] += atom_ptr->pos[p] - pair_ptr->atom->pos[p];
+								}
+								r = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
+
+								if ( r > cutoff )	continue;
+								sigma_over_r = fabs(pair_ptr->sigma)/r;
 								sigma_over_r6 += pow(sigma_over_r,6);
 								sigma_over_r12 += pow(sigma_over_r,12);
 							}
@@ -195,6 +256,13 @@ double lj(system_t *system) {
 			} /* pair */
 		} /* atom */
 	} /* molecule */
+
+	/* molecule self-energy for rd_crystal -> energy of molecule interacting with its periodic neighbors */
+
+	if ( system->rd_crystal )
+		for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)
+			for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+				potential += rd_crystal_self(system,atom_ptr,cutoff);
 
 	/* calculate self LRC interaction */
 	if ( system->rd_lrc ) 

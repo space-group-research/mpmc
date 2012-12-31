@@ -222,9 +222,60 @@ void spectre_wrapall(system_t *system) {
 
 }
 
+int write_molecules_wrapper(system_t * system, char * filename) {
+	int rval, j;
+	char * filenameno, filenameold[MAXLINE];
+	FILE * fp;
+
+#ifdef MPI
+
+	//make a new filename with the core/or bath number appended
+	if ( system->parallel_tempering )
+		filenameno=make_filename(filename,system->ptemp->index[rank]); //append bath index to filename
+	else
+		filenameno=make_filename(filename,rank); //append core index to filename
+
+	//move most recent state file to file.last
+	sprintf(filenameold,"%s.last",filenameno);
+	rename(filenameno, filenameold);
+
+	//open the file and free the filename string
+	fp = fopen(filenameno, "w");
+	filecheck(fp,filenameno,WRITE);
+	free(filenameno);
+
+	// we write files one at a time to avoid disk congestion
+	for ( j=0; j<size; j++ ) {
+		MPI_Barrier(MPI_COMM_WORLD);
+		if ( j == rank )
+			rval = write_molecules(system,fp);
+	}
+
+	//free the file pointer
+	fclose(fp);
+
+#else //non-MPI
+
+	//move most recent state file to file.last
+	sprintf(filenameold,"%s.last",filename);
+	rename(filename, filenameold);
+
+	//open the new file
+	fp = fopen(filename, "w");
+	filecheck(fp,filename,WRITE);
+
+	//write the file
+	rval = write_molecules(system,fp);
+
+	//free the file pointer
+	fclose(fp);
+#endif
+
+	return rval;
+}
 
 /* write out the final system state as a PQR file */
-int write_molecules(system_t *system, char *filename) {
+int write_molecules(system_t *system, FILE * fp) {
 
 	int atom_box, molecule_box, p, q;
 	double box_pos[3], box_occupancy[3];
@@ -232,23 +283,8 @@ int write_molecules(system_t *system, char *filename) {
 	char linebuf[MAXLINE];
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
-	FILE *fp;
 	int i, j, k;
 	int ext_output; 
-
-#ifdef MPI
-	char * filenameno;
-	if ( system->parallel_tempering )
-		filenameno=make_filename(filename,system->ptemp->index[rank]); //append bath index to filename
-	else
-		filenameno=make_filename(filename,rank); //append core index to filename
-	fp = fopen(filenameno, "w");
-	filecheck(fp,filenameno,WRITE);
-	free(filenameno);
-#else
-	fp = fopen(filename, "w");
-	filecheck(fp,filename,WRITE);
-#endif
 
 	/* Check if extended coordinate output is needed (CRC) */
 	// By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
@@ -399,7 +435,6 @@ int write_molecules(system_t *system, char *filename) {
 	fprintf(fp, "END\n");
 	fflush(fp);
 
-	fclose(fp);
 	return(0);
 
 }

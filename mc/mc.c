@@ -383,20 +383,39 @@ int mc(system_t *system) {
 				population_histogram(system);
 			}
 
-			/*write trajectory files for each node*/
+			/*write trajectory files for each node -> one at a time to avoid disk congestion*/
+#ifdef MPI
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) write_states(system);
+			}
+#else
 			write_states(system);
+#endif
 
-			/*restart files for each node*/
-			if(write_molecules(system, system->pqr_restart) < 0) {
+			/*restart files for each node -> one at a time to avoid disk congestion*/
+			if(write_molecules_wrapper(system, system->pqr_restart) < 0) {
 				error("MC: could not write restart state to disk\n");
 				return(-1);
 			}
 
-			/*dipole/field data for each node*/
+			/*dipole/field data for each node -> one at a time to avoid disk congestion*/
+#ifdef MPI
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) {
+					if(system->polarization) {
+						write_dipole(system);
+						write_field(system);
+					}
+				}
+			}
+#else
 			if(system->polarization) {
 				write_dipole(system);
 				write_field(system);
 			}
+#endif
 
 			/* zero the send buffer */
 			memset(snd_strct, 0, msgsize);
@@ -469,10 +488,13 @@ int mc(system_t *system) {
 
 	/* write output, close any open files */
 	free(snd_strct);
-	if(write_molecules(system, system->pqr_output) < 0) {
+
+	// restart files for each node
+	if(write_molecules_wrapper(system, system->pqr_output) < 0) {
 		error("MC: could not write final state to disk\n");
 		return(-1);
 	}
+
 	if(!rank) {
 		close_files(system);
 		free(rcv_strct);

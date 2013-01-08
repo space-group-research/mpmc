@@ -120,7 +120,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 			} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
 				pair_ptr->sigma = 0;
-				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon); //can't use sigma weights -> div by 0
 			} else {
 				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);

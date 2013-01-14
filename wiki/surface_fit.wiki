@@ -1,0 +1,17 @@
+#summary One-sentence summary of this page.
+
+= Surface Fit Options =
+
+|| *Command* || *Description* ||
+|| {{{ fit_start_temp [double] }}} || Intial temperature for parameter annealing during surface fitting. *(default = 50000)* ||
+|| {{{ fit_schedule [double] }}} || Temperature (exponential) decay constant for parameter annealing during surface fitting. *(default = 0.999)* ||
+|| {{{ fit_max_energy [double] }}} || Maximum energy values to be considered during surin two weeksface fitting. *(default = 2000)* ||
+|| {{{ fit_input [file] }}} || Specifies fit input file. Call multiple times to specify multiple fit geometries. ||
+|| {{{ surf_weight_constant [double] }}} || Exponential weighting factor used in surface fitting to prioritize fitting at lower potential energies. *(default = 0.5)* ||
+|| {{{ surf_scale_q [double] }}} || Magnitude of charge fluctuations during surface fitting *(default = 0)* ||
+|| {{{ surf_scale_r [double] }}} || Magnitude of position fluctuations of non-H2E/H2Q sites (when that site exists in multiples/doesn't apply to CoM site) *(default = 0.001)* ||
+|| {{{ surf_scale_epsilon [double] }}} || Magnitude of epsilon fluctations to sites with non-zero epsilon. *(default = 1.0)* ||
+|| {{{ surf_scale_sigma [double] }}} || Magntiude of sigma fluctuations to sites with non-zero sigma. *(default = 0.1)* ||
+|| {{{ surf_scale_omega [double] }}} || Magnitude of omega fluctuations to sites with non-zero omega. *(default = 0.001)* ||
+|| {{{ surf_qshift [on|off] }}} || Adjusts position of H2Q sites while adjusting charges of H2Q and H2G to remain charge neutral and conserve quadrupole. *(default = off)* ||
+

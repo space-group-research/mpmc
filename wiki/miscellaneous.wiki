@@ -1,0 +1,8 @@
+#summary One-sentence summary of this page.
+
+= Miscellaneous Options =
+
+|| *Command* || *Description* ||
+|| {{{ free_volume [double] }}} || Used for statistics calculations in MOF sorption simulations. ||
+|| {{{ independent_particle [on|off] }}} || Treats each atom as an independent particle. Assigns unique molecule_id to each atom. *(default = off)* ||
+

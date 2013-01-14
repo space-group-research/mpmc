@@ -1,0 +1,25 @@
+#summary One-sentence summary of this page.
+
+= Main Commands =
+
+|| *Command*                                    || *Description*                                                                                   ||
+|| {{{ cuda [on|off] }}}                        || Turns on/off nVIDIA CUDA *(default = off)*                                                      ||
+|| {{{ preset_seeds [int] [int] [int] [int] }}} || Initialize the random number generator using the specified seed values.                         ||
+|| {{{ seed }}}                                 || *DEPRECATED*                                                                                    ||
+|| {{{ numsteps [double] }}}                    || Total number of steps (moves) for Monte Carlo simulations.                                      ||
+|| {{{ corrtime [double] }}}                    || Sets the correlation time in steps. Each corrtime averages and trajectory outputs are produced. ||
+
+
+== Choosing specific ensembles ==
+{{{ ensemble [ENSEMBLE] }}}
+
+|| *Command*            || *Description*                                                                      ||
+|| {{{ npt }}}          || Monte Carlo simulation in the isobaric-isothermal ensemble                         ||
+|| {{{ nve }}}          || Monte Carlo simulation in the micro-canonical ensemble                             ||
+|| {{{ nvt }}}          || Monte Carlo simulation in the canonical ensemble                                   ||
+|| {{{ uvt }}}          || Monte Carlo simulation in the grand canonical ensemble                             ||
+|| {{{ surf }}}         || Generate potential energy surface for some specified orientation                   ||
+|| {{{ surf_fit }}}     || Perform surface fitting via simulated annealing over parameter space               ||
+|| {{{ total_energy }}} || Calculate the single-point energy for a given system                               ||
+|| {{{ replay }}}       || Recalculate observables over a set of configurations read from an input trajectory ||
+

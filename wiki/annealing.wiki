@@ -1,0 +1,12 @@
+#summary One-sentence summary of this page.
+
+= Tempering/Annealing Options =
+
+|| *Command* || *Description* ||
+|| {{{ parallel_tempering [on|off] }}} || Turns on parallel tempering for Monte Carlo simulations. *(default = off)* ||
+|| {{{ ptemp_freq [int] }}} || How often to perform bath swaps when performing Monte Carlo with parallel tempering. *(default = 20)* ||
+|| {{{ max_temperature [double] }}} || Sets the temperature for the hottest bath in a MC simulation with parallel tempering. ||
+|| {{{ simulated_annealing [on|off] }}} || Turns on simulated annealing for MC simulations. *(default = off)* ||
+|| {{{ simulated_annealing_schedule [double] }}} || (Exponential) decay constant for the temperature in a simulated annealing MC simulation. ||
+|| {{{ simulated_annealing_target [double] }}} || Target temperature in a simulated annealing MC simulation. ||
+

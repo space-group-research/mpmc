@@ -1,0 +1,15 @@
+#summary One-sentence summary of this page.
+
+= Quantum Rotation Options =
+== I don't know anything about this stuff ==
+
+|| *Command* || *Description* ||
+|| {{{ quantum_rotation [on|off] }}} || Enables quantum rotational eigenspectrum calculation. *(default = off)* ||
+|| {{{ quantum_rotation_hindered [on|off] }}} || *(default = off)* ||
+|| {{{ quantum_rotation_hindered_barrier [double] }}} || ||
+|| {{{ quantum_rotation_B [double] }}} || ||
+|| {{{ quantum_rotation_level_max [int] }}} || *(default = 36)* ||
+|| {{{ quantum_rotation_l_max [int] }}} || *(default = 5)* ||
+|| {{{ quantum_rotation_sum [int] }}} || *(default = 10)* ||
+|| {{{ quantum_vibration [on|off] }}} || *(default = off)* ||
+

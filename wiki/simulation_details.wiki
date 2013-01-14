@@ -1,0 +1,17 @@
+#summary One-sentence summary of this page.
+
+= Simulation Details =
+
+== Basis Vectors ==
+
+|| *Command* || *Description* ||
+|| {{{basis1 [double] [double] [double]}}} || Specifies the basis vector's x-, y- and z- components ||
+|| {{{basis2 [double] [double] [double]}}} || Specifies the basis vector's x-, y- and z- components ||
+|| {{{basis3 [double] [double] [double]}}} || Specifies the basis vector's x-, y- and z- components ||
+
+== Others ==
+
+|| *Command* || *Description* ||
+|| {{{temperature [double]}}} || Sets the initial temperature ||
+|| {{{pressure [double]}}} || Sets the initial pressure for NPT and [[uVT]] simulations. In uVT the pressure is converted to a fugacity via fugacity function or assuming ideal gas limit (P==f) ||
+

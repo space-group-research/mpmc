@@ -1,0 +1,15 @@
+#summary One-sentence summary of this page.
+
+= uVT Options =
+
+|| *Command*                                                    || *Description*                                                                                                                        ||
+|| {{{ pressure }}}                                             || see "SIMULATION DETAILS"                                                                                                             ||
+|| {{{ h2_fugacity [on|off] }}}                                 || Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) *(default = off)*          ||
+|| {{{ co2_fugacity [on|off] }}}                                || Used for converting pressure to fugacity of CO2 uVT simulations. (Peng-Robinson) *(default = off)*                                   ||
+|| {{{ ch4_fugacity [on|off] }}}                                || Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) *(default = off)*     ||
+|| {{{ n2_fugacity [on|off] }}}                                 || Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) *(default = off)* ||
+|| {{{ user_fugacities [double] ([double]) ([double]) (...) }}} || Specifies the fugacities for species in insert_input. Accepts up to eight arguments. _(Limited by tokens read in input.c)_           ||
+|| {{{ cavity_bias [on|off] }}}                                 || Use cavity bias for insertions in uvt Monte Carlo. *(default = off)*                                                                 ||
+|| {{{ cavity_grid [double] }}}                                 || ???                                                                                                                                  ||
+|| {{{ cavity_radius [double] }}}                               || ???                                                                                                                                  ||
+

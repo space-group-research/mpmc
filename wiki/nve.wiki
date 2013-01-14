@@ -1,0 +1,7 @@
+#summary One-sentence summary of this page.
+
+= NVE Options =
+
+|| *Command*            || *Description*                          ||
+|| {{{ total_energy }}} || Sets total energy for NVE Monte Carlo. ||
+

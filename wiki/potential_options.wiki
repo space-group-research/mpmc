@@ -1,0 +1,74 @@
+#summary One-sentence summary of this page.
+
+= Potential Options =
+
+|| *Command* || *Description* ||
+|| {{{ cavity_autoreject [on|off] }}} || Automatically rejects any monte carlo move which would put two LJ sites (not on the same molecule) that are too close. *(default = off)* ||
+|| {{{ cavity_autoreject_absolute }}} || Like cavity_autoreject, but applies to non-LJ sites as well. *(default = off)* ||
+|| {{{ cavity_autoreject_scale [double] }}} || Sets threshold (distance) for triggering cavity_autoreject. ||
+|| {{{ dreiding [on|off] }}} || Dreiding potential. *(default = off)* ||
+|| {{{ feynman_hibbs [on|off] }}} || Turns on Feynman-Hibbs quantum corrections. *(default = off)* ||
+|| {{{ feynman_hibbs_order [2|4] }}} || Specifies highest-order Feynman-Hibbs terms to use. ||
+|| {{{vdw_fh_2be [on|off] }}} || Uses two-body expansion for calculation of Feynman Hibbs in coupled-dipole vdW calculations. *(default = off)* ||
+|| {{{ pbc_cutoff [double] }}} || Override the default cutoff distance for interactions. (Half the shortest simulation box dimension.) ||
+|| {{{ polarization [on|off] }}} || Turns on Thole-Applequist polarization. *(default = off)* ||
+|| {{{ polarvdw [on|off|evects|comp] }}} || Turns on coupled-dipole method van der Waals. Evects prints eigenvectors and comp prints a comparision to a two-body decomposition. Also activated polarization. *(default = off)* ||
+|| {{{ scale_charge [double] }}} || Scales the charges on all frozen atoms. ||
+|| {{{ sg [on|off] }}} || Silvera-Goldman potential. *(default = off)* ||
+
+== SPECTRE Options ==
+
+|| *Command* || *Description* ||
+|| {{{ spectre [on|off] }}} || *(default = off)* ||
+|| {{{ spectre_max_charge [double] }}} || ||
+|| {{{ spectre_max_target [double] }}} || ||
+
+== RD Options ==
+
+|| *Command* || *Description* ||
+|| {{{ cavity_autoreject }}} || see "POTENTIAL OPTIONS" ||
+|| {{{ rd_lrc [on|off] }}} || Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. *(default = ON)* ||
+|| {{{ rd_only }}} || Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) ||
+|| {{{ waldmanhagler [on|off] }}} || Use Waldman-Hagler mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). *(default = off)* ||
+
+== Ewald/Wolf Summation Options ==
+
+|| *Command* || *Description* ||
+|| {{{ wolf [on|off] }}} || Calculates permanent electrostatics via wolf method. *(default = off)* ||
+|| {{{ polar_ewald_full [on|off] }}} || Full ewald polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
+|| {{{ polar_ewald [on|off] }}} || Partial ewald polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
+|| {{{ polar_wolf_full [on|off] }}} || Full wolf polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
+|| {{{ polar_wolf [on|off] }}} || Partial wolf polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
+|| {{{ polar_wolf_damp [on|off] }}} || Sets alpha/damping parameter for polar wolf calculation. *(default = off)* ||
+|| {{{ polar_wolf_alpha [on|off] }}} || Same as polar_wolf_damp. *(default = off)* ||
+|| {{{ ewald_alpha [double] }}} || Overrides default alpha for ewald and wolf permanent electrostatics and polar_ewald. *(default = 3.5/pbc_cutoff)* ||
+|| {{{ ewald_kmax [int] }}} || Sets the maximum k-vectors to include in ewald sums for permanent electrostatics and polarization. *(default = 7)* ||
+
+== Polarization Options ==
+
+|| *Command* || *Description* ||
+|| {{{ polar_damp_type [off|linear|exponential] }}} || Type of polarization damping. ||
+|| {{{ polar_damp [double] }}} || Polarization exponential damping constant (to avoid polarization catastrophe). ||
+|| {{{ polar_ewald [on|off] }}} || Calculate induced polarization via ewald summation. *(default = off)* ||
+|| {{{ polarizability_tensor [on|off] }}} || Prints the molecular polarizability tensor for the system. *(default = off)* ||
+|| {{{ polar_zodid [on|off] }}} || Calculates polarization energy via zeroth-order iteration. *(default = off)* ||
+|| {{{ polar_iterative [on|off] }}} || Full iterative method for calculation polarization energy. *(default = off)* ||
+|| {{{ polar_palmo [on|off] }}} || Iterative polar correction due to Kim Palmo. *(default = off)* ||
+|| {{{ polar_gs [on|off] }}} || Gauss-Seidel smoothing for iterative polarization. *(default = off)* ||
+|| {{{ polar_gs_ranked [on|off] }}} || Ranked Gauss-Seidel smoothing for iterative polarization. *(default = off)* ||
+|| {{{ polar_sor [on|off] }}} || (Linear??) polarization overrelaxation. *(default = off)* ||
+|| {{{ polar_esor [on|off] }}} || Exponential polarization overrelaxation. *(default = off)* ||
+|| {{{ polar_gamma [double] }}} || Polarization overrelaxation constant. ||
+|| {{{ polar_precision [double] }}} || Terminate polarization iterative solver when all dipole fluctations are within this tolerance. ||
+|| {{{ polar_max_iter [int] }}} || Terminate polarization iterative solver after a fixed number of iterations. ||
+|| {{{ polar_self [on|off] }}} || Include molecular self-induction. *(default = off)* ||
+|| {{{ polar_rrms [on|off] }}} || Calcuate root-mean-square fluctuation in dipoles elements during iterative solution. *(default = off)* ||
+
+== Anharmonic Bond Potential ==
+
+|| *Command* || *Description* ||
+|| {{{ rd_anharmonic [on|off] }}} || ??? Turns on 1D bonded RD potential or something? *(default = off)* ||
+|| {{{ rd_anharmonic_k [double] }}} || Harmonic term (order 2). ||
+|| {{{ rd_anharmonic_g [double] }}} || Anharmonic term (order 4). ||
+|| {{{ feynman_kleinert [on|off] }}} || ???Iterative Feynman-Kleinert correction for anharmonic bond potential. *(default = off)* ||
+

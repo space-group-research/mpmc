@@ -1,0 +1,24 @@
+#summary One-sentence summary of this page.
+
+= Input/Output Options =
+
+|| *Command* || *Description* ||
+|| {{{ long_output [on|off] }}} || Prints additional sigfigs for atom xyz info in output pqr's. *(default = off, unless box has a dimension > 200 \AA)* ||
+|| {{{ pop_histogram [on|off] }}} || Turns on population histogram. *(default = off)* ||
+|| {{{ pop_hist_resolution [double] }}} || Specifies resolution of the popular histogram. ||
+|| {{{ read_pqr_box [on|off] }}} || Reads simulation box dimensions from pqr input file. *(default = off)* ||
+|| {{{ wrapall [on|off] }}} || Wraps atoms back into the simulation box on output. *(default = off)* ||
+|| {{{ job_name [string] }}} || Name of the job. Used to auto-generate output filenames. ||
+|| {{{ pqr_input [file] }}} || Specifies input pqr file. ||
+|| {{{ pqr_output [file] }}} || Specifies filename for writing final output pqr file(s). Clobbers existing file(s). ||
+|| {{{ pqr_restart [file] }}} || Specifies filename for writing restart pqr file(s). Clobbers existing file(s). ||
+|| {{{traj_output [file] }}} || Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s). ||
+|| {{{traj_input [file] }}} || Specifies input trajectory file for 'ensemble replay'. ||
+|| {{{ energy_output [file] }}} || Specifies filename for writing observables log. Clobbers existing file(s). ||
+|| {{{ energy_output_csv [file] }}} || Specifies filename for writing observables log in csv format. Clobbers existing file(s). ||
+|| {{{ pop_histogram_output [file] }}} || Specifies filename for writing popular histogram. Clobbers existing file(s). ||
+|| {{{ dipole_output [file] }}} || Specifies filename for writing dipole data. Clobbers existing file(s). ||
+|| {{{ field_output [file] }}} || Specifies filename for writing total electrostatic field for each molecule. Clobbers existing file(s). ||
+|| {{{ frozen_output [file] }}} || Specifies filename for writing frozen atoms in dx format. Clobbers existing file(s). ||
+|| {{{ insert_input [file] }}} || Specifies filename for reading molecules for performing insertions in uVT simulations. ||
+

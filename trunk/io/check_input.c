@@ -310,10 +310,10 @@ void polarization_options (system_t * system) {
 		die(-1);
 	}
 
-	if(system->polar_damp <= 0.0) {
+	if(system->polar_damp <= 0.0 && system->damp_type != DAMPING_OFF ) {
 		error("INPUT: damping factor must be specified\n");
 		die(-1);
-	} else {
+	} else if ( system->polar_damp > 0.0 ) {
 		sprintf(linebuf, "INPUT: Thole damping parameter is %.4f\n", system->polar_damp);
 		output(linebuf);
 	}
@@ -550,10 +550,6 @@ void mc_options (system_t * system) {
 			sprintf(linebuf, "INPUT: reservoir pressure is %.3f atm\n", system->pressure);
 			output(linebuf);
 		}
-		if ( system->ewald_alpha != EWALD_ALPHA ) {
-			error("INPUT: Ewald alpha cannot be manually set for NPT ensemble.\n");
-			die(-1);
-		}
 	}
 
 	if(system->ensemble == ENSEMBLE_UVT) {
@@ -702,10 +698,6 @@ void mc_options (system_t * system) {
 				system->cavity_grid_size, system->cavity_grid_size, system->cavity_grid_size, system->cavity_radius);
 			output(linebuf);
 		}
-	}
-
-	if(system->wpi) {
-		output("INPUT: Widom Particle Insertion is enabled\n");
 	}
 
 	return;
@@ -939,11 +931,6 @@ int check_system(system_t *system) {
 		output(linebuf);
 	}
 	
-	if ( system->scale_rd != 1.0 ) {
-		sprintf(linebuf, "INPUT: frozen atom rd scaled by %.2f\n", system->scale_rd);
-		output(linebuf);
-	}
-
 	if(system->cuda) {
 #ifndef CUDA
 		error("INPUT: cuda keyword enabled, but not compiled into this code\n");

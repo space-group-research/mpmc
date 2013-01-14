@@ -54,7 +54,7 @@ double dreiding(system_t *system) {
 								termexp *= (6.0/(gamma - 6.0));
 							}	
 						}
-						potential_classical = pair_ptr->epsilon*system->scale_rd*(termexp - term6);
+						potential_classical = pair_ptr->epsilon*(termexp - term6);
 
 						pair_ptr->rd_energy += potential_classical;
 

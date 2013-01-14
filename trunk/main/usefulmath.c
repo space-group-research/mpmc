@@ -8,7 +8,7 @@ double didotprod ( double * a, int * b ) {
 	return a[0]*(double)b[0] + a[1]*(double)b[1] + a[2]*(double)b[2];
 }
 
-double iidotprod ( int * a, int * b ) {
+int iidotprod ( int * a, int * b ) {
 	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 }
 

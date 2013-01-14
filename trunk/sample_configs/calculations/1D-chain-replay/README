@@ -1,0 +1,7 @@
+Here we use 'ensemble replay' to read in a series of increasingly
+larger 1D-chain samples (starting from 2-atoms and up to 512).
+
+Each component of the energy is re-calcualte for each sample, for
+various potential options (one sec of potential options per input
+file). One may take the energy output files and process them (via scale.sh) to 
+check for the small-size scalability and accuracy of our calculations.

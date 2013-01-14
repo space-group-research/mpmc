@@ -15,7 +15,6 @@ void zero_out ( molecule_t * m ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( p=0; p<3; p++ ) {
 				aptr->ef_static[p] = 0.0;
-				aptr->ef_static_self[p] = 0.0;
 			}
 		}
 	}
@@ -40,8 +39,8 @@ void real_term ( system_t * system ) {
 	atom_t * aptr;
 	pair_t * pptr;
 	int p;
-	double r, r2, factor, ea;
-	ea = system->ewald_alpha; //some ambiguity between ea and ea^2 across the literature
+	double r, r2, factor, a;
+	a = system->polar_ewald_alpha; //some ambiguity between ea and ea^2 across the literature
 
 	for (mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for (aptr = mptr->atoms; aptr; aptr=aptr->next ) {
@@ -52,15 +51,15 @@ void real_term ( system_t * system ) {
 				r2 = r*r; 
 				if (pptr->es_excluded) {
 					//need to subtract self-term (interaction between a site and a neighbor's screening charge (on the same molecule)
-					factor = (2.0*ea*OneOverSqrtPi*exp(-ea*ea*r2)*r - erf(ea*r))/(r*r2);
+					factor = (2.0*a*OneOverSqrtPi*exp(-a*a*r2)*r - erf(a*r))/(r*r2);
 					for ( p=0; p<3; p++ ) {
-						aptr->ef_static_self[p] += factor*pptr->atom->charge * pptr->dimg[p];
-						pptr->atom->ef_static_self[p] -= factor*aptr->charge * pptr->dimg[p];
+						aptr->ef_static[p] += factor*pptr->atom->charge * pptr->dimg[p];
+						pptr->atom->ef_static[p] -= factor*aptr->charge * pptr->dimg[p];
 					}
 				} //excluded
 				else { //not excluded
-					r2 = r*r;
-					factor = (2.0*ea*OneOverSqrtPi*exp(-ea*ea*r2)*r + erfc(ea*r))/(r2*r);
+
+					factor = (2.0*a*OneOverSqrtPi*exp(-a*a*r2)*r + erfc(a*r))/(r2*r);
 					for ( p=0; p<3; p++ ) { // for each dim, add e-field contribution for the pair
 						aptr->ef_static[p] += factor*pptr->atom->charge * pptr->dimg[p];
 						pptr->atom->ef_static[p] -= factor*aptr->charge * pptr->dimg[p];
@@ -81,7 +80,7 @@ void recip_term ( system_t * system ) {
 	pair_t * pptr;
 	int p, q, l[3], kmax;
 	double r, ea, k[3], k2, kdotr, kweight[3], float1, float2;
-	ea = system->ewald_alpha; //actually sqrt(ea)
+	ea = system->polar_ewald_alpha; //actually sqrt(ea)
 	kmax = system->ewald_kmax;
 
 	//k-space sum (symmetry for k -> -k, so we sum over hemisphere, avoiding double-counting on the face)
@@ -154,7 +153,8 @@ void init_dipoles_ewald( system_t * system ) {
 void ewald_estatic ( system_t * system ) {
 
 	//calculate static e-field
-	zero_out(system->molecules);
+	// no need to zero out dipoles; this is done in polar.c
+
 	recip_term(system);
 	real_term(system);
 
@@ -170,25 +170,18 @@ void induced_real_term(system_t * system) {
 	double erfcar, expa2r2, r, ir, ir3, ir5, explr;
 	double T; //dipole-interaction tensor component
 	int p, q; //dimensions
-	double a = system->ewald_alpha; //ewald damping
+	double a = system->polar_ewald_alpha; //ewald damping
 	double l = system->polar_damp; //polar damping
-
-	//zero out this term for each atom ptr
-	for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
-		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) 
-			for ( p=0; p<3; p++ )  
-				aptr->ef_induced[p] = 0;
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) { 
 				if ( aptr->polarizability == 0 || pptr->atom->polarizability == 0 ) continue; //don't waste CPU time
-
 				//some things we'll need
 				r=pptr->rimg;
 				ir=1.0/r; ir3=ir*ir*ir; ir5=ir*ir*ir3;
-				erfcar=erfc(system->ewald_alpha*r);
-				expa2r2=exp(-system->ewald_alpha*system->ewald_alpha*r*r);
+				erfcar=erfc(a*r);
+				expa2r2=exp(-a*a*r*r);
 
 				//E_static_realspace_i = sum(i!=j) d_xi d_xj erfc(a*r)/r u_j 
 				for ( p=0; p<3; p++ ) {
@@ -225,7 +218,7 @@ void induced_recip_term(system_t * system) {
 	int p, q, l[3], kmax;
 	double r, ea, k[3], k2, kdotr, kweight[3], float1;
 	double sinsum, cossum;
-	ea = system->ewald_alpha; //actually sqrt(ea)
+	ea = system->polar_ewald_alpha; //actually sqrt(ea) <- what did I mean by that?
 	kmax = system->ewald_kmax;
 
 	//k-space sum (symmetry for k -> -k, so we sum over hemisphere, avoiding double-counting on the face)
@@ -240,6 +233,7 @@ void induced_recip_term(system_t * system) {
 					k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
 
 				k2 = dddotprod(k,k); // |k|^2
+
 				kweight[0] = k[0]/k2 * exp(-k2/(4.0*ea*ea));
 				kweight[1] = k[1]/k2 * exp(-k2/(4.0*ea*ea));
 				kweight[2] = k[2]/k2 * exp(-k2/(4.0*ea*ea));
@@ -284,7 +278,7 @@ void induced_self_term(system_t * system) {
 	pair_t * pptr;
 	double T; //dipole-interaction tensor for self terms
 	double erfar, expa2r2, r, ir, ir2, ir3, ir4, ir5;
-	double a = system->ewald_alpha;
+	double a = system->polar_ewald_alpha;
 	int p, q; //dimensions
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
@@ -295,8 +289,8 @@ void induced_self_term(system_t * system) {
 				//some things we'll need
 				r=pptr->rimg;
 				ir=1.0/r; ir2=ir*ir; ir3=ir2*ir; ir4=ir3*ir; ir5=ir4*ir;
-				erfar=erf(system->ewald_alpha*r);
-				expa2r2=exp(-system->ewald_alpha*system->ewald_alpha*r*r);
+				erfar=erf(a*r);
+				expa2r2=exp(-a*a*r*r);
 
 				for ( p=0; p<3; p++ ) {
 					for ( q=p; q<3; q++ ) {  //it's symmetric!
@@ -395,7 +389,7 @@ void ewald_full ( system_t * system ) {
 		induced_self_term(system);
 		new_dipoles(system, i);
 	}
-
+return;
 	if ( system->polar_palmo ) {
 		induced_real_term(system);
 		induced_recip_term(system);

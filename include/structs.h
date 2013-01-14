@@ -355,7 +355,8 @@ typedef struct _system {
 	int sg, dreiding, waldmanhagler;
 	//es_options
 	int wolf;
-	double ewald_alpha;
+	double ewald_alpha, polar_ewald_alpha;
+	int ewald_alpha_set, polar_ewald_alpha_set;
 	int ewald_kmax;
 	//thole options
 	int polarization, polarvdw, polarizability_tensor;
@@ -418,8 +419,7 @@ typedef struct _system {
 	double calc_pressure_dv;
 
 	//misc
-	int fvm, wpi, wpi_grid;
-	double scale_charge, scale_rd;
+	double scale_charge;
 	int independent_particle;
 
 	pbc_t *pbc;

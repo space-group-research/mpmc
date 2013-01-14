@@ -133,15 +133,11 @@ double rd_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
 
 	if(system->spectre) {
 		term6 = 0;
-		term12 = system->scale_rd*sigma_over_r12;
-		curr_pot = term12;
+		curr_pot = term12 = sigma_over_r12;
 	} 
 	else {
 		if ( system->polarvdw ) term6=0; //vdw calc'd by vdw.c
-			else {
-				term6 = sigma_over_r6;
-				term6 *= system->scale_rd;
-			}
+			else term6 = sigma_over_r6;
 
 		if(aptr->sigma < 0.0) term12 = 0; //attractive only
 			else term12 = sigma_over_r12;
@@ -219,15 +215,12 @@ double lj(system_t *system) {
 						/* the LJ potential */
 						if(system->spectre) {
 							term6 = 0;
-							term12 = system->scale_rd*sigma_over_r12;
+							term12 = sigma_over_r12;
 							potential_classical = term12;
 						} 
 						else {
 							if ( system->polarvdw ) term6=0; //vdw calc'd by vdw.c
-								else {
-									term6 = sigma_over_r6;
-									term6 *= system->scale_rd;
-								}
+								else term6 = sigma_over_r6;
 
 							if(pair_ptr->attractive_only) term12 = 0;
 								else term12 = sigma_over_r12;

@@ -357,12 +357,6 @@ int do_command (system_t * system, char ** token ) {
 			system->co2_fugacity = 0;
 		else return 1;
 	}
-	else if(!strcasecmp(token[0], "co2fug")) { 
-		system->fugacities = calloc(1,sizeof(double));
-		memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
-		if ( safe_atof(token[1],&(system->fugacities[0])) ) 
-			return 1; 
-	}
 	else if(!strcasecmp(token[0], "ch4_fugacity")) {
 		if(!strcasecmp(token[1], "on"))
 			system->ch4_fugacity = 1;
@@ -471,25 +465,6 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "feynman_hibbs_order"))
 		{ if ( safe_atoi(token[1],&(system->feynman_hibbs_order)) ) return 1; }
 
-	else if(!strcasecmp(token[0], "wpi")) {
-		if(!strcasecmp(token[1],"on"))
-			system->wpi = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->wpi = 0;
-		else return 1;
-	}
-	
-	else if(!strcasecmp(token[0], "wpi_grid")) 
-		{ if ( safe_atoi(token[1],&(system->wpi_grid)) ) return 1; }
-
-	else if(!strcasecmp(token[0], "fvm")) {
-		if(!strcasecmp(token[1],"on"))
-			system->fvm = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->fvm = 0;
-		else return 1;
-	}
-	
 	else if(!strcasecmp(token[0], "sg")) {
 		if(!strcasecmp(token[1],"on"))
 			system->sg = 1;
@@ -525,11 +500,10 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "scale_charge"))
 		{ if ( safe_atof(token[1],&(system->scale_charge)) ) return 1; }
 
-	else if(!strcasecmp(token[0], "scale_rd"))
-		{ if ( safe_atof(token[1],&(system->scale_rd)) ) return 1; }
-		
-	else if(!strcasecmp(token[0], "ewald_alpha"))
-		{ if ( safe_atof(token[1],&(system->ewald_alpha)) ) return 1; }
+	else if(!strcasecmp(token[0], "ewald_alpha")) { 
+		if ( safe_atof(token[1],&(system->ewald_alpha)) ) return 1; 
+		system->ewald_alpha_set = 1;
+	}
 	
 	else if(!strcasecmp(token[0], "ewald_kmax"))
 		{ if ( safe_atoi(token[1],&(system->ewald_kmax)) ) return 1; }
@@ -545,6 +519,11 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_ewald = 0;
 		else return 1;
 	}
+	else if(!strcasecmp(token[0], "polar_ewald_alpha")) {
+		if ( safe_atof(token[1],&(system->polar_ewald_alpha)) ) return 1;
+		system->polar_ewald_alpha_set = 1;
+	}	
+
 	else if(!strcasecmp(token[0], "polarizability_tensor")) {
 		if(!strcasecmp(token[1],"on"))
 			system->polarizability_tensor = 1;
@@ -610,7 +589,9 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "polar_max_iter"))
 		{ if ( safe_atoi(token[1],&(system->polar_max_iter)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_damp_type")) {
-		if(!strcasecmp(token[1],"off"))
+		if(!strcasecmp(token[1],"none"))
+			system->damp_type = DAMPING_OFF;
+		else if(!strcasecmp(token[1],"off"))
 			system->damp_type = DAMPING_OFF;
 		else if(!strcasecmp(token[1],"linear"))
 			system->damp_type = DAMPING_LINEAR;
@@ -889,7 +870,6 @@ void setdefaults(system_t * system) {
 
 	/* set the default scaling to 1 */
 	system->scale_charge = 1.0;
-	system->scale_rd = 1.0;
 	system->rot_probability = 1.0;
 	system->spinflip_probability = 0.0;
 	system->volume_probability = 0.0;
@@ -905,6 +885,7 @@ void setdefaults(system_t * system) {
 	/* default ewald parameters */
 	system->ewald_alpha = EWALD_ALPHA;
 	system->ewald_kmax = EWALD_KMAX;
+	system->polar_ewald_alpha = EWALD_ALPHA;
 
 	/* default polarization parameters */
 	system->polar_gamma = 1.0;

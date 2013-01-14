@@ -79,9 +79,6 @@ double energy(system_t *system) {
 	polar_energy = 0;
 	vdw_energy = 0;
 
-	/* get the periodic boundary conditions */
-	if(system->wpi || system->fvm) pbc(system);	/* do this each time only for fvm and wpi */
-
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
 
@@ -201,9 +198,6 @@ double energy_no_observables(system_t *system) {
 	coulombic_energy = 0;
 	polar_energy = 0;
 	vdw_energy = 0;
-
-	/* get the periodic boundary conditions */
-	if(system->wpi || system->fvm) pbc(system);	/* do this each time only for fvm and wpi */
 
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);

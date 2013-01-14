@@ -1,0 +1,48 @@
+!perform NPT simulation to equilibrate bulk CH4
+
+ensemble		npt
+
+!use parallel tempering; temper every 10 steps
+parallel_tempering on
+ptemp_freq 10
+max_temperature 300
+
+numsteps 	400000
+corrtime		1000
+
+move_probability	0.25
+rot_probability		0.4
+volume_probability 0.01
+volume_change_factor 0.05
+
+temperature		150
+pressure      5
+
+!include coupled-dipole vdW
+polarvdw		on
+polar_wolf on
+polar_damp_type		exponential
+polar_damp		2.1304
+
+polar_iterative		on
+polar_palmo		on
+polar_gs_ranked		on
+polar_gamma		1.03
+polar_max_iter		5
+
+!system may blow up if sites get too close
+cavity_autoreject_absolute on
+cavity_autoreject_scale 1.5
+
+wrapall			on
+pqr_input		init.pdb
+pqr_output	out.pdb
+pqr_restart	restart.pdb
+energy_output	energy.dat
+dipole_output		/dev/null
+field_output		/dev/null
+traj_output		/dev/null
+
+
+read_pqr_box on
+

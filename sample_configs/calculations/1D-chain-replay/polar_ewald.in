@@ -1,0 +1,43 @@
+
+!read in the trajectory and calc energies
+ensemble		replay
+
+!include image sites via PBC for improved RD accuracy
+rd_crystal on
+rd_crystal_order 2
+
+!include long-range corrections to RD
+rd_lrc	on
+
+!read boxsize from pdb
+read_pqr_box on
+
+!include polarization interactions
+polarization    on  
+polar_damp      2.1304
+polar_damp_type   exponential
+
+!calculate polarization via full ewald
+polar_ewald 		on
+polar_max_iter 	5
+
+!improved polarization performance
+polar_iterative   on  
+polar_palmo       on  
+polar_gamma       1.03
+
+!incompatible with polar_ewald
+!polar_gs_ranked   on  
+!polar_precision 	1e-5
+
+wrapall			on
+traj_input		replay.pqr
+energy_output energy.polar_ewald
+
+!we don't need all these input/output files
+pqr_input			/dev/null
+pqr_output		/dev/null
+pqr_restart	  /dev/null
+traj_output		/dev/null
+dipole_output	/dev/null
+field_output	/dev/null

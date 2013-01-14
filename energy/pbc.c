@@ -115,8 +115,12 @@ void pbc(system_t * system) {
 	pbc->volume = pbc_volume(pbc);
 
 	pbc->cutoff = pbc_cutoff(pbc);
-	if ( system->ewald_alpha == EWALD_ALPHA || system->ensemble == ENSEMBLE_NPT || system->ensemble == ENSEMBLE_REPLAY ) 
+
+	// calculate ewald_alpha and polar_ewald_alpha unless manually set
+	if ( system->ewald_alpha_set != 1 ) 
 		system->ewald_alpha = 3.5/system->pbc->cutoff;
+	if ( system->polar_ewald_alpha_set != 1 ) 
+		system->polar_ewald_alpha = 3.5/system->pbc->cutoff;
 
 	/* get the reciprocal space lattice */
 	pbc_reciprocal(pbc);

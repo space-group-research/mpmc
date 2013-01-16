@@ -15,6 +15,7 @@ void zero_out ( molecule_t * m ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( p=0; p<3; p++ ) {
 				aptr->ef_static[p] = 0.0;
+				aptr->ef_static_self[p] = 0.0;
 			}
 		}
 	}
@@ -137,16 +138,28 @@ void init_dipoles_ewald( system_t * system ) {
 	atom_t * aptr;
 	int p;
 
-	for ( mptr=system->molecules; mptr; mptr=mptr->next ) {
-		for ( aptr=mptr->atoms; aptr; aptr=aptr->next ) {
-			for ( p=0; p<3; p++ ) {
+	for ( mptr=system->molecules; mptr; mptr=mptr->next )
+		for ( aptr=mptr->atoms; aptr; aptr=aptr->next )
+			for ( p=0; p<3; p++ )
 				aptr->mu[p] = aptr->polarizability*aptr->ef_static[p];
-				aptr->ef_induced[p] = 0;
-			}
-		}
-	}
+
 	return;
 }
+
+//reset the ef_induced values
+void clear_ef_induced( system_t * system ) {
+	molecule_t * mptr;
+	atom_t * aptr;
+	int p;
+
+	for ( mptr=system->molecules; mptr; mptr=mptr->next )
+		for ( aptr=mptr->atoms; aptr; aptr=aptr->next )
+			for ( p=0; p<3; p++ )
+				aptr->ef_induced[p] = 0;
+
+	return;
+}
+
 
 //only calculate the static e-field via ewald
 //see http://www.pages.drexel.edu/~cfa22/msim/node50.html
@@ -283,8 +296,8 @@ void induced_self_term(system_t * system) {
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
-			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) { 
-				if ( !pptr->es_excluded ) continue; //same molecule only
+			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) {
+				if ( mptr != pptr->molecule ) continue; //same molecule only
 				if ( aptr->polarizability == 0 || pptr->atom->polarizability == 0 ) continue; //don't waste CPU time
 				//some things we'll need
 				r=pptr->rimg;
@@ -341,8 +354,6 @@ void new_dipoles(system_t * system, int count) {
 					aptr->mu[p] = aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
 				}
 			
-				//reset induced field
-				aptr->ef_induced[p] = 0;
 			}
 		}
 	}
@@ -381,15 +392,21 @@ void ewald_full ( system_t * system ) {
 	real_term(system);
 
 	//calculate induced e-field
-	init_dipoles_ewald(system);	
+	init_dipoles_ewald(system);
 
 	for ( i=0; i<max_iter; i++ ) {
+		//set induced field to zero
+		clear_ef_induced(system);
+
+		//calculate induced field
 		induced_real_term(system);
 		induced_recip_term(system);
 		induced_self_term(system);
+
+		//recalculate dipoles using new induced field
 		new_dipoles(system, i);
 	}
-return;
+
 	if ( system->polar_palmo ) {
 		induced_real_term(system);
 		induced_recip_term(system);

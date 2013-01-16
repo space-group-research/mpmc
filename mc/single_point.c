@@ -9,6 +9,9 @@ int calculate_te (system_t *system) {
 	// calculate the energy of the system 
 	initial_energy = energy(system);
 
+	if ( system->iter_success ) 
+		error("CALC_TE: polarization iterative solver failed to reach convergence.\n");
+
 #ifdef QM_ROTATION
 	// solve for the rotational energy levels
 	if(system->quantum_rotation) quantum_system_rotational_energies(system);
@@ -18,7 +21,7 @@ int calculate_te (system_t *system) {
 	if(!rank) {
 		print_observables(system);
 		if(open_files(system) < 0) {
-			error("MC: could not open files\n");
+			error("CALC_TE: could not open files\n");
 			return(-1);
 		}
 	} 

@@ -89,18 +89,6 @@ double polar(system_t *system) {
 	}
 	potential *= -0.5;
 
-/*
-// *****************  TESTING
-	int q=0;
-	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-			fprintf(stderr,"mu %d %lf %lf %lf\n", q++, atom_ptr->mu[0], atom_ptr->mu[1], atom_ptr->mu[2]);
-		}
-	}
-
-
-/// ************
-*/
 	return(potential);
 }
 

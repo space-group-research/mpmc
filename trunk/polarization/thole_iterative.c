@@ -16,8 +16,9 @@ void init_dipoles ( system_t * system ) {
 
 	for ( i=0; i<system->natoms; i++ ) {
 		for ( p=0; p<3; p++ ) {
-			aa[i]->mu[p] = aa[i]->polarizability*aa[i]->ef_static[p];
-			if (!system->polar_sor) aa[i]->mu[p] *= system->polar_gamma;
+			aa[i]->mu[p] = aa[i]->polarizability*(aa[i]->ef_static[p]+aa[i]->ef_static_self[p]);
+			// should improve convergence since mu's typically grow as induced fields are added in
+			if (!system->polar_sor && !system->polar_esor) aa[i]->mu[p] *= system->polar_gamma; 
 		}
 	}
 	return;
@@ -165,7 +166,7 @@ int thole_iterative(system_t *system) {
 	memnullcheck(ranked_array,N*sizeof(int),__LINE__-1, __FILE__);
 	for(i = 0; i < N; i++) ranked_array[i] = i;
 
-	//set all dipoles to alpha*E_static (plus SOR perturbation if requested)
+	//set all dipoles to alpha*E_static * polar_gamma
 	init_dipoles(system);
 
 	/* if ZODID is enabled, then stop here and just return the alpha*E dipoles */
@@ -182,10 +183,10 @@ int thole_iterative(system_t *system) {
 
 		/* divergence detection */
 		/* if we fail to converge, then return dipoles as alpha*E */
-		if(iteration_counter >= MAX_ITERATION_COUNT) {
+		if(iteration_counter >= MAX_ITERATION_COUNT && system->polar_precision) {
 			for(i = 0; i < N; i++)
 				for(p = 0; p < 3; p++) {
-					aa[i]->mu[p] = aa[i]->polarizability * aa[i]->ef_static[p];
+					aa[i]->mu[p] = aa[i]->polarizability * (aa[i]->ef_static[p] + aa[i]->ef_static_self[p]);
 					aa[i]->ef_induced_change[p] = 0.0; //so we don't break palmo
 				}
 			//set convergence failure flag
@@ -195,7 +196,7 @@ int thole_iterative(system_t *system) {
 			return(iteration_counter);
 		}
 
-		//zero out induced e-field 
+		//zero out induced e-field
 		for ( i=0; i<system->natoms; i++ ) 
 			for ( p=0; p<3; p++ ) 
 				aa[i]->ef_induced[p] = 0;
@@ -238,7 +239,6 @@ int thole_iterative(system_t *system) {
 		}
 
 	} //end iterate
-
 	free(ranked_array);
 
 	/* return the iteration count */

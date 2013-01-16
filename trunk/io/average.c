@@ -103,7 +103,6 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 		+ nodestats->polarization_iterations / ((double)counter);
 	avg_nodestats->polarization_iterations_sq = factor*avg_nodestats->polarization_iterations_sq 
 		+ nodestats->polarization_iterations*nodestats->polarization_iterations / ((double)counter);
-
 }
 
 void count_sorbates( system_t *system ) {

@@ -42,6 +42,7 @@ typedef struct _atom {
 	int site_neighbor_id; // dr fluctuations will be applied along the vector from this atom to the atom identified by this variable
 	pair_t *pairs;
 	struct _atom *next;
+
 } atom_t;
 
 typedef struct _molecule {

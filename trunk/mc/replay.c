@@ -22,7 +22,7 @@ int replay_trajectory (system_t * system) {
 	system->step = 0;
 	if(!rank) 
 		if(open_files(system) < 0) {
-			error("MC: could not open files\n");
+			error("REPLAY: could not open files\n");
 			return(-1);
 		}
 
@@ -53,12 +53,15 @@ int replay_trajectory (system_t * system) {
 
 		// calculate the energy of the system 
 		initial_energy = energy(system);
+		if ( system->iter_success ) 
+			error("REPLAY: polarization iterative solver failed to reach convergence.\n");
 
 #ifdef QM_ROTATION
 		// solve for the rotational energy levels
 		if(system->quantum_rotation) quantum_system_rotational_energies(system);
 #endif // QM_ROTATION
 
+		update_nodestats(system->nodestats, system->avg_nodestats);
 		update_root_nodestats(system, system->avg_nodestats, system->avg_observables);
 		update_root_averages(system, system->observables, system->avg_observables);
 		update_sorbate_stats(system);

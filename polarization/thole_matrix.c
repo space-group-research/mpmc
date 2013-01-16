@@ -15,9 +15,7 @@ void allocate_thole_matrices(system_t * system ) {
 	int N, i;
 
 	/* count the number of atoms initially in the system */
-	for(molecule_ptr = system->molecules, N = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-			++N;
+	system->checkpoint->N_atom = N = countNatoms(system);
 
 	system->A_matrix = calloc(3*N, sizeof(double *));
 	memnullcheck(system->A_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
@@ -173,24 +171,6 @@ void thole_amatrix(system_t *system) {
 	return;
 }
 
-/* returns the current number of atoms in the system */
-int num_atoms(system_t *system) {
-
-	int N_atoms;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
-
-	/* count the number of atoms in the system initially */
-	for(molecule_ptr = system->molecules, N_atoms = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-			++N_atoms;
-		}
-	}
-
-	return(N_atoms);
-
-}
-
 /* for uvt runs, resize the A (and B) matrices */
 void thole_resize_matrices(system_t *system) {
 
@@ -198,7 +178,7 @@ void thole_resize_matrices(system_t *system) {
 
 	/* determine how the number of atoms has changed and realloc matrices */
 	system->checkpoint->N_atom_prev = system->checkpoint->N_atom;
-	system->checkpoint->N_atom = num_atoms(system);
+	system->checkpoint->N_atom = countNatoms(system);
 	N = 3*system->checkpoint->N_atom;
 	oldN = 3*system->checkpoint->N_atom_prev;
 	dN = N-oldN;

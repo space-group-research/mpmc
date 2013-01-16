@@ -148,14 +148,10 @@ void free_matrices(system_t *system) {
 	if ( !system->A_matrix && !system->B_matrix )
 		return; //nothing to do
 
-	//if we're doing MC, checkpoint->N_atom will be non-zero and will reflect the size of the matrix
-	//(observables->N might not, if we just accepted an insertion/deletion)
 	if ( system->checkpoint->N_atom )
 		N = 3*system->checkpoint->N_atom;
-	else {
-		countN(system);
-		N = 3*system->observables->N;
-	}
+	else 
+		N = 3*countNatoms(system);
 
 	for(i = 0; i < N; i++) {
 		free(system->A_matrix[i]);

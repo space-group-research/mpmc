@@ -37,7 +37,7 @@ double polar(system_t *system) {
 	double potential;
 
 	/* take measures to let N fluctuate */
-	if((system->ensemble == ENSEMBLE_UVT) && !system->polar_zodid)
+	if( (system->ensemble == ENSEMBLE_UVT || system->ensemble == ENSEMBLE_REPLAY)  && !system->polar_zodid )
 		thole_resize_matrices(system);
 
 	/* get the A matrix */

@@ -31,6 +31,17 @@ void countN ( system_t * system ) {
 	return;
 }
 
+int countNatoms(system_t * system) {
+	molecule_t * m;
+	atom_t * a;
+	int N = 0;
+
+	for ( m=system->molecules; m; m=m->next )
+		for ( a=m->atoms; a; a=a->next )
+			N++;
+
+	return N;
+}
 
 /*check cavity_autoreject_absolute 
 -- probably not the most efficient place to put this, but likely the safest*/

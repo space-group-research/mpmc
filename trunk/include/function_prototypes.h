@@ -174,7 +174,7 @@ void thole_field_recip(system_t *);
 void thole_field_self(system_t *);
 int thole_iterative(system_t *);
 void invert_matrix(int, double **, double **);
-int num_atoms(system_t *);
+int countNatoms(system_t *);
 void thole_resize_matrices(system_t *);
 void print_matrix(int N, double **matrix);
 void ewald_estatic ( system_t * );

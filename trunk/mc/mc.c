@@ -263,7 +263,7 @@ int mc(system_t *system) {
 	if(system->cavity_bias) cavity_update_grid(system);
 
 	/* determine the initial number of atoms in the simulation */
-	system->checkpoint->N_atom = num_atoms(system);
+	system->checkpoint->N_atom = countNatoms(system);
 	system->checkpoint->N_atom_prev = system->checkpoint->N_atom;
 
 	/* set volume observable */

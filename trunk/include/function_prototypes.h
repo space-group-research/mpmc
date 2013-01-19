@@ -62,11 +62,14 @@ void output(char *);
 void clear_nodestats(nodestats_t *);
 void clear_node_averages(avg_nodestats_t *);
 void clear_observables(observables_t *);
+void clear_sorbate_averages(sorbateAverages_t *, int);
 void clear_root_averages(avg_observables_t *);
 void clear_avg_nodestats(system_t *); 
+void calc_system_mass(system_t *);
 void track_ar(nodestats_t *);
 void update_nodestats(nodestats_t *, avg_nodestats_t *);
 void update_root_averages(system_t *, observables_t *, avg_observables_t *);
+void update_root_sorb_averages(system_t *, sorbateInfo_t *);
 void update_root_nodestats(system_t *, avg_nodestats_t *, avg_observables_t *);
 int write_performance(int, system_t *);
 int print_observables(system_t *);
@@ -161,7 +164,6 @@ int calculate_te ( system_t * );
 
 /* polarization */
 double polar(system_t *);
-void allocate_thole_matricies(system_t *);
 void thole_amatrix(system_t *);
 void thole_bmatrix(system_t *);
 void thole_bmatrix_dipoles(system_t *);

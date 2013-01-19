@@ -8,22 +8,6 @@ University of South Florida
 
 #include <mc.h>
 
-void clear_nodestats(nodestats_t *stats) {
-	memset(stats, 0, sizeof(nodestats_t));
-}
-
-void clear_node_averages(avg_nodestats_t *avgstats) {
-	memset(avgstats, 0, sizeof(avg_nodestats_t));
-}
-
-void clear_observables(observables_t *obs) {
-	memset(obs, 0, sizeof(observables_t));
-}
-
-void clear_root_averages(avg_observables_t *avgobs) {
-	memset(avgobs, 0, sizeof(avg_observables_t));
-}
-
 /* determine the acceptance rate */
 void track_ar(nodestats_t *ns) {
 
@@ -106,20 +90,19 @@ void update_nodestats(nodestats_t *nodestats, avg_nodestats_t *avg_nodestats) {
 }
 
 void count_sorbates( system_t *system ) {
-	sorbateAverages_t *sorbate_ptr;
-	sorbateAverages_t *sorb_ptr;
-	molecule_t        *molecule_ptr;
+	int i;
+	molecule_t		*molecule_ptr;
 
 	// Zero every count (N) for each sorbate in the averages list
-	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next )
-		sorbate_ptr->currentN = 0;
+	for ( i=0; i<system->sorbateCount; i++ ) 
+		system->sorbateInfo[i].currN = 0;
 
 	// Count each sorbate in the system and record the total in
 	// the corresponding entry in the sorbate averages list.
 	for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) {
-		for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
-			if( !strcasecmp( sorbate_ptr->id, molecule_ptr->moleculetype )) {
-				sorbate_ptr->currentN++;
+		for ( i=0; i<system->sorbateCount; i++ ) {
+			if( !strcasecmp( system->sorbateInfo[i].id, molecule_ptr->moleculetype )) {
+				system->sorbateInfo[i].currN++;
 				break;
 			}
 		}	
@@ -130,90 +113,142 @@ void count_sorbates( system_t *system ) {
 	
 
 // update the stats for the individual sorbates
-void update_sorbate_stats( system_t *system )
-{
+void update_sorbate_info ( system_t *system ) {
 
-	static int counter = 0;
+	molecule_t *molecule_ptr;
+
+	double sorbed_mass, pressure;
 	int i;
-	double err, val;
-	counter++;
-	double sdom = 1.0 / sqrt((double)counter - 1.0);
-	double factor = ((double)(counter-1))/((double)(counter));
-	sorbateAverages_t *sorbate_ptr;
-	sorbateAverages_t *sorb_ptr;
-	molecule_t        *molecule_ptr;
 
 	//update the number of particles of each sorbate
 	count_sorbates(system);
+
+	for ( i=0; i<system->sorbateCount; i++ ) {
+
+		if ( system->h2_fugacity || system->co2_fugacity || system->ch4_fugacity || system->n2_fugacity )
+			pressure = system->fugacities[0];
+		else if ( system->user_fugacities )
+			pressure = system->fugacities[i];
+		else
+			pressure = system->pressure;
+		
+		sorbed_mass = system->sorbateInfo[i].currN * system->sorbateInfo[i].mass;
+
+		system->sorbateInfo[i].percent_wt = 100.0 * sorbed_mass/(system->observables->total_mass);
+		system->sorbateInfo[i].percent_wt_me = 100.0 * sorbed_mass/(system->observables->frozen_mass);
+		system->sorbateInfo[i].excess_ratio = 1000.0 * system->sorbateInfo[i].mass * (system->sorbateInfo[i].currN - 
+			system->sorbateInfo[i].mass*system->free_volume*pressure*ATM2REDUCED/system->temperature)/system->observables->frozen_mass;
+		system->sorbateInfo[i].density = sorbed_mass/(system->observables->volume*NA*A32CM3);
+		system->sorbateInfo[i].pore_density = sorbed_mass/(system->free_volume*NA*A32CM3);
+
+	}
+
+	return;
+}
+
+// calculate and set observable variabels for the frozen and total mass of the system
+void calc_system_mass( system_t * system ) {
+
+	molecule_t * molecule_ptr;
+	double frozen_mass;
 	
-	// Using the current sorbate count (currentN), the number of readings
-	// contributing to the average N (count) and the old average N (avgN)
-	// (via "factor"), calculate the new average N (avgN). 
-	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
-		sorbate_ptr->avgN = factor * sorbate_ptr->avgN + ((double) sorbate_ptr->currentN)/((double)(counter));
-		sorbate_ptr->avgNsq = factor * sorbate_ptr->avgNsq + sorbate_ptr->currentN*sorbate_ptr->currentN/((double)(counter));
-		sorbate_ptr->avgNerr = sdom*sqrt(sorbate_ptr->avgNsq - sorbate_ptr->avgN*sorbate_ptr->avgN);
-	}
+	system->observables->total_mass = 0;
+	system->observables->frozen_mass = 0;
 
-	// Calculate the weight percent and sorbed mass of each sorbate
-
-	//     First, calculate the frozen mass of the system
-	double system_mass = 0.0,
-	       frozen_mass = 0.0;
-	for( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next ) { 
-		// Frozen Mass:
+	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+		system->observables->total_mass += molecule_ptr->mass;
 		if(molecule_ptr->frozen || molecule_ptr->adiabatic)
-			frozen_mass += molecule_ptr->mass;
+			system->observables->frozen_mass += molecule_ptr->mass;
 	}
 
-	for( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
-		
-		// sorbed_mass 
-		double sorbed_mass = sorbate_ptr->avgN * sorbate_ptr->mass;
-		double sorbed_mass_err = sorbate_ptr->avgNerr * sorbate_ptr->mass;
+	return;
+}
 
-		double R          = 0.8205746; //  L*atm/(mol*K)
-		double A3PerLiter = 1.0e27;    //  A^3/L  (cubic angstroms per liter)
-		
-		// weight% 
-		sorbate_ptr->percent_wt    = 100.0 * sorbed_mass/(system->observables->total_mass);
-		sorbate_ptr->percent_wt_me = 100.0 * sorbed_mass/(system->observables->frozen_mass);
-		
-		// excess ratio
-		sorbate_ptr->excess_ratio=1000*sorbate_ptr->mass * 
-			(sorbate_ptr->avgN - sorbate_ptr->mass*system->free_volume*system->pressure*ATM2REDUCED/system->temperature);
+void update_root_sorb_averages(system_t *system, sorbateInfo_t * sinfo ) {
+//sorbateGlobal is an array. sorbateStats is a linked list.
 
-		// density & pore density
-		sorbate_ptr->density = sorbed_mass/(system->avg_observables->volume*NA*A32CM3);
-		sorbate_ptr->density_err = sorbed_mass_err/(system->avg_observables->volume*NA*A32CM3);
-		sorbate_ptr->pore_density = sorbed_mass/(system->free_volume*NA*A32CM3);
+	sorbateAverages_t * sorbateGlobal = system->sorbateGlobal;
 
-		// Selectivity
-		val = err = 0;
-		for( sorb_ptr = system->sorbateStats.next; sorb_ptr; sorb_ptr = sorb_ptr->next ) {
-			if(  strcasecmp(sorbate_ptr->id, sorb_ptr->id)  &&  (sorb_ptr->avgN != 0)  ) {
-				val += sorb_ptr->avgN;
-				err += sorb_ptr->avgNerr * sorb_ptr->avgNerr; //add in quadrature
-			} 
-		}
-		if( val == 0 ) {
-			sorbate_ptr->selectivity = atof( "+Inf" );
-			sorbate_ptr->selectivity_err = atof( "+Inf" );
-		} else {
-			sorbate_ptr->selectivity = sorbate_ptr->avgN / val;
-			//calc error
-			err = sorbate_ptr->avgNerr*sorbate_ptr->avgNerr / (sorbate_ptr->avgN*sorbate_ptr->avgN) + err / (val*val);
-			sorbate_ptr->selectivity_err = sorbate_ptr->selectivity * sqrt(err);
-			//we will report as SDOM
-			sorbate_ptr->selectivity_err /= sqrt(round((double)system->step/(double)system->corrtime));
-		}
+	static int counter = 0;
+	double m, factor, sdom;
+	double total_avgN, total_avgN_err, sorb_err;
+	int i;
+
+	++counter;
+	m = (double)counter;
+	sdom = 1.0/sqrt(m-1.0);
+	factor = (m - 1.0)/m;
+
+	// for each sorbate
+	for ( i = 0; i < system->sorbateCount; i++ ) {
+
+		sorbateGlobal[i].avgN = factor * sorbateGlobal[i].avgN
+			+ sinfo[i].currN / m;
+		sorbateGlobal[i].avgN_sq = factor * sorbateGlobal[i].avgN_sq
+			+ sinfo[i].currN*sinfo[i].currN / m;
+		sorbateGlobal[i].avgN_err = sdom * sqrt(sorbateGlobal[i].avgN_sq
+			- sorbateGlobal[i].avgN*sorbateGlobal[i].avgN);
+
+		sorbateGlobal[i].percent_wt = factor * sorbateGlobal[i].percent_wt
+			+ sinfo[i].percent_wt / m;
+		sorbateGlobal[i].percent_wt_sq = factor * sorbateGlobal[i].percent_wt_sq
+			+ sinfo[i].percent_wt*sinfo[i].percent_wt / m;
+		sorbateGlobal[i].percent_wt_err = sdom * sqrt(sorbateGlobal[i].percent_wt_sq
+			- sorbateGlobal[i].percent_wt*sorbateGlobal[i].percent_wt);
+
+		sorbateGlobal[i].percent_wt_me = factor * sorbateGlobal[i].percent_wt_me
+			+ sinfo[i].percent_wt_me / m;
+		sorbateGlobal[i].percent_wt_me_sq = factor * sorbateGlobal[i].percent_wt_me_sq
+			+ sinfo[i].percent_wt_me*sinfo[i].percent_wt_me / m;
+		sorbateGlobal[i].percent_wt_me_err = sdom * sqrt(sorbateGlobal[i].percent_wt_me_sq
+			- sorbateGlobal[i].percent_wt_me*sorbateGlobal[i].percent_wt_me);
+
+		sorbateGlobal[i].excess_ratio = factor * sorbateGlobal[i].excess_ratio
+			+ sinfo[i].excess_ratio / m;
+		sorbateGlobal[i].excess_ratio_sq = factor * sorbateGlobal[i].excess_ratio_sq
+			+ sinfo[i].excess_ratio*sinfo[i].excess_ratio / m;
+		sorbateGlobal[i].excess_ratio_err = sdom * sqrt(sorbateGlobal[i].excess_ratio_sq
+			- sorbateGlobal[i].excess_ratio*sorbateGlobal[i].excess_ratio);
+
+		sorbateGlobal[i].pore_density = factor * sorbateGlobal[i].pore_density
+			+ sinfo[i].pore_density / m;
+		sorbateGlobal[i].pore_density_sq = factor * sorbateGlobal[i].pore_density_sq
+			+ sinfo[i].pore_density*sinfo[i].pore_density / m;
+		sorbateGlobal[i].pore_density_err = sdom * sqrt(sorbateGlobal[i].pore_density_sq
+			- sorbateGlobal[i].pore_density*sorbateGlobal[i].pore_density);
+
+		sorbateGlobal[i].density = factor * sorbateGlobal[i].density
+			+ sinfo[i].density / m;
+		sorbateGlobal[i].density_sq = factor * sorbateGlobal[i].density_sq
+			+ sinfo[i].density*sinfo[i].density / m;
+		sorbateGlobal[i].density_err = sdom * sqrt(sorbateGlobal[i].density_sq
+			- sorbateGlobal[i].density*sorbateGlobal[i].density);
+
 	}
+
+	// calculate selectivity
+	total_avgN = 0; total_avgN_err = 0;
+	for ( i=0; i<system->sorbateCount; i++ ) {
+		total_avgN += sorbateGlobal[i].avgN;
+		total_avgN_err += sorbateGlobal[i].avgN_err * sorbateGlobal[i].avgN_err;
+	}
+	total_avgN_err = total_avgN_err/total_avgN; //relative error calculated in quadruture
+
+	for ( i=0; i<system->sorbateCount; i++ ) {
+		sorbateGlobal[i].selectivity = sorbateGlobal[i].avgN / total_avgN;
+		sorb_err = sorbateGlobal[i].avgN_err / sorbateGlobal[i].avgN; //relative error
+		sorb_err *= sorb_err; //square it
+		//sum the quadrature of the relative errors then multiple the dimensionality back in
+		sorbateGlobal[i].selectivity_err = sorbateGlobal[i].selectivity * sqrt(sorb_err + total_avgN_err);
+	}
+
+	return;
 }
 
 void update_root_averages(system_t *system, observables_t *observables, avg_observables_t *avg_observables) {
 
-	double particle_mass, frozen_mass, curr_density;
-	sorbateAverages_t *sptr;
+	double particle_mass, curr_density;
+	double frozen_mass = system->observables->frozen_mass;
 
 	molecule_t *molecule_ptr;
 	static int counter = 0;
@@ -223,6 +258,8 @@ void update_root_averages(system_t *system, observables_t *observables, avg_obse
 	m = (double)counter;
 	sdom = 1.0/sqrt(m-1.0);
 	factor = (m - 1.0)/m;
+
+
 
 	/* the physical observables */
 	avg_observables->energy = factor*avg_observables->energy 
@@ -310,18 +347,10 @@ void update_root_averages(system_t *system, observables_t *observables, avg_obse
 	avg_observables->NU = factor*avg_observables->NU 
 		+ observables->NU / m;
 
-	/* get the mass of the two phases */
-	system->observables->total_mass = 0;
-	for(molecule_ptr = system->molecules, particle_mass = 0, frozen_mass = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-		if(molecule_ptr->frozen || molecule_ptr->adiabatic)
-			frozen_mass += molecule_ptr->mass;
-		else { 
+	/* particle mass will be used in calculations for single sorbate systems */
+	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) 
+		if( !molecule_ptr->frozen && !molecule_ptr->adiabatic)
 			particle_mass = molecule_ptr->mass;
-			system->observables->total_mass += particle_mass;
-		}
-	}
-	system->observables->frozen_mass = frozen_mass; //store this for sorbate calculations
-	system->observables->total_mass += frozen_mass;
 
 	/* density in g/cm^3 */ //had to modify since density isn't neccessarily constant since adding NPT
 	curr_density = observables->N * particle_mass / (system->pbc->volume*NA*A32CM3);
@@ -399,7 +428,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_obse
 
 	}
 
-
+	return;
 }
 
 

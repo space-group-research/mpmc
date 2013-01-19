@@ -38,7 +38,6 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 	double u, g, partfunc_ratio;
 	double v_new, v_old;
 	double fugacity;
-	sorbateAverages_t * sptr;
 
 	delta_energy = final_energy - initial_energy;
 
@@ -217,10 +216,12 @@ void register_reject(system_t *system) {
 /* implements the Markov chain */
 int mc(system_t *system) {
 
+	int i;
 	int j, msgsize;
 	double initial_energy, final_energy, delta_energy, current_energy;
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
+	sorbateInfo_t * sinfo_mpi;
 	double *temperature_mpi;
 	char *snd_strct, *rcv_strct;
 	char linebuf[MAXLINE];
@@ -233,11 +234,19 @@ int mc(system_t *system) {
 	memnullcheck(observables_mpi, sizeof(observables_t), __LINE__-1, __FILE__-1);
 	avg_nodestats_mpi = calloc(1, sizeof(avg_nodestats_t));
 	memnullcheck(avg_nodestats_mpi, sizeof(avg_nodestats_t), __LINE__-1, __FILE__-1);
+	// if multiple-sorbates, allocate sorb statistics struct
+	if ( system->sorbateCount > 1 ) {
+		sinfo_mpi = calloc(system->sorbateCount, sizeof(sorbateInfo_t));
+		memnullcheck(sinfo_mpi, sizeof(sorbateInfo_t), __LINE__-1, __FILE__-1);
+		system->sorbateGlobal = calloc(system->sorbateCount, sizeof(sorbateAverages_t));
+		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__-1);
+	}
 
-	/* if MPI not defined, then compute message size like dis */
+	// compute message size	
 	msgsize = sizeof(observables_t) + sizeof(avg_nodestats_t);
-	if(system->calc_hist)
-		msgsize += system->n_histogram_bins*sizeof(int);
+	if ( system->calc_hist ) msgsize += system->n_histogram_bins*sizeof(int);
+	if ( system->sorbateCount > 1 ) msgsize += system->sorbateCount*sizeof(sorbateInfo_t);
+
 #ifdef MPI
 	MPI_Type_contiguous(msgsize, MPI_BYTE, &msgtype);
 	MPI_Type_commit(&msgtype);
@@ -249,22 +258,12 @@ int mc(system_t *system) {
 	if(!rank) {
 		rcv_strct = calloc(size, msgsize);
 		memnullcheck(rcv_strct, size*sizeof(msgsize), __LINE__-1, __FILE__-1);
-		temperature_mpi = calloc(size, sizeof(double));
+		temperature_mpi = calloc(size, sizeof(double)); //temperature list for parallel tempering
 		memnullcheck(temperature_mpi, size*sizeof(double), __LINE__-1, __FILE__-1);
 	}
 
-	/* clear our statistics */
-	clear_nodestats(system->nodestats);
-	clear_node_averages(system->avg_nodestats);
-	clear_observables(system->observables);
-	clear_root_averages(system->avg_observables);
-
 	/* update the grid for the first time */
 	if(system->cavity_bias) cavity_update_grid(system);
-
-	/* determine the initial number of atoms in the simulation */
-	system->checkpoint->N_atom = countNatoms(system);
-	system->checkpoint->N_atom_prev = system->checkpoint->N_atom;
 
 	/* set volume observable */
 	system->observables->volume = system->pbc->volume;
@@ -278,10 +277,8 @@ int mc(system_t *system) {
 #endif /* QM_ROTATION */
 
 	/* be a bit forgiving of the initial state */
-	if(!finite(initial_energy)) {
-		initial_energy = MAXVALUE;
-		system->observables->energy = MAXVALUE;
-	}
+	if(!finite(initial_energy)) 
+		initial_energy = system->observables->energy = MAXVALUE;
 
 	/* if root, open necessary output files */
 	if (!rank) if(open_files(system) < 0) {
@@ -291,8 +288,14 @@ int mc(system_t *system) {
 
 	// write initial observables to stdout and logs
 	if ( !rank ) {
+		calc_system_mass(system);
 		// average in the initial values once  (we don't want to double-count the initial state when using MPI)
 		update_root_averages(system, system->observables, system->avg_observables);
+		// average in the initial sorbate values
+		if ( system->sorbateCount > 1 ) {
+			update_sorbate_info( system ); //local update
+			update_root_sorb_averages(system, system->sorbateInfo); //global update
+		}
 		// write initial observables exactly once
 		if(system->file_pointers.fp_energy) 
 			write_observables(system->file_pointers.fp_energy, system, system->observables, system->temperature);
@@ -331,7 +334,8 @@ int mc(system_t *system) {
 		} else boltzmann_factor(system, initial_energy, final_energy);
 
 		/* Metropolis function */
-		if((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0) ) {	/* ACCEPT */
+		if((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0) ) {	
+		/////////// ACCEPT
 
 			current_energy = final_energy;
 
@@ -344,7 +348,8 @@ int mc(system_t *system) {
 					system->temperature = system->simulated_annealing_target + 
 						(system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
 
-			} else {						/* REJECT */
+		} else { 
+		/////////////// REJECT
 
 			current_energy = initial_energy; //used in parallel tempering
 
@@ -360,12 +365,11 @@ int mc(system_t *system) {
 			restore(system);
 			register_reject(system);
 
-		}
+		} // END REJECT
 
 		// perform parallel_tempering
 		if ( (system->parallel_tempering) && (system->step % system->ptemp_freq == 0) )
 			temper_system(system, current_energy);
-				
 
 		/* track the acceptance_rate */
 		track_ar(system->nodestats);
@@ -382,6 +386,13 @@ int mc(system_t *system) {
 				zero_grid(system->grids->histogram->grid,system);
 				population_histogram(system);
 			}
+
+			// update frozen and total system mass
+			calc_system_mass(system);
+
+			// update sorbate info on each node
+			if (system->sorbateCount > 1 )
+				update_sorbate_info( system );
 
 			/*write trajectory files for each node -> one at a time to avoid disk congestion*/
 #ifdef MPI
@@ -401,10 +412,10 @@ int mc(system_t *system) {
 
 			/*dipole/field data for each node -> one at a time to avoid disk congestion*/
 #ifdef MPI
-			for ( j=0; j<size; j++ ) {
-				MPI_Barrier(MPI_COMM_WORLD);
-				if ( j == rank ) {
-					if(system->polarization) {
+			if ( system->polarization ) {
+				for ( j=0; j<size; j++ ) {
+					MPI_Barrier(MPI_COMM_WORLD);
+					if ( j == rank ) {
 						write_dipole(system);
 						write_field(system);
 					}
@@ -420,10 +431,16 @@ int mc(system_t *system) {
 			/* zero the send buffer */
 			memset(snd_strct, 0, msgsize);
 			memcpy(snd_strct, system->observables, sizeof(observables_t));
-			memcpy((snd_strct + sizeof(observables_t)), system->avg_nodestats, sizeof(avg_nodestats_t));
+			memcpy(snd_strct + sizeof(observables_t), system->avg_nodestats, sizeof(avg_nodestats_t));
 			if(system->calc_hist)
 				mpi_copy_histogram_to_sendbuffer(snd_strct + sizeof(observables_t) + sizeof(avg_nodestats_t), 
 					system->grids->histogram->grid, system);
+			if ( system->sorbateCount > 1 )
+				memcpy(snd_strct + sizeof(observables_t) + sizeof(avg_nodestats_t)
+					+ (system->calc_hist)*system->n_histogram_bins*sizeof(int), //compensate for the size of hist data, if neccessary
+					system->sorbateInfo,
+					system->sorbateCount * sizeof(sorbateInfo_t));
+
 			if(!rank) memset(rcv_strct, 0, size*msgsize);
 
 #ifdef MPI
@@ -446,6 +463,12 @@ int mc(system_t *system) {
 					if(system->calc_hist)
 						mpi_copy_rcv_histogram_to_data(rcv_strct + j*msgsize + sizeof(observables_t) 
 							+ sizeof(avg_nodestats_t), system->grids->histogram->grid, system);
+					if(system->sorbateCount > 1)
+						memcpy(sinfo_mpi, 
+							rcv_strct + j*msgsize + sizeof(observables_t) + sizeof(avg_nodestats_t)
+							+ (system->calc_hist)*system->n_histogram_bins*sizeof(int), //compensate for the size of hist data, if neccessary
+							system->sorbateCount*sizeof(sorbateInfo_t));
+
 					/* write observables */
 					if(system->file_pointers.fp_energy) 
 						write_observables(system->file_pointers.fp_energy, system, observables_mpi, temperature_mpi[j]);
@@ -459,15 +482,14 @@ int mc(system_t *system) {
 					if ( ! system->parallel_tempering ) {
 						update_root_averages(system, observables_mpi, system->avg_observables);
 						if(system->calc_hist) update_root_histogram(system);
+						if(system->sorbateCount > 1 ) update_root_sorb_averages(system, sinfo_mpi);
 					}
 					else if ( system->ptemp->index[j] == 0 ) {
 						update_root_averages(system, observables_mpi, system->avg_observables);
 						if(system->calc_hist) update_root_histogram(system);
+						if(system->sorbateCount > 1 ) update_root_sorb_averages(system, sinfo_mpi);
 					}
 				}
-
-				//this needs to be re-written to be useful in parallel jobs
-				update_sorbate_stats( system );
 
 				/* write the averages to stdout */
 				if(system->file_pointers.fp_histogram)
@@ -499,6 +521,11 @@ int mc(system_t *system) {
 		close_files(system);
 		free(rcv_strct);
 		free(temperature_mpi);
+	}
+
+	if (system->sorbateCount > 1 ) {
+		free(system->sorbateGlobal);
+		free(sinfo_mpi);
 	}
 
 	free(observables_mpi);

@@ -3,8 +3,8 @@
 if [ $# != 6 ]
 then
 	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
-	echo "     hostnames: generic gdb circe ranger lincoln llnl bigben galactic dirac lonestar spin time"
-	echo "     compilers: gcc pgi icc"
+	echo "     hostnames: generic circe ranger lincoln llnl bigben galactic dirac lonestar spin time"
+	echo "     compilers: gcc gdb pgi icc"
 	exit 1
 fi
 
@@ -23,6 +23,11 @@ NVCC="nvcc"
 case "$HOSTNAME" in
 	"llnl")
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
@@ -36,6 +41,11 @@ case "$HOSTNAME" in
 	;;
 	"lincoln")
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
@@ -49,6 +59,11 @@ case "$HOSTNAME" in
 	;;
 	"bigben")
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"pgi")
 				CC="cc"
 				CFLAGS="-O3 -fastsse -Mnontemporal -Mprefetch=distance:8,nta"
@@ -61,6 +76,11 @@ case "$HOSTNAME" in
 	;;
 	"circe") #USF research computing
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
 				exit 1
@@ -80,6 +100,11 @@ case "$HOSTNAME" in
 	;;
 	"dirac") #dirac usf
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				CC="gcc"
 				CFLAGS="-O3 -std=c99"
@@ -97,6 +122,11 @@ case "$HOSTNAME" in
 	;;
 	"time") #time usf
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				CC="gcc"
 				CFLAGS="-O3"
@@ -114,6 +144,11 @@ case "$HOSTNAME" in
 	;;
 	"galactic")
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"icc")
 				CC="icc"
 				CFLAGS="-O3 -prefetch -mp -axP -ip -unroll"
@@ -125,6 +160,11 @@ case "$HOSTNAME" in
 	;;
 	"lonestar") #TACC
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
 				exit 1
@@ -144,6 +184,11 @@ case "$HOSTNAME" in
 	;;
 	"ranger") #TACC
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -tp barcelona-64"
@@ -156,6 +201,11 @@ case "$HOSTNAME" in
 	;;
 	"spin") #spin usf
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				CC="gcc"
 				CFLAGS="-g0 -O3"
@@ -168,6 +218,11 @@ case "$HOSTNAME" in
 	;;
 	"generic")
 		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
 			"gcc")
 				CC="gcc"
 				CFLAGS="-g0 -O3"
@@ -188,18 +243,7 @@ case "$HOSTNAME" in
 				exit 1
 		esac
 	;;
-	"gdb") ##debug in gdb
-		case "$COMPILER" in
-			"gcc")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-		esac
-	;;	*) ## no machine match
+	*) ## no machine match
 		echo "error: unknown machine $HOSTNAME"
 		exit 1
 	;;
@@ -278,7 +322,7 @@ else
 fi
 
 ## Libs for gcc need to be specified in a different position
-if [ $COMPILER = "gcc" ]; then
+if [ $COMPILER = "gcc" ] || [ $COMPILER = "gdb" ] ; then
 	GCC_EXTRA_LIBS=$EXTRA_LIBS
 	EXTRA_LIBS=
 else

@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
 	memnullcheck(system->grids->avg_histogram,sizeof(histogram_t), __LINE__-1, __FILE__);
 
 	/* if polarization active, allocate the necessary matrices */
-	if(system->polarization && !system->cuda)
-		allocate_thole_matrices(system);
+	if(system->polarization && !system->cuda && !system->polar_zodid)
+		thole_resize_matrices(system);
 
 	/* if histogram calculation flag is set, allocate grid */
 	if(system->calc_hist){

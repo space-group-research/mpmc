@@ -148,8 +148,8 @@ void free_matrices(system_t *system) {
 	if ( !system->A_matrix && !system->B_matrix )
 		return; //nothing to do
 
-	if ( system->checkpoint->N_atom )
-		N = 3*system->checkpoint->N_atom;
+	if ( system->checkpoint->thole_N_atom )
+		N = 3*system->checkpoint->thole_N_atom;
 	else 
 		N = 3*countNatoms(system);
 
@@ -228,7 +228,6 @@ void free_vdw_eiso(vdw_t * vdw_eiso_info) {
 void cleanup(system_t *system) {
 
 	int i,j;
-	sorbateAverages_t *sptr, *sptr_last;
 
 #ifdef QM_ROTATION
 	if(system->quantum_rotation) free_rotational(system);
@@ -268,12 +267,8 @@ void cleanup(system_t *system) {
 	//insert.pdb arrays and shit
 	if(system->insertion_molecules_array) free(system->insertion_molecules_array);
 	if(system->insertion_molecules) free_all_molecules(system, system->insertion_molecules);
-	// free sorbate stat linked list
-	sptr_last = NULL;
-	for ( sptr = system->sorbateStats.next; sptr; sptr=sptr->next ) {
-		free(sptr_last);
-		sptr_last = sptr;
-	} free(sptr_last);
+	// free sorbate info array
+	free(system->sorbateInfo);
 
 	/* free statistics */
 	free(system->nodestats);
@@ -292,14 +287,16 @@ void cleanup(system_t *system) {
 		}
 		free(system->grids->histogram->grid[i]);
 	}
-	for ( i=0; i<system->grids->histogram->x_dim; i++ ) {
-		for ( j=0; j<system->grids->histogram->y_dim; j++ ) {
-			free(system->grids->avg_histogram->grid[i][j]);
+	if ( !rank ) {
+		for ( i=0; i<system->grids->histogram->x_dim; i++ ) {
+			for ( j=0; j<system->grids->histogram->y_dim; j++ ) {
+				free(system->grids->avg_histogram->grid[i][j]);
+			}
+			free(system->grids->avg_histogram->grid[i]);
 		}
-		free(system->grids->avg_histogram->grid[i]);
+		free(system->grids->avg_histogram->grid);
 	}
 	free(system->grids->histogram->grid);
-	free(system->grids->avg_histogram->grid);
 	free(system->grids->avg_histogram);
 	free(system->grids->histogram);
 	free(system->grids);

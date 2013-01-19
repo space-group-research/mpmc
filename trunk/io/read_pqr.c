@@ -321,7 +321,10 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 		return(NULL);
 	}
 
-	fsetpos(fp,&file_pos);
+	//if we're going to read box info, we need to rewind our file
+	if ( system->read_pqr_box_on )
+		fsetpos(fp,&file_pos);
+
 	return(molecules);
 }
 
@@ -332,14 +335,12 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 
 // helper functions which will test for presence of a sorbate in 
 // the sorbate list and which will add the sorbate if necessary.
-int sorbateIs_Not_InList( sorbateAverages_t, char * );
-int addSorbateToList( sorbateAverages_t *, char * );
+int sorbateIs_Not_InList( system_t *, char * );
+void addSorbateToList( system_t *, char * );
 
 molecule_t *read_insertion_molecules(system_t *system) {
 
-	int i;
-
-	sorbateAverages_t * sorbate;
+	int i, j;
 
 	molecule_t *molecules, 
 	           *molecule_ptr;
@@ -389,12 +390,6 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	atom_ptr            = molecule_ptr->atoms;
 	prev_atom_ptr       = atom_ptr;
 	
-
-	// initialize the list of individual sorbate averages
-	system->sorbateCount = 0;
-	system->sorbateStats.next = NULL;
-
-
 	// open the molecule input file 
 	fp = fopen(system->insert_input, "r");
 	filecheck(fp,system->insert_input,READ);
@@ -464,8 +459,8 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			// the molecule.
 			current_site_neighbor = 0;
 
-                        if(current_frozen)
-                            current_charge *= system->scale_charge;
+			if(current_frozen)
+				current_charge *= system->scale_charge;
 
 			if(molecule_ptr->id != current_moleculeid) {
 				molecule_ptr->next = calloc(1, sizeof(molecule_t));
@@ -566,28 +561,22 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) { 
 		molecule_counter++;
 		// Check to see if this molecule is a new sorbate.
-		if( sorbateIs_Not_InList( system->sorbateStats, molecule_ptr->moleculetype ) ) {
+		if( sorbateIs_Not_InList(system, molecule_ptr->moleculetype) ) {
 			system->sorbateCount++;
-			if( !addSorbateToList( &(system->sorbateStats), molecule_ptr->moleculetype )) {
-				error( "INPUT: Exhausted memory while constructing sorbate stat list." );
-				return NULL;
-			}
-			for( sorbate = system->sorbateStats.next; sorbate; sorbate = sorbate->next )
-				if( !strcasecmp( sorbate->id, molecule_ptr->moleculetype )){
-					sorbate->mass = molecule_ptr->mass;
+			addSorbateToList(system, molecule_ptr->moleculetype);
+			for ( j=0; j<system->sorbateCount; j++ ) {
+				if( !strcasecmp( system->sorbateInfo[j].id, molecule_ptr->moleculetype )){
+					system->sorbateInfo[j].mass = molecule_ptr->mass;
 					break;
 				}
+			}
 		}
 	}
-
 
 	// allocate space for array that will give direct access to insertion-candidate
 	// molecules in the linked list. 
 	system->insertion_molecules_array = malloc( molecule_counter * sizeof(molecule_t*) );
-	if(!system->insertion_molecules_array ) {
-		error( "INPUT: ERROR - exhausted memory while allocating insertion molecules array.\n" );
-		return NULL;
-	}
+	memnullcheck(system->insertion_molecules_array, molecule_counter*sizeof(molecule_t *), __LINE__-1, __FILE__-1);
 
 	// point array pointers to their corresponding molecules
 	molecule_counter=0;
@@ -596,7 +585,6 @@ molecule_t *read_insertion_molecules(system_t *system) {
 		molecule_counter++;
 	}
 	system->num_insertion_molecules = molecule_counter;
-
 
 	  //  ERROR CHECKING OF SOME SORT MAY NEED TO GO HERE
 	 //   WHAT'S ALLOWED/DISALLOWED FOR INSERTED MOLECULES?
@@ -612,18 +600,18 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 // sorbateIs_Not_InList() examines a sorbate stat list and a sorbate ID. 
 // Returns true if this sorbate is NOT in the list, false otherwise
-int sorbateIs_Not_InList( sorbateAverages_t sorbateList, char *type ) {
-	
-	sorbateAverages_t *sorbate;
+int sorbateIs_Not_InList( system_t * system, char *type ) {
+
+	int i;	
 
 	// Look at each item in the list until we find a match
 	// with the sorbate id about which the inquiry was made.
-	for( sorbate = sorbateList.next; sorbate; sorbate = sorbate->next ){
-		if( !strcasecmp( type, sorbate->id ) )
+	for ( i=0; i<system->sorbateCount; i++ ) {
+		if( !strcasecmp( type, system->sorbateInfo[i].id ) )
 			// sorbate is already accounted for
 			return 0;
 	}
-	
+
 	// If end of list is reached w/o encountering the sorbate, then
 	// the sorbate is new... return 1, i.e. the statement "sorbate 
 	// is NOT in list" is TRUE.
@@ -631,47 +619,23 @@ int sorbateIs_Not_InList( sorbateAverages_t sorbateList, char *type ) {
 }
 
 
+void addSorbateToList( system_t * system, char *sorbate_type ){
 
+	// grow array
+	system->sorbateInfo = realloc(system->sorbateInfo, system->sorbateCount*sizeof(sorbateInfo_t));
+	memnullcheck(system->sorbateInfo, system->sorbateCount*sizeof(sorbateInfo_t), __LINE__-1, __FILE__-1);
 
-// addSorbateToList() Takes a sorbate stat list and a sorbate ID. Creates a 
-// node at the end of the list and initializes it with the passed sorbate id.
-int addSorbateToList( sorbateAverages_t *sorbateList, char *sorbate_type ){
+	// set sorbate type for the new element
+	strcpy( system->sorbateInfo[system->sorbateCount-1].id, sorbate_type );
 	
-	// navigate to the end of the list
-	sorbateAverages_t *sorbate = sorbateList;
-	while( sorbate->next ){
-		sorbate = sorbate->next;
-	}
-
-	// allocate a new node for the sorbate
-	sorbate->next = calloc(1, sizeof( sorbateAverages_t ));
-	sorbate = sorbate->next;
-	
-	// return 0 upon failure to allcoate
-	if( !sorbate ) return 0;
-
-	// initialize the new node
-	strcpy( sorbate->id, sorbate_type );
-	sorbate->currentN = 0;
-	sorbate->avgN = 0.0;
-	//sorbate->N = (double *) calloc( size, sizeof(double) ); // This will be an array w/1 entry per MPI worker.
-	sorbate->next = NULL;                                   // Terminate the list.
-	
-	// return 0 upon failure to allocate
-	//if( !sorbate->N ) return 0;
-
 	// send a status update to stdout
 	char buffer[MAXLINE];
-	sprintf( buffer, "INPUT: System will track individual stats for sorbate %s.\n", sorbate->id );
+	sprintf(buffer, "INPUT: System will track individual stats for sorbate %s.\n", 
+		system->sorbateInfo[system->sorbateCount-1].id );
 	output( buffer );
 
-	return 1;
+	return;
 }
-
-
-
-
-
 
 #ifdef DEBUG
 void test_list(molecule_t *molecules) {

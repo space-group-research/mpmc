@@ -13,6 +13,10 @@ int replay_trajectory (system_t * system) {
 	FILE * finput = fopen(system->traj_input,"r");
 	filecheck(finput, system->traj_input, READ);
 	rewind(finput);
+	if ( system->sorbateCount > 1 ) {
+		system->sorbateGlobal = calloc(system->sorbateCount, sizeof(sorbateAverages_t));
+		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__-1);
+	}
 
 	//now we need to loop. we will follow this procedure
 	// 1. setup simulation box
@@ -29,9 +33,16 @@ int replay_trajectory (system_t * system) {
 	while ( 1 ) {
 
 		//remove old structures from previous loop or from input.c prior to calling this function
-		if ( system->polarization && !system->cuda) free_matrices(system);
 		free_all_pairs(system);
 		free_all_molecules(system, system->molecules);
+		if ( system->insertion_molecules_array ) {
+			free(system->insertion_molecules_array);
+			system->insertion_molecules_array = NULL;
+		}
+		if ( system->insertion_molecules ) {
+			free_all_molecules(system, system->insertion_molecules);
+			system->insertion_molecules = NULL;
+		}
 
 		errchk =  setup_simulation_box(finput,system); 
 		if ( errchk == 1 ) //if 1, we are out of molecules
@@ -45,8 +56,6 @@ int replay_trajectory (system_t * system) {
 		//set up pairs
 		setup_pairs(system);
 		if ( system->spectre) spectre_wrapall(system);
-		if (system->polarization && !system->cuda)
-			allocate_thole_matrices(system);
 
 		// set volume observable
 		system->observables->volume = system->pbc->volume;
@@ -61,10 +70,14 @@ int replay_trajectory (system_t * system) {
 		if(system->quantum_rotation) quantum_system_rotational_energies(system);
 #endif // QM_ROTATION
 
+		calc_system_mass(system);
 		update_nodestats(system->nodestats, system->avg_nodestats);
 		update_root_nodestats(system, system->avg_nodestats, system->avg_observables);
 		update_root_averages(system, system->observables, system->avg_observables);
-		update_sorbate_stats(system);
+		if ( system->sorbateCount > 1 ) {
+			update_sorbate_info(system);
+			update_root_sorb_averages(system, system->sorbateInfo);
+		}
 
 		if ( system->file_pointers.fp_energy ) 
 			write_observables(system->file_pointers.fp_energy, system, system->observables, system->temperature);
@@ -101,6 +114,8 @@ int replay_trajectory (system_t * system) {
 	fclose(finput);
 	if(!rank)
 		close_files(system);
+
+	free(system->sorbateGlobal);
 
 	return(0);
 }

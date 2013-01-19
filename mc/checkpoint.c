@@ -4,6 +4,7 @@
 /* this function (a) determines what move will be made next time make_move() is called and (b) backups up the state to be restore upon rejection */
 void checkpoint(system_t *system) {
 
+	int j;
 	int i_exchange, i_adiabatic;
 	int num_molecules_exchange, num_molecules_adiabatic, altered;
 	double num_molecules_exchange_double, num_molecules_adiabatic_double;
@@ -11,7 +12,7 @@ void checkpoint(system_t *system) {
 	molecule_t *molecule_ptr, *prev_molecule_ptr;
 
 	int alt;
-	sorbateAverages_t * sorbate_ptr;
+	sorbateInfo_t * sorbate_ptr;
 
 	/* save the current observables */
 	memcpy(system->checkpoint->observables, system->observables, sizeof(observables_t));
@@ -133,8 +134,8 @@ void checkpoint(system_t *system) {
 			// if multi sorbate, we need to record the type of sorbate removed
 			if( system->num_insertion_molecules && system->checkpoint->movetype == MOVETYPE_REMOVE ) {
 				alt = 0;
-				for ( sorbate_ptr = system->sorbateStats.next; sorbate_ptr; sorbate_ptr = sorbate_ptr->next ) {
-					if ( !strcasecmp( sorbate_ptr->id, ptr_array_exchange[altered]->moleculetype ) ) {
+				for ( j=0; j<system->sorbateCount; j++ ) {
+					if ( !strcasecmp( system->sorbateInfo[j].id, ptr_array_exchange[altered]->moleculetype ) ) {
 						system->sorbateInsert = alt;
 						break;
 					}

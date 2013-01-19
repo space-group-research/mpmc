@@ -18,7 +18,7 @@ void thole_polarizability_tensor(system_t *system) {
 	int p, q;
 	double isotropic;
 
-	N = system->checkpoint->N_atom;
+	N = system->checkpoint->thole_N_atom;
 
 	/* clear the polarizability tensor */
 	for(p = 0; p < 3; p++)

@@ -8,34 +8,6 @@ University of South Florida
 
 #include <mc.h>
 
-void allocate_thole_matrices(system_t * system ) {
-
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-	int N, i;
-
-	/* count the number of atoms initially in the system */
-	system->checkpoint->N_atom = N = countNatoms(system);
-
-	system->A_matrix = calloc(3*N, sizeof(double *));
-	memnullcheck(system->A_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
-	for(i = 0; i < 3*N; i++) {
-		system->A_matrix[i] = calloc(3*N, sizeof(double));
-		memnullcheck(system->A_matrix[i],3*N*sizeof(double), __LINE__-1, __FILE__);
-	}
-
-	if(!system->polar_iterative) {
-		system->B_matrix = calloc(3*N, sizeof(double *));
-		memnullcheck(system->B_matrix,3*N*sizeof(double *),__LINE__-1, __FILE__);
-		for(i = 0; i < 3*N; i++) {
-			system->B_matrix[i] = calloc(3*N, sizeof(double));
-			memnullcheck(system->B_matrix[i],3*N*sizeof(double),__LINE__-1, __FILE__);
-		}
-	}
-
-	return;
-}
-
 void print_matrix(int N, double **matrix) {
 
 	int i, j;
@@ -177,10 +149,9 @@ void thole_resize_matrices(system_t *system) {
 	int i, N, dN, oldN;
 
 	/* determine how the number of atoms has changed and realloc matrices */
-	system->checkpoint->N_atom_prev = system->checkpoint->N_atom;
-	system->checkpoint->N_atom = countNatoms(system);
-	N = 3*system->checkpoint->N_atom;
-	oldN = 3*system->checkpoint->N_atom_prev;
+	oldN = 3*system->checkpoint->thole_N_atom; //will be set to zero if first time called
+	system->checkpoint->thole_N_atom = countNatoms(system);
+	N = 3*system->checkpoint->thole_N_atom;
 	dN = N-oldN;
 
 	if(!dN) return;

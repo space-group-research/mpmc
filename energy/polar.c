@@ -45,7 +45,7 @@ double polar(system_t *system) {
 		thole_amatrix(system);
 		if(system->polarizability_tensor) {
 			output("POLAR: A matrix:\n");
-			print_matrix(3*((int)system->checkpoint->N_atom), system->A_matrix);
+			print_matrix(3*((int)system->checkpoint->thole_N_atom), system->A_matrix);
 		}
 	}
 
@@ -72,7 +72,7 @@ double polar(system_t *system) {
 		/* output the 3x3 molecular polarizability tensor */
 		if(system->polarizability_tensor) {
 			output("POLAR: B matrix:\n");
-			print_matrix(3*((int)system->checkpoint->N_atom), system->B_matrix);
+			print_matrix(3*((int)system->checkpoint->thole_N_atom), system->B_matrix);
 			thole_polarizability_tensor(system);
 			die(0);
 		}

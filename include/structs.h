@@ -192,24 +192,29 @@ typedef struct _avg_observables {
 
 } avg_observables_t;
 
-
-// Node definition for a linked list that will hold individual
-// statistics for each unique sorbate in the system.
+// used for storing global sorbate averages
 typedef struct _sorbateAverages {
-	char   id[16];           // identifying tag for the sorbate, e.g. CH4, CO2 or H2
-	double mass;             // mass of this sorbate.
-	int    currentN;         // sorbate count for the current step
-	double avgN;             // average sorbate count
-	double avgNsq, avgNerr; 
-	double percent_wt;       // weight percent for this sorbate (sorb_mass / total_mass)
-	double percent_wt_me;    // weight percent for this sorbate (sorb_mass / frozen_mass)
-	double excess_ratio;     // excess adsorption ratio
-	double selectivity;      // sorbate's selectivity ratio relative to all other sorbates in the insert list.
-	double selectivity_err; 
-	double pore_density, density, density_err; // mass of sorbate / volume of pore OR volume of system
+	double avgN, avgN_sq, avgN_err;															// average sorbate count
+	double percent_wt, percent_wt_sq, percent_wt_err;						// weight percent for this sorbate (sorb_mass / total_mass)
+	double percent_wt_me, percent_wt_me_sq, percent_wt_me_err;	// weight percent for this sorbate (sorb_mass / frozen_mass)
+	double excess_ratio, excess_ratio_sq, excess_ratio_err;			// excess adsorption ratio
+	double pore_density, pore_density_sq, pore_density_err;			// mass / volume of pore
+	double density, density_sq, density_err;										// mass of sorbate / volume
+	double selectivity, selectivity_err;	// sorbate's selectivity ratio relative to all other sorbates in the insert list.
 	struct _sorbateAverages *next;
 } sorbateAverages_t; 
 
+// local sorbate data array
+typedef struct _sorbateInfo {
+	char   id[16];           // identifying tag for the sorbate, e.g. CH4, CO2 or H2
+	double mass;             // mass of this sorbate.
+	int currN; // sorbate count for the current step
+	double percent_wt;
+	double percent_wt_me;
+	double excess_ratio;
+	double pore_density;
+	double density;
+} sorbateInfo_t;
 
 
 typedef struct _grid {
@@ -235,7 +240,7 @@ typedef struct _message {
 
 typedef struct _checkpoint {
 	int movetype, biased_move;
-	int N_atom, N_atom_prev;
+	int thole_N_atom; //used for keeping track of thole matrix size (allocated)
 	molecule_t *molecule_backup, *molecule_altered;
 	molecule_t *head, *tail;
 	observables_t *observables;
@@ -434,8 +439,9 @@ typedef struct _system {
 	// Linked list head that will keep track of separate average-observables
 	// for each sorbate in the system.
 	int sorbateCount;                 // Number of sorbates in the system.
-	sorbateAverages_t sorbateStats;  // Linked List w/1 node per sorbate.
+	sorbateInfo_t * sorbateInfo; //stores an array of sorbate Info
 	int sorbateInsert; //which sorbate was last inserted
+	sorbateAverages_t * sorbateGlobal; //where the global average is stored
 
 	checkpoint_t *checkpoint;
 	file_pointers_t file_pointers;

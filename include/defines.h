@@ -50,6 +50,9 @@
 #define EV2K			1.160444e4		/* convert eV to K */
 #define K2WN			0.695039		/* convert K to cm^-1 */
 #define KoverANGcubed2ATM	136.259 /* convert K/A^3 to ATM */
+#define LITER2A3 1.0e27 /* convert Liters to Ang^3 */
+#define GASCONSTANT 0.8205746
+
 
 #define MAX_ITERATION_COUNT                     128
 

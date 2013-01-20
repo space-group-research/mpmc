@@ -199,7 +199,7 @@ void qrot_options(system_t * system) {
 		die(-1);
 	}
 
-	if(system->quantum_rotation_sum <= 0) {
+	if(system->quantum_rotation_sum <= 0 || system->quantum_rotation_sum > system->quantum_rotation_level_max) {
 		error("INPUT: quantum rotational sum for partition function invalid\n");
 		die(-1);
 	} else {

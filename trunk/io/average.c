@@ -171,8 +171,8 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t * sinfo ) {
 
 	static int counter = 0;
 	double m, factor, sdom;
-	double total_avgN, total_avgN_err, sorb_err;
-	int i;
+	double numerator, denominator, relative_err;
+	int i, j;
 
 	++counter;
 	m = (double)counter;
@@ -227,19 +227,20 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t * sinfo ) {
 	}
 
 	// calculate selectivity
-	total_avgN = 0; total_avgN_err = 0;
 	for ( i=0; i<system->sorbateCount; i++ ) {
-		total_avgN += sorbateGlobal[i].avgN;
-		total_avgN_err += sorbateGlobal[i].avgN_err * sorbateGlobal[i].avgN_err;
-	}
-	total_avgN_err = total_avgN_err/total_avgN; //relative error calculated in quadruture
-
-	for ( i=0; i<system->sorbateCount; i++ ) {
-		sorbateGlobal[i].selectivity = sorbateGlobal[i].avgN / total_avgN;
-		sorb_err = sorbateGlobal[i].avgN_err / sorbateGlobal[i].avgN; //relative error
-		sorb_err *= sorb_err; //square it
-		//sum the quadrature of the relative errors then multiple the dimensionality back in
-		sorbateGlobal[i].selectivity_err = sorbateGlobal[i].selectivity * sqrt(sorb_err + total_avgN_err);
+		numerator = sorbateGlobal[i].avgN;
+		relative_err = sorbateGlobal[i].avgN_err * sorbateGlobal[i].avgN_err
+			/ ( sorbateGlobal[i].avgN * sorbateGlobal[i].avgN );
+		denominator = 0;
+		for ( j=0; j<system->sorbateCount; j++ ) {
+			if ( j==i ) continue;
+			denominator += sorbateGlobal[j].avgN;
+			relative_err += sorbateGlobal[j].avgN_err * sorbateGlobal[j].avgN_err
+				/ ( sorbateGlobal[j].avgN * sorbateGlobal[j].avgN );
+		}
+		sorbateGlobal[i].selectivity = numerator/denominator;
+		sorbateGlobal[i].selectivity_err =
+			sorbateGlobal[i].selectivity * sqrt(relative_err);
 	}
 
 	return;

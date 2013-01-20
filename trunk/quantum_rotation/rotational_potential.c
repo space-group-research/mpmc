@@ -23,7 +23,7 @@ void align_molecule(molecule_t *molecule) {
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next) ++n;
 
 	new_coord_array = calloc(n*3, sizeof(double));
-	memnullcheck(new_coord_array,n*3*sizeof(double),91);
+	memnullcheck(new_coord_array,n*3*sizeof(double),__LINE__-1, __FILE__-1);
 
 	/* save the com coordinate */
 	com[0] = molecule->com[0];
@@ -107,7 +107,7 @@ void rotate_spherical(molecule_t *molecule, double theta, double phi) {
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next) ++n;
 
 	new_coord_array = calloc(n*3, sizeof(double));
-	memnullcheck(new_coord_array,n*3*sizeof(double),92);
+	memnullcheck(new_coord_array,n*3*sizeof(double),__LINE__-1, __FILE__-1);
 
 	/* save the com coordinate */
 	com[0] = molecule->com[0];

@@ -73,6 +73,8 @@ int read_pqr_box ( FILE * fp, system_t * system ) {
 
 #ifdef QM_ROTATION
 void allocqmrotation(system_t * system, molecule_t * molecule_ptr) {
+	
+	int i;
 
 	molecule_ptr->quantum_rotational_energies = calloc(system->quantum_rotation_level_max, sizeof(double));
 	memnullcheck(molecule_ptr->quantum_rotational_energies,
@@ -231,7 +233,7 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 
 #ifdef QM_ROTATION
 			/* if quantum rot calc. enabled, allocate the necessary structures */
-			if(system->quantum_rotation && !molecule_ptr->frozen)
+			if(system->quantum_rotation && !molecule_ptr->frozen && !molecule_ptr->quantum_rotational_energies )
 				allocqmrotation(system,molecule_ptr);
 #endif /* QM_ROTATION */
 
@@ -483,7 +485,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 #ifdef QM_ROTATION
 			/* if quantum rot calc. enabled, allocate the necessary structures */
-			if(system->quantum_rotation && !molecule_ptr->frozen)
+			if(system->quantum_rotation && !molecule_ptr->frozen && !molecule_ptr->quantum_rotational_energies )
 				allocqmrotation(system,molecule_ptr);
 #endif /* QM_ROTATION */
 
@@ -654,7 +656,8 @@ void test_list(molecule_t *molecules) {
 			printf("atomtype = %s x = %f y = %f z = %f\n", atom_ptr->atomtype, atom_ptr->pos[0], atom_ptr->pos[1], atom_ptr->pos[2]);
 			printf("atom frozen = %d mass = %f, charge = %f, alpha = %f, eps = %f, sig = %f\n", atom_ptr->frozen, atom_ptr->mass, atom_ptr->charge, atom_ptr->polarizability, atom_ptr->epsilon, atom_ptr->sigma);
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next)
-				if(!(pair_ptr->rd_excluded || pair_ptr->es_excluded || pair_ptr->frozen)) printf("pair = 0x%lx eps = %f sig = %f\n", pair_ptr, pair_ptr->epsilon, pair_ptr->sigma);
+				if(!(pair_ptr->rd_excluded || pair_ptr->es_excluded || pair_ptr->frozen)) printf("pair = 0x%lx eps = %f sig = %f\n", 	
+					(long unsigned int)pair_ptr, pair_ptr->epsilon, pair_ptr->sigma);
 		}
 
 	}
@@ -676,7 +679,8 @@ void test_molecule(molecule_t *molecule) {
 		printf("atomtype = %s x = %f y = %f z = %f\n", atom_ptr->atomtype, atom_ptr->pos[0], atom_ptr->pos[1], atom_ptr->pos[2]);
 		printf("atom frozen = %d mass = %f, charge = %f, alpha = %f, eps = %f, sig = %f\n", atom_ptr->frozen, atom_ptr->mass, atom_ptr->charge, atom_ptr->polarizability, atom_ptr->epsilon, atom_ptr->sigma);
 		for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
-			printf("pair at 0x%lx\n", pair_ptr);fflush(stdout);
+			printf("pair at 0x%lx\n", (long unsigned int)pair_ptr);
+			fflush(stdout);
 		}
 	}
 

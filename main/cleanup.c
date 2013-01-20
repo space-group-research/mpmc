@@ -260,8 +260,8 @@ void cleanup(system_t *system) {
 
 	if ( system->vdw_eiso_info ) free_vdw_eiso(system->vdw_eiso_info);
 
-	/* free multi sorbate stuff */
-	if ( system->user_fugacities )
+	// free multi sorbate related stuff
+	if ( system->fugacities )
 		free(system->fugacities);
 	if(system->insert_input) free(system->insert_input);
 	//insert.pdb arrays and shit

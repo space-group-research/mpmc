@@ -23,10 +23,10 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 
 	/* allocate our hamiltonian matrix */
 	hamiltonian = calloc(dim, sizeof(complex_t *));
-	memnullcheck(hamiltonian,dim*sizeof(complex_t *),82);
+	memnullcheck(hamiltonian,dim*sizeof(complex_t *),__LINE__-1, __FILE__-1);
 	for(i = 0; i < dim; i++) {
 		hamiltonian[i] = calloc(dim, sizeof(complex_t));
-		memnullcheck(hamiltonian[i],dim*sizeof(complex_t),83);
+		memnullcheck(hamiltonian[i],dim*sizeof(complex_t),__LINE__-1, __FILE__-1);
 	}
 
 
@@ -53,7 +53,10 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 
 			/* output the matrix */
 #ifdef DEBUG
-			printf("rotmat %d %d %.16lg %.16lg K (%.16lg %.16lg cm^-1) <%d %d | V | %d %d>\n", (i+1), (j+1), hamiltonian[i][j].real, hamiltonian[i][j].imaginary, hamiltonian[i][j].real*K2WN, hamiltonian[i][j].imaginary*K2WN, li, mi, lj, mj); fflush(stdout);
+			printf("rotmat %d %d %.6f %.6f K (%.6f %.6f cm^-1) <%d %d | V | %d %d>\n", 
+				(i+1), (j+1), hamiltonian[i][j].real, hamiltonian[i][j].imaginary, 
+				hamiltonian[i][j].real*K2WN, hamiltonian[i][j].imaginary*K2WN, li, mi, lj, mj); 
+			fflush(stdout);
 #endif /* DEBUG */
 
 
@@ -67,7 +70,8 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 
 	} /* for i */
 #ifdef DEBUG
-	printf("\n");fflush(stdout);
+	printf("\n");
+	fflush(stdout);
 #endif /* DEBUG */
 
 
@@ -153,23 +157,23 @@ void quantum_rotational_energies(system_t *system, molecule_t *molecule, int lev
 
 	/* setup the lapack arguments */
 	hamiltonian_packed = calloc((int)(dim*(dim + 1.0)/2.0), sizeof(complex_t));
-	memnullcheck(hamiltonian_packed,(int)(dim*(dim+1.0)/2.0)* sizeof(complex_t), 84);
+	memnullcheck(hamiltonian_packed,(int)(dim*(dim+1.0)/2.0)* sizeof(complex_t), __LINE__-1, __FILE__-1);
 	eigenvalues = calloc(dim, sizeof(double));
-	memnullcheck(eigenvalues,dim*sizeof(double),85);
+	memnullcheck(eigenvalues,dim*sizeof(double),__LINE__-1, __FILE__-1);
 	z = calloc(dim*dim, sizeof(complex_t));
-	memnullcheck(z, dim*dim*sizeof(complex_t), 86);
+	memnullcheck(z, dim*dim*sizeof(complex_t), __LINE__-1, __FILE__-1);
 	work = calloc((2*dim), sizeof(complex_t));
-	memnullcheck(work, 2*dim*sizeof(complex_t), 87);
+	memnullcheck(work, 2*dim*sizeof(complex_t), __LINE__-1, __FILE__-1);
 	rwork = calloc((7*dim), sizeof(double));
-	memnullcheck(rwork, 7*dim*sizeof(double),88);
+	memnullcheck(rwork, 7*dim*sizeof(double),__LINE__-1, __FILE__-1);
 	iwork = calloc((5*dim), sizeof(int));
-	memnullcheck(iwork,5*dim*sizeof(int),89);
+	memnullcheck(iwork,5*dim*sizeof(int),__LINE__-1, __FILE__-1);
 	ifail = calloc(dim, sizeof(int));
-	memnullcheck(ifail,dim*sizeof(int),90);
+	memnullcheck(ifail,dim*sizeof(int),__LINE__-1, __FILE__-1);
 
 	jobz = 'V'; range = 'A'; uplo = 'U';
 	vl = 0; vu = 0; il = 0; iu = 0;
-	abstol = 0;
+	abstol = 1e-300;
 	m = 0; ldz = dim; info = 0;
 
 	/* build the rotational hamiltonian */
@@ -189,7 +193,6 @@ void quantum_rotational_energies(system_t *system, molecule_t *molecule, int lev
 #else
 	zhpevx_(&jobz, &range, &uplo, &dim, hamiltonian_packed, &vl, &vu, &il, &iu, &abstol, &m, eigenvalues, z, &ldz, work, rwork, iwork, ifail, &info);
 #endif /* ACML_NOUNDERSCORE */
-
 
 	/* store the energy levels  */
 	for(i = 0; i < level_max; i++) molecule->quantum_rotational_energies[i] = eigenvalues[i];
@@ -323,7 +326,10 @@ void quantum_system_rotational_energies(system_t *system) {
 		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic)) {
 
 			for(i = 0; i < system->quantum_rotation_level_max; i++) {
-				printf("molecule #%d (%s) rotational level %d = %f K (%f cm^-1 or %f / B) ", molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i], molecule_ptr->quantum_rotational_energies[i]*KB/(100.0*H*C), molecule_ptr->quantum_rotational_energies[i]/system->quantum_rotation_B);
+				printf("molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f / B) ", 
+					molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i], 
+					molecule_ptr->quantum_rotational_energies[i]*KB/(100.0*H*C), 
+					molecule_ptr->quantum_rotational_energies[i]/system->quantum_rotation_B);
 
 				if(molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_SYMMETRIC)
 					printf("*** symmetric ***");
@@ -338,7 +344,8 @@ void quantum_system_rotational_energies(system_t *system) {
 
 				printf("molecule #%d (%s) eigenvec rot level %d\n", molecule_ptr->id, molecule_ptr->moleculetype, i);
 				for(j = 0; j < (system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1); j++)
-					printf("\tj=%d %.16e %.16e\n", j, molecule_ptr->quantum_rotational_eigenvectors[i][j].real, molecule_ptr->quantum_rotational_eigenvectors[i][j].imaginary);
+					printf("\tj=%d %.6f %.6f\n", j, molecule_ptr->quantum_rotational_eigenvectors[i][j].real, 
+						molecule_ptr->quantum_rotational_eigenvectors[i][j].imaginary);
 				printf("\n");
 
 			}
@@ -347,7 +354,6 @@ void quantum_system_rotational_energies(system_t *system) {
 	}
 
 #endif /* DEBUG */
-
 
 }
 

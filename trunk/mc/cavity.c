@@ -208,7 +208,7 @@ void test_cavity_grid(system_t *system) {
 
 	printf("\n");
 	for(i = 0; i < G; i++) {
-
+		printf("DEBUG_CAVITY: ");
 		for(j = 0; j < G; j++) {
 			for(k = 0; k < G; k++)
 				printf("%d ", system->cavity_grid[i][j][k].occupancy);

@@ -94,11 +94,11 @@ double energy(system_t *system) {
 	pairs(system);
 
 	/* only on the first simulation step, make sure that all recalculate flags are set */
-	if(system->observables->energy == 0.0) flag_all_pairs(system);
-
 	/* if we made a volume change (or just reverted from one) set recalculate flags OR if replaying a trajectory */
 	// we set last_volume at the end of this function
-	if ( system->last_volume != system->pbc->volume || system->ensemble==ENSEMBLE_REPLAY ) 
+	if ( system->last_volume != system->pbc->volume 
+				|| system->ensemble==ENSEMBLE_REPLAY
+				|| system->observables->energy == 0.0 )
 		flag_all_pairs(system);
 
 	/* get the repulsion/dispersion potential */
@@ -191,10 +191,6 @@ double energy(system_t *system) {
 
 }
 
-
-
-/// Not adjusted to work with NPT. need to run recalculates whenever volume changes
-
 /* returns the total potential energy for the system */
 /* this function is meant to be called by routines that do not */
 /* require observables to be averaged in, i.e. quantum integration */
@@ -213,36 +209,58 @@ double energy_no_observables(system_t *system) {
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
 
+	flag_all_pairs(system);
+
 	/* get the repulsion/dispersion potential */
 	if(system->sg)
 		rd_energy = sg(system);
 	else if(system->dreiding)
 		rd_energy = dreiding(system);
-	else
+	else if(system->rd_anharmonic)
+		rd_energy = anharmonic(system);
+	else if(!system->gwp)
 		rd_energy = lj(system);
 
-	/* get the electrostatic potential */
-	if(!(system->sg || system->rd_only)) {
+  /* get the electrostatic potential */
+  if(!(system->sg || system->rd_only)) {
 
-		coulombic_energy = coulombic(system);
+    if(system->spectre)
+      coulombic_energy = coulombic_nopbc(system->molecules);
+    else if(system->gwp) {
+      coulombic_energy = coulombic_nopbc_gwp(system);
+    } else
+      coulombic_energy = coulombic(system);
 
 		/* get the polarization potential */
-		if(system->polarization)
-			polar_energy = polar(system);
+		if(system->polarization) {
+#ifdef CUDA
+      if(system->cuda)
+        polar_energy = (double)polar_cuda(system);
+      else
+        polar_energy = polar(system);
+#else
+      polar_energy = polar(system);
+#endif /* CUDA */
+		}
 
-		if(system->polarvdw)
-			vdw_energy = vdw(system);
-
+		if(system->polarvdw) {
+#ifdef CUDA
+      if (system->cuda) {
+        error("error: cuda polarvdw not yet implemented!\n");
+        die(-1);
+      }
+      else
+      vdw_energy = vdw(system);
+#else
+      vdw_energy = vdw(system);
+#endif
+		}
 	}
-
-
 
 	/* sum the total potential energy */
 	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy;
 
-
 	return(potential_energy);
-
 
 }
 

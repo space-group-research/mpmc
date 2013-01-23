@@ -12,6 +12,23 @@ University of South Florida
 
 #include <mc.h>
 
+
+//re-enumerate atoms and molecules -> set atom and molecule id's which get messed up in UVT runs
+void enumerate_particles ( system_t * system ) {
+	molecule_t * mptr;
+	atom_t * aptr;
+	int aid, mid;
+	aid = mid = 1;
+
+	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
+		mptr->id = mid++;
+		for ( aptr = mptr->atoms; aptr; aptr=aptr->next )
+			aptr->id = aid++;
+	}
+
+	return;
+}
+		
 // parallel tempering stuff
 /* parallel tempering is treated differently than the other types of MC moves, because it is done
  * IN ADDITION to any other moves: i.e. some random move is performed and the energy is calculated
@@ -675,6 +692,9 @@ void make_move(system_t *system) {
 			else		
 				update_pairs_insert(system);
 
+			//reset atom and molecule id's
+			enumerate_particles(system);
+
 		break;
 		case MOVETYPE_REMOVE : /* remove a randomly chosen molecule */
 	
@@ -695,6 +715,9 @@ void make_move(system_t *system) {
 			}
 			free_molecule(system, system->checkpoint->molecule_altered);
 			update_pairs_remove(system);
+
+			//reset atom and molecule id's
+			enumerate_particles(system);
 
 		break;
 		case MOVETYPE_DISPLACE :	
@@ -767,6 +790,9 @@ void restore(system_t *system) {
 			unupdate_pairs_insert(system);
 			free_molecule(system, system->checkpoint->molecule_altered);
 
+			//reset atom and molecule id's
+			enumerate_particles(system);
+
 		break;
 		case MOVETYPE_REMOVE :
 	
@@ -779,6 +805,9 @@ void restore(system_t *system) {
 			system->checkpoint->molecule_backup->next = system->checkpoint->tail;
 			unupdate_pairs_remove(system);
 			system->checkpoint->molecule_backup = NULL;
+
+			//reset atom and molecule id's
+			enumerate_particles(system);
 
 		break;
 		case MOVETYPE_VOLUME :

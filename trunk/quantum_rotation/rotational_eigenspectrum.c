@@ -53,7 +53,7 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 
 			/* output the matrix */
 #ifdef DEBUG
-			printf("rotmat %d %d %.6f %.6f K (%.6f %.6f cm^-1) <%d %d | V | %d %d>\n", 
+			printf("DEBUG_QROT: rotmat %d %d %.6f %.6f K (%.6f %.6f cm^-1) <%d %d | V | %d %d>\n", 
 				(i+1), (j+1), hamiltonian[i][j].real, hamiltonian[i][j].imaginary, 
 				hamiltonian[i][j].real*K2WN, hamiltonian[i][j].imaginary*K2WN, li, mi, lj, mj); 
 			fflush(stdout);
@@ -326,7 +326,7 @@ void quantum_system_rotational_energies(system_t *system) {
 		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic)) {
 
 			for(i = 0; i < system->quantum_rotation_level_max; i++) {
-				printf("molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f / B) ", 
+				printf("DEBUG_QROT: molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f / B) ", 
 					molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i], 
 					molecule_ptr->quantum_rotational_energies[i]*KB/(100.0*H*C), 
 					molecule_ptr->quantum_rotational_energies[i]/system->quantum_rotation_B);
@@ -342,7 +342,7 @@ void quantum_system_rotational_energies(system_t *system) {
 
 			for(i = 0; i < system->quantum_rotation_level_max; i++) {
 
-				printf("molecule #%d (%s) eigenvec rot level %d\n", molecule_ptr->id, molecule_ptr->moleculetype, i);
+				printf("DEBUG_QROT: molecule #%d (%s) eigenvec rot level %d\n", molecule_ptr->id, molecule_ptr->moleculetype, i);
 				for(j = 0; j < (system->quantum_rotation_l_max+1)*(system->quantum_rotation_l_max+1); j++)
 					printf("\tj=%d %.6f %.6f\n", j, molecule_ptr->quantum_rotational_eigenvectors[i][j].real, 
 						molecule_ptr->quantum_rotational_eigenvectors[i][j].imaginary);

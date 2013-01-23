@@ -267,7 +267,6 @@ double lj(system_t *system) {
 
 }
 
-
 /* same as above, but no periodic boundary conditions */
 double lj_nopbc(system_t * system) {
 
@@ -307,5 +306,27 @@ double lj_nopbc(system_t * system) {
 	return(potential);
 
 }
+
+
+#ifdef DEBUG
+void test_lj(system_t * system ) {
+
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;	
+	pair_t * pair_ptr;
+	char poo[MAXLINE];
+	sprintf(poo,"%d.lj", system->step);
+	FILE * fp = fopen(poo,"w");
+
+	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr=molecule_ptr->next ) 
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr=atom_ptr->next ) 
+			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr=pair_ptr->next ) 
+					fprintf(fp,"DEBUG_LJ: m_id %d %d a_id %d %d rimg %.3lf\n", molecule_ptr->id, pair_ptr->molecule->id, atom_ptr->id, pair_ptr->atom->id, pair_ptr->rimg);
+
+	fclose(fp);
+
+	return;
+}
+#endif
 
 

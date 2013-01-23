@@ -31,6 +31,7 @@ double coulombic(system_t *system) {
 		real = coulombic_real(system);
 		reciprocal = coulombic_reciprocal(system);
 		self = coulombic_self(system);
+
 		/* return the total electrostatic energy */
 		potential = real + reciprocal + self;
 	}
@@ -200,7 +201,6 @@ double coulombic_real(system_t *system) {
 		} /* atom */
 	} /* molecule */
 
-
 	return(potential);
 
 }
@@ -321,4 +321,27 @@ double coulombic_wolf ( system_t * system ) {
 
 	return(pot);
 }
+
 	
+#ifdef DEBUG
+void test_q(system_t * system ) {
+
+	molecule_t * molecule_ptr;
+	atom_t * atom_ptr;	
+	pair_t * pair_ptr;
+	char poo[MAXLINE];
+	sprintf(poo,"%d.q", system->step);
+	FILE * fp = fopen(poo,"w");
+
+	for ( molecule_ptr = system->molecules; molecule_ptr; molecule_ptr=molecule_ptr->next ) 
+		for ( atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr=atom_ptr->next ) 
+			for ( pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr=pair_ptr->next ) 
+				if (pair_ptr->es_excluded && ( molecule_ptr->id != pair_ptr->molecule->id ) && atom_ptr->charge != 0 && pair_ptr->atom->charge != 0 )
+					fprintf(fp,"DEBUG_LJ: m_id %d %d a_id %d %d %s %s\n", molecule_ptr->id, pair_ptr->molecule->id, atom_ptr->id, pair_ptr->atom->id, atom_ptr->atomtype, pair_ptr->atom->atomtype);
+	fclose(fp);
+
+	return;
+}
+#endif
+
+

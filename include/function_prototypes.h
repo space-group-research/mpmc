@@ -113,6 +113,7 @@ int memnullcheck ( void *, int, int, char * );
 int filecheck ( void *, char *, int);
 
 /* mc */
+void enumerate_particles(system_t *);
 void boltzmann_factor(system_t *, double, double);
 void register_accept(system_t *);
 void register_reject(system_t *);
@@ -227,6 +228,8 @@ void test_pairs(molecule_t *);
 void test_molecule(molecule_t *);
 void test_list(molecule_t *);
 void test_cavity_grid(system_t *);
+void test_lj(system_t *);
+void test_q(system_t *);
 #endif /* DEBUG */
 #endif // FXN_PROTOTYPES_H
 

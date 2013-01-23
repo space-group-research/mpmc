@@ -648,15 +648,15 @@ void test_list(molecule_t *molecules) {
 
 	for(molecule_ptr = molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 
-		printf("moleculeid = %d\n", molecule_ptr->id);
-		printf("moleculetype = %s\n", molecule_ptr->moleculetype);
-		printf("molecule_frozen = %d\n", molecule_ptr->frozen);
-		printf("molecule_mass = %f\n", molecule_ptr->mass);
+		printf("DEBUG_LIST: moleculeid = %d\n", molecule_ptr->id);
+		printf("DEBUG_LIST: moleculetype = %s\n", molecule_ptr->moleculetype);
+		printf("DEBUG_LIST: molecule_frozen = %d\n", molecule_ptr->frozen);
+		printf("DEBUG_LIST: molecule_mass = %f\n", molecule_ptr->mass);
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-			printf("atomtype = %s x = %f y = %f z = %f\n", atom_ptr->atomtype, atom_ptr->pos[0], atom_ptr->pos[1], atom_ptr->pos[2]);
-			printf("atom frozen = %d mass = %f, charge = %f, alpha = %f, eps = %f, sig = %f\n", atom_ptr->frozen, atom_ptr->mass, atom_ptr->charge, atom_ptr->polarizability, atom_ptr->epsilon, atom_ptr->sigma);
+			printf("DEBUG_LIST: atomtype = %s x = %f y = %f z = %f\n", atom_ptr->atomtype, atom_ptr->pos[0], atom_ptr->pos[1], atom_ptr->pos[2]);
+			printf("DEBUG_LIST: atom frozen = %d mass = %f, charge = %f, alpha = %f, eps = %f, sig = %f\n", atom_ptr->frozen, atom_ptr->mass, atom_ptr->charge, atom_ptr->polarizability, atom_ptr->epsilon, atom_ptr->sigma);
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next)
-				if(!(pair_ptr->rd_excluded || pair_ptr->es_excluded || pair_ptr->frozen)) printf("pair = 0x%lx eps = %f sig = %f\n", 	
+				if(!(pair_ptr->rd_excluded || pair_ptr->es_excluded || pair_ptr->frozen)) printf("DEBUG_LIST: pair = 0x%lx eps = %f sig = %f\n", 	
 					(long unsigned int)pair_ptr, pair_ptr->epsilon, pair_ptr->sigma);
 		}
 

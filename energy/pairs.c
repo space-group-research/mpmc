@@ -241,10 +241,10 @@ void pairs(system_t *system) {
 			pair_ptr->atom = atom_array[j];
 			pair_ptr->molecule = molecule_array[j];
 
-			/* set any necessary exclusions */
-			/* frozen-frozen and self distances dont change */
-			if(!(pair_ptr->frozen || (pair_ptr->rd_excluded && pair_ptr->es_excluded)))
-				pair_exclusions(system, molecule_array[i], molecule_array[j], atom_array[i], atom_array[j], pair_ptr);
+			//this is dangerous and has already been responsible for numerous bugs, most recently
+			//in UVT runs. after and insert/remove move there is no guarantee that pair_ptr->rd_excluded is properly set
+			//if ( !pair_ptr->frozen && !(pair_ptr->rd_excluded && pair_ptr->es_excluded) )
+			pair_exclusions(system, molecule_array[i], molecule_array[j], atom_array[i], atom_array[j], pair_ptr);
 
 			/* recalc min image */
 			if(!(pair_ptr->frozen))
@@ -555,7 +555,7 @@ void test_pairs(molecule_t *molecules) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
 				if(!(pair_ptr->frozen || pair_ptr->rd_excluded || pair_ptr->es_excluded)) 
-					printf("%d: charge = %f, epsilon = %f, sigma = %f, r = %f, rimg = %f\n", 
+					printf("DEBUG_PAIRS: atomid %d charge = %f, epsilon = %f, sigma = %f, r = %f, rimg = %f\n", 
 						atom_ptr->id, pair_ptr->atom->charge, pair_ptr->epsilon, 
 						pair_ptr->sigma, pair_ptr->r, pair_ptr->rimg);
 					fflush(stdout);

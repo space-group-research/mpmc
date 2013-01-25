@@ -157,7 +157,7 @@ double energy(system_t *system) {
 				output(linebuf);
 			}
 			else	{
-				sprintf(linebuf, "OUTPUT: Polarization energy function took %lf us\n", 0.0);
+				sprintf(linebuf, "OUTPUT: Polarization energy function took %lf us\n", timing);
 				output(linebuf);
 			}
 #endif

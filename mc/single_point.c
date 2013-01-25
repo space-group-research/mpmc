@@ -12,6 +12,11 @@ int calculate_te (system_t *system) {
 	if ( system->iter_success ) 
 		error("CALC_TE: polarization iterative solver failed to reach convergence.\n");
 
+#ifdef PRINT_EFIELD
+	printf("OUT: MUARRAY %lf %lf\n", system->molecules->atoms->ef_static[0], system->molecules->atoms->mu[0]);
+	printf("OUT: MUARRAY %lf %lf\n", system->molecules->next->atoms->ef_static[0], system->molecules->next->atoms->mu[0]);
+#endif
+
 #ifdef QM_ROTATION
 	// solve for the rotational energy levels
 	if(system->quantum_rotation) quantum_system_rotational_energies(system);

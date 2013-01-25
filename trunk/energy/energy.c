@@ -83,6 +83,11 @@ double energy(system_t *system) {
 	struct timeval old_time, new_time;
 	char linebuf[MAXLINE];
 
+#ifdef POLARTIMING
+	static double timing = 0;
+	static int count = 0;
+#endif
+
 	/* zero the initial values */
 	potential_energy = 0;
 	rd_energy = 0;
@@ -128,8 +133,10 @@ double energy(system_t *system) {
 		/* get the polarization potential */
 		if(system->polarization) {
 
+#ifdef POLARTIMING
 			/* get timing of polarization energy function for cuda comparison */
 			gettimeofday(&old_time, NULL);
+#endif
 
 #ifdef CUDA
 			if(system->cuda)
@@ -139,10 +146,21 @@ double energy(system_t *system) {
 #else
 			polar_energy = polar(system);
 #endif /* CUDA */
+
+#ifdef POLARTIMING
 			gettimeofday(&new_time, NULL);
-			sprintf(linebuf, "OUTPUT: Polarization energy function took %ld us\n", (new_time.tv_sec-old_time.tv_sec)*1000000+(new_time.tv_usec-old_time.tv_usec));
-			/* XXX uncomment for timing */
-//			output(linebuf);
+			timing = timing * (double)count/((double)count+1.0) 
+				+ (double)((new_time.tv_sec-old_time.tv_sec)*1e6+(new_time.tv_usec-old_time.tv_usec)) * 1.0/((double)count +1.0);
+			count++;
+			if ( system->corrtime ) {
+				if ( count % system->corrtime == 0 ) sprintf(linebuf, "OUTPUT: Polarization energy function took %lf us\n", timing);
+				output(linebuf);
+			}
+			else	{
+				sprintf(linebuf, "OUTPUT: Polarization energy function took %lf us\n", 0.0);
+				output(linebuf);
+			}
+#endif
 
 			system->observables->polarization_energy = polar_energy;
 

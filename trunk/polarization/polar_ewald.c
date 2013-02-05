@@ -235,6 +235,7 @@ void induced_recip_term(system_t * system) {
 	kmax = system->ewald_kmax;
 
 	//k-space sum (symmetry for k -> -k, so we sum over hemisphere, avoiding double-counting on the face)
+
 	for (l[0] = 0; l[0] <= kmax; l[0]++) {
 		for (l[1] = (!l[0] ? 0 : -kmax); l[1] <= kmax; l[1]++) {
 			for (l[2] = ((!l[0] && !l[1]) ? 1 : -kmax); l[2] <= kmax; l[2]++) {
@@ -262,8 +263,8 @@ void induced_recip_term(system_t * system) {
 				for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
 					for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) 
 						for ( p=0; p<3; p++ ) {
-							aptr->ef_induced[p] -= 8*M_PI/system->pbc->volume * kweight[p] * cos(dddotprod(k,aptr->pos)) * cossum;
-							aptr->ef_induced[p] -= 8*M_PI/system->pbc->volume * kweight[p] * sin(dddotprod(k,aptr->pos)) * sinsum;
+							aptr->ef_induced[p] -= 8.0*M_PI/system->pbc->volume * kweight[p] * cos(dddotprod(k,aptr->pos)) * cossum;
+							aptr->ef_induced[p] -= 8.0*M_PI/system->pbc->volume * kweight[p] * sin(dddotprod(k,aptr->pos)) * sinsum;
 						}
 
 				//second term
@@ -403,15 +404,11 @@ void ewald_full ( system_t * system ) {
 		induced_recip_term(system);
 		induced_self_term(system);
 
+		if ( system->polar_palmo && i==max_iter-1 ) //if last iteration
+			get_delta_einduced(system);
+
 		//recalculate dipoles using new induced field
 		new_dipoles(system, i);
-	}
-
-	if ( system->polar_palmo ) {
-		induced_real_term(system);
-		induced_recip_term(system);
-		induced_self_term(system);
-		get_delta_einduced(system);
 	}
 
 	return;

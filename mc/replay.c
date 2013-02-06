@@ -62,8 +62,6 @@ int replay_trajectory (system_t * system) {
 
 		// calculate the energy of the system 
 		initial_energy = energy(system);
-		if ( system->iter_success ) 
-			error("REPLAY: polarization iterative solver failed to reach convergence.\n");
 
 #ifdef QM_ROTATION
 		// solve for the rotational energy levels

@@ -35,6 +35,7 @@ double polar(system_t *system) {
 	atom_t *atom_ptr;
 	int num_iterations;
 	double potential;
+	char linebuf[MAXLINE];
 
 	/* take measures to let N fluctuate */
 	if( (system->ensemble == ENSEMBLE_UVT || system->ensemble == ENSEMBLE_REPLAY)  && !system->polar_zodid )
@@ -62,6 +63,28 @@ double polar(system_t *system) {
 
 		system->nodestats->polarization_iterations = (double)num_iterations; //statistics
 		system->observables->dipole_rrms = get_dipole_rrms(system);
+
+		if ( system->iter_success ) {
+			switch ( system->ensemble ) {
+			case ENSEMBLE_UVT:
+			case ENSEMBLE_NVT:
+			case ENSEMBLE_NVE:
+			case ENSEMBLE_NPT:
+				sprintf(linebuf,"POLAR: polarization iterative solver convergence failure on mc step %d.\n", system->step);
+				error(linebuf);
+			break;
+			case ENSEMBLE_REPLAY:
+				sprintf(linebuf,"POLAR: polarization iterative solver convergence failure on configuration %d.\n", system->step);
+				error(linebuf);
+			break;
+			case ENSEMBLE_SURF:
+			case ENSEMBLE_SURF_FIT:
+			case ENSEMBLE_TE:
+			default:
+				sprintf(linebuf,"POLAR: polarization iterative solver failed to reach convergence.\n");
+				error(linebuf);
+			}
+		}
 
 	} else {	
 		//do matrix inversion

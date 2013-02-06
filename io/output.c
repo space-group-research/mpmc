@@ -10,7 +10,7 @@ University of South Florida
 
 void error(char *msg) {
 
-	if(!rank) fprintf(stderr, "%s", msg);
+	if(!rank) fprintf(stderr, "(ERROR) %s", msg);
 	fflush(stderr);
 
 }

@@ -9,9 +9,6 @@ int calculate_te (system_t *system) {
 	// calculate the energy of the system 
 	initial_energy = energy(system);
 
-	if ( system->iter_success ) 
-		error("CALC_TE: polarization iterative solver failed to reach convergence.\n");
-
 #ifdef PRINT_EFIELD
 	printf("OUT: MUARRAY %lf %lf\n", system->molecules->atoms->ef_static[0], system->molecules->atoms->mu[0]);
 	printf("OUT: MUARRAY %lf %lf\n", system->molecules->next->atoms->ef_static[0], system->molecules->next->atoms->mu[0]);

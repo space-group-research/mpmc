@@ -353,11 +353,6 @@ int mc(system_t *system) {
 
 			current_energy = initial_energy; //used in parallel tempering
 
-			if ( system->iter_success == 1 )  {
-				sprintf(linebuf,"MC: iterative solver failed on mc step (step %d)\n", system->step);
-				error(linebuf);
-			}
-
 			//reset the polar iterative failure flag
 			system->iter_success = 0;
 

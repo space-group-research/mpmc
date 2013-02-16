@@ -124,7 +124,7 @@ void recip_term ( system_t * system ) {
 		for ( aptr=mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( p=0; p<3; p++ ) {
 				//factor of 2 more, since we only summed over hemisphere
-				aptr->ef_static[p] *= 8.0*M_PI/system->pbc->volume; 
+				aptr->ef_static[p] *= 8.0*M_PI/system->pbc->volume;
 			}
 		}
 	}
@@ -174,22 +174,22 @@ void ewald_estatic ( system_t * system ) {
 	return;
 }
 
-
-
 void induced_real_term(system_t * system) {
 	molecule_t * mptr;
 	atom_t * aptr;
 	pair_t * pptr;
 	double erfcar, expa2r2, r, ir, ir3, ir5, explr;
 	double T; //dipole-interaction tensor component
+	double s1, s2; //common term (s_2 via eq 10. JCP 133 243101)
 	int p, q; //dimensions
 	double a = system->polar_ewald_alpha; //ewald damping
 	double l = system->polar_damp; //polar damping
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
-			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) { 
+			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) {
 				if ( aptr->polarizability == 0 || pptr->atom->polarizability == 0 ) continue; //don't waste CPU time
+				if ( pptr->rimg > system->pbc->cutoff ) continue; //if outside cutoff sphere skip
 				//some things we'll need
 				r=pptr->rimg;
 				ir=1.0/r; ir3=ir*ir*ir; ir5=ir*ir*ir3;
@@ -197,15 +197,18 @@ void induced_real_term(system_t * system) {
 				expa2r2=exp(-a*a*r*r);
 
 				//E_static_realspace_i = sum(i!=j) d_xi d_xj erfc(a*r)/r u_j 
+				s2 = erfcar + 2.0*a*r*OneOverSqrtPi * expa2r2 + 4.0*a*a*a*r*r*r/3.0*OneOverSqrtPi*expa2r2 - damp_factor(l*r,3) ;
+
 				for ( p=0; p<3; p++ ) {
 					for ( q=p; q<3; q++ ) {  //it's symmetric!
-						T = pptr->dimg[p] * pptr->dimg[q] * ir5; //common term
-						T *= 3*erfcar + (4*a*a*r*r+6)*a*r*OneOverSqrtPi*expa2r2 //common term (cont.)
-								-3*damp_factor(l*r,3); //common damp term
-						if ( p==q ) {
-							T -= (erfcar+2*a*r*OneOverSqrtPi*expa2r2)*ir3; //kronecker delta term
-							T += ir3*damp_factor(l*r,2); //kronecker damp term
-						}
+
+						if ( p==q )
+							s1 = erfcar + 2.0*a*r*OneOverSqrtPi * expa2r2 - damp_factor(l*r,2);
+						else
+							s1 = 0;
+
+						//real-space dipole interaction tensor
+						T = 3.0 * pptr->dimg[p] * pptr->dimg[q] * s2 * ir5 - s1 * ir3; 
 
 						aptr->ef_induced[p] += T*pptr->atom->mu[q];
 						pptr->atom->ef_induced[p] += T*aptr->mu[q];
@@ -228,96 +231,112 @@ void induced_real_term(system_t * system) {
 void induced_recip_term(system_t * system) {
 	molecule_t * mptr;
 	atom_t * aptr;
-	int p, q, l[3], kmax;
-	double r, ea, k[3], k2, kdotr, kweight[3], float1;
-	double sinsum, cossum;
-	ea = system->polar_ewald_alpha; //actually sqrt(ea) <- what did I mean by that?
-	kmax = system->ewald_kmax;
+	atom_t ** aarray = NULL;
+	int i, j, N, l[3];
+	int p;
+	double Psin, Pcos, kweight;
+	double a = system->polar_ewald_alpha;
+	double kmax = system->ewald_kmax;
+	double dotprod1, dotprod2, k[3], k2;
+
+	//make atom array
+	N=0;
+	for ( mptr=system->molecules; mptr; mptr=mptr->next ) {
+		for ( aptr=mptr->atoms; aptr; aptr=aptr->next ) {
+			aarray = realloc(aarray, sizeof(atom_t *) * (N+1));
+			memnullcheck(aarray,sizeof(atom_t *)*(N+1),__LINE__-1,__FILE__);
+			aarray[N] = aptr;
+			N++;
+		}
+	}
 
 	//k-space sum (symmetry for k -> -k, so we sum over hemisphere, avoiding double-counting on the face)
+	for (l[0] = 0; l[0] <= kmax; l[0]++) 
+	for (l[1] = (!l[0] ? 0 : -kmax); l[1] <= kmax; l[1]++) 
+	for (l[2] = ((!l[0] && !l[1]) ? 1 : -kmax); l[2] <= kmax; l[2]++) {
 
-	for (l[0] = 0; l[0] <= kmax; l[0]++) {
-		for (l[1] = (!l[0] ? 0 : -kmax); l[1] <= kmax; l[1]++) {
-			for (l[2] = ((!l[0] && !l[1]) ? 1 : -kmax); l[2] <= kmax; l[2]++) {
+		// if |l|^2 > kmax^2, then it doesn't contribute (outside the k-space cutoff)
+		if ( iidotprod(l,l) > kmax*kmax ) continue; 
 
-				// if |l|^2 > kmax^2, then it doesn't contribute (outside the k-space cutoff)
-				if ( iidotprod(l,l) > kmax*kmax ) continue; 
+		for ( p=0; p<3; p++ ) //make recip lattice vector
+			k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
 
-				for ( p=0; p<3; p++ ) //make recip lattice vector
-					k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
+		k2 = dddotprod(k,k); // |k|^2
 
-				k2 = dddotprod(k,k); // |k|^2
+		for ( p=0; p<3; p++ ) 	
+			kweight = 8.0*M_PI/system->pbc->volume * exp(-k2/(4.0*a*a))/k2 * k[p];
 
-				kweight[0] = k[0]/k2 * exp(-k2/(4.0*ea*ea));
-				kweight[1] = k[1]/k2 * exp(-k2/(4.0*ea*ea));
-				kweight[2] = k[2]/k2 * exp(-k2/(4.0*ea*ea));
+		//calculate Pcos, Psin for this k-point
+		Pcos = Psin = 0;
+		for ( j=0; j<N; j++ ) {
+			dotprod1 = dddotprod(k,aarray[j]->mu);
+			dotprod2 = dddotprod(k,aarray[j]->pos);	
+			Pcos += dotprod1 * cos(dotprod2);
+			Psin += dotprod1 * sin(dotprod2);
+		}
 
-				//start calculating first term
-				cossum=0; sinsum=0;
-				for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
-					for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
-						float1 = dddotprod(aptr->mu,k);
-						cossum += float1*cos(dddotprod(k,aptr->pos));
-						sinsum += float1*sin(dddotprod(k,aptr->pos));
-					}
-				for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
-					for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) 
-						for ( p=0; p<3; p++ ) {
-							aptr->ef_induced[p] -= 8.0*M_PI/system->pbc->volume * kweight[p] * cos(dddotprod(k,aptr->pos)) * cossum;
-							aptr->ef_induced[p] -= 8.0*M_PI/system->pbc->volume * kweight[p] * sin(dddotprod(k,aptr->pos)) * sinsum;
-						}
+		//calculate ef_induced over atom array
+		for ( i=0; i<N; i++ ) {
+			//for each cartesian dimension
+			for ( p=0; p<3; p++ ) {
+				
+				dotprod1 = dddotprod(k,aarray[i]->pos);
+				aarray[i]->ef_induced[p] += kweight * ( -sin(dotprod1)*Psin - cos(dotprod1)*Pcos );
+	
+			} //dim
+		} //ef_incuded over atom array
 
-				//second term
-				for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
-					for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) 
-						for ( p=0; p<3; p++ )  //extra factor of two from symmetry
-							aptr->ef_induced[p] += (8.0*M_PI/system->pbc->volume)*kweight[p]*dddotprod(aptr->mu,k);
-
-			} //l2
-		} //l1
-	} //l0
-
-	//other term
-	for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
-		for ( aptr = mptr->atoms; aptr; aptr=aptr->next )
-			for ( p=0; p<3; p++ ) 
-				aptr->ef_induced[p] += 4.0*M_PI/(3.0*system->pbc->volume)*aptr->mu[p];
+	} //kspace	
+		
+	free(aarray);
 
 	return;
 }
 
 void induced_self_term(system_t * system) {
+
+//this routine is not used since we allow molecules to self-polarize
+// intra-molecular E_s = 0, but E_i != 0
+return;
 	molecule_t * mptr;
 	atom_t * aptr;
 	pair_t * pptr;
-	double T; //dipole-interaction tensor for self terms
-	double erfar, expa2r2, r, ir, ir2, ir3, ir4, ir5;
-	double a = system->polar_ewald_alpha;
+	double erfar, expa2r2, r, ir, ir3, ir5, explr;
+	double T; //dipole-interaction tensor component
+	double s1, s2; //common term (s_2 via eq 10. JCP 133 243101)
 	int p, q; //dimensions
+	double a = system->polar_ewald_alpha; //ewald damping
+	double l = system->polar_damp; //polar damping
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
 			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) {
-				if ( mptr != pptr->molecule ) continue; //same molecule only
+				if ( mptr != pptr->molecule ) continue; //only same molecule
 				if ( aptr->polarizability == 0 || pptr->atom->polarizability == 0 ) continue; //don't waste CPU time
+				if ( pptr->rimg > system->pbc->cutoff ) continue; //if outside cutoff sphere skip
 				//some things we'll need
 				r=pptr->rimg;
-				ir=1.0/r; ir2=ir*ir; ir3=ir2*ir; ir4=ir3*ir; ir5=ir4*ir;
+				ir=1.0/r; ir3=ir*ir*ir; ir5=ir*ir*ir3;
 				erfar=erf(a*r);
 				expa2r2=exp(-a*a*r*r);
 
+				//E_static_realspace_i = sum(i!=j) d_xi d_xj erfc(a*r)/r u_j 
 				for ( p=0; p<3; p++ ) {
 					for ( q=p; q<3; q++ ) {  //it's symmetric!
-						T = pptr->dimg[p]*pptr->dimg[q]*ir5;  //common term
-						T *= 3*erfar - (2*a*a*r*r+3)*(2*a*r*expa2r2*OneOverSqrtPi);
-						if ( p==q ) 
-							T += -erfar*ir3 + 2*a*expa2r2*OneOverSqrtPi*ir2; //kronecker term
+//	s2 = ?
+//						if ( p==q )
+//  s1 = ?
+//						else
+//							s1 = 0;
 
-						aptr->ef_induced[p] -= T*pptr->atom->mu[q];
-						pptr->atom->ef_induced[p] -= T*aptr->mu[q];
+						T = 3.0 * pptr->dimg[p] * pptr->dimg[q] * s2 * ir5 - s1 * ir3;
+
+						aptr->ef_induced[p] += T*pptr->atom->mu[q];
+						pptr->atom->ef_induced[p] += T*aptr->mu[q];
+
 						if ( p!=q ) {
-							aptr->ef_induced[q] -= T*pptr->atom->mu[p];
-							pptr->atom->ef_induced[q] -= T*aptr->mu[p];
+							aptr->ef_induced[q] += T*pptr->atom->mu[p];
+							pptr->atom->ef_induced[q] += T*aptr->mu[p];
 						}
 
 					} //loop over q dim
@@ -326,7 +345,30 @@ void induced_self_term(system_t * system) {
 			} //pptr loop
 		} //aptr loop
 	} //mptr loop
-								
+						
+	return;
+}
+
+void induced_corr_term ( system_t * system ) {
+	molecule_t * mptr;
+	atom_t * aptr;
+	int p;
+	double a = system->polar_ewald_alpha;
+	double totalmu[3];
+
+	for ( p=0; p<3; p++ ) totalmu[p] = 0;
+	for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
+		for ( aptr = mptr->atoms; aptr; aptr=aptr->next )
+			for ( p=0; p<3; p++ )
+				totalmu[p] += aptr->mu[p];
+
+	//other term
+	for ( mptr = system->molecules; mptr; mptr=mptr->next ) 
+		for ( aptr = mptr->atoms; aptr; aptr=aptr->next )
+			for ( p=0; p<3; p++ ) 
+
+				aptr->ef_induced[p] += -4.0*M_PI/(3.0*system->pbc->volume) * totalmu[p] + 4.0*a*a*a/(3.0*sqrt(M_PI))*aptr->mu[p];
+
 	return;
 }
 
@@ -402,7 +444,8 @@ void ewald_full ( system_t * system ) {
 		//calculate induced field
 		induced_real_term(system);
 		induced_recip_term(system);
-		induced_self_term(system);
+//		induced_self_term(system); intramolecular self term is not used
+		induced_corr_term(system);
 
 		if ( system->polar_palmo && i==max_iter-1 ) //if last iteration
 			get_delta_einduced(system);

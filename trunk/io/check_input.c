@@ -283,21 +283,8 @@ void polarization_options (system_t * system) {
 	if(system->polar_ewald) 
 		output("INPUT: Polar ewald activated. Thole field calculated using ewald method.\n");
 	
-	if(system->polar_ewald_full) {
+	if(system->polar_ewald_full) 
 		output("INPUT: Full ewald polarization activated.\n");
-		if(!system->polar_max_iter)	{
-			output("INPUT: Setting polar_ewald_full max_iter to default value of 10.\n");
-			system->polar_max_iter = 10;
-		}
-		else if (system->polar_precision) {
-			error("INPUT: polar_ewald_full is not compat with polar_precision. Use polar_max_iter instead.\n");
-			die(-1);
-		}
-		else if (system->polar_rrms ) {
-			error("INPUT: polar_ewald_full is not compat with polar_rrms. Deal with it.\n");
-			die(-1);
-		}
-	}
 	
 	if(system->damp_type == DAMPING_LINEAR)
 		output("INPUT: Thole linear damping activated\n");

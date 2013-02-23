@@ -70,7 +70,18 @@ void calc_dipole_rrms ( system_t * system ) {
 		/* normalize */
 		aa[i]->dipole_rrms /= dddotprod(aa[i]->new_mu,aa[i]->new_mu);
 		aa[i]->dipole_rrms = sqrt(aa[i]->dipole_rrms);
+		if ( !isfinite(aa[i]->dipole_rrms) ) aa[i]->dipole_rrms = 0;
 	}
+
+#ifdef DEBUG
+/*
+double totalrms = 0;
+for ( i=0; i< system->natoms; i++ ) {
+		totalrms +=  aa[i]->dipole_rrms;
+}
+fprintf(stderr,"TOTAL DIPOLE RRMS %lf\n", totalrms);
+*/
+#endif
 
 	return;
 }

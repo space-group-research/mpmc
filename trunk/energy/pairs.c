@@ -12,15 +12,10 @@ University of South Florida
 void rebuild_arrays ( system_t * system ) {
 	molecule_t * molecule_ptr;
 	atom_t * atom_ptr;
-	int n = 0;
+	int n = system->natoms;
 
 	free(system->atom_array);
 	free(system->molecule_array);
-
-	//check the size
-	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)
-		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) 
-			n++;
 
 	//allocate the arrays
 	system->molecule_array = malloc(n*sizeof(molecule_t *));
@@ -516,6 +511,8 @@ void setup_pairs(system_t * system) {
 	molecule_t *molecule_ptr, **molecule_array;
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr, *prev_pair_ptr;
+
+	system->natoms = countNatoms(system);
 
 	//build atom and molecule arrays
 	rebuild_arrays(system);

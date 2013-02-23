@@ -61,19 +61,6 @@ double cavity_absolute_check ( system_t * system ) {
 	return 0;
 }
 
-int getnatoms (system_t * system) {
-	molecule_t * mptr;
-	atom_t * aptr;
-	int n=0;
-
-	for (mptr = system->molecules; mptr; mptr=mptr->next ) {
-		for (aptr = mptr->atoms; aptr; aptr=aptr->next ) {
-			n++;
-		}
-	}
-	return n;
-}
-
 /* returns the total potential energy for the system and updates our observables */
 double energy(system_t *system) {
 
@@ -94,6 +81,8 @@ double energy(system_t *system) {
 	coulombic_energy = 0;
 	polar_energy = 0;
 	vdw_energy = 0;
+
+	system->natoms = countNatoms(system);
 
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);

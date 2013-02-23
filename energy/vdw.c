@@ -566,7 +566,7 @@ double vdw(system_t *system) {
 	double * eigvals; //eigenvales
 	double fh_corr, lr_corr;
 
-	N=getnatoms(system);
+	N=system->natoms;
 
 	//allocate arrays. sqrtKinv is a diagonal matrix. d,e are used for matrix diag.
 	sqrtKinv = getsqrtKinv(system,N);

@@ -151,7 +151,7 @@ void free_matrices(system_t *system) {
 	if ( system->checkpoint->thole_N_atom )
 		N = 3*system->checkpoint->thole_N_atom;
 	else 
-		N = 3*countNatoms(system);
+		N = 3*system->natoms;
 
 	for(i = 0; i < N; i++) {
 		free(system->A_matrix[i]);

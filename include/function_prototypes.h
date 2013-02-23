@@ -46,7 +46,6 @@ double anharmonic_fh_fourth_order(double, double, double, double, double);
 double h2_bond_energy(double r);
 int bessik(float, float, float *, float *, float *, float *);	/* NR function */
 double besselK(double, double);
-int getnatoms(system_t *);
 void rebuild_arrays (system_t *); //builds atom and molecule arrays for the current config
 
 /* io */
@@ -181,6 +180,8 @@ int countNatoms(system_t *);
 void thole_resize_matrices(system_t *);
 void print_matrix(int N, double **matrix);
 void ewald_estatic ( system_t * );
+void calc_dipole_rrms (system_t *);
+int are_we_done_yet( system_t *, int );
 
 /* polarization - CUDA */
 #ifdef CUDA

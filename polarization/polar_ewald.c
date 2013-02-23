@@ -140,8 +140,10 @@ void init_dipoles_ewald( system_t * system ) {
 
 	for ( mptr=system->molecules; mptr; mptr=mptr->next )
 		for ( aptr=mptr->atoms; aptr; aptr=aptr->next )
-			for ( p=0; p<3; p++ )
-				aptr->mu[p] = aptr->polarizability*aptr->ef_static[p];
+			for ( p=0; p<3; p++ ) {
+				aptr->old_mu[p] = 0;
+				aptr->new_mu[p] = aptr->mu[p] = aptr->polarizability*aptr->ef_static[p];
+			}
 
 	return;
 }
@@ -293,62 +295,6 @@ void induced_recip_term(system_t * system) {
 	return;
 }
 
-void induced_self_term(system_t * system) {
-
-//this routine is not used since we allow molecules to self-polarize
-// intra-molecular E_s = 0, but E_i != 0
-return;
-	molecule_t * mptr;
-	atom_t * aptr;
-	pair_t * pptr;
-	double erfar, expa2r2, r, ir, ir3, ir5, explr;
-	double T; //dipole-interaction tensor component
-	double s1, s2; //common term (s_2 via eq 10. JCP 133 243101)
-	int p, q; //dimensions
-	double a = system->polar_ewald_alpha; //ewald damping
-	double l = system->polar_damp; //polar damping
-
-	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
-		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
-			for ( pptr = aptr->pairs; pptr; pptr=pptr->next ) {
-				if ( mptr != pptr->molecule ) continue; //only same molecule
-				if ( aptr->polarizability == 0 || pptr->atom->polarizability == 0 ) continue; //don't waste CPU time
-				if ( pptr->rimg > system->pbc->cutoff ) continue; //if outside cutoff sphere skip
-				//some things we'll need
-				r=pptr->rimg;
-				ir=1.0/r; ir3=ir*ir*ir; ir5=ir*ir*ir3;
-				erfar=erf(a*r);
-				expa2r2=exp(-a*a*r*r);
-
-				//E_static_realspace_i = sum(i!=j) d_xi d_xj erfc(a*r)/r u_j 
-				for ( p=0; p<3; p++ ) {
-					for ( q=p; q<3; q++ ) {  //it's symmetric!
-//	s2 = ?
-//						if ( p==q )
-//  s1 = ?
-//						else
-//							s1 = 0;
-
-						T = 3.0 * pptr->dimg[p] * pptr->dimg[q] * s2 * ir5 - s1 * ir3;
-
-						aptr->ef_induced[p] += T*pptr->atom->mu[q];
-						pptr->atom->ef_induced[p] += T*aptr->mu[q];
-
-						if ( p!=q ) {
-							aptr->ef_induced[q] += T*pptr->atom->mu[p];
-							pptr->atom->ef_induced[q] += T*aptr->mu[p];
-						}
-
-					} //loop over q dim
-				} //loop over p dim
-
-			} //pptr loop
-		} //aptr loop
-	} //mptr loop
-						
-	return;
-}
-
 void induced_corr_term ( system_t * system ) {
 	molecule_t * mptr;
 	atom_t * aptr;
@@ -385,11 +331,11 @@ void new_dipoles(system_t * system, int count) {
 				aptr->old_mu[p] = aptr->mu[p];
 				if ( system->polar_sor ) {
 					aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
-					aptr->mu[p] = system->polar_gamma*aptr->new_mu[p] + (1.0-system->polar_gamma)*aptr->old_mu[p];
+					aptr->new_mu[p] = aptr->mu[p] = system->polar_gamma*aptr->new_mu[p] + (1.0-system->polar_gamma)*aptr->old_mu[p];
 				}
 				else if ( system->polar_esor ) {
 					aptr->new_mu[p] = aptr->polarizability*(aptr->ef_static[p]+aptr->ef_induced[p]);
-					aptr->mu[p] = (1.0 - exp(-system->polar_gamma*(count+1)))*aptr->new_mu[p] +
+					aptr->new_mu[p] = aptr->mu[p] = (1.0 - exp(-system->polar_gamma*(count+1)))*aptr->new_mu[p] +
 						exp(-system->polar_gamma*(count+1))*aptr->old_mu[p];
 				}
 				else {
@@ -404,10 +350,18 @@ void new_dipoles(system_t * system, int count) {
 	return;
 }
 
-void get_delta_einduced ( system_t * system ) {
+void ewald_palmo_contraction ( system_t * system ) {
 	molecule_t * mptr;
 	atom_t * aptr;
 	int p;
+
+	//set induced field to zero
+	clear_ef_induced(system);
+
+	//calculate induced field
+	induced_real_term(system);
+	induced_recip_term(system);
+	induced_corr_term(system);
 
 	for ( mptr = system->molecules; mptr; mptr=mptr->next ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next ) {
@@ -427,7 +381,7 @@ void get_delta_einduced ( system_t * system ) {
 void ewald_full ( system_t * system ) {
 
 	int max_iter=system->polar_max_iter;
-	int i;
+	int keep_iterating, iteration_counter;
 
 	//calculate static e-field
 	zero_out(system->molecules);
@@ -437,21 +391,35 @@ void ewald_full ( system_t * system ) {
 	//calculate induced e-field
 	init_dipoles_ewald(system);
 
-	for ( i=0; i<max_iter; i++ ) {
+	keep_iterating = 1;
+	iteration_counter = 0;
+	while ( keep_iterating ) {
+
+		if ( iteration_counter >= MAX_ITERATION_COUNT && system->polar_precision ) {
+			system->iter_success = 1;
+			return;
+		}
+
 		//set induced field to zero
 		clear_ef_induced(system);
 
 		//calculate induced field
 		induced_real_term(system);
 		induced_recip_term(system);
-//		induced_self_term(system); intramolecular self term is not used
 		induced_corr_term(system);
 
-		if ( system->polar_palmo && i==max_iter-1 ) //if last iteration
-			get_delta_einduced(system);
+		if ( system->polar_rrms || system->polar_precision > 0 )
+			calc_dipole_rrms(system);
 
 		//recalculate dipoles using new induced field
-		new_dipoles(system, i);
+		new_dipoles(system, iteration_counter);
+
+		keep_iterating = are_we_done_yet(system, iteration_counter);
+
+		if ( system->polar_palmo &&	 !keep_iterating ) //if last iteration
+			ewald_palmo_contraction(system);
+
+		iteration_counter++;
 	}
 
 	return;

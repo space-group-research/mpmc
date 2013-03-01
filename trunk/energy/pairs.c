@@ -242,7 +242,7 @@ void pairs(system_t *system) {
 			pair_exclusions(system, molecule_array[i], molecule_array[j], atom_array[i], atom_array[j], pair_ptr);
 
 			/* recalc min image */
-			if(!(pair_ptr->frozen))
+			if( !pair_ptr->frozen || system->polarization ) //need induced-induced interaction for frozen atoms
 				minimum_image(system, atom_array[i], atom_array[j], pair_ptr);
 
 		} /* for j */

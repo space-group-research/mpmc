@@ -127,7 +127,6 @@ void thole_amatrix(system_t *system) {
 					if(p == q) {
 						system->A_matrix[ii+p][jj+q] += damp1*ir3;
 						if ( system->polar_wolf_full ) system->A_matrix[ii+p][jj+q] -= wdamp1/(rcut3);
-
 					}	
 				}
 			}

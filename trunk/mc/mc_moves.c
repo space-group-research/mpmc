@@ -11,6 +11,7 @@ University of South Florida
 /* i truly hate this fucking file, but dont see a better way JB */
 
 #include <mc.h>
+#include <quaternion.h>
 
 
 //re-enumerate atoms and molecules -> set atom and molecule id's which get messed up in UVT runs
@@ -394,19 +395,25 @@ void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
 }
 
 /* perform a general random rotation */
+/* now with quaternions AH */
 void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 	atom_t *atom_ptr;
-	double alpha, beta, gamma;	/* Euler angles */
-	double rotation_matrix[3][3];
+  double x, y, z, magnitude, angle;
 	double com[3];
 	int i, ii, n;
 	double *new_coord_array;
 
-	/* get the randomized Euler angles */
-	alpha = scale*get_rand()*2.0*M_PI; if(get_rand() < 0.5) alpha *= -1.0;
-        beta = scale*get_rand()*M_PI; if(get_rand() < 0.5) beta *= -1.0;
-        gamma = scale*get_rand()*2.0*M_PI; if(get_rand() < 0.5) gamma *= -1.0;
+  struct quaternion position_vector, rnd_rotation, rnd_rotation_conjugate, answer;
+
+  /* create a random axis and random angle to rotate around */
+  x = get_rand()-0.5;
+  y = get_rand()-0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
+  z = get_rand()-0.5;
+  angle = get_rand()*360*scale; /* random angle, can be affected by scale */
+
+  quaternion_construct_axis_angle_degree(&rnd_rotation,x,y,z,angle); /* make a random quaternion */
+  quaternion_conjugate(&rnd_rotation,&rnd_rotation_conjugate); /* needed to transform coordinates */
 
 	/* count the number of atoms in a molecule, and allocate new coords array */
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
@@ -426,28 +433,22 @@ void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 		atom_ptr->pos[2] -= com[2];
 	}
 
-	/* construct the 3D rotation matrix */
-	rotation_matrix[0][0] = cos(alpha)*cos(beta)*cos(gamma) - sin(alpha)*sin(gamma);
-	rotation_matrix[0][1] = sin(alpha)*cos(beta)*cos(gamma) + cos(alpha)*sin(gamma);
-	rotation_matrix[0][2] = -sin(beta)*cos(gamma);
-	rotation_matrix[1][0] = -cos(alpha)*cos(beta)*sin(gamma) - sin(alpha)*cos(gamma);
-	rotation_matrix[1][1] = -sin(alpha)*cos(beta)*sin(gamma) + cos(alpha)*cos(gamma);
-	rotation_matrix[1][2] = sin(beta)*sin(gamma);
-	rotation_matrix[2][0] = cos(alpha)*sin(beta);
-	rotation_matrix[2][1] = sin(alpha)*sin(beta);
-	rotation_matrix[2][2] = cos(beta);
-
-	/* matrix multiply */
+	/* quaternion multiply */
 	for(atom_ptr = molecule->atoms, i = 0; atom_ptr; atom_ptr = atom_ptr->next, i++) {
 
 		ii = i*3;
-		new_coord_array[ii+0] = 
-			rotation_matrix[0][0]*atom_ptr->pos[0] + rotation_matrix[0][1]*atom_ptr->pos[1] + rotation_matrix[0][2]*atom_ptr->pos[2];
-		new_coord_array[ii+1] = 
-			rotation_matrix[1][0]*atom_ptr->pos[0] + rotation_matrix[1][1]*atom_ptr->pos[1] + rotation_matrix[1][2]*atom_ptr->pos[2];
-		new_coord_array[ii+2] = 
-			rotation_matrix[2][0]*atom_ptr->pos[0] + rotation_matrix[2][1]*atom_ptr->pos[1] + rotation_matrix[2][2]*atom_ptr->pos[2];
+    
+    //position_vector = position
+    quaternion_construct_xyzw(&position_vector,atom_ptr->pos[0],atom_ptr->pos[1],atom_ptr->pos[2],0.);
 
+    //answer = rnd_rotation*(position*rnd_rotation_conjugate)
+    quaternion_multiplication(&position_vector,&rnd_rotation_conjugate,&answer);
+    quaternion_multiplication(&rnd_rotation,&answer,&answer);
+
+    //set the new coords
+		new_coord_array[ii+0] = answer.x;
+		new_coord_array[ii+1] = answer.y;
+		new_coord_array[ii+2] = answer.z;
 	}
 
 	/* set the new coordinates and then translate back from the origin */

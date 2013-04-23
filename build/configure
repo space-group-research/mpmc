@@ -3,7 +3,7 @@
 if [ $# != 6 ]
 then
 	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
-	echo "     hostnames: generic circe ranger lincoln llnl bigben galactic dirac lonestar spin time"
+	echo "     hostnames: generic circe llnl spin time"
 	echo "     compilers: gcc gdb pgi icc"
 	exit 1
 fi
@@ -39,41 +39,6 @@ case "$HOSTNAME" in
 			;;
 		esac
 	;;
-	"lincoln")
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"pgi")
-				CC="pgcc"
-				CFLAGS="-O3 -fastsse -DACML_NOUNDERSCORE"
-				EXTRA_LIBS="-lpgc -lpgftnrtl -lrt -lm"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-			;;
-		esac
-	;;
-	"bigben")
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"pgi")
-				CC="cc"
-				CFLAGS="-O3 -fastsse -Mnontemporal -Mprefetch=distance:8,nta"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-			;;
-		esac
-	;;
 	"circe") #USF research computing
 		case "$COMPILER" in
 			"gdb")
@@ -87,33 +52,11 @@ case "$HOSTNAME" in
 			;;
 			"pgi")
 				CC="pgcc"
-				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline,safe"
+				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline,safe -I/apps/legacy/pgi/linux86-64/10.1/include/CC/ -I/apps/legacy/pgi/linux86-64/10.1/include/ -I/usr/lib/gcc/x86_64-redhat-linux/4.4.4/include/"
 				EXTRA_LIBS="-L./lib/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lm"
 				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-		esac
-	;;
-	"dirac") #dirac usf
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"gcc")
-				CC="gcc"
-				CFLAGS="-O3 -std=c99"
-				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
-			;;
-			"pgi")
-				CC="pgcc"
-				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
-				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
 			;;
 			*)
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
@@ -136,63 +79,6 @@ case "$HOSTNAME" in
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
 				EXTRA_LIBS="-L/usr/local/pgi/linux86-64/7.0-6/libso/ -lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lrt -lm"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-		esac
-	;;
-	"galactic")
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"icc")
-				CC="icc"
-				CFLAGS="-O3 -prefetch -mp -axP -ip -unroll"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-		esac
-	;;
-	"lonestar") #TACC
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"gcc")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
-			"pgi")
-				echo "error: compiler $COMPILER not supported for hostname $HOSTNAME"
-				exit 1
-			;;
-			"icc")
-				CC="icc"
-				CFLAGS="-O3 -prefetch -mp -ip -unroll"
-			;;
-			*)
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
-		esac
-	;;
-	"ranger") #TACC
-		case "$COMPILER" in
-			"gdb")
-				CC="gcc"
-				CFLAGS="-g"
-				EXTRA_LIBS="-lm -rdynamic"
-			;;
-			"pgi")
-				CC="pgcc"
-				CFLAGS="-O3 -tp barcelona-64"
-				EXTRA_LIBS="-lacml -lacml_mv -lacml_mp -lpgmp -lpgftnrtl -lm"
 			;;
 			*)
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
@@ -258,13 +144,6 @@ case "$MODE" in
 		DEFINES="$DEFINES -DMPI"
 		# handle special cases for parallelization
 		case "$HOSTNAME" in
-			"bigben")
-				CC="cc"
-			;;
-			"dirac")
-				EXTRA_INCLUDES="$EXTRA_INCLUDES -I/usr/include/openmpi/1.2.3-gcc"
-				EXTRA_LIBS="$EXTRA_LIBS -L/usr/lib64/openmpi/1.2.3-gcc -lmpi -lm"
-			;;
 			"time")
 				EXTRA_INCLUDES="-I/usr/include/openmpi/1.2.3-gcc"
 				EXTRA_LIBS="-L/usr/lib64/openmpi/1.2.3-gcc -lmpi -lm"
@@ -304,10 +183,6 @@ if [ $CUDA = "yes" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-3.0/include"
 		EXTRA_LIBS="$EXTRA_LIBS -L/opt/cudatoolkit-3.0/lib64 -lcudart"
-	elif [ $HOSTNAME == "lincoln" ]; then
-		DEFINES="$DEFINES -DCUDA"
-		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/usr/local/cuda-3.0/include"
-		EXTRA_LIBS="$EXTRA_LIBS -L/usr/local/cuda-3.0/lib64 -lcudart"
 	else
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_LIBS="$EXTRA_LIBS -lcudart"

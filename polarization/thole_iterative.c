@@ -32,6 +32,12 @@ void contract_dipoles ( system_t * system, int * ranked_array ) {
 	for(i = 0; i < system->natoms; i++) {
 		index = ranked_array[i]; //do them in the order of the ranked index
 		ii = index*3;
+		if ( aa[index]->polarizability == 0 ) { //if not polar
+			//aa[index]->ef_induced[p] is already 0
+			aa[index]->new_mu[0] = aa[index]->new_mu[1] = aa[index]->new_mu[2] = 0; //might be redundant?
+			aa[index]->mu[0] = aa[index]->mu[1] = aa[index]->mu[2] = 0; //might be redundant?
+			continue;
+		}	
 		for(j = 0; j < system->natoms; j++) {
 			jj = j*3;
 			if(index != j) 

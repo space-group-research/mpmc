@@ -130,6 +130,7 @@ void checkpoint(system_t *);
 void restore(system_t *);
 double surface_energy(system_t *, int);
 void molecule_rotate_euler(molecule_t *, double, double, double, int);
+void molecule_rotate_quaternion(molecule_t *, double, double, double, int);
 int surface_dimer_geometry(system_t *, double, double, double, double, double, double, double, int);
 int surface_dimer_parameters(system_t *, param_t *);
 void surface_curve(system_t *, double, double, double, double *);

@@ -950,7 +950,7 @@ int write_averages(system_t *system) {
 	if(averages->polarization_energy != 0.0) {
 		printf("OUTPUT: polarization energy = %.5f +- %.5f K", 
 			averages->polarization_energy, averages->polarization_energy_error);
-		if(averages->dipole_rrms_error != 0.0 ) {
+		if(averages->dipole_rrms_error != 0.0 && system->polar_rrms ) {
 			printf(" (iterations = %.1f +- %.1f rrms = %e +- %e)", 
 				averages->polarization_iterations, averages->polarization_iterations_error, 
 				averages->dipole_rrms, averages->dipole_rrms_error);

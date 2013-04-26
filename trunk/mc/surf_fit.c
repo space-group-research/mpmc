@@ -9,7 +9,7 @@ void surface_curve(system_t *system, double r_min, double r_max, double r_inc, d
 	double r;
 
 	for(r = r_min, i = 0; r <= r_max; r += r_inc, i++) {
-		surface_dimer_geometry(system, r, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+		surface_dimer_geometry(system, r, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);
 		curve[i] = surface_energy(system, ENERGY_TOTAL);
 	}
 
@@ -102,13 +102,13 @@ void output_pqrs ( system_t * system, int nCurves, curveData_t * curve ) {
 
       // Apply rotation associated with i-th curve and separate COM by 5 Angstroms
       surface_dimer_geometry(system, 5.0, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
-                                          curve[i].alpha2, curve[i].beta2, curve[i].gamma2 );
+                                          curve[i].alpha2, curve[i].beta2, curve[i].gamma2, 0);
       sprintf( filename, "%s.pqr\0", curve[i].id );
       write_molecules_wrapper( system, filename );
 
       // Restore the molecule to its initial orientation
-      surface_dimer_geometry(system, 0.0, -curve[i].gamma1, -curve[i].beta1, -curve[i].alpha1,
-                                          -curve[i].gamma2, -curve[i].beta2, -curve[i].alpha2 );
+      surface_dimer_geometry(system, 0.0, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
+                                          curve[i].alpha2, curve[i].beta2, curve[i].gamma2, 1);
 
   }
 
@@ -307,16 +307,16 @@ void get_curves ( system_t * system, int nCurves, curveData_t * curve, double r_
 
       // Apply rotation associated with i-th curve
       surface_dimer_geometry(system, r_min, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
-                                            curve[i].alpha2, curve[i].beta2, curve[i].gamma2 );
+                                            curve[i].alpha2, curve[i].beta2, curve[i].gamma2, 0);
       // Perform the calculation
       surface_curve(system, r_min, r_max, r_inc, curve[i].output);
 
       // Restore the molecule to its initial orientation
-      surface_dimer_geometry(system, r_min, -curve[i].gamma1, -curve[i].beta1, -curve[i].alpha1,
-                                            -curve[i].gamma2, -curve[i].beta2, -curve[i].alpha2 );
+      surface_dimer_geometry(system, r_min, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
+                                            curve[i].alpha2, curve[i].beta2, curve[i].gamma2, 1);
   }
   // Reset to origin
-  surface_dimer_geometry( system, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+  surface_dimer_geometry( system, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);
 
 	return;
 }

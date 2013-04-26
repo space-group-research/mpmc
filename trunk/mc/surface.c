@@ -11,6 +11,7 @@ University of South Florida
 /* this file is rather sloppy, but got the job done */
 
 #include <mc.h>
+#include <quaternion.h>
 
 /* calculate the energy for the surface scan - same as function energy() but without observables */
 double surface_energy(system_t *system, int energy_type) {
@@ -67,13 +68,26 @@ double surface_energy(system_t *system, int energy_type) {
 }
 
 /* rotate a molecule about three Euler angles - same as normal function but for a single mol and without random angles */
-void molecule_rotate(molecule_t *molecule, double alpha, double beta, double gamma) {
+void molecule_rotate_euler(molecule_t *molecule, double alpha, double beta, double gamma, int reverse_flag) {
 
 	atom_t *atom_ptr;
 	double rotation_matrix[3][3];
 	double com[3];
 	int i, ii, n;
 	double *new_coord_array;
+
+	//reverse the rotation?
+	if (reverse_flag)
+	{
+		//switch around alpha and gamma
+		double temp;
+		temp = alpha;
+		alpha = gamma;
+		gamma = temp;
+		alpha *= -1.;
+		beta *= -1.;
+		gamma *= -1.;
+	}
 
 	/* count the number of atoms in a molecule, and allocate new coords array */
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
@@ -133,6 +147,87 @@ void molecule_rotate(molecule_t *molecule, double alpha, double beta, double gam
 
 }
 
+/* rotate a molecule about three Euler angles - same as normal function but for a single mol and without random angles */
+/* changing it so it rotates around the three principal axises - Adam Hogan */
+void molecule_rotate_quaternion(molecule_t *molecule, double alpha, double beta, double gamma, int reverse_flag) {
+
+	atom_t *atom_ptr;
+	double com[3];
+	int i, ii, n;
+	double *new_coord_array;
+
+	/* count the number of atoms in a molecule, and allocate new coords array */
+	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
+		++n;
+	new_coord_array = calloc(n*3, sizeof(double));
+	memnullcheck(new_coord_array,n*3*sizeof(double),__LINE__-1, __FILE__);
+
+	/* save the com coordinate */
+	com[0] = molecule->com[0];
+	com[1] = molecule->com[1];
+	com[2] = molecule->com[2];
+
+	/* translate the molecule to the origin */
+	for(atom_ptr = molecule->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+		atom_ptr->pos[0] -= com[0];
+		atom_ptr->pos[1] -= com[1];
+		atom_ptr->pos[2] -= com[2];
+	}
+
+	/* construct the rotation quaternions */
+	struct quaternion first, second, third, total, total_conjugate, position, answer;
+	//total = quaternion with no rotation
+	quaternion_construct_xyzw(&total,0.,0.,0.,1.);
+	//first = rotation around z axis
+	quaternion_construct_axis_angle_degree(&first,0.,0.,1.,alpha);
+	//second = rotation around y axis
+	quaternion_construct_axis_angle_degree(&second,0.,1.,0.,beta);
+	//third = rotation around z axis
+	quaternion_construct_axis_angle_degree(&third,1.,0.,0.,gamma);
+	//combine all rotations into total
+	quaternion_multiplication(&first,&total,&total);
+	quaternion_multiplication(&second,&total,&total);
+	quaternion_multiplication(&third,&total,&total);
+	//if we are undoing a rotation we need to conjugate total
+	if (reverse_flag) quaternion_conjugate(&total,&total);
+	quaternion_conjugate(&total,&total_conjugate);
+
+	for(atom_ptr = molecule->atoms, i = 0; atom_ptr; atom_ptr = atom_ptr->next, i++) {
+
+		ii = i*3;
+		//position = position vector
+		quaternion_construct_xyzw(&position,atom_ptr->pos[0],atom_ptr->pos[1],atom_ptr->pos[2],0.);
+
+		//answer = total*(position*total_conjugate)
+		quaternion_multiplication(&position,&total_conjugate,&answer);
+		quaternion_multiplication(&total,&answer,&answer);
+
+		//set the new coords
+		new_coord_array[ii+0] = answer.x;
+		new_coord_array[ii+1] = answer.y;
+		new_coord_array[ii+2] = answer.z;
+
+	}
+
+	/* set the new coordinates and then translate back from the origin */
+	for(atom_ptr = molecule->atoms, i = 0; atom_ptr; atom_ptr = atom_ptr->next, i++) {
+
+		ii = i*3;
+		atom_ptr->pos[0] = new_coord_array[ii+0];
+		atom_ptr->pos[1] = new_coord_array[ii+1];
+		atom_ptr->pos[2] = new_coord_array[ii+2];
+
+		atom_ptr->pos[0] += com[0];
+		atom_ptr->pos[1] += com[1];
+		atom_ptr->pos[2] += com[2];
+
+	}
+
+	/* free our temporary array */
+	free(new_coord_array);
+
+}
+
 /* calculate the isotropic potential energy surface of a molecule */
 int surface(system_t *system) {
 
@@ -162,7 +257,7 @@ int surface(system_t *system) {
 				system->surf_preserve_rotation_on->gamma1,
 				system->surf_preserve_rotation_on->alpha2,
 				system->surf_preserve_rotation_on->beta2,
-				system->surf_preserve_rotation_on->gamma2);
+				system->surf_preserve_rotation_on->gamma2, 0);
 				printf("SURFACE: Setting preserve angles (radians) for molecule 1: %lf %lf %lf\n",
 					system->surf_preserve_rotation_on->alpha1,
 					system->surf_preserve_rotation_on->beta1,
@@ -176,7 +271,7 @@ int surface(system_t *system) {
 		for(r = system->surf_min; r <= system->surf_max; r += system->surf_inc) {
 
 			/* calculate the energy */
-			surface_dimer_geometry(system, r, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+			surface_dimer_geometry(system, r, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);
 
 			if(system->surf_decomp) {
 				pe_es = surface_energy(system, ENERGY_ES);
@@ -224,7 +319,7 @@ int surface(system_t *system) {
 									++avg_counter;
 									avg_factor = ((double)(avg_counter - 1))/((double)(avg_counter));
 
-									surface_dimer_geometry(system, r, alpha_origin, beta_origin, gamma_origin, alpha_move, beta_move, gamma_move);
+									surface_dimer_geometry(system, r, alpha_origin, beta_origin, gamma_origin, alpha_move, beta_move, gamma_move, 0);
 
 									if(system->surf_print_level == 6)
 										surf_print = 1;
@@ -254,7 +349,7 @@ int surface(system_t *system) {
 
 									}
 									//unrotate (not the most efficent thing to be doing, but oh well)
-									surface_dimer_geometry(system, 0.0, -gamma_origin, -beta_origin, -alpha_origin, -gamma_move, -beta_move, -alpha_move);
+									surface_dimer_geometry(system, 0.0, alpha_origin, beta_origin, gamma_origin, alpha_move, beta_move, gamma_move, 1);
 
 								} /* end gamma_move */
 								++bm;
@@ -295,7 +390,7 @@ int surface(system_t *system) {
 }
 
 /* set the distance and angles for a particular dimer orientation */
-int surface_dimer_geometry(system_t *system, double r, double alpha_origin, double beta_origin, double gamma_origin, double alpha_move, double beta_move, double gamma_move) {
+int surface_dimer_geometry(system_t *system, double r, double alpha_origin, double beta_origin, double gamma_origin, double alpha_move, double beta_move, double gamma_move, int reverse_flag) {
 
 	int i;
 	molecule_t *molecule_origin, *molecule_move;
@@ -335,8 +430,16 @@ int surface_dimer_geometry(system_t *system, double r, double alpha_origin, doub
 			atom_ptr->pos[i] += molecule_move->com[i];
 
 	/* apply the rotation to the second molecule */
-	molecule_rotate(molecule_origin, alpha_origin, beta_origin, gamma_origin);
-	molecule_rotate(molecule_move, alpha_move, beta_move, gamma_move);
+	if (system->surf_global_axis_on)
+	{
+		molecule_rotate_quaternion(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
+		molecule_rotate_quaternion(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
+	}
+	else
+	{
+		molecule_rotate_euler(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
+		molecule_rotate_euler(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
+	}
 
 	return(0);
 }

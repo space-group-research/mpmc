@@ -160,6 +160,17 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->surf_output,token[1]);
 		} else return 1;
 	}
+	else if(!strcasecmp(token[0], "surf_global_axis")) {
+		if (!strcasecmp(token[1],"on")) {
+			system->surf_global_axis_on = 1;
+			printf("INPUT: surf_global_axis is ON.\n");
+		}
+		else if (!strcasecmp(token[1],"off")) {
+			system->surf_global_axis_on = 0;
+			printf("INPUT: surf_global_axis is OFF.\n");
+		}
+		else return 1;
+	}
 
 	//spectre options
 	else if(!strcasecmp(token[0], "spectre")) {

@@ -315,7 +315,7 @@ typedef struct _system {
 
 	//surface fitting options
 	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;
-	int surf_weight_constant_on;
+	int surf_weight_constant_on, surf_global_axis_on;
 	fileNode_t fit_input_list;
 	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q;
 	double surf_quadrupole, surf_weight_constant;

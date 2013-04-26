@@ -399,21 +399,21 @@ void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
 void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 	atom_t *atom_ptr;
-  double x, y, z, magnitude, angle;
+	double x, y, z, magnitude, angle;
 	double com[3];
 	int i, ii, n;
 	double *new_coord_array;
 
-  struct quaternion position_vector, rnd_rotation, rnd_rotation_conjugate, answer;
+	struct quaternion position_vector, rnd_rotation, rnd_rotation_conjugate, answer;
 
-  /* create a random axis and random angle to rotate around */
-  x = get_rand()-0.5;
-  y = get_rand()-0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
-  z = get_rand()-0.5;
-  angle = get_rand()*360*scale; /* random angle, can be affected by scale */
+	/* create a random axis and random angle to rotate around */
+	x = get_rand()-0.5;
+	y = get_rand()-0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
+	z = get_rand()-0.5;
+	angle = get_rand()*360*scale; /* random angle, can be affected by scale */
 
-  quaternion_construct_axis_angle_degree(&rnd_rotation,x,y,z,angle); /* make a random quaternion */
-  quaternion_conjugate(&rnd_rotation,&rnd_rotation_conjugate); /* needed to transform coordinates */
+	quaternion_construct_axis_angle_degree(&rnd_rotation,x,y,z,angle); /* make a random quaternion */
+	quaternion_conjugate(&rnd_rotation,&rnd_rotation_conjugate); /* needed to transform coordinates */
 
 	/* count the number of atoms in a molecule, and allocate new coords array */
 	for(atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
@@ -438,14 +438,14 @@ void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 		ii = i*3;
     
-    //position_vector = position
-    quaternion_construct_xyzw(&position_vector,atom_ptr->pos[0],atom_ptr->pos[1],atom_ptr->pos[2],0.);
+		//position_vector = position
+		quaternion_construct_xyzw(&position_vector,atom_ptr->pos[0],atom_ptr->pos[1],atom_ptr->pos[2],0.);
 
-    //answer = rnd_rotation*(position*rnd_rotation_conjugate)
-    quaternion_multiplication(&position_vector,&rnd_rotation_conjugate,&answer);
-    quaternion_multiplication(&rnd_rotation,&answer,&answer);
+		//answer = rnd_rotation*(position*rnd_rotation_conjugate)
+		quaternion_multiplication(&position_vector,&rnd_rotation_conjugate,&answer);
+		quaternion_multiplication(&rnd_rotation,&answer,&answer);
 
-    //set the new coords
+		//set the new coords
 		new_coord_array[ii+0] = answer.x;
 		new_coord_array[ii+1] = answer.y;
 		new_coord_array[ii+2] = answer.z;

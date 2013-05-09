@@ -247,13 +247,19 @@ typedef struct _checkpoint {
 } checkpoint_t;
 
 // used in surface fitting
-typedef struct _param {
+typedef struct _param_type {
 	char atomtype[MAXLINE];
 	int ntypes, axis;
 	double charge, epsilon, sigma, omega, dr;
 	double last_charge, last_epsilon, last_sigma, last_dr, last_omega;
-	struct _param *next;
+	struct _param_type *next;
 } param_t;
+
+typedef struct _param_global {
+	double alpha;
+	double last_alpha;
+	param_t *type_params;
+} param_g;
 
 typedef struct _file_pointers {
 	FILE *fp_energy;
@@ -315,9 +321,9 @@ typedef struct _system {
 
 	//surface fitting options
 	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;
-	int surf_weight_constant_on, surf_global_axis_on;
+	int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on;
 	fileNode_t fit_input_list;
-	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q;
+	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha;
 	double surf_quadrupole, surf_weight_constant;
 	double fit_start_temp, fit_max_energy, fit_schedule;
 

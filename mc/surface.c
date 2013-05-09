@@ -478,7 +478,7 @@ inline double find_scale_factor( double x, double y, double z, double dr ) {
 }
 
 
-int surface_dimer_parameters(system_t *system, param_t *params) {
+int surface_dimer_parameters(system_t *system, param_g *params) {
 
     int i = 0; // generic counter
 
@@ -490,11 +490,13 @@ int surface_dimer_parameters(system_t *system, param_t *params) {
     atom_t *origin = calloc( sizeof(atom_t), 1 ); // calloc sets pos[] fields all to 0
 		memnullcheck( origin, sizeof(atom_t), __LINE__-1, __FILE__);
 
+	system->polar_damp = params->alpha;
+
     for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 
         for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 
-            for (param_ptr = params; param_ptr; param_ptr = param_ptr->next) {
+            for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 
                 if( !strcasecmp( param_ptr->atomtype, atom_ptr->atomtype )) {
 
@@ -563,7 +565,8 @@ int surface_fit(system_t *system) {
 	double *r_input=0; // Master list of r-values
 	curveData_t *curve=0;   // Array to hold curve point data
 	atom_t *atom_ptr=0;
-	param_t *param_ptr, *params;
+	param_t *param_ptr;
+	param_g *params;
 	double r_min, r_max, r_inc;
 	double current_error, last_error, global_minimum;
 	qshiftData_t * qshiftData = NULL; //used only with qshift
@@ -618,7 +621,7 @@ int surface_fit(system_t *system) {
 	params = record_params ( system );
 
 	// print some header info
-	for(param_ptr = params; param_ptr; param_ptr = param_ptr->next) 
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) 
 			printf( "SURFACE: Atom type: %d @ %s\n", param_ptr->ntypes, param_ptr->atomtype );
 	printf("*** any input energy values greater than %f K will not contribute to the fit ***\n", max_energy);
 
@@ -656,8 +659,12 @@ int surface_fit(system_t *system) {
 		// calc error
 		current_error = error_calc ( system, nCurves, nPoints, curve, max_energy);
 
-		//  DO MC at this 'temperature'
-		if(get_rand() < exp(-(current_error - last_error)/temperature)) {
+		int condition =  0;
+		if (system->surf_descent) condition = current_error < last_error;
+		else condition = get_rand() < exp(-(current_error - last_error)/temperature);
+
+ 		//  DO MC at this 'temperature'
+		if(condition) {
 		//ACCEPT MOVE /////
 			apply_new_parameters ( params );
 			last_error = current_error;

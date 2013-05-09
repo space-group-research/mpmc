@@ -132,7 +132,7 @@ double surface_energy(system_t *, int);
 void molecule_rotate_euler(molecule_t *, double, double, double, int);
 void molecule_rotate_quaternion(molecule_t *, double, double, double, int);
 int surface_dimer_geometry(system_t *, double, double, double, double, double, double, double, int);
-int surface_dimer_parameters(system_t *, param_t *);
+int surface_dimer_parameters(system_t *, param_g *);
 void surface_curve(system_t *, double, double, double, double *);
 int surface(system_t *);
 int surface_fit(system_t *);
@@ -151,12 +151,12 @@ void surface_curve( system_t *, double, double, double, double * );
 double error_calc ( system_t *, int, int, curveData_t *, double );
 int alloc_curves ( int, int, curveData_t * );
 void output_pqrs ( system_t *, int, curveData_t * );
-void output_params ( double, double, param_t * );
-param_t * record_params ( system_t * );
-void surf_perturb ( system_t *, double, qshiftData_t *, param_t *);
+void output_params ( double, double, param_g * );
+param_g * record_params ( system_t * );
+void surf_perturb ( system_t *, double, qshiftData_t *, param_g *);
 void output_fit ( int, int, curveData_t *, double, double *);
 void get_curves ( system_t *, int, curveData_t *, double, double, double );
-void revert_parameters ( system_t *, param_t *);
+void revert_parameters ( system_t *, param_g *);
 void new_global_min ( system_t *, int, int, curveData_t * );
 
 /* other "ensembles" */

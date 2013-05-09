@@ -121,6 +121,10 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->surf_scale_omega)) ) return 1; }
 		system->surf_scale_omega_on = 1;
 	}
+	else if(!strcasecmp(token[0], "surf_scale_alpha")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_alpha)) ) return 1; }
+		system->surf_scale_alpha_on = 1;
+	}
 	else if(!strcasecmp(token[0], "surf_qshift")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->surf_qshift_on = 1;
@@ -168,6 +172,17 @@ int do_command (system_t * system, char ** token ) {
 		else if (!strcasecmp(token[1],"off")) {
 			system->surf_global_axis_on = 0;
 			printf("INPUT: surf_global_axis is OFF.\n");
+		}
+		else return 1;
+	}
+	else if(!strcasecmp(token[0], "surf_descent")) {
+		if (!strcasecmp(token[1],"on")) {
+			system->surf_descent = 1;
+			printf("INPUT: surf_descent is ON.\n");
+		}
+		else if (!strcasecmp(token[1],"off")) {
+			system->surf_descent = 0;
+			printf("INPUT: surf_descent is OFF.\n");
 		}
 		else return 1;
 	}

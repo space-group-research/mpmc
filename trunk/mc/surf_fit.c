@@ -116,10 +116,10 @@ void output_pqrs ( system_t * system, int nCurves, curveData_t * curve ) {
 
 }
 
-void output_params ( double temperature, double current_error, param_t * params ) {
+void output_params ( double temperature, double current_error, param_g * params ) {
 	param_t * param_ptr;
-	printf("temperature = %f, sq_error = %f\n", temperature, current_error);
-	for(param_ptr = params; param_ptr; param_ptr = param_ptr->next) {
+	printf("temperature = %f, sq_error = %f, alpha = %f\n", temperature, current_error, params->alpha);
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
     printf("\tatomtype %s q = %f eps = %f sig = %f omega = %f dr = %f\n",
     param_ptr->atomtype,
     param_ptr->charge/E2REDUCED,
@@ -134,16 +134,21 @@ void output_params ( double temperature, double current_error, param_t * params 
 }
 
 //record parameters. we will determine which ones need to be adjusted later
-param_t * record_params ( system_t * system ) {
+param_g * record_params ( system_t * system ) {
 
 	char last_atomtype[MAXLINE];
 	last_atomtype[0] = '\0'; //initialize last_atomtype
 	atom_t * atom_ptr;
 
-  param_t * rval  = calloc(1, sizeof(param_t)); //return value
-	memnullcheck(rval,sizeof(param_t), __LINE__-1, __FILE__);
-	param_t * param_ptr = rval; //used to seek through param list
+	param_g * rval = calloc(1, sizeof(param_g));
+  param_t * param_list  = calloc(1, sizeof(param_t)); //return value
+	memnullcheck(param_list,sizeof(param_t), __LINE__-1, __FILE__);
+	memnullcheck(rval,sizeof(param_g), __LINE__-1, __FILE__);
+	param_t * param_ptr = param_list; //used to seek through param list
 	param_t * prev_param_ptr;
+
+	rval->alpha = system->polar_damp;
+	rval->last_alpha = system->polar_damp;
 
   for(atom_ptr = system->molecules->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 
@@ -174,17 +179,18 @@ param_t * record_params ( system_t * system ) {
 	free(param_ptr);
 
 	//count ntypes
-  for(param_ptr = rval; param_ptr; param_ptr = param_ptr->next) {
+  for(param_ptr = param_list; param_ptr; param_ptr = param_ptr->next) {
       for(atom_ptr = system->molecules->atoms; atom_ptr; atom_ptr = atom_ptr->next)
           if(!strcasecmp(param_ptr->atomtype, atom_ptr->atomtype))
               ++(param_ptr->ntypes);
   }
 
+	rval->type_params = param_list;
 	return rval;
 }
 
 // randomly perturb parameters for surface fitting
-void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftData, param_t * params ) {
+void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftData, param_g * params ) {
 
 	param_t * param_ptr; 
 
@@ -194,6 +200,7 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
   double scale_epsilon = ((system->surf_scale_epsilon_on) ? system->surf_scale_epsilon : SCALE_EPSILON );
   double scale_sigma = ((system->surf_scale_sigma_on) ? system->surf_scale_sigma : SCALE_SIGMA );
   double scale_omega = ((system->surf_scale_omega_on) ? system->surf_scale_omega : SCALE_OMEGA );
+  double scale_alpha = ((system->surf_scale_alpha_on) ? system->surf_scale_alpha : SCALE_ALPHA );
 
 	double delta_q;
 
@@ -208,7 +215,7 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
   if ( system->surf_scale_q_on ) {
     delta_q = scale_q * (0.5 - get_rand());
 		//determine how many charged sites are present
-		for (param_ptr = params; param_ptr; param_ptr = param_ptr->next ) {
+		for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next ) {
 			if(!strncasecmp(param_ptr->atomtype,"H2E",3) || !strncasecmp(param_ptr->atomtype,"H2Q",3)){
 				nchargedsites+=param_ptr->ntypes;
 				initcharge=param_ptr->charge;
@@ -217,7 +224,11 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 	}
 
   // randomly perturb the parameters
-	for(param_ptr = params; param_ptr; param_ptr = param_ptr->next) {
+	if( params->alpha > 0.0 )
+		params->alpha += scale_alpha*(0.5 - get_rand());
+	if( params->alpha < 0.0 ) params->alpha = params->last_alpha;
+
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 
 		if ( param_ptr->epsilon > 0.0 )
 			param_ptr->epsilon += scale_epsilon*(0.5 - get_rand());
@@ -321,11 +332,13 @@ void get_curves ( system_t * system, int nCurves, curveData_t * curve, double r_
 	return;
 }
 
-void revert_parameters ( system_t * system, param_t * params ) {
+void revert_parameters ( system_t * system, param_g * params ) {
+
+	params->alpha = params->last_alpha;
 
 	param_t * param_ptr;
 
-	for(param_ptr = params; param_ptr; param_ptr = param_ptr->next) {
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 
 		param_ptr->charge  = param_ptr->last_charge;
 		param_ptr->epsilon = param_ptr->last_epsilon;
@@ -355,10 +368,12 @@ void new_global_min ( system_t * system, int nCurves, int nPoints, curveData_t *
 }
 
 // when accepting a move, store parameters as the "last good values"
-void apply_new_parameters ( param_t * params ) {
+void apply_new_parameters ( param_g * params ) {
 	param_t * param_ptr;
 
-	for(param_ptr = params; param_ptr; param_ptr = param_ptr->next) {
+	params->last_alpha = params->alpha;
+
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 			param_ptr->last_charge  = param_ptr->charge;
 			param_ptr->last_epsilon = param_ptr->epsilon;
 			param_ptr->last_sigma   = param_ptr->sigma;
@@ -370,7 +385,7 @@ void apply_new_parameters ( param_t * params ) {
 
 // free all mem used in surface_fit
 void free_all_mem 
-( int nCurves, curveData_t * curve, param_t * params, qshiftData_t * qshiftData, double * r_input ) {
+( int nCurves, curveData_t * curve, param_g * params, qshiftData_t * qshiftData, double * r_input ) {
 
 	int i;
 	param_t * param_ptr, * next;
@@ -385,7 +400,7 @@ void free_all_mem
   }
 
   // Free the param linked list
-  param_ptr = params;
+  param_ptr = params->type_params;
   while( param_ptr ) {
       next = param_ptr->next;
       free(param_ptr);
@@ -395,6 +410,7 @@ void free_all_mem
   free(qshiftData);
   free(r_input);
   free(curve);
+  free(params);
 
 	return;
 }

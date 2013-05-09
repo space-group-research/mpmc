@@ -48,12 +48,6 @@ void ensemble_surf_fit_options ( system_t * system ) {
 		die(-1);
 	}
 
-	if( nCurves < 2 ) {
-		error( "INPUT: There were less than two fit_input files specified in the main input file.\n" );
-		error( "       A minimum of two fit_input files are required for surface-fit calculations.\n" );
-		die(-1);
-	}
-
 	return;
 }
 

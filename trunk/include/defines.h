@@ -114,6 +114,7 @@ enum {
 #define SCALE_OMEGA 0.001
 #define SCALE_R		0.001
 #define SCALE_ALPHA 0.1
+#define SCALE_POL 0.1
 
 // weight = exp (WEIGHT_CONSTANT * (max_energy - current_energy)/(max_energy))
 #define WEIGHT_CONSTANT 0.5 

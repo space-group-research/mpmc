@@ -250,8 +250,8 @@ typedef struct _checkpoint {
 typedef struct _param_type {
 	char atomtype[MAXLINE];
 	int ntypes, axis;
-	double charge, epsilon, sigma, omega, dr;
-	double last_charge, last_epsilon, last_sigma, last_dr, last_omega;
+	double charge, epsilon, sigma, omega, dr, pol;
+	double last_charge, last_epsilon, last_sigma, last_dr, last_omega, last_pol;
 	struct _param_type *next;
 } param_t;
 
@@ -320,10 +320,10 @@ typedef struct _system {
 	uint32_t preset_seeds[4];
 
 	//surface fitting options
-	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on;
+	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on, surf_scale_pol_on;
 	int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on;
 	fileNode_t fit_input_list;
-	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha;
+	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha, surf_scale_pol;
 	double surf_quadrupole, surf_weight_constant;
 	double fit_start_temp, fit_max_energy, fit_schedule;
 

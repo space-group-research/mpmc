@@ -120,13 +120,14 @@ void output_params ( double temperature, double current_error, param_g * params 
 	param_t * param_ptr;
 	printf("temperature = %f, sq_error = %f, alpha = %f\n", temperature, current_error, params->alpha);
 	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
-    printf("\tatomtype %s q = %f eps = %f sig = %f omega = %f dr = %f\n",
+    printf("\tatomtype %s q = %f eps = %f sig = %f omega = %f dr = %f pol = %f\n",
     param_ptr->atomtype,
     param_ptr->charge/E2REDUCED,
     param_ptr->epsilon,
     param_ptr->sigma,
     param_ptr->omega,
-    param_ptr->dr);
+    param_ptr->dr,
+	param_ptr->pol);
   }
   fflush(stdout);
 
@@ -160,11 +161,13 @@ param_g * record_params ( system_t * system ) {
           param_ptr->epsilon = atom_ptr->epsilon;
           param_ptr->sigma   = atom_ptr->sigma;
           param_ptr->omega   = atom_ptr->omega;
+          param_ptr->pol     = atom_ptr->polarizability;
 
           param_ptr->last_charge  = param_ptr->charge;
           param_ptr->last_epsilon = param_ptr->epsilon;
           param_ptr->last_sigma   = param_ptr->sigma;
           param_ptr->last_omega   = param_ptr->omega;
+          param_ptr->last_pol     = param_ptr->pol;
 
           param_ptr->next = calloc(1, sizeof(param_t));
 					memnullcheck(param_ptr->next,sizeof(param_t), __LINE__-1, __FILE__);
@@ -201,6 +204,7 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
   double scale_sigma = ((system->surf_scale_sigma_on) ? system->surf_scale_sigma : SCALE_SIGMA );
   double scale_omega = ((system->surf_scale_omega_on) ? system->surf_scale_omega : SCALE_OMEGA );
   double scale_alpha = ((system->surf_scale_alpha_on) ? system->surf_scale_alpha : SCALE_ALPHA );
+  double scale_pol = ((system->surf_scale_pol_on) ? system->surf_scale_pol : SCALE_POL );
 
 	double delta_q;
 
@@ -224,9 +228,11 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 	}
 
   // randomly perturb the parameters
-	if( params->alpha > 0.0 )
-		params->alpha += scale_alpha*(0.5 - get_rand());
-	if( params->alpha < 0.0 ) params->alpha = params->last_alpha;
+	if ( system->surf_scale_alpha_on ) {
+		if( params->alpha > 0.0 )
+			params->alpha += scale_alpha*(0.5 - get_rand());
+		if( params->alpha < 0.0 ) params->alpha = params->last_alpha;
+	}
 
 	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 
@@ -241,6 +247,13 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 			param_ptr->dr = scale_r*(0.5 - get_rand());
 			else
 			param_ptr->dr = 0;
+
+		if ( system->surf_scale_pol_on )
+		{
+			if( param_ptr->pol > 0.0 )
+				param_ptr->pol += scale_pol*(0.5 - get_rand());
+			if( param_ptr->pol < 0.0 ) param_ptr->pol = param_ptr->last_pol;
+		}
 
 		//if polarvdw is on, also adjust omega
 		if  ( system->polarvdw ) {
@@ -344,6 +357,7 @@ void revert_parameters ( system_t * system, param_g * params ) {
 		param_ptr->epsilon = param_ptr->last_epsilon;
 		param_ptr->sigma   = param_ptr->last_sigma;
 		param_ptr->omega   = param_ptr->last_omega;
+		param_ptr->pol   = param_ptr->last_pol;
 
 		// the dr parameter cannot be reassigned, but rather has to be "undone"
 		param_ptr->dr      = -param_ptr->dr;
@@ -378,6 +392,7 @@ void apply_new_parameters ( param_g * params ) {
 			param_ptr->last_epsilon = param_ptr->epsilon;
 			param_ptr->last_sigma   = param_ptr->sigma;
 			param_ptr->last_omega = param_ptr->omega;
+			param_ptr->last_pol = param_ptr->pol;
 	}
 
 	return;

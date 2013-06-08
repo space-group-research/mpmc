@@ -326,9 +326,10 @@ void quantum_system_rotational_energies(system_t *system) {
 		if(!(molecule_ptr->frozen || molecule_ptr->adiabatic)) {
 
 			for(i = 0; i < system->quantum_rotation_level_max; i++) {
-				printf("DEBUG_QROT: molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f / B) ", 
+				printf("DEBUG_QROT: molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f meV or %.6f / B) ", 
 					molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i], 
 					molecule_ptr->quantum_rotational_energies[i]*KB/(100.0*H*C), 
+					8.61733238e-2*(molecule_ptr->quantum_rotational_energies[i] - molecule_ptr->quantum_rotational_energies[0]),
 					molecule_ptr->quantum_rotational_energies[i]/system->quantum_rotation_B);
 
 				if(molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_SYMMETRIC)

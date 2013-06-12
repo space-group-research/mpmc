@@ -7,6 +7,7 @@ University of South Florida
 */
 
 #include <mc.h>
+#define OneOverSqrtPi 0.56418958354
 
 //called from energy/polar.c
 /* calculate the field with periodic boundaries */
@@ -96,7 +97,9 @@ void thole_field_wolf(system_t *system) {
 	//used for polar_wolf_alpha (aka polar_wolf_damp)
 	double a = system->polar_wolf_alpha;
 	double err, erR; //complementary error functions
-	erR=erfc(a*R);
+		erR=erfc(a*R);
+	double cutoffterm = (erR*rR*rR + 2.0*a*OneOverSqrtPi*exp(-a*a*R*R)*rR);
+	double bigmess;
 
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
@@ -109,17 +112,19 @@ void thole_field_wolf(system_t *system) {
 				rr = 1./r;
 
 				if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
+					//we will need this shit if wolf alpha != 0 
+					if ( a != 0 ) {
+						err=erfc(a*r);
+						bigmess=(err*rr*rr+2.0*a*OneOverSqrtPi*exp(-a*a*r*r)*rr);
+					}
 					for ( p=0; p<3; p++ ) { 
 						//see JCP 124 (234104)
 						if ( a == 0 ) {
 							atom_ptr->ef_static[p] += (pair_ptr->atom->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
 							pair_ptr->atom->ef_static[p] -= (atom_ptr->charge)*(rr*rr-rR*rR)*pair_ptr->dimg[p]*rr;
 						} else {
-							err=erfc(a*r);
-							atom_ptr->ef_static[p] += pair_ptr->atom->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
-								(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
-							pair_ptr->atom->ef_static[p] -= atom_ptr->charge*((err*rr*rr+2.0*a/sqrt(M_PI)*exp(-a*a*r*r)*rr) -
-								(erR*rR*rR + 2.0*a/sqrt(M_PI)*exp(-a*a*R*R)*rR))*pair_ptr->dimg[p]*rr;
+							atom_ptr->ef_static[p] += pair_ptr->atom->charge*(bigmess-cutoffterm)*pair_ptr->dimg[p]*rr;
+							pair_ptr->atom->ef_static[p] -= atom_ptr->charge*(bigmess-cutoffterm)*pair_ptr->dimg[p]*rr;
 						}
 						
 					}

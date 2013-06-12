@@ -4,6 +4,7 @@
 
 #include <mc.h>
 #define OneOverSqrtPi 0.5641895835477562869480794515607725858440506293289988
+#define SqrtPi 1.77245385091
 
 void zero_out ( molecule_t * m ) {
 	molecule_t * mptr;
@@ -313,7 +314,7 @@ void induced_corr_term ( system_t * system ) {
 		for ( aptr = mptr->atoms; aptr; aptr=aptr->next )
 			for ( p=0; p<3; p++ ) 
 
-				aptr->ef_induced[p] += -4.0*M_PI/(3.0*system->pbc->volume) * totalmu[p] + 4.0*a*a*a/(3.0*sqrt(M_PI))*aptr->mu[p];
+				aptr->ef_induced[p] += -4.0*M_PI/(3.0*system->pbc->volume) * totalmu[p] + 4.0*a*a*a/(3.0*SqrtPi)*aptr->mu[p];
 
 	return;
 }

@@ -374,11 +374,13 @@ typedef struct _system {
 	int polarization, polarvdw, polarizability_tensor;
 	int iter_success; //flag set when iterative solver fails to converge (when polar_precision is used)
 	int polar_iterative, polar_ewald, polar_ewald_full, polar_zodid, polar_self, polar_palmo, polar_rrms;
-	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf, polar_wolf_full;
+	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf, polar_wolf_full, polar_wolf_alpha_lookup;
 	double polar_wolf_alpha, polar_gamma, polar_damp, field_damp, polar_precision;
 	int damp_type;
 	double **A_matrix, **B_matrix, C_matrix[3][3];	/* A matrix, B matrix and polarizability tensor */
 	vdw_t * vdw_eiso_info; //keeps track of molecule vdw self energies
+	double * polar_wolf_alpha_table, polar_wolf_alpha_lookup_cutoff;
+	int polar_wolf_alpha_table_max; //stores the total size of the array
 
 	// energy-corrections
 	int feynman_hibbs, feynman_kleinert, feynman_hibbs_order;

@@ -234,6 +234,10 @@ void cleanup(system_t *system) {
 #endif /* QM_ROTATION */
 	if(system->polarization && !system->cuda) free_matrices(system);
 
+	if(system->polar_wolf_alpha_lookup)
+		if ( system->polar_wolf_alpha_table )
+			free(system->polar_wolf_alpha_table);
+
 	//need to rebuild atom and pair arrays so we can free everything
 	rebuild_arrays(system);
 

@@ -265,6 +265,14 @@ void polarization_options (system_t * system) {
 			output("INPUT: Polar wolf activated. Thole field calculated using wolf method.\n");
 		if ( system->polar_wolf_full ) 
 			output("INPUT: Full polar wolf treatment activated.\n");
+		if ( system->polar_wolf_alpha_lookup ) {
+			if ( system->polar_wolf_alpha_lookup_cutoff <= 0 ) {
+				sprintf(linebuf,"INPUT: invalid polar_wolf_alpha_lookup_cutoff\n");
+				die(-1);
+			}
+			sprintf(linebuf,"INPUT: Polar wolf alpha will be performed via lookup table with cutoff %lf Ang.\n", system->polar_wolf_alpha_lookup_cutoff);
+			output(linebuf);
+		}	
 		if ( (system->polar_wolf_alpha >= 0 ) && ( system->polar_wolf_alpha <= 1 ) ) {
 			sprintf(linebuf,"INPUT: Polar wolf damping set to %lf. (0 is default)\n", system->polar_wolf_alpha);
 			output(linebuf);

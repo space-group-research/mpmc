@@ -175,6 +175,8 @@ void thole_field_nopbc(system_t *);
 void thole_field_real(system_t *);
 void thole_field_recip(system_t *);
 void thole_field_self(system_t *);
+double * polar_wolf_alpha_lookup_init (system_t *);
+double polar_wolf_alpha_getval(system_t *, double);
 int thole_iterative(system_t *);
 void invert_matrix(int, double **, double **);
 int countNatoms(system_t *);

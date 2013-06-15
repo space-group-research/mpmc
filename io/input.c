@@ -294,10 +294,19 @@ int do_command (system_t * system, char ** token ) {
 			system->polar_wolf = 0;
 		else return 1;
 	}
+	else if (!strcasecmp(token[0], "polar_wolf_alpha_lookup")) {
+		if (!strcasecmp(token[1], "on"))
+			system->polar_wolf_alpha_lookup = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->polar_wolf_alpha_lookup = 0;
+		else return 1;
+	}
 	else if(!strcasecmp(token[0], "polar_wolf_damp")) 
 		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
 	else if(!strcasecmp(token[0], "polar_wolf_alpha"))  //same as polar_wolf_damp
 		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha)) ) return 1; }
+	else if(!strcasecmp(token[0], "polar_wolf_alpha_lookup_cutoff"))  //store shit in lookup table
+		{ if ( safe_atof(token[1],&(system->polar_wolf_alpha_lookup_cutoff)) ) return 1; }
 
 	// replay options
 	else if (!strcasecmp(token[0], "calc_pressure")) {
@@ -916,6 +925,7 @@ void setdefaults(system_t * system) {
 	system->ewald_alpha = EWALD_ALPHA;
 	system->ewald_kmax = EWALD_KMAX;
 	system->polar_ewald_alpha = EWALD_ALPHA;
+	system->polar_wolf_alpha_lookup_cutoff = 30.0; //angstroms
 
 	/* default polarization parameters */
 	system->polar_gamma = 1.0;

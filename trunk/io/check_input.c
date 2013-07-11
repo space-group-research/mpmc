@@ -368,8 +368,6 @@ void polarization_options (system_t * system) {
 			output("INPUT: Polarizability tensor calculation activated\n");
 	}
 
-	if(system->polar_self) output("INPUT: Polarization self-induction is active\n");
-
 	if(system->polarvdw) {
 		output("INPUT: polarvdw (coupled-dipole van der Waals) activated\n");
 		if(system->feynman_hibbs) {

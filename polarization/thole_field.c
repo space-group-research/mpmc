@@ -52,30 +52,20 @@ void thole_field_nopbc(system_t *system) {
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 			for(pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
 
-				if(!pair_ptr->frozen) {
+				if(pair_ptr->frozen) continue;
+				if (molecule_ptr == pair_ptr->molecule) continue; //don't let molecules polarize themselves
+				
+				r = pair_ptr->rimg;
 
-					r = pair_ptr->rimg;
+				//inclusive near the cutoff
+				if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
 
-					//inclusive near the cutoff
-					if((r - SMALL_dR < system->pbc->cutoff) && (r != 0.)) {
+					for(p = 0; p < 3; p++) {
+						atom_ptr->ef_static[p] += pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
+						pair_ptr->atom->ef_static[p] -= atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
+					}
 
-						if(pair_ptr->es_excluded) {
-							if(system->polar_self) { //self-induction
-								for(p = 0; p < 3; p++) {
-									atom_ptr->ef_static_self[p] += pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
-									pair_ptr->atom->ef_static_self[p] -= atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
-								}
-							}
-						} else {
-							for(p = 0; p < 3; p++) {
-								atom_ptr->ef_static[p] += pair_ptr->atom->charge*pair_ptr->dimg[p]/(r*r*r);
-								pair_ptr->atom->ef_static[p] -= atom_ptr->charge*pair_ptr->dimg[p]/(r*r*r);
-							}
-						}
-
-					} /* cutoff */
-
-				} /* frozen */
+				} /* cutoff */
 
 			} /* pair */
 		} /* atom */

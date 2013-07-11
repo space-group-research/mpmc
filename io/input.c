@@ -638,13 +638,6 @@ int do_command (system_t * system, char ** token ) {
 			system->damp_type = DAMPING_EXPONENTIAL;
 		else return 1;
 	}
-	else if(!strcasecmp(token[0], "polar_self")) {
-		if(!strcasecmp(token[1],"on"))
-			system->polar_self = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->polar_self = 0;
-		else return 1;
-	}
 	else if(!strcasecmp(token[0], "polar_rrms")) {
 		if(!strcasecmp(token[1],"on"))
 			system->polar_rrms = 1;

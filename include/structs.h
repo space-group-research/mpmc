@@ -20,6 +20,7 @@ typedef struct _pair {
 	double r, rimg, dimg[3];  //separation and separation with nearest image
 	double d_prev[3]; //last known position
 	double rd_energy, es_real_energy, es_self_intra_energy;
+	double sigrep;
 	struct _atom * atom; 
 	struct _molecule * molecule;
 	struct _pair * next;
@@ -372,6 +373,7 @@ typedef struct _system {
 	int ewald_kmax;
 	//thole options
 	int polarization, polarvdw, polarizability_tensor;
+	int cdvdw_exp_repulsion, cdvdw_sig_repulsion;
 	int iter_success; //flag set when iterative solver fails to converge (when polar_precision is used)
 	int polar_iterative, polar_ewald, polar_ewald_full, polar_zodid, polar_palmo, polar_rrms;
 	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf, polar_wolf_full, polar_wolf_alpha_lookup;

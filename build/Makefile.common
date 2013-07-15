@@ -18,7 +18,7 @@ MT=$(TOP)/mersenne
 
 TARGET=mpmc
 
-ENERGY_OBJ = bessel.o bond.o coulombic.o coulombic_gwp.o dreiding.o energy.o lj.o pairs.o pbc.o polar.o sg.o vdw.o
+ENERGY_OBJ = bessel.o bond.o coulombic.o coulombic_gwp.o dreiding.o energy.o exp_repulsion.o lj.o pairs.o pbc.o polar.o sg.o vdw.o
 IO_OBJ = average.o check_input.o dxwrite.o input.o mpi.o output.o read_pqr.o simulation_box.o
 MAIN_OBJ = cleanup.o main.o memnullcheck.o usefulmath.o
 MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.o checkpoint.o replay.o single_point.o quaternion.o

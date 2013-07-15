@@ -102,6 +102,8 @@ double energy(system_t *system) {
 		rd_energy = sg(system);
 	else if(system->dreiding)
 		rd_energy = dreiding(system);
+	else if(system->cdvdw_exp_repulsion)
+		rd_energy = exp_repulsion(system);
 	else if(!system->gwp)
 		rd_energy = lj(system);
 	system->observables->rd_energy = rd_energy;
@@ -225,6 +227,8 @@ double energy_no_observables(system_t *system) {
 		rd_energy = dreiding(system);
 	else if(system->rd_anharmonic)
 		rd_energy = anharmonic(system);
+	else if(system->cdvdw_exp_repulsion)
+		rd_energy = exp_repulsion(system);
 	else if(!system->gwp)
 		rd_energy = lj(system);
 

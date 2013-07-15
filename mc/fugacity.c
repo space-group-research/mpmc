@@ -267,7 +267,7 @@ double ch4_fugacity_PR(double temperature, double pressure) {
 
   double Z, A, B, aa, bb, TcCH4, PcCH4, Tr;
   double alpha, alpha2, wCH4, R, Q, X, j, k, l;
-  double theta, X2, Q3;
+  double theta, Q3;
   double uu, U, V, root1, root2, root3, answer, stuff1, stuff2, stuff3;
   double f1, f2, f3, f4, fugacity, lnfoverp;
   double pi=acos(-1.0);
@@ -295,7 +295,6 @@ double ch4_fugacity_PR(double temperature, double pressure) {
      Q=(j*j-3.0*k)/9.0;
      X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
      Q3=Q*Q*Q;
-     X2=X*X;
 
      /* Need to check X^2 < Q^3 */
      if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */
@@ -459,7 +458,7 @@ double n2_fugacity_PR(double temperature, double pressure) {
 
   double Z, A, B, aa, bb, TcN2, PcN2, Tr;
   double alpha, alpha2, wN2, R, Q, X, j, k, l;
-  double theta, X2, Q3;
+  double theta, Q3;
   double uu, U, V, root1, root2, root3, answer, stuff1, stuff2, stuff3;
   double f1, f2, f3, f4, fugacity, lnfoverp;
   double pi=acos(-1.0);
@@ -487,7 +486,6 @@ double n2_fugacity_PR(double temperature, double pressure) {
      Q=(j*j-3.0*k)/9.0;
      X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
      Q3=Q*Q*Q;
-     X2=X*X;
 
      /* Need to check X^2 < Q^3 */
      if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */
@@ -561,7 +559,7 @@ double co2_fugacity(double temperature, double pressure) {
 
   double Z, A, B, aa, bb, Tc, Pc, Tr;
   double alpha,alpha2, w, R, Q, X, j,k,l;
-  double theta, X2, Q3;
+  double theta,  Q3;
   double uu,U,V,root1,root2,root3, answer, stuff1, stuff2, stuff3;
   double f1, f2, f3, f4, fugacity, lnfoverp;
   double pi=acos(-1.0);
@@ -589,7 +587,6 @@ double co2_fugacity(double temperature, double pressure) {
      Q=(j*j-3.0*k)/9.0;
      X=(2.0*j*j*j -9.0*j*k+27.0*l)/54.0;
      Q3=Q*Q*Q;
-     X2=X*X;
      
      /* Need to check X^2 < Q^3 */
      if((X*X)<(Q*Q*Q)){    /* THREE REAL ROOTS  */

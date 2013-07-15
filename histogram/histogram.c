@@ -1,4 +1,6 @@
 #include <mc.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* to use this routine, compile with -g defined.
  * call this routine at any point in the execution

@@ -108,7 +108,7 @@ void thole_field_wolf(system_t *system) {
 					rr = 1./r;
 
 					//we will need this shit if wolf alpha != 0 
-					if ( a != 0 & system->polar_wolf_alpha_lookup )
+					if ( (a != 0) & system->polar_wolf_alpha_lookup )
 						bigmess=polar_wolf_alpha_getval(system,r);
 					else if ( a != 0 ) //no lookup  
 						bigmess=(erfc(a*r)*rr*rr+2.0*a*OneOverSqrtPi*exp(-a*a*r*r)*rr);

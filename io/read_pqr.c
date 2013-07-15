@@ -202,7 +202,19 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 			current_epsilon       = atof(token_epsilon);
 			current_sigma         = atof(token_sigma);
 			current_omega         = atof(token_omega);
-			current_gwp_alpha     = atof(token_gwp_alpha);;
+			current_gwp_alpha     = atof(token_gwp_alpha);
+			if ( system->cdvdw_sig_repulsion ) {
+				if ( current_epsilon != 1.0 ) {
+					error("warning: setting epsilon to 1.0 (due to sig_repulsion)\n");
+					current_epsilon = 1.0;
+				}
+			}
+			else if ( system->polarvdw && !system->cdvdw_exp_repulsion ) {
+				if ( current_sigma != 1.0 ) {
+					error("warning: setting sigma to 1.0 (due to polarvdw)\n");
+					current_sigma = 1.0;
+				}
+			}
 			// Functionality of site_neighbor disabled in favor of omega/gwp_alpha parameters
 			// Current behavior is to default to atom 0, typically the center of mass for
 			// the molecule.
@@ -260,21 +272,6 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 			atom_ptr->polarizability = current_alpha;
 			atom_ptr->epsilon = current_epsilon;
 			atom_ptr->sigma = current_sigma;
-
-			//if polarvdw is on, we want sigma = 1 or sigma = 0
-			//it's an unneeded parameter, complicates the mixing rules and can break LRC
-			if ( system->polarvdw ){
-				if ( current_epsilon == 0 && current_sigma != 0 ) { //otherwise we break LRC
-					sprintf(linebuf, "INPUT: site %d has epsilon == 0, but sigma != 0.\n", atom_ptr->id);
-					error(linebuf);
-					return(NULL);
-				}
-				if ( current_epsilon != 0 && current_sigma != 1 ) { //keeps mixing rules simple
-					sprintf(linebuf,"INPUT: site has epsilon != 0, but sigma != 1.\n");
-					error(linebuf);
-					return(NULL);
-				}	
-			}
 			atom_ptr->omega = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
 			if(current_gwp_alpha != 0.)
@@ -456,6 +453,20 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			current_sigma         = atof(token_sigma);
 			current_omega         = atof(token_omega);
 			current_gwp_alpha     = atof(token_gwp_alpha);
+
+			if ( system->cdvdw_sig_repulsion ) {
+				if ( current_epsilon != 1.0 ) {
+					error("warning: setting epsilon to 1.0 (due to sig_repulsion)\n");
+					current_epsilon = 1.0;
+				}
+			}
+			else if ( system->polarvdw ) {
+				if ( current_sigma != 1.0 ) {
+					error("warning: setting sigma to 1.0 (due to polarvdw)\n");
+					current_sigma = 1.0;
+				}
+			}
+
 			// Functionality of site_neighbor disabled in favor of omega/gwp_alpha parameters
 			// Current behavior is to default to atom 0, typically the center of mass for
 			// the molecule.
@@ -512,20 +523,6 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			atom_ptr->polarizability = current_alpha;
 			atom_ptr->epsilon   = current_epsilon;
 			atom_ptr->sigma     = current_sigma;
-			//if polarvdw is on, we want sigma = 1 or sigma = 0
-			//it's an unneeded parameter, complicates the mixing rules and can break LRC
-			if ( system->polarvdw ){
-				if ( current_epsilon == 0 && current_sigma != 0 ) { //otherwise we break LRC
-					sprintf(linebuf, "INPUT: site %d has epsilon == 0, but sigma != 0.\n", atom_ptr->id);
-					error(linebuf);
-					return(NULL);
-				}
-				if ( current_epsilon != 0 && current_sigma != 1 ) { //keeps mixing rules simple
-					sprintf(linebuf,"INPUT: site has epsilon != 0, but sigma != 1.\n");
-					error(linebuf);
-					return(NULL);
-				}	
-			}
 			atom_ptr->omega     = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
 			if(current_gwp_alpha != 0.)

@@ -40,12 +40,12 @@ void thole_amatrix(system_t *system) {
 	pair_t *pair_ptr;
 	double damp1, damp2, wdamp1, wdamp2, v, s;
 	double r, r2, ir3, ir5, ir;
-	double rcut, rcut2, rcut3, rcut4, rcut5;
+	double rcut, rcut2, rcut3;
 	rcut = system->pbc->cutoff;
-	rcut2 = rcut*rcut; rcut3 = rcut2*rcut; rcut4 = rcut3*rcut; rcut5 = rcut4*rcut;
-	double l, l2, l3, l4;
+	rcut2 = rcut*rcut; rcut3 = rcut2*rcut;
+	double l, l2, l3;
 	l = system->polar_damp;
-	l2 = l*l; l3 = l2*l; l4 = l3*l;
+	l2 = l*l; l3 = l2*l;
 	double explr; //exp(-l*r)
 	double explrcut = exp(-l*rcut);
 

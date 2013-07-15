@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -23,8 +22,13 @@ double lj_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_p
 	reduced_mass = AMU2KG*molecule_ptr->mass*pair_ptr->molecule->mass /
 		(molecule_ptr->mass+pair_ptr->molecule->mass);
 
-	dE = -24.0*pair_ptr->epsilon*(2.0*term12 - term6) * ir;
-	d2E = 24.0*pair_ptr->epsilon*(26.0*term12 - 7.0*term6) * ir2;
+	if ( system->cdvdw_sig_repulsion ) {
+		dE = -6.0*pair_ptr->sigrep*(2.0*term12 - term6) * ir;
+		d2E = 6.0*pair_ptr->sigrep*(26.0*term12 - 7.0*term6) * ir2;
+	} else {
+		dE = -24.0*pair_ptr->epsilon*(2.0*term12 - term6) * ir;
+		d2E = 24.0*pair_ptr->epsilon*(26.0*term12 - 7.0*term6) * ir2;
+	}
 
 	//2nd order correction
 	corr = M2A2 *
@@ -33,8 +37,13 @@ double lj_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_p
 
 	if(order >= 4) {
 
-		d3E = -1344.0*pair_ptr->epsilon*(6.0*term12 - term6) * ir3;
-		d4E = 12096.0*pair_ptr->epsilon*(10.0*term12 - term6) * ir4;
+		if ( system->cdvdw_sig_repulsion ) {
+			d3E = -336.0*pair_ptr->sigrep*(6.0*term12 - term6) * ir3;
+			d4E = 3024.0*pair_ptr->sigrep*(10.0*term12 - term6) * ir4;
+		} else { 
+			d3E = -1344.0*pair_ptr->epsilon*(6.0*term12 - term6) * ir3;
+			d4E = 12096.0*pair_ptr->epsilon*(10.0*term12 - term6) * ir4;
+		}
 	
 		//4th order corection
 		corr += M2A4 *
@@ -48,7 +57,6 @@ double lj_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_p
 double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr, double cutoff ) {
 
 	double sig_cut, sig3, sig_cut3, sig_cut9;
-	double corr;
 
 	/* include the long-range correction */  /* I'm  not sure that I'm handling spectre pairs correctly */
 	/* we can't use rd_excluded flag, since that disqualifies inter-molecular, but that DOES contribute to LRC */
@@ -66,19 +74,19 @@ double lj_lrc_corr( system_t * system, atom_t * atom_ptr,  pair_t * pair_ptr, do
 		sig_cut3 = sig_cut*sig_cut*sig_cut;
 		sig_cut9 = sig_cut3*sig_cut3*sig_cut3;
 
-		if ( system->polarvdw ) //only repulsion term, if polarvdw is on
-			corr = (16.0/9.0)*M_PI*pair_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
+		if ( system->cdvdw_sig_repulsion )
+			return (4.0/9.0)*M_PI*pair_ptr->sigrep*sig3*sig_cut9/system->pbc->volume;
+		else if ( system->polarvdw ) //only repulsion term, if polarvdw is on
+			return (16.0/9.0)*M_PI*pair_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
 		else //if polarvdw is off, do the usual thing
-			corr = ((16.0/3.0)*M_PI*pair_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
+			return ((16.0/3.0)*M_PI*pair_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
 	}
-	else corr = pair_ptr->lrc; //use stored value
+	else return pair_ptr->lrc; //use stored value
 
-	return corr;
 }
 
 double lj_lrc_self ( system_t * system, atom_t * atom_ptr, double cutoff ) {
 	double sig_cut, sig3, sig_cut3, sig_cut9;
-	double corr = 0;
 
 	if ( ((atom_ptr->sigma != 0)  && (atom_ptr->epsilon != 0)) && //non-zero parameters
 		 !(atom_ptr->frozen) && //not frozen
@@ -90,13 +98,15 @@ double lj_lrc_self ( system_t * system, atom_t * atom_ptr, double cutoff ) {
 		sig_cut3 = sig_cut*sig_cut*sig_cut;
 		sig_cut9 = sig_cut3*sig_cut3*sig_cut3;
 
-		if ( system->polarvdw ) //only repulsion term, if polarvdw is on
-			corr = (16.0/9.0)*M_PI*atom_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
+		if ( system->cdvdw_sig_repulsion ) 
+			return (1.0/3.0)*M_PI*HBAR/KB*au2invseconds*atom_ptr->omega*atom_ptr->polarizability*atom_ptr->polarizability/sig3*sig_cut9/system->pbc->volume;
+		else if ( system->polarvdw ) //only repulsion term, if polarvdw is on
+			return (16.0/9.0)*M_PI*atom_ptr->epsilon*sig3*sig_cut9/system->pbc->volume;
 		else //if polarvdw is off, do the usual thing
-			corr = ((16.0/3.0)*M_PI*atom_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
+			return ((16.0/3.0)*M_PI*atom_ptr->epsilon*sig3)*((1.0/3.0)*sig_cut9 - sig_cut3)/system->pbc->volume;
 	}
 
-	return corr;
+	return 0;
 }
 
 
@@ -106,7 +116,7 @@ double rd_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
 	double sigma_over_r6, sigma_over_r12, sigma_over_r, r;
 	int i[3], p, q;
 	double a[3];
-	double prefactor;
+	curr_pot = 0;
 
 	if ( aptr->sigma == 0 && aptr->epsilon == 0 ) return 0; //skip if no LJ interaction
 
@@ -142,7 +152,11 @@ double rd_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
 		if(aptr->sigma < 0.0) term12 = 0; //attractive only
 			else term12 = sigma_over_r12;
 
-		curr_pot = 4.0*aptr->epsilon*(term12 - term6);
+		if ( system->cdvdw_sig_repulsion )
+			curr_pot = 0.75*HBAR/KB*au2invseconds*aptr->omega*aptr->polarizability*aptr->polarizability /
+				pow(aptr->sigma,6)*term12; //C6*sig^6/r^12
+			else if ( system->polarvdw ) curr_pot = 4.0*aptr->epsilon*term12;
+			else curr_pot = 4.0*aptr->epsilon*(term12 - term6);
 	}
 	return curr_pot;
 }
@@ -154,7 +168,7 @@ double lj(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12, r;
+	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12, r, sigma6;
 	double potential, potential_classical, cutoff;
 	int i[3], p, q;
 	double a[3];
@@ -225,7 +239,9 @@ double lj(system_t *system) {
 							if(pair_ptr->attractive_only) term12 = 0;
 								else term12 = sigma_over_r12;
 
-							potential_classical = 4.0*pair_ptr->epsilon*(term12 - term6);
+							if ( system->cdvdw_sig_repulsion )
+								potential_classical = pair_ptr->sigrep*term12; //C6*sig^6/r^12
+								else potential_classical = 4.0*pair_ptr->epsilon*(term12 - term6);
 						}
 
 						pair_ptr->rd_energy += potential_classical;
@@ -238,8 +254,7 @@ double lj(system_t *system) {
 							if(pair_ptr->rimg < system->cavity_autoreject_scale*fabs(pair_ptr->sigma))
 								pair_ptr->rd_energy = MAXVALUE;
 
-					}
-
+					} //count contributions
 
 				} /* if recalculate */
 
@@ -294,7 +309,9 @@ double lj_nopbc(system_t * system) {
 					if(pair_ptr->attractive_only) term12 = 0;
 						else term12 = sigma_over_r6*sigma_over_r6;
 
-					potential += 4.0*pair_ptr->epsilon*(term12 - term6);
+					if ( system->cdvdw_sig_repulsion )
+						potential += pair_ptr->sigrep*term12; //C6*sig^6/r^12
+						else potential += 4.0*pair_ptr->epsilon*(term12 - term6);
 
 				}
 

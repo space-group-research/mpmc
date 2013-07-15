@@ -218,7 +218,7 @@ int mc(system_t *system) {
 
 	int i;
 	int j, msgsize;
-	double initial_energy, final_energy, delta_energy, current_energy;
+	double initial_energy, final_energy, current_energy;
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
 	sorbateInfo_t * sinfo_mpi;
@@ -319,7 +319,6 @@ int mc(system_t *system) {
 
 		/* calculate the energy change */
 		final_energy = energy(system);
-		delta_energy = final_energy - initial_energy;
 
 #ifdef QM_ROTATION
 		/* solve for the rotational energy levels */

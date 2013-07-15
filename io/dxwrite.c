@@ -59,15 +59,12 @@ int calculate_bonds(system_t *system)
 	molecule_t *mol;
 	atom_t *atom;
 	atom_t *atom2;
-	double *pos1, *pos2;
 
 	for(mol=system->molecules; mol; mol=mol->next){
 		if(mol->frozen){
 			for(atom=mol->atoms; atom; atom=atom->next, inner_index++){
-				pos1=atom->pos;
 				if(atom->next){
 					for(atom2=atom->next, outer_index=inner_index+1; atom2; atom2=atom2->next, outer_index++){
-						pos2=atom2->pos;
 						if(bondlength_check(atom,atom2,system)){
 							bonds++;
 						}
@@ -87,15 +84,12 @@ void print_frozen_bonds(FILE *fp_frozen, system_t *system)
 	molecule_t *mol;
 	atom_t *atom;
 	atom_t *atom2;
-	double *pos1, *pos2;
 
 	for(mol=system->molecules; mol; mol=mol->next){
 		if(mol->frozen){
 			for(atom=mol->atoms; atom; atom=atom->next, inner_index++){
-				pos1=atom->pos;
 				if(atom->next){
 					for(atom2=atom->next, outer_index=inner_index+1; atom2; atom2=atom2->next, outer_index++){
-						pos2=atom2->pos;
 						if(bondlength_check(atom,atom2,system)){
 							bonds++;
 							fprintf(fp_frozen,"%d %d\n",inner_index,outer_index);

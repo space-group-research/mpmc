@@ -8,6 +8,8 @@ double energy_no_observables(system_t *);
 double cavity_absolute_check (system_t *);
 double lj(system_t *);
 double lj_nopbc(system_t *);
+double exp_repulsion(system_t *);
+double exp_repulsion_nopbc(system_t *);
 double dreiding(system_t *);
 double dreiding_nopbc(molecule_t *);
 void countN(system_t *);
@@ -49,6 +51,10 @@ double besselK(double, double);
 void rebuild_arrays (system_t *); //builds atom and molecule arrays for the current config
 
 /* io */
+void write_observables_csv(FILE *, system_t *, observables_t *, double);
+void update_sorbate_info(system_t *);
+int safe_atof(char *, double *);
+int check_system(system_t *);
 system_t *read_config(char *);
 int setup_simulation_box(FILE *, system_t *);
 int check_config(system_t *);
@@ -110,8 +116,11 @@ void cleanup(system_t *);
 void terminate_handler(int, system_t *);
 int memnullcheck ( void *, int, int, char * );
 int filecheck ( void *, char *, int);
+void free_all_molecules(system_t *, molecule_t *);
+void free_all_pairs(system_t *);
 
 /* mc */
+void temper_system ( system_t *, double );
 void enumerate_particles(system_t *);
 void boltzmann_factor(system_t *, double, double);
 void register_accept(system_t *);
@@ -147,6 +156,8 @@ void volume_change(system_t *);
 void revert_volume_change(system_t *);
 
 /*surface_fit*/
+void free_all_mem ( int, curveData_t *, param_g *, qshiftData_t *, double *);
+void apply_new_parameters ( param_g *);
 void surface_curve( system_t *, double, double, double, double * );
 double error_calc ( system_t *, int, int, curveData_t *, double );
 int alloc_curves ( int, int, curveData_t * );
@@ -183,6 +194,7 @@ int countNatoms(system_t *);
 void thole_resize_matrices(system_t *);
 void print_matrix(int N, double **matrix);
 void ewald_estatic ( system_t * );
+void ewald_full (system_t *);
 void calc_dipole_rrms (system_t *);
 int are_we_done_yet( system_t *, int );
 
@@ -193,6 +205,7 @@ float polar_cuda(system_t *);
 
 /* linear algebra - VDW */
 double vdw(system_t *);
+void free_vdw_eiso(vdw_t *);
 
 /* pimc */
 int pimc(system_t *);

@@ -53,7 +53,7 @@ int memnullcheck ( void * ptr, int size, int line, char *file ) {
 
 		die(-1);
 	}
-
+	return 0;
 }
 
 int filecheck ( void * ptr, char * filename, int mode ) {
@@ -78,5 +78,6 @@ int filecheck ( void * ptr, char * filename, int mode ) {
 		die(-1);
 	}
 
+	return 0;
 }
 

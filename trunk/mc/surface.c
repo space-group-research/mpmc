@@ -32,13 +32,15 @@ double surface_energy(system_t *system, int energy_type) {
 
 		case ENERGY_TOTAL:
 			if(!(system->sg || system->rd_only)) coulombic_energy = coulombic_nopbc(system->molecules);
-			if(system->sg) {
+			if(system->sg)
 				rd_energy = sg_nopbc(system->molecules);
-			} else if(system->dreiding) {
+			else if(system->cdvdw_exp_repulsion)
+				rd_energy = exp_repulsion(system);
+			else if(system->dreiding)
 				rd_energy = dreiding_nopbc(system->molecules);
-			} else {
+			else 
 				rd_energy = lj_nopbc(system);
-			}
+			
 			if(system->polarization) polar_energy = polar(system);
 			if(system->polarvdw) vdw_energy = vdw(system);
 			break;

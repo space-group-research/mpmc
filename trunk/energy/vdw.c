@@ -149,7 +149,7 @@ double * lapack_diag ( struct mtx * M, int jobtype ) {
 	char linebuf[MAXLINE];
 
 	//eigenvectors or no?
-	if ( jobtype = 2 ) job='V';
+	if ( jobtype == 2 ) job='V';
 	else job = 'N';
 
 	if ( M->dim == 0 ) return NULL;
@@ -353,7 +353,7 @@ double lr_vdw_corr ( system_t * system ) {
 					w2=pair_ptr->atom->omega;
 					if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
 					// 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-					cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2;
+					cC=1.5 * cHBAR * w1*w2/(w1+w2) * au2invsec * a1 * a2;
 
 					// long-range correction
 					corr += -4.0/3.0 * M_PI * cC * pow(system->pbc->cutoff,-3) / system->pbc->volume;
@@ -495,7 +495,7 @@ double fh_vdw_corr_2be ( system_t * system ) {
         w2=pair_ptr->atom->omega;
         if ( w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0 ) continue; //no vdw energy
         // 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
-        cC=0.75 * cHBAR * sqrt(w1*w2) * au2invsec * a1 * a2;
+        cC=1.5 * cHBAR * w1*w2/(w1+w2) * au2invsec * a1 * a2;
         // reduced mass
         rm=AMU2KG*(molecule_ptr->mass)*(pair_ptr->molecule->mass)/
           ((molecule_ptr->mass)+(pair_ptr->molecule->mass));

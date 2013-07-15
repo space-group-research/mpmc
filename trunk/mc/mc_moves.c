@@ -517,18 +517,8 @@ void spectre_displace(system_t *system, molecule_t *molecule, double trans_scale
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int p;
-	double target[3], trans[3];
+	double  trans[3];
 	double delta_charge;
-
-	/* get the coordinates of the target particle */
-	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-
-		if(molecule_ptr->target) {
-			for(p = 0; p < 3; p++)
-				target[p] = molecule_ptr->atoms->pos[p];
-		}
-
-	}
 
 	/* randomly translate */
 	for(p = 0; p < 3; p++)

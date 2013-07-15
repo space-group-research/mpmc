@@ -242,7 +242,7 @@ int do_command (system_t * system, char ** token ) {
 			system->polarization = 0; 
 		else return 1;
 	}    
-	else if(!strcasecmp(token[0], "polarvdw")) {
+	else if(!strcasecmp(token[0], "polarvdw") || !strcasecmp(token[0], "cdvdw")) {
 		if(!strcasecmp(token[1], "on")) {
 			system->polarvdw = 1; 
 			system->polarization=1;
@@ -265,6 +265,21 @@ int do_command (system_t * system, char ** token ) {
 			system->polarvdw = 0;
 		else return 1;
 	}
+	else if (!strcasecmp(token[0], "cdvdw_exp_repulsion")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cdvdw_exp_repulsion = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cdvdw_exp_repulsion = 0;
+		else return 1;
+	}
+	else if (!strcasecmp(token[0], "cdvdw_sig_repulsion")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cdvdw_sig_repulsion = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cdvdw_sig_repulsion = 0;
+		else return 1;
+	}
+	
 	else if (!strcasecmp(token[0], "polar_ewald_full")) {
 		if (!strcasecmp(token[1], "on"))
 			system->polar_ewald_full = 1;
@@ -1420,7 +1435,7 @@ curveData_t *readFitInputFiles( system_t *system, int nCurves )
 
         if( !curve_input[ currentCurve ].r || !curve_input[ currentCurve ].input )
         {
-            sprintf( errMsg, "INPUT: Exhausted memory transferring curve data to array, for curve: %s\n\0", filename );
+            sprintf( errMsg, "INPUT: Exhausted memory transferring curve data to array, for curve: %s\n", filename );
             error( errMsg );
             // Free list memory
             nodePtr = pointList.next;

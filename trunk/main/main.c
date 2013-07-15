@@ -182,4 +182,5 @@ int main(int argc, char **argv) {
 	output("MAIN: simulation exiting successfully\n\n");
 	die(0);
 
+	return 0;
 }

@@ -147,7 +147,7 @@ void feynman_hibbs_options ( system_t * system ) {
 		}
 	}
 	//if using polarvdw and FH, cavity_autoreject_absolute must be on (otherwise shit blows up)
-	if ( (system->polarvdw) && !(system->cavity_autoreject_absolute) ) {
+	if ( (system->polarvdw) && !(system->cavity_autoreject_absolute) && (system->ensemble != ENSEMBLE_REPLAY) ) {
 		error("INPUT: cavity_autoreject_absolute must be used with polarvdw + Feynman Hibbs.\n");
 		die(-1);
 	}
@@ -375,6 +375,20 @@ void polarization_options (system_t * system) {
 				output("INPUT: two-body-expansion feynman-hibbs for polarvdw is active\n");
 			else
 				output("INPUT: polarvdw feynman-hibbs will be calculated using MPFD\n");
+		}
+		if(system->cdvdw_exp_repulsion)
+			output("INPUT: exponential repulsion activated\n");
+		if(system->cdvdw_sig_repulsion)
+			output("INPUT: C_6*sig^6 repulsion activated\n");
+	}
+	if (!system->polarvdw) {
+		if(system->cdvdw_exp_repulsion) {
+			error("INPUT: exponential repulsion is used in conjunction with polarvdw\n");
+			die(-1);
+		}
+		if(system->cdvdw_sig_repulsion) {
+			error("INPUT: sig repulsion is used in conjunction with polarvdw\n");
+			die(-1);
 		}
 	}
 

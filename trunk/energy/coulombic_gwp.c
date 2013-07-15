@@ -177,9 +177,7 @@ double coulombic_background_gwp(system_t *system) {
 
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
-	double alpha, potential;
-
-	alpha = system->ewald_alpha;
+	double potential;
 
 	potential = 0;
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next)

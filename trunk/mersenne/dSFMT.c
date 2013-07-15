@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include "dSFMT-params.h"
 #include "dSFMT-common.h"
+#include <mc.h>
 
 #if defined(__cplusplus)
 extern "C" {

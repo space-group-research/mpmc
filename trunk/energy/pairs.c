@@ -87,21 +87,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 
 	/* get the mixed LJ parameters */
 	if(!system->sg) {
-
-		if (!system->waldmanhagler) {
-			/* Lorentz-Berthelot mixing rules */
-			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
-				pair_ptr->attractive_only = 1;
-				pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));
-			} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
-				pair_ptr->sigma = 0;
-				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
-			} else {
-				pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
-				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
-			}
-		} else { /* use waldman-hagler mixing rules */
-
+		if (system->waldmanhagler && !system->cdvdw_sig_repulsion) { //wh mixing rule
 			si3 = atom_i->sigma;
 			si3 *= si3*si3;
 			si6 = si3*si3;
@@ -120,7 +106,35 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
 			}
-		} /*else waldmanhagler*/
+		}
+		else if ( system->cdvdw_sig_repulsion ) { //sigma repulsion for coupled-dipole vdw
+			si3 = atom_i->sigma;
+			si3 *= si3*si3;
+			si6 = si3*si3;
+			sj3 = atom_j->sigma;
+			sj3 *= sj3*sj3;
+			sj6 = sj3*sj3;
+			pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
+			pair_ptr->sigrep = 1.5*HBAR/KB*au2invseconds*atom_i->omega*atom_j->omega *
+				atom_i->polarizability*atom_j->polarizability/(atom_i->omega + atom_j->omega)/pow(pair_ptr->sigma,6);
+		}
+		else if ( system->polarvdw && system->cdvdw_exp_repulsion ) {// mix for buckingham repulsion
+			// sigma == C, epsilon == rho
+			// U = C exp(-R/(2*rho))
+			pair_ptr->sigma = pow(pow(atom_i->sigma,atom_i->epsilon) * pow(atom_j->sigma,atom_j->epsilon),1.0/((atom_i->epsilon+atom_j->epsilon)));
+			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);
+		} else { /* lorentz-berthelot */
+			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
+				pair_ptr->attractive_only = 1;
+				pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));
+			} else if ((atom_i->sigma == 0 || atom_j->sigma == 0 )) {
+				pair_ptr->sigma = 0;
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
+			} else {
+				pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
+				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon);
+			}
+		}
 	} /*!sg*/
 
 	/* ensure that no ES calc for S-S pairs, and ONLY ES for S-everythingelse */
@@ -508,7 +522,7 @@ void unupdate_pairs_remove(system_t *system) {
 void setup_pairs(system_t * system) {
 
 	int i, j, n;
-	molecule_t *molecule_ptr, **molecule_array;
+	molecule_t *molecule_ptr;
 	atom_t *atom_ptr, **atom_array;
 	pair_t *pair_ptr, *prev_pair_ptr;
 
@@ -516,7 +530,6 @@ void setup_pairs(system_t * system) {
 
 	//build atom and molecule arrays
 	rebuild_arrays(system);
-	molecule_array = system->molecule_array;
 	atom_array = system->atom_array;
 	n=system->natoms;
 

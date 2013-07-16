@@ -38,7 +38,9 @@ double surface_energy(system_t *system, int energy_type) {
 				rd_energy = exp_repulsion(system);
 			else if(system->dreiding)
 				rd_energy = dreiding_nopbc(system->molecules);
-			else 
+			else if(system->lj_buffered_14_7)
+				rd_energy = lj_buffered_14_7_nopbc(system);
+			else
 				rd_energy = lj_nopbc(system);
 			
 			if(system->polarization) polar_energy = polar(system);
@@ -52,6 +54,8 @@ double surface_energy(system_t *system, int energy_type) {
 				rd_energy = sg_nopbc(system->molecules);
 			} else if(system->dreiding) {
 				rd_energy = dreiding_nopbc(system->molecules);
+			} else if(system->lj_buffered_14_7) {
+				rd_energy = lj_buffered_14_7_nopbc(system);
 			} else {
 				rd_energy = lj_nopbc(system);
 			}

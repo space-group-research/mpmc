@@ -12,6 +12,8 @@ double exp_repulsion(system_t *);
 double exp_repulsion_nopbc(system_t *);
 double dreiding(system_t *);
 double dreiding_nopbc(molecule_t *);
+double lj_buffered_14_7(system_t *);
+double lj_buffered_14_7_nopbc(system_t *);
 void countN(system_t *);
 void update_com(molecule_t *);
 void flag_all_pairs(system_t *);

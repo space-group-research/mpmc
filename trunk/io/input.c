@@ -534,12 +534,28 @@ int do_command (system_t * system, char ** token ) {
 			system->waldmanhagler = 0;
 		else return 1;
 	}
+
+	else if(!strcasecmp(token[0], "halgren_mixing")) {
+		if(!strcasecmp(token[1],"on"))
+			system->halgren_mixing = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->halgren_mixing = 0;
+		else return 1;
+	}
 	
 	else if(!strcasecmp(token[0], "dreiding")) {
 		if(!strcasecmp(token[1],"on"))
 			system->dreiding = 1;
 		else if (!strcasecmp(token[1],"off")) 
 			system->dreiding = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "lj_buffered_14_7")) {
+		if(!strcasecmp(token[1],"on"))
+			system->lj_buffered_14_7 = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->lj_buffered_14_7 = 0;
 		else return 1;
 	}
 	

@@ -106,6 +106,23 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
 			}
+		} else if (system->halgren_mixing) { //halgren mixing rules
+			if (atom_i->sigma>0.0&&atom_j->sigma>0.0)
+			{
+				pair_ptr->sigma = (atom_i->sigma*atom_i->sigma*atom_i->sigma+atom_j->sigma*atom_j->sigma*atom_j->sigma)/(atom_i->sigma*atom_i->sigma+atom_j->sigma*atom_j->sigma);
+			}
+			else
+			{
+				pair_ptr->sigma = 0;
+			}
+			if (atom_i->epsilon>0.0&&atom_j->epsilon>0.0)
+			{
+				pair_ptr->epsilon = 4*atom_i->epsilon*atom_j->epsilon/pow(sqrt(atom_i->epsilon)+sqrt(atom_j->epsilon),2);
+			}
+			else
+			{
+				pair_ptr->epsilon = 0;
+			}
 		}
 		else if ( system->cdvdw_sig_repulsion ) { //sigma repulsion for coupled-dipole vdw
 			si3 = atom_i->sigma;

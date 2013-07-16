@@ -896,6 +896,8 @@ int check_system(system_t *system) {
 	if(system->sg) output("INPUT: Molecular potential is Silvera-Goldman\n");
 	if(system->waldmanhagler) output("INPUT: Using Waldman-Hagler mixing rules for LJ-interactions.\n");
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");
+	if(system->lj_buffered_14_7) output("INPUT: Molecular potential is lj_buffered_14_7\n");
+	if(system->lj_buffered_14_7) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");
 	if(system->feynman_hibbs) feynman_hibbs_options(system);
 	if(system->simulated_annealing) simulated_annealing_options(system);
 	if(system->calc_hist) hist_options(system);

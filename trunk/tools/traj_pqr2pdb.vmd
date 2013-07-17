@@ -1,0 +1,58 @@
+# Christian Cioce
+# Space Research Group
+# Department of Chemistry
+# University of South Florida
+#
+# July 2013
+#
+# Intended to be used as PART II of the PQR trajectory generator tool, this VMD script 
+# will restore the %.6f precision to the atomic coordinates lost as a result of PART I.
+# The loss in precision is intentional, as only PDB files can be played as a trajectory
+# from within VMD...as far as I know.
+#
+# NOTE: To test its validity, I compared the restored coordinates via this script to 
+# those of the original PQR file, both from within VMD as:
+#         vmd > [atomselect top all] get {x y z}
+# and the output was identical!
+
+set sel [atomselect top all]
+set numframes [molinfo top get numframes]
+
+# Loop over all frames...
+for {set i 0} {$i < $numframes} {incr i} {
+
+    animate goto $i
+    puts "Restoring precision to Frame $i"
+
+    set natoms [llength [$sel get x]]
+    set xlist {}
+    set ylist {}
+    set zlist {}
+
+    # Loop over all atoms within a specific frame...
+    for {set j 0} {$j < $natoms} {incr j} {
+
+	# X
+	set x1 [format "%.3f" [lindex [$sel get x] $j]]
+	set x2 [format "%.0f" [lindex [$sel get occupancy] $j]]
+	lappend xlist $x1$x2
+
+	# Y
+	set y1 [format "%.3f" [lindex [$sel get y] $j]]
+	set y2 [string range [lindex [$sel get beta] $j] 0 2]
+	lappend ylist $y1$y2
+
+	# Z
+	set z1 [format "%.3f" [lindex [$sel get z] $j]]
+	set z2 [string range [lindex [$sel get beta] $j] 3 5]
+	lappend zlist $z1$z2
+
+    }
+
+    $sel set x $xlist
+    $sel set y $ylist
+    $sel set z $zlist
+    #puts [$sel get {x y z}]
+
+}
+

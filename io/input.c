@@ -265,6 +265,13 @@ int do_command (system_t * system, char ** token ) {
 			system->polarvdw = 0;
 		else return 1;
 	}
+	else if (!strcasecmp(token[0], "cdvdw_9th_repulsion")) {
+		if (!strcasecmp(token[1], "on"))
+			system->cdvdw_9th_repulsion = 1;
+		else if (!strcasecmp(token[1], "off"))
+			system->cdvdw_9th_repulsion = 0;
+		else return 1;
+	}
 	else if (!strcasecmp(token[0], "cdvdw_exp_repulsion")) {
 		if (!strcasecmp(token[1], "on"))
 			system->cdvdw_exp_repulsion = 1;

@@ -59,6 +59,7 @@ void flag_all_pairs(system_t *system) {
 void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molecule_j, atom_t *atom_i, atom_t *atom_j, pair_t *pair_ptr) {
 
 	double si3, sj3, si6, sj6;
+	double repul1, repul2, repulmix;
 
 	/* recalculate exclusions */
 	if((molecule_i == molecule_j) && !system->gwp) { /* if both on same molecule, exclude all interactions */
@@ -106,7 +107,8 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 				pair_ptr->epsilon = sqrt(atom_i->epsilon*atom_j->epsilon) * 2.0*si3*sj3/(si6+sj6);
 			}
-		} else if (system->halgren_mixing) { //halgren mixing rules
+		} 
+		else if (system->halgren_mixing) { //halgren mixing rules
 			if (atom_i->sigma>0.0&&atom_j->sigma>0.0)
 			{
 				pair_ptr->sigma = (atom_i->sigma*atom_i->sigma*atom_i->sigma+atom_j->sigma*atom_j->sigma*atom_j->sigma)/(atom_i->sigma*atom_i->sigma+atom_j->sigma*atom_j->sigma);
@@ -124,13 +126,18 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 				pair_ptr->epsilon = 0;
 			}
 		}
+		else if ( system->cdvdw_9th_repulsion ) { //9th power mixing for repulsion
+			si3 = atom_i->sigma; si3 *= si3*si3; si6 = si3*si3;
+			sj3 = atom_j->sigma; sj3 *= sj3*sj3; sj6 = sj3*sj3;
+			repul1= 4.0*si6*si6*atom_i->epsilon;
+			repul2= 4.0*sj6*sj6*atom_j->epsilon;
+			repulmix= pow(0.5*(pow(repul1,1./9.) + pow(repul2,1./9.)),9);
+			pair_ptr->sigma = 1.0;
+			pair_ptr->epsilon = repulmix/4.0;
+		}
 		else if ( system->cdvdw_sig_repulsion ) { //sigma repulsion for coupled-dipole vdw
-			si3 = atom_i->sigma;
-			si3 *= si3*si3;
-			si6 = si3*si3;
-			sj3 = atom_j->sigma;
-			sj3 *= sj3*sj3;
-			sj6 = sj3*sj3;
+			si3 = atom_i->sigma; si3 *= si3*si3; si6 = si3*si3;
+			sj3 = atom_j->sigma; sj3 *= sj3*sj3; sj6 = sj3*sj3;
 			pair_ptr->sigma = pow(0.5*(si6+sj6),1./6.);
 			pair_ptr->sigrep = 1.5*HBAR/KB*au2invseconds*atom_i->omega*atom_j->omega *
 				atom_i->polarizability*atom_j->polarizability/(atom_i->omega + atom_j->omega)/pow(pair_ptr->sigma,6);
@@ -140,7 +147,8 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			// U = C exp(-R/(2*rho))
 			pair_ptr->sigma = pow(pow(atom_i->sigma,atom_i->epsilon) * pow(atom_j->sigma,atom_j->epsilon),1.0/((atom_i->epsilon+atom_j->epsilon)));
 			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);
-		} else { /* lorentz-berthelot */
+		} 
+		else { /* lorentz-berthelot */
 			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
 				pair_ptr->attractive_only = 1;
 				pair_ptr->sigma = 0.5*(fabs(atom_i->sigma) + fabs(atom_j->sigma));

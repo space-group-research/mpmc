@@ -380,6 +380,12 @@ void polarization_options (system_t * system) {
 			output("INPUT: exponential repulsion activated\n");
 		if(system->cdvdw_sig_repulsion)
 			output("INPUT: C_6*sig^6 repulsion activated\n");
+		if(system->cdvdw_9th_repulsion)
+			output("INPUT: 9th power repulsion mixing activated\n");
+		if ( system->cdvdw_exp_repulsion + system->cdvdw_sig_repulsion + system->cdvdw_9th_repulsion + system->waldmanhagler + system->halgren_mixing  > 1 ) {
+			error("INPUT: more than one mixing rules specified");
+			die(1);
+		}
 	}
 	if (!system->polarvdw) {
 		if(system->cdvdw_exp_repulsion) {
@@ -895,6 +901,11 @@ int check_system(system_t *system) {
 	}
 	if(system->sg) output("INPUT: Molecular potential is Silvera-Goldman\n");
 	if(system->waldmanhagler) output("INPUT: Using Waldman-Hagler mixing rules for LJ-interactions.\n");
+	if(system->halgren_mixing) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");
+	if( system->waldmanhagler && system->halgren_mixing) { 
+		error("INPUT: more than one mixing rule specified\n");
+		return(-1);
+	}
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");
 	if(system->lj_buffered_14_7) output("INPUT: Molecular potential is lj_buffered_14_7\n");
 	if(system->lj_buffered_14_7) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");

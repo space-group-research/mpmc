@@ -373,7 +373,7 @@ typedef struct _system {
 	int ewald_kmax;
 	//thole options
 	int polarization, polarvdw, polarizability_tensor;
-	int cdvdw_exp_repulsion, cdvdw_sig_repulsion;
+	int cdvdw_exp_repulsion, cdvdw_sig_repulsion, cdvdw_9th_repulsion;
 	int iter_success; //flag set when iterative solver fails to converge (when polar_precision is used)
 	int polar_iterative, polar_ewald, polar_ewald_full, polar_zodid, polar_palmo, polar_rrms;
 	int polar_gs, polar_gs_ranked, polar_sor, polar_esor, polar_max_iter, polar_wolf, polar_wolf_full, polar_wolf_alpha_lookup;

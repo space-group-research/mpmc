@@ -10,5 +10,5 @@
 [input_output Input / Output]<br>
 [potential_options Potential options]<br>
 [annealing Annealing/Tempering]<br>
-[miscellaneous Misc]
+[miscellaneous Misc]<br>
 [external_tools External Tools]

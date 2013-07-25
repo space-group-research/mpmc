@@ -6,6 +6,7 @@
 || {{{ cavity_autoreject [on|off] }}} || Automatically rejects any monte carlo move which would put two LJ sites (not on the same molecule) that are too close. *(default = off)* ||
 || {{{ cavity_autoreject_absolute }}} || Like cavity_autoreject, but applies to non-LJ sites as well. *(default = off)* ||
 || {{{ cavity_autoreject_scale [double] }}} || Sets threshold (distance) for triggering cavity_autoreject. ||
+|| {{{ cdvdw [on|off|evects|comp] }}} || Turns on coupled-dipole method van der Waals. Evects prints eigenvectors and comp prints a comparision to a two-body decomposition. Also activated polarization. *(default = off)* ||
 || {{{ dreiding [on|off] }}} || Dreiding potential. *(default = off)* ||
 || {{{ feynman_hibbs [on|off] }}} || Turns on Feynman-Hibbs quantum corrections. *(default = off)* ||
 || {{{ feynman_hibbs_order [2|4] }}} || Specifies highest-order Feynman-Hibbs terms to use. ||
@@ -29,7 +30,14 @@
 || {{{ cavity_autoreject }}} || see "POTENTIAL OPTIONS" ||
 || {{{ rd_lrc [on|off] }}} || Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. *(default = ON)* ||
 || {{{ rd_only }}} || Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) ||
+
+== Mixing Rules ==
 || {{{ waldmanhagler [on|off] }}} || Use Waldman-Hagler mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). *(default = off)* ||
+|| {{{ halgren_mixing [on|off] }}} || Use Halgren mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). *(default = off)* ||
+|| {{{ cdvdw_9th_repulsion [on|off] }}} || Use 9th power mixing rule (rep_ij = (rep_ii^(1/9)+rep_jj^(1/9))^9) for repulsion interactions (used in conjunction with coupled-dipole vdW) *(default = off)* ||
+|| {{{ cdvdw_sig_rep [on|off] }}} || Calculate repulsion using 3/2*hbar*w_i*w_j*alpha_i*alpha_j/(w_i+w_j)*sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) *(default = off)* ||
+|| {{{ cdvdw_exp_rep [on|off] }}} || Uses exponential repulsion sigma*exp(-r/2epsilon), using some mixing rule I found somewhere -- see source code. *(default = off)* ||
+
 
 == Ewald/Wolf Summation Options ==
 
@@ -37,17 +45,19 @@
 || {{{ wolf [on|off] }}} || Calculates permanent electrostatics via wolf method. *(default = off)* ||
 || {{{ polar_ewald_full [on|off] }}} || Full ewald polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
 || {{{ polar_ewald [on|off] }}} || Partial ewald polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
+|| {{{ polar_ewald_alpha [int] }}} || Sets alpha/damping parameter for polar ewald calculation. ||
 || {{{ polar_wolf_full [on|off] }}} || Full wolf polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
 || {{{ polar_wolf [on|off] }}} || Partial wolf polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). *(default = off)* ||
-|| {{{ polar_wolf_damp [on|off] }}} || Sets alpha/damping parameter for polar wolf calculation. *(default = off)* ||
-|| {{{ polar_wolf_alpha [on|off] }}} || Same as polar_wolf_damp. *(default = off)* ||
+|| {{{ polar_wolf_damp [int] }}} || Sets alpha/damping parameter for polar wolf calculation. ||
+|| {{{ polar_wolf_alpha [int] }}} || Same as polar_wolf_damp. ||
+|| {{{ polar_wolf_lookup [on|off] }}} || Uses a lookup table for calculation of erfc's in wolf calculation. Grid size probably needs to be tweaked in the source. *(default = off)* ||
 || {{{ ewald_alpha [double] }}} || Overrides default alpha for ewald and wolf permanent electrostatics and polar_ewald. *(default = 3.5/pbc_cutoff)* ||
 || {{{ ewald_kmax [int] }}} || Sets the maximum k-vectors to include in ewald sums for permanent electrostatics and polarization. *(default = 7)* ||
 
 == Polarization Options ==
 
 || *Command* || *Description* ||
-|| {{{ polar_damp_type [off|linear|exponential] }}} || Type of polarization damping. ||
+|| {{{ polar_damp_type [off|none|linear|exponential] }}} || Type of polarization damping. off=none ||
 || {{{ polar_damp [double] }}} || Polarization exponential damping constant (to avoid polarization catastrophe). ||
 || {{{ polar_ewald [on|off] }}} || Calculate induced polarization via ewald summation. *(default = off)* ||
 || {{{ polarizability_tensor [on|off] }}} || Prints the molecular polarizability tensor for the system. *(default = off)* ||

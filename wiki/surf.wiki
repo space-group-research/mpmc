@@ -12,4 +12,5 @@
 || {{{ surf_preserve_rotation [double] [double] [double] [double] [double] [double] }}} || Perform rotation to molecules prior to calculating surface curves. (a1, b1, c1, a2, b2, c2)                       ||
 || {{{ surf_print_level [1-6] }}}                                                       || Verbosity of surface trajectory data written to surf_output. *(default = 3)*                                      ||
 || {{{ surf_output }}}                                                                  || Output file for surface curves.                                                                                   ||
+|| {{{ surf_global_axis }}}                                                                  || Use quarternions for surf rotations (for aligning initial config). rotations are performed over global axes, rather than local axes, i.e.\ axes don't transform with the rotations.  ||
 

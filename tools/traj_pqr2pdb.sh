@@ -12,6 +12,6 @@ while read line; do
 	tFac=$z2
 
 	# Now print a PDB file with the last 3 digits of x-, y- and z- as column data that VMD will read in
-	printf "%s%8.3f%8.3f%8.3f   %d%d%d\n" "$(echo "$line" | awk '{print $0}' | head -c 30)" "$x1" "$y1" "$z1" "$x2" "$y2" "$z2"
+	printf "%s%8.3f%8.3f%8.3f   %s%s%s\n" "$(echo "$line" | awk '{print $0}' | head -c 30)" "$x1" "$y1" "$z1" "$x2" "$y2" "$z2"
 done < $1
 

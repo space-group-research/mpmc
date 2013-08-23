@@ -135,3 +135,14 @@ enum {
 // Default maximum energy value (in K)
 #define MAX_ENERGY	2000.0
 
+// Defines for default virial behavior
+#define SURF_INC 0.25
+#define SURF_MIN 0.5
+#define SURF_MAX 25.0
+#define VIRIAL_DT 10
+#define VIRIAL_TMIN 10
+#define VIRIAL_TMAX 1000
+#define VIRIAL_NPTS 25
+
+// Maximum coef for each basis vector when searching for shortest vector
+#define MAX_VECT_COEF 5

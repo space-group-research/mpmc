@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -245,6 +244,10 @@ int surface(system_t *system) {
 	double pe_total_avg, pe_es_avg, pe_rd_avg, pe_polar_avg, pe_vdw_avg;
 	double alpha_origin, beta_origin, gamma_origin;
 	double alpha_move, beta_move, gamma_move;
+	double dr, x, y, z, rmin, rmax, t, tmin, tmax, dt, alpha, beta, gamma, phi, theta;
+	int angpt, eulerpt, npts;
+	double energy;
+	char linebuf[MAXLINE];
 
 	/* open surface trajectory file */
 	if(system->surf_output) {
@@ -293,6 +296,73 @@ int surface(system_t *system) {
 			}
 
 		}
+
+	} else if ( system->surf_virial ) { 
+		//calc second virial via N/(16Pi^2) \int (1-exp(-\beta U)) sin(beta) dalpha dbeta dgamma dx dy dz
+
+		//set default parameters
+		rmin = system->surf_min;
+		rmax = system->surf_max;
+		dr = system->surf_inc;
+		tmin = system->virial_tmin;
+		tmax = system->virial_tmax;
+		dt = system->virial_dt;
+		npts = system->virial_npts;
+
+		//allocate memory for virial coef accumulators (per temperature)
+		system->virial_coef = calloc((size_t)(1.0+ceil((tmax-tmin)/dt)), sizeof(double));
+
+		//move origin molecule to the origin, in case of user error/stupidity/ignorance
+		reset_molecule_position(system->molecules);
+
+		for ( r = rmin; r<rmax; r+=dr ) { //distance for pair separation
+
+			//some feedback since this might take a long time
+			sprintf(linebuf,"SURFACE: virial %.2f%% complete\n",100*(r-rmin)/(rmax-rmin));
+			output(linebuf);
+
+			for ( angpt = 0; angpt < npts; angpt++ ) { //angles for pair separation
+
+				theta = acos(2.0*(get_rand()-0.5));
+				phi = 2.0*M_PI*get_rand();
+
+				x = r * sin(theta) * cos(phi);
+				y = r * sin(theta) * sin(phi);
+				z = r * cos(theta);
+
+				//now set the euler rotation angle randomly
+				for ( eulerpt = 0; eulerpt < npts; eulerpt++ ) {
+
+					alpha = 2.0*M_PI*get_rand();
+					beta = acos(2.0*(get_rand()-0.5));
+					gamma = 2.0*M_PI*get_rand();
+
+					//perform rotation and alignment ( (x,y,z) are absolute, not relative; it overwrites any previous CoM)
+					surface_dimer_geometry_virial(system, x, y, z, alpha, beta, gamma, 0);
+
+					//calculate energy
+					energy = surface_energy(system, ENERGY_TOTAL);
+
+					//reset the molecules
+					surface_dimer_geometry_virial(system, 0.0, 0.0, 0.0, alpha, beta, gamma, 1);
+
+					//add to accumulator for each temperature
+					for ( i=0, t = tmin; t <= tmax; t += dt )
+						system->virial_coef[i++] += ( 1.0 - exp(-energy/t) ) * (r*r);
+				}
+			}
+		}
+
+		//normalization
+		for ( i=0, t = tmin; t <= tmax; t += dt )
+			// 0.5 * normalization for volume * normalization for rotations * unit conversion
+			system->virial_coef[i++] *= 0.5 * ( 4.0*M_PI*dr/npts ) * ( 1.0/npts ) * (A32CM3 * NA);
+
+		//output virial shits
+		write_virial_output(system, tmin, tmax, dt);
+
+		//free memory
+		free(system->virial_coef);
 
 	} else {	/* default is to do isotropic averaging */
 
@@ -390,61 +460,6 @@ int surface(system_t *system) {
 				fflush(stdout);
 			}
 		} /* end r */
-	}
-
-	return(0);
-}
-
-/* set the distance and angles for a particular dimer orientation */
-int surface_dimer_geometry(system_t *system, double r, double alpha_origin, double beta_origin, double gamma_origin, double alpha_move, double beta_move, double gamma_move, int reverse_flag) {
-
-	int i;
-	molecule_t *molecule_origin, *molecule_move;
-	atom_t *atom_ptr;
-
-	/* make sure that there are only two molecules */
-	molecule_origin = system->molecules;
-	molecule_move = molecule_origin->next;
-	if(!molecule_move) {
-		error("SURFACE: the input PQR has only a single molecule\n");
-		return(-1);
-	}
-	if(molecule_move->next) {
-		error("SURFACE: the input PQR must contain exactly two molecules\n");
-		return(-1);
-	}
-
-	/* relocate both molecules to the origin */
-	for(atom_ptr = molecule_origin->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-		for(i = 0; i < 3; i++)
-			atom_ptr->pos[i] -= molecule_origin->com[i];
-	for(i = 0; i < 3; i++)
-		molecule_origin->com[i] = 0;
-
-	for(atom_ptr = molecule_move->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-		for(i = 0; i < 3; i++)
-			atom_ptr->pos[i] -= molecule_move->com[i];
-	for(i = 0; i < 3; i++)
-		molecule_move->com[i] = 0;
-
-	/* relocate the moveable molecule r distance away along the x axis */
-	molecule_move->com[0] = r;
-	molecule_move->com[1] = 0;
-	molecule_move->com[2] = 0;
-	for(atom_ptr = molecule_move->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-		for(i = 0; i < 3; i++)
-			atom_ptr->pos[i] += molecule_move->com[i];
-
-	/* apply the rotation to the second molecule */
-	if (system->surf_global_axis_on)
-	{
-		molecule_rotate_quaternion(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
-		molecule_rotate_quaternion(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
-	}
-	else
-	{
-		molecule_rotate_euler(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
-		molecule_rotate_euler(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
 	}
 
 	return(0);

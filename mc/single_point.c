@@ -3,8 +3,9 @@
 int calculate_te (system_t *system) {
 
 	int j;
-	double final_energy, delta_energy;
 	char linebuf[MAXLINE];
+
+	energy(system);
 
 #ifdef PRINT_EFIELD
 	printf("OUT: MUARRAY %lf %lf\n", system->molecules->atoms->ef_static[0], system->molecules->atoms->mu[0]);

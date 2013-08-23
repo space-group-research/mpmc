@@ -1,6 +1,5 @@
 /* 
 
-@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -9,65 +8,29 @@ University of South Florida
 
 #include <mc.h>
 
-/* calculate the minimum cutoff radius from the basis lattice */
-/* generalized to handle skewed unit cells */
-/* there is most likely a more elegant way to find this */
+// calculate the minimum cutoff radius from the basis lattice
+// aka shortest vector problem
 double pbc_cutoff(pbc_t *pbc) {
 
-	int p, q;
-	int v1, v2;				/* any two basis vectors */
-	double v1_magnitude;			/* magnitude of the first basis */
-	double component;			/* the terms a*a + b*a */
-	double r_vector[3], r_magnitude;	/* the new vector */
-	double rmin[3];				/* the radial cutoff for each basis pair */
-	double cutoff;				/* the minimal cutoff */
+	int i, j, k, p;
+	double curr_mag;
+	double short_mag = MAXVALUE;
+	double curr_vec[3];
 
-	/* for each pair of basis vectors */
-	for(p = 0; p < 3; p++) {
+	if ( pbc->volume <= 0 ) return MAXVALUE;
 
-		/* the unique basis pairs forming the parallelogram */
-		v1 = p;
-		v2 = (p + 1) % 3;
-
-		/* calculate the first basis magnitude */
-		v1_magnitude = 0;
-		for(q = 0; q < 3; q++) {
-			v1_magnitude += pbc->basis[v1][q]*pbc->basis[v1][q];
+	for ( i=-MAX_VECT_COEF; i<=MAX_VECT_COEF; i++ ) {
+		for ( j=-MAX_VECT_COEF; j<=MAX_VECT_COEF; j++ ) {
+			for ( k=-MAX_VECT_COEF; k<=MAX_VECT_COEF; k++ ) {
+				if ( i == 0 && j == 0 && k == 0 ) continue;
+				for ( p = 0; p < 3; p++ ) 
+					curr_vec[p] = i*pbc->basis[0][p] + j*pbc->basis[1][p] + k*pbc->basis[2][p];
+				curr_mag = sqrt(dddotprod(curr_vec, curr_vec));
+				if ( curr_mag < short_mag ) short_mag = curr_mag;
+			}
 		}
-		v1_magnitude = sqrt(v1_magnitude);
-
-		/* compute vector components of aa + ba */
-		component = 0;
-		for(q = 0; q < 3; q++) {
-			component += pbc->basis[v1][q]*pbc->basis[v1][q];
-			component += pbc->basis[v2][q]*pbc->basis[v1][q];
-		}
-		component /= v1_magnitude;
-
-		/* finally, the r vector itself */
-		/* r = 1/2[a + b - (aa + ba)a] */
-		r_magnitude = 0;
-		for(q = 0; q < 3; q++) {
-			r_vector[q] = pbc->basis[v1][q] + pbc->basis[v2][q];
-			r_vector[q] -= component*pbc->basis[v1][q]/v1_magnitude;
-			r_vector[q] *= 0.5;
-			r_magnitude += r_vector[q]*r_vector[q];
-		}
-		r_magnitude = sqrt(r_magnitude);
-
-		/* store the result for this parallelogram - sort it out when done */
-		rmin[p] = r_magnitude;
-
 	}
-
-	/* sort out the smallest radial cutoff */
-	cutoff = MAXVALUE;
-	for(p = 0; p < 3; p++)
-		if(rmin[p] < cutoff) cutoff = rmin[p];
-
-
-	return(cutoff);
-
+	return(0.5*short_mag);
 }
 
 

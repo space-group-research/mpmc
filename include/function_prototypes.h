@@ -96,6 +96,7 @@ void close_files(system_t *);
 curveData_t *readFitInputFiles( system_t *, int );
 molecule_t *read_insertion_molecules(system_t *);
 void count_sorbates( system_t * );
+void write_virial_output(system_t *, double, double, double);
 
 /* main */
 void die(int);
@@ -144,6 +145,8 @@ void molecule_rotate_euler(molecule_t *, double, double, double, int);
 void molecule_rotate_quaternion(molecule_t *, double, double, double, int);
 int surface_dimer_geometry(system_t *, double, double, double, double, double, double, double, int);
 int surface_dimer_parameters(system_t *, param_g *);
+int surface_dimer_geometry_virial(system_t *, double, double, double, double, double, double, int);
+void reset_molecule_position(molecule_t *);
 void surface_curve(system_t *, double, double, double, double *);
 int surface(system_t *);
 int surface_fit(system_t *);
@@ -271,6 +274,7 @@ double co2_fugacity(double, double);
 
 
 //useful math calls
+double ddangle(double*, double*);
 double dddotprod(double*, double*);
 double didotprod(double*, int*);
 int iidotprod(int*, int*);

@@ -1,5 +1,26 @@
 #include <mc.h>
 
+void printboxdim ( pbc_t * pbc ) {
+	char buffer[MAXLINE];
+
+	sprintf(buffer,"INPUT: unit cell volume = %.3f A^3 (cutoff = %.3f A)\n", pbc->volume, pbc->cutoff);
+	output(buffer);
+
+	sprintf(buffer,"INPUT: Basis vectors { a = %8.3lf \tb = %8.3lf \tc = %8.3lf }\n", 
+		sqrt(dddotprod(pbc->basis[0], pbc->basis[0])),
+		sqrt(dddotprod(pbc->basis[1], pbc->basis[1])),
+		sqrt(dddotprod(pbc->basis[2], pbc->basis[2])));
+	output(buffer);
+
+	sprintf(buffer,"INPUT: Basis angles  { α = %8.3lf \tβ = %8.3lf \tγ = %8.3lf }\n",
+		180.0/M_PI*acos( dddotprod(pbc->basis[1],pbc->basis[2]) / sqrt( dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[2], pbc->basis[2]) ) ),
+		180.0/M_PI*acos( dddotprod(pbc->basis[2],pbc->basis[0]) / sqrt( dddotprod(pbc->basis[2], pbc->basis[2]) * dddotprod(pbc->basis[0], pbc->basis[0]) ) ),
+		180.0/M_PI*acos( dddotprod(pbc->basis[0],pbc->basis[1]) / sqrt( dddotprod(pbc->basis[0], pbc->basis[0]) * dddotprod(pbc->basis[1], pbc->basis[1]) ) ));
+	output(buffer);
+
+	return;
+}
+
 int setup_simulation_box(FILE * finput, system_t * system) {
 
 	// read in input.pqr molecules
@@ -26,6 +47,9 @@ int setup_simulation_box(FILE * finput, system_t * system) {
 			return -1;;
 		}
 	}
+	if ( system->pbc->volume > 0 )
+		printboxdim(system->pbc);
+
 
 	// read in the insertion molecules
 	if (system->insert_input) {

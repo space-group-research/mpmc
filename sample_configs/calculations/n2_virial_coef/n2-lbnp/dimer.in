@@ -1,0 +1,24 @@
+
+job_name			n2
+ensemble		surf
+surf_virial on
+
+# max and min displacements in angstroms
+surf_min		0.5
+surf_max  20.0
+surf_inc	0.2
+virial_tmin 50
+virial_tmax 1000
+virial_dt	10
+virial_npts	100
+
+!waldmanhagler on
+!polarization      on  
+!polar_damp      2.1304
+!polar_iterative   on
+!polar_damp_type   exponential
+!polar_gs_ranked on
+!polar_precision   0.000001
+
+pqr_input		./init.pdb
+

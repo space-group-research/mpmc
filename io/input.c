@@ -79,6 +79,21 @@ int do_command (system_t * system, char ** token ) {
 	}
 
 	//surf options
+	else if(!strcasecmp(token[0],"surf_virial")) {
+		if(!strcasecmp(token[1], "on" ))
+			system->surf_virial = 1;
+		else if (!strcasecmp(token[1], "off" ))
+			system->surf_virial = 0;
+		else return 1; //unrecognized argument
+	}
+	else if(!strcasecmp(token[0], "virial_dt" ))
+		{ if ( safe_atof(token[1],&(system->virial_dt)) ) return 1; }
+	else if(!strcasecmp(token[0], "virial_tmax" ))
+		{ if ( safe_atof(token[1],&(system->virial_tmax)) ) return 1; }
+	else if(!strcasecmp(token[0], "virial_tmin" ))
+		{ if ( safe_atof(token[1],&(system->virial_tmin)) ) return 1; }
+	else if(!strcasecmp(token[0], "virial_npts" ))
+		{ if ( safe_atoi(token[1],&(system->virial_npts)) ) return 1; }
 	else if(!strcasecmp(token[0],"surf_decomp")) {
 		if(!strcasecmp(token[1], "on" ))
 			system->surf_decomp = 1;
@@ -821,6 +836,13 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->frozen_output,token[1]);
 		} else return 1;
 	}
+	else if (!strcasecmp(token[0], "virial_output")) {
+		if(!system->virial_output) {
+			system->virial_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->virial_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->virial_output,token[1]);
+		} else return 1;
+	}
 	else if (!strcasecmp(token[0], "insert_input")) {
 		if(!system->insert_input) {
 			system->insert_input = calloc(MAXLINE,sizeof(char));
@@ -1116,7 +1138,7 @@ system_t *setup_system(char *input_file) {
 	flag_all_pairs(system);
 	output("INPUT: finished calculating pairwise interactions\n");
 
-	if(!(system->sg || system->rd_only)) {
+	if(!(system->sg || system->rd_only || system->pbc->volume == 0)) {
 		sprintf(linebuf, "INPUT: Ewald gaussian width = %f A\n", system->ewald_alpha);
 		output(linebuf);
 		sprintf(linebuf, "INPUT: Ewald kmax = %d\n", system->ewald_kmax);

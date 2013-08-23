@@ -3,10 +3,15 @@
 = Surf Options (different from surface fitting) =
 
 || *Command*                                                                            || *Description*                                                                                                     ||
+|| {{{ surf_virial [on|off] }}}                                                       || Perform calculation of second virial coefficient. *(default = off)*                                          ||
+|| {{{ virial_tmin [double] }}}                                              || Use with surf_virial. Minimum temperature considered. *(default = 10)* ||
+|| {{{ virial_tmax [double] }}}                                              || Use with surf_virial. Maximum temperature. *(default = 1000)* ||
+|| {{{ virial_dt [double] }}}                                              || Use with surf_virial. Temperature increment. *(default = 10)* ||
+|| {{{ virial_npts [int] }}}                                              || Use with surf_virial. Number of points to consider in virial calculation for each spherical shell. *(default = 25)* ||
 || {{{ surf_decomp [on|off] }}}                                              || Decompose the total energy into it's components (i.e. electrostatic, polarization, Lennard-Jones, CPM-vdW) *(default = off)* ||
-|| {{{ surf_min [double] }}}                                                            || Minimum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface.       ||
-|| {{{ surf_max [double] }}}                                                            || Maximum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface.       ||
-|| {{{ surf_inc [double] }}}                                                            || Increment for center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. ||
+|| {{{ surf_min [double] }}}                                                            || Minimum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. *(default = 0.25)*  ||
+|| {{{ surf_max [double] }}}                                                            || Maximum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. *(default = 25.0)*  ||
+|| {{{ surf_inc [double] }}}                                                            || Increment for center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. *(default = 0.25)* ||
 || {{{ surf_ang [double] }}}                                                            || Angular increment (in rads) for generation of the isotropic potential energy surface.                             ||
 || {{{ surf_preserve [on|off] }}}                                                       || Preserve orientation while calculating surface curves. *(default = off)*                                          ||
 || {{{ surf_preserve_rotation [double] [double] [double] [double] [double] [double] }}} || Perform rotation to molecules prior to calculating surface curves. (a1, b1, c1, a2, b2, c2)                       ||

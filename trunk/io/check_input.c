@@ -54,6 +54,10 @@ void ensemble_surf_fit_options ( system_t * system ) {
 void ensemble_surf_options ( system_t * system ) {
 	
 	char linebuf[MAXLINE];
+	if ( ! system->surf_min ) system->surf_min = SURF_MIN;
+	if ( ! system->surf_max ) system->surf_max = SURF_MAX;
+	if ( ! system->surf_inc ) system->surf_inc = SURF_INC;
+
 	if(system->surf_max < system->surf_min) {
 		error("INPUT: surf_max is greater than surf_min\n");
 		die(-1);
@@ -72,14 +76,15 @@ void ensemble_surf_options ( system_t * system ) {
 		output(linebuf);
 	}
 
-	if(!system->surf_preserve && (system->surf_ang <= 0.0)) {
-		error("INPUT: surf_ang is less than or equal to 0\n");
-		die(-1);
-	} else {
-		sprintf(linebuf, "INPUT: incremental surface angle coordinate is %.3f\n", system->surf_ang);
-		output(linebuf);
+	if(!system->surf_preserve && !system->surf_virial) {
+		if( system->surf_ang <= 0.0 ) {
+			error("INPUT: surf_ang is less than or equal to 0\n");
+			die(-1);
+		} else {
+			sprintf(linebuf, "INPUT: incremental surface angle coordinate is %.3f\n", system->surf_ang);
+			output(linebuf);
+		}
 	}
-
 	if (system->read_pqr_box_on) {
 		error("INPUT: read_pqr_box is not compatible with surf.\n");
 		die(-1);
@@ -96,6 +101,17 @@ void ensemble_surf_options ( system_t * system ) {
 		sprintf(linebuf, "INPUT: surface print level is %d\n", system->surf_print_level);
 		output(linebuf);
 	}
+
+	// set default virial parameters if neccessary
+	if ( system->surf_virial ) {
+		if ( ! system->virial_tmin ) system->virial_tmin = VIRIAL_TMIN;
+		if ( ! system->virial_tmax ) system->virial_tmax = VIRIAL_TMAX;
+		if ( ! system->virial_dt ) system->virial_dt = VIRIAL_DT;
+		if ( ! system->virial_npts) system->virial_npts = VIRIAL_NPTS;
+		sprintf(linebuf, "INPUT: virial will be performed with tmin=%.3lf tmax=%.3lf dt=%.3lf npts=%d\n",
+			system->virial_tmin, system->virial_tmax, system->virial_dt, system->virial_npts);
+		output(linebuf);
+	}	
 
 	return;
 }
@@ -273,10 +289,10 @@ void polarization_options (system_t * system) {
 			sprintf(linebuf,"INPUT: Polar wolf alpha will be performed via lookup table with cutoff %lf Ang.\n", system->polar_wolf_alpha_lookup_cutoff);
 			output(linebuf);
 		}	
-		if ( (system->polar_wolf_alpha >= 0 ) && ( system->polar_wolf_alpha <= 1 ) ) {
+		if ( (system->polar_wolf_alpha > 0 ) && ( system->polar_wolf_alpha <= 1 ) ) {
 			sprintf(linebuf,"INPUT: Polar wolf damping set to %lf. (0 is default)\n", system->polar_wolf_alpha);
 			output(linebuf);
-		} else {
+		} else if ( system->polar_wolf_alpha != 0 ) {
 			error("INPUT: 1 >= polar_wolf_alpha >= 0 is required.\n");
 			die(-1);
 		}
@@ -401,36 +417,6 @@ void polarization_options (system_t * system) {
 	return;
 }
 
-
-void write_pbc_info ( system_t * system ) {
-	char linebuf[MAXLINE];
-
-	sprintf(linebuf, "INPUT: pbc_cutoff set to %.5f A\n", system->pbc->cutoff);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: basis vector 1 = %.5f %.5f %.5f\n", 
-		system->pbc->basis[0][0], system->pbc->basis[0][1], system->pbc->basis[0][2]);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: basis vector 2 = %.5f %.5f %.5f\n", 
-		system->pbc->basis[1][0], system->pbc->basis[1][1], system->pbc->basis[1][2]);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: basis vector 3 = %.5f %.5f %.5f\n", 
-		system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: unit cell volume = %.3f A^3 (cutoff = %.3f A)\n", 
-		system->pbc->volume, system->pbc->cutoff);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: recip basis vector 1 = %.5f %.5f %.5f\n", 
-		system->pbc->reciprocal_basis[0][0], system->pbc->reciprocal_basis[0][1], system->pbc->reciprocal_basis[0][2]);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: recip basis vector 2 = %.5f %.5f %.5f\n", 
-		system->pbc->reciprocal_basis[1][0], system->pbc->reciprocal_basis[1][1], system->pbc->reciprocal_basis[1][2]);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: recip basis vector 3 = %.5f %.5f %.5f\n", 
-		system->pbc->reciprocal_basis[2][0], system->pbc->reciprocal_basis[2][1], system->pbc->reciprocal_basis[2][2]);
-	output(linebuf);
-
-	return;
-}
 
 void ensemble_te_options(system_t * system) {
 
@@ -779,7 +765,7 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_output, "off")) {	// Optionally turn off final configuration output
-		error("INPUT: **Warning: PQR final configuration file unspecified; writing to /dev/null\n");
+		error("INPUT: **Warning: PQR final configuration file disabled; writing to /dev/null\n");
 		sprintf(system->pqr_output,"/dev/null");
 	} else {
 		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
@@ -794,7 +780,7 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_restart, "off")) {	// Optionally turn off restart configuration output
-		error("INPUT: **Warning: PQR restart file unspecified; writing to /dev/null\n");
+		error("INPUT: **Warning: PQR restart file disabled; writing to /dev/null\n");
 		sprintf(system->pqr_restart,"/dev/null");
 	} else {
 		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
@@ -810,11 +796,28 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: will be writing energy output to ./%s\n", system->energy_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->energy_output, "off")) {	// Optionally turn off energy printing
-		error("INPUT: energy file unspecified; writing to /dev/null\n");
+		error("INPUT: energy file output disabled; writing to /dev/null\n");
 		sprintf(system->energy_output,"/dev/null");
 	} else {
 		sprintf(linebuf, "INPUT: will be writing energy output to ./%s\n", system->energy_output);
 		output(linebuf);
+	}
+
+	if(system->surf_virial) { //if we are doing virial
+		if (!system->virial_output) {
+			system->virial_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->virial_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->virial_output,system->job_name);
+			strcat(system->virial_output,".virial.dat");
+			sprintf(linebuf, "INPUT: will be writing virial output to ./%s\n", system->virial_output);
+			output(linebuf);
+		} else if (!strcasecmp(system->virial_output, "off")) { //optionally turn off virial printing
+			error("INPUT: virial file output disabled; writing to /dev/null\n");
+			sprintf(system->virial_output,"/dev/null");
+		} else {
+			sprintf(linebuf, "INPUT: will be writing virial output to ./%s\n", system->virial_output);
+			output(linebuf);
+		}
 	}
 
 	/* NEW: Trajectory file will default to on if not specified */
@@ -826,7 +829,7 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: will be writing trajectory to ./%s\n", system->traj_output);
 		output(linebuf);
 	} else if(!strcasecmp(system->traj_output, "off")) {	// Optionally turn off trajectory printing
-		error("INPUT: trajectory file will not be written\n");
+		error("INPUT: trajectory file output disabled; writing to /dev/null\n");
 		sprintf(system->traj_output,"/dev/null"); //won't actually write (we check to see where we're writing before actually doing it for traj.pqr)
 	} else {
 		sprintf(linebuf, "INPUT: will be writing trajectory to ./%s\n", system->traj_output);
@@ -846,7 +849,7 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: dipole field will be written to ./%s\n", system->dipole_output);
 		output(linebuf);
 	} else if( (system->polarization) && (!strcasecmp(system->dipole_output, "off")) ) {
-		error("INPUT: dipole file unspecified; writing to /dev/null\n");
+		error("INPUT: dipole file output disabled; writing to /dev/null\n");
 		sprintf(system->dipole_output,"/dev/null");
 	} else if(system->polarization) {
 		sprintf(linebuf, "INPUT: dipole field will be written to ./%s\n", system->dipole_output);
@@ -861,7 +864,7 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: field field will be written to ./%s\n", system->field_output);
 		output(linebuf);
 	} else if( (system->polarization) && (!strcasecmp(system->field_output, "off")) ) {
-		error("INPUT: field file unspecified; writing to /dev/null\n");
+		error("INPUT: field file output disabled; writing to /dev/null\n");
 		sprintf(system->field_output,"/dev/null");
 	} else if(system->polarization) {
 		sprintf(linebuf, "INPUT: field field will be written to ./%s\n", system->field_output);

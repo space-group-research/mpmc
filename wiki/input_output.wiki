@@ -17,6 +17,7 @@
 || {{{ energy_output [file] }}} || Specifies filename for writing observables log. Clobbers existing file(s). ||
 || {{{ energy_output_csv [file] }}} || Specifies filename for writing observables log in csv format. Clobbers existing file(s). ||
 || {{{ pop_histogram_output [file] }}} || Specifies filename for writing popular histogram. Clobbers existing file(s). ||
+|| {{{ virial_output [file] }}} || Specifies filename for writing virial data. Clobbers existing file(s). ||
 || {{{ dipole_output [file] }}} || Specifies filename for writing dipole data. Clobbers existing file(s). ||
 || {{{ field_output [file] }}} || Specifies filename for writing total electrostatic field for each molecule. Clobbers existing file(s). ||
 || {{{ frozen_output [file] }}} || Specifies filename for writing frozen atoms in dx format. Clobbers existing file(s). ||

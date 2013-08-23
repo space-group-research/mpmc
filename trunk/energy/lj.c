@@ -131,7 +131,7 @@ double rd_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
 		for ( p=0; p<3; p++ ) {
 			a[p] = 0;
 			for ( q=0; q<3; q++ )
-				a[p] += system->pbc->basis[q][p] * i[q];
+				a[p] += system->pbc->basis[p][q] * i[q];
 		}
 		r = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
 
@@ -208,7 +208,7 @@ double lj(system_t *system) {
 								for ( p=0; p<3; p++ ) {
 									a[p] = 0;
 									for ( q=0; q<3; q++ )
-										a[p] += system->pbc->basis[q][p] * i[q];
+										a[p] += system->pbc->basis[p][q] * i[q];
 									a[p] += atom_ptr->pos[p] - pair_ptr->atom->pos[p];
 								}
 								r = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);

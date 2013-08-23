@@ -66,7 +66,7 @@ int read_pqr_box ( FILE * fp, system_t * system ) {
 	}	else {
 		sprintf(msg,"INPUT: unable to read basis[2] from pqr file.\n");
 		error(msg);
-	}	
+	}
 
 	return 0;
 }

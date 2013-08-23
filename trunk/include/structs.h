@@ -310,6 +310,7 @@ typedef struct _surf_preserve_rotation {
 } surf_preserve_rotation;
 
 
+
 typedef struct _system {
 
 	int ensemble;
@@ -332,6 +333,10 @@ typedef struct _system {
 	int surf_preserve, surf_decomp;
 	double surf_min, surf_max, surf_inc, surf_ang;
 	surf_preserve_rotation * surf_preserve_rotation_on;
+	int surf_virial;
+	double * virial_coef;
+	double virial_tmin, virial_tmax, virial_dt;
+	int  virial_npts;
 
 	//monte carlo controls
 	int numsteps, corrtime, step;
@@ -399,7 +404,7 @@ typedef struct _system {
         int read_pqr_box_on; //read box basis from pqr
 	int long_output; // prints extended (%11.6f) coordinates
 	int surf_print_level; // sets the amount of output (1-6) that correspond to the nested loops in surface.c
-	char *dipole_output, *field_output, *histogram_output, *frozen_output;
+	char *dipole_output, *field_output, *histogram_output, *frozen_output, *virial_output;
 	char *insert_input;
 	double max_bondlength; /* threshold to bond (re:output files) */
 	// insertions from a separate linked list

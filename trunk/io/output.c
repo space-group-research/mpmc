@@ -97,6 +97,7 @@ int open_files(system_t *system) {
 		fclose(system->file_pointers.fp_frozen);
 	}
 
+
 	return(0);
 }
 
@@ -284,7 +285,8 @@ int write_molecules(system_t *system, FILE * fp) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int i, j, k;
-	int ext_output; 
+	int ext_output;
+	pbc_t * pbc = system->pbc;
 
 	/* Check if extended coordinate output is needed (CRC) */
 	// By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
@@ -296,6 +298,17 @@ int write_molecules(system_t *system, FILE * fp) {
 		ext_output = 1;
 	else
 		ext_output = 0;
+
+	/* write PBC data */ //VMD uses a weird convention which essentially reverses alpha <-> beta
+	fprintf(fp,"CRYST1");
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[0], pbc->basis[0])));
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[1], pbc->basis[1])));
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[2], pbc->basis[2])));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[2],pbc->basis[0]) / sqrt( dddotprod(pbc->basis[0], pbc->basis[0]) * dddotprod(pbc->basis[2], pbc->basis[2]) ) ));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[1],pbc->basis[2]) / sqrt( dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[2], pbc->basis[2]) ) ));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[0],pbc->basis[1]) / sqrt( dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[0], pbc->basis[0]) ) ));
+	fprintf(fp,"\n");
+	
 
 	/* write pqr */
 	for(molecule_ptr = system->molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
@@ -558,6 +571,7 @@ void write_states(system_t * system) {
 	int num_frozen_atoms, num_moveable_atoms;
 	int ext_output = 0; // By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
 	FILE * fp;
+	pbc_t * pbc = system->pbc;
 
 	//don't bother if we'd be writing to /dev/null
 	if ( ! strncmp("/dev/null",system->traj_output,9) ) return;
@@ -601,6 +615,16 @@ void write_states(system_t * system) {
 	       (system->pbc->basis[1][0] >= 200.0) || (system->pbc->basis[1][1] >= 200.0) || (system->pbc->basis[1][2] >= 200.0) || 
 	       (system->pbc->basis[2][0] >= 200.0) || (system->pbc->basis[2][1] >= 200.0) || (system->pbc->basis[2][2] >= 200.0) )
 		ext_output = 1;
+
+	/* write PBC data */
+	fprintf(fp,"CRYST1");
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[0], pbc->basis[0])));
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[1], pbc->basis[1])));
+	fprintf(fp,"%9.3f",sqrt(dddotprod(pbc->basis[2], pbc->basis[2])));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[1],pbc->basis[2]) / sqrt( dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[2], pbc->basis[2]) ) ));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[2],pbc->basis[0]) / sqrt( dddotprod(pbc->basis[0], pbc->basis[0]) * dddotprod(pbc->basis[2], pbc->basis[2]) ) ));
+	fprintf(fp,"%7.2f", 180.0/M_PI*acos( dddotprod(pbc->basis[0],pbc->basis[1]) / sqrt( dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[0], pbc->basis[0]) ) ));
+	fprintf(fp,"\n");
 
 	/* write pqr formatted states */
 	for(molecule_ptr = molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
@@ -1051,3 +1075,24 @@ int write_averages(system_t *system) {
 
 }
 
+void write_virial_output( system_t * system, double tmin, double tmax, double dt ) {
+	double t;
+	int i;
+	FILE * fvirial = fopen(system->virial_output,"w");
+	filecheck(fvirial,system->virial_output,WRITE);
+		
+
+	printf("### Start Virial Output ###\n");
+	printf("#Temperature #B_2\n");
+	fprintf(fvirial, "#Temperature #B_2\n");
+
+	for ( i=0, t=tmin; t <= tmax; t+=dt ) {
+		printf("%8.3lf %15.10lf\n", t, system->virial_coef[i]);
+		fprintf(fvirial,"%8.3lf %15.10lf\n", t, system->virial_coef[i++]);
+	}
+
+	printf("### End Virial Output ###\n");
+	fclose(fvirial);
+	
+	return;
+}

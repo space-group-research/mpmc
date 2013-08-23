@@ -239,6 +239,7 @@ void cleanup(system_t *system) {
 			free(system->polar_wolf_alpha_table);
 
 	//need to rebuild atom and pair arrays so we can free everything
+	system->natoms = countNatoms(system);
 	rebuild_arrays(system);
 
 	free_all_pairs(system);
@@ -252,6 +253,7 @@ void cleanup(system_t *system) {
 	free(system->pqr_output);
 	free(system->energy_output);
 	free(system->energy_output_csv);
+	free(system->virial_output);
 
 	if(system->surf_output) free(system->surf_output);
 	if(system->traj_output) free(system->traj_output);

@@ -47,8 +47,9 @@ case "$HOSTNAME" in
 				EXTRA_LIBS="-lm -rdynamic"
 			;;
 			"gcc")
-				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
-				exit 1
+				CC="gcc"
+				CFLAGS="-O3"
+				EXTRA_LIBS="-lm"
 			;;
 			"pgi")
 				CC="pgcc"

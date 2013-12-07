@@ -1,3 +1,7 @@
+
+#ifndef STRUCTS_H
+#define STRUCTS_H
+
 /* complex value */
 typedef struct _complex_t {
 	double real;
@@ -52,6 +56,7 @@ typedef struct _molecule {
 	double mass;
 	int frozen, adiabatic, spectre, target;
 	double com[3], wrapped_com[3]; //center of mass
+	double iCOM[3];  // initial Center of Mass
 	int nuclear_spin;
 	double rot_partfunc_g, rot_partfunc_u, rot_partfunc;
 #ifdef QM_ROTATION
@@ -311,6 +316,9 @@ typedef struct _surf_preserve_rotation {
 
 
 
+
+
+
 typedef struct _system {
 
 	int ensemble;
@@ -322,18 +330,22 @@ typedef struct _system {
 	uint32_t preset_seeds[4];
 
 	//surface fitting options
+	int surf_fit_arbitrary_configs;
 	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on, surf_scale_pol_on;
 	int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on;
 	fileNode_t fit_input_list;
 	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha, surf_scale_pol;
 	double surf_quadrupole, surf_weight_constant;
 	double fit_start_temp, fit_max_energy, fit_schedule;
+	int fit_boltzmann_weight;
+	double fit_best_square_error;
 
 	//surf options
 	int surf_preserve, surf_decomp;
 	double surf_min, surf_max, surf_inc, surf_ang;
 	surf_preserve_rotation * surf_preserve_rotation_on;
 	int surf_virial;
+	char * virial_output;
 	double * virial_coef;
 	double virial_tmin, virial_tmax, virial_dt;
 	int  virial_npts;
@@ -400,15 +412,15 @@ typedef struct _system {
 	// i/o options
 	int wrapall;
 	char *job_name; // (CRC)
-        char *pqr_input, *pqr_output, *pqr_restart, *traj_input, *traj_output, *energy_output, *energy_output_csv, *surf_output;
-        int read_pqr_box_on; //read box basis from pqr
+	char *pqr_input, *pqr_output, *pqr_restart, *traj_input, *traj_output, *energy_output, *energy_output_csv, *surf_output;
+	int read_pqr_box_on; //read box basis from pqr
 	int long_output; // prints extended (%11.6f) coordinates
 	int surf_print_level; // sets the amount of output (1-6) that correspond to the nested loops in surface.c
-	char *dipole_output, *field_output, *histogram_output, *frozen_output, *virial_output;
+	char *dipole_output, *field_output, *histogram_output, *frozen_output;
 	char *insert_input;
 	double max_bondlength; /* threshold to bond (re:output files) */
 	// insertions from a separate linked list
-	int num_insertion_molecules;        // the number of elements found in both lists below:
+	int num_insertion_molecules;            // the number of elements found in both lists below:
 	molecule_t *insertion_molecules;        // linked list of molecules to be randomly inserted
 	molecule_t**insertion_molecules_array;  // array providing direct access to elements of above list
 
@@ -463,3 +475,5 @@ typedef struct _system {
 
 } system_t;
 
+
+#endif

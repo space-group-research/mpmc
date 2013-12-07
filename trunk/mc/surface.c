@@ -1,5 +1,6 @@
 /* 
 
+@2007, Jonathan Belof
 Space Research Group
 Department of Chemistry
 University of South Florida
@@ -11,6 +12,9 @@ University of South Florida
 
 #include <mc.h>
 #include <quaternion.h>
+
+
+
 
 /* calculate the energy for the surface scan - same as function energy() but without observables */
 double surface_energy(system_t *system, int energy_type) {
@@ -27,6 +31,13 @@ double surface_energy(system_t *system, int energy_type) {
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
 
+
+
+// energy_type = ENERGY_TOTAL
+// all other params are 0
+
+
+
 	switch(energy_type) {
 
 		case ENERGY_TOTAL:
@@ -39,8 +50,10 @@ double surface_energy(system_t *system, int energy_type) {
 				rd_energy = dreiding_nopbc(system->molecules);
 			else if(system->lj_buffered_14_7)
 				rd_energy = lj_buffered_14_7_nopbc(system);
-			else
+			else 
 				rd_energy = lj_nopbc(system);
+			
+			
 			
 			if(system->polarization) polar_energy = polar(system);
 			if(system->polarvdw) vdw_energy = vdw(system);
@@ -71,6 +84,9 @@ double surface_energy(system_t *system, int energy_type) {
 	return rd_energy + coulombic_energy + polar_energy + vdw_energy;
 
 }
+
+
+
 
 /* rotate a molecule about three Euler angles - same as normal function but for a single mol and without random angles */
 void molecule_rotate_euler(molecule_t *molecule, double alpha, double beta, double gamma, int reverse_flag) {
@@ -151,6 +167,9 @@ void molecule_rotate_euler(molecule_t *molecule, double alpha, double beta, doub
 	free(new_coord_array);
 
 }
+
+
+
 
 /* rotate a molecule about three Euler angles - same as normal function but for a single mol and without random angles */
 /* changing it so it rotates around the three principal axises - Adam Hogan */
@@ -233,6 +252,9 @@ void molecule_rotate_quaternion(molecule_t *molecule, double alpha, double beta,
 
 }
 
+
+
+
 /* calculate the isotropic potential energy surface of a molecule */
 int surface(system_t *system) {
 
@@ -244,10 +266,6 @@ int surface(system_t *system) {
 	double pe_total_avg, pe_es_avg, pe_rd_avg, pe_polar_avg, pe_vdw_avg;
 	double alpha_origin, beta_origin, gamma_origin;
 	double alpha_move, beta_move, gamma_move;
-	double dr, x, y, z, rmin, rmax, t, tmin, tmax, dt, alpha, beta, gamma, phi, theta;
-	int angpt, eulerpt, npts;
-	double energy;
-	char linebuf[MAXLINE];
 
 	/* open surface trajectory file */
 	if(system->surf_output) {
@@ -296,73 +314,6 @@ int surface(system_t *system) {
 			}
 
 		}
-
-	} else if ( system->surf_virial ) { 
-		//calc second virial via N/(16Pi^2) \int (1-exp(-\beta U)) sin(beta) dalpha dbeta dgamma dx dy dz
-
-		//set default parameters
-		rmin = system->surf_min;
-		rmax = system->surf_max;
-		dr = system->surf_inc;
-		tmin = system->virial_tmin;
-		tmax = system->virial_tmax;
-		dt = system->virial_dt;
-		npts = system->virial_npts;
-
-		//allocate memory for virial coef accumulators (per temperature)
-		system->virial_coef = calloc((size_t)(1.0+ceil((tmax-tmin)/dt)), sizeof(double));
-
-		//move origin molecule to the origin, in case of user error/stupidity/ignorance
-		reset_molecule_position(system->molecules);
-
-		for ( r = rmin; r<rmax; r+=dr ) { //distance for pair separation
-
-			//some feedback since this might take a long time
-			sprintf(linebuf,"SURFACE: virial %.2f%% complete\n",100*(r-rmin)/(rmax-rmin));
-			output(linebuf);
-
-			for ( angpt = 0; angpt < npts; angpt++ ) { //angles for pair separation
-
-				theta = acos(2.0*(get_rand()-0.5));
-				phi = 2.0*M_PI*get_rand();
-
-				x = r * sin(theta) * cos(phi);
-				y = r * sin(theta) * sin(phi);
-				z = r * cos(theta);
-
-				//now set the euler rotation angle randomly
-				for ( eulerpt = 0; eulerpt < npts; eulerpt++ ) {
-
-					alpha = 2.0*M_PI*get_rand();
-					beta = acos(2.0*(get_rand()-0.5));
-					gamma = 2.0*M_PI*get_rand();
-
-					//perform rotation and alignment ( (x,y,z) are absolute, not relative; it overwrites any previous CoM)
-					surface_dimer_geometry_virial(system, x, y, z, alpha, beta, gamma, 0);
-
-					//calculate energy
-					energy = surface_energy(system, ENERGY_TOTAL);
-
-					//reset the molecules
-					surface_dimer_geometry_virial(system, 0.0, 0.0, 0.0, alpha, beta, gamma, 1);
-
-					//add to accumulator for each temperature
-					for ( i=0, t = tmin; t <= tmax; t += dt )
-						system->virial_coef[i++] += ( 1.0 - exp(-energy/t) ) * (r*r);
-				}
-			}
-		}
-
-		//normalization
-		for ( i=0, t = tmin; t <= tmax; t += dt )
-			// 0.5 * normalization for volume * normalization for rotations * unit conversion
-			system->virial_coef[i++] *= 0.5 * ( 4.0*M_PI*dr/npts ) * ( 1.0/npts ) * (A32CM3 * NA);
-
-		//output virial shits
-		write_virial_output(system, tmin, tmax, dt);
-
-		//free memory
-		free(system->virial_coef);
 
 	} else {	/* default is to do isotropic averaging */
 
@@ -465,6 +416,67 @@ int surface(system_t *system) {
 	return(0);
 }
 
+
+
+
+/* set the distance and angles for a particular dimer orientation */
+int surface_dimer_geometry(system_t *system, double r, double alpha_origin, double beta_origin, double gamma_origin, double alpha_move, double beta_move, double gamma_move, int reverse_flag) {
+
+	int i;
+	molecule_t *molecule_origin, *molecule_move;
+	atom_t *atom_ptr;
+
+	/* make sure that there are only two molecules */
+	molecule_origin = system->molecules;
+	molecule_move   = molecule_origin->next;
+	if(!molecule_move) {
+		error("SURFACE: the input PQR has only a single molecule\n");
+		return(-1);
+	}
+	if(molecule_move->next) {
+		error("SURFACE: the input PQR must contain exactly two molecules\n");
+		return(-1);
+	}
+
+	/* relocate both molecules to the origin */
+	for(atom_ptr = molecule_origin->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+		for(i = 0; i < 3; i++)
+			atom_ptr->pos[i] -= molecule_origin->com[i];
+	for(i = 0; i < 3; i++)
+		molecule_origin->com[i] = 0;
+
+	for(atom_ptr = molecule_move->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+		for(i = 0; i < 3; i++)
+			atom_ptr->pos[i] -= molecule_move->com[i];
+	for(i = 0; i < 3; i++)
+		molecule_move->com[i] = 0;
+
+	/* relocate the moveable molecule r distance away along the x axis */
+	molecule_move->com[0] = r;
+	molecule_move->com[1] = 0;
+	molecule_move->com[2] = 0;
+	for(atom_ptr = molecule_move->atoms; atom_ptr; atom_ptr = atom_ptr->next)
+		for(i = 0; i < 3; i++)
+			atom_ptr->pos[i] += molecule_move->com[i];
+
+	/* apply the rotation to the second molecule */
+	if (system->surf_global_axis_on)
+	{
+		molecule_rotate_quaternion(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
+		molecule_rotate_quaternion(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
+	}
+	else
+	{
+		molecule_rotate_euler(molecule_origin, alpha_origin, beta_origin, gamma_origin, reverse_flag);
+		molecule_rotate_euler(molecule_move, alpha_move, beta_move, gamma_move, reverse_flag);
+	}
+
+	return(0);
+}
+
+
+
+
 // Traverse the atoms in a molecule searching for a specific id
 // When the id is found, return a pointer to that atom, return NULL if
 // unable to locate.
@@ -474,14 +486,15 @@ atom_t *find_atom_by_id( system_t *system, int target_id ) {
 
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) 
 		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
-                        // Look for the bond_id, that is, the id specified in the pqr input
-                        // file, NOT the id stored in the id field, which is just its position
-                        // in the input file.
-                        if( atom_ptr->bond_id == target_id )
-                                return atom_ptr;
-    
-        return NULL;
+			// Look for the bond_id, that is, the id specified in the pqr input
+			// file, NOT the id stored in the id field, which is just its position
+			// in the input file.
+			if( atom_ptr->bond_id == target_id )
+				return atom_ptr;
+
+	return NULL;
 }
+
 
 
 
@@ -491,82 +504,86 @@ atom_t *find_atom_by_id( system_t *system, int target_id ) {
 // will be longer (or shorter, if dr is < 0) than the original by dr. If the
 // magnitude of the original vector is 0, the function returns 0.
 inline double find_scale_factor( double x, double y, double z, double dr ) {
-    // Equation was determined by setting
-    // sqrt( (sx)^2 + (sy)^2 + (sz)^2 )  =  sqrt( x^2 + y^2 + z^2 ) + dr
-    // and solving for s.
-    double R = x*x + y*y + z*z;
-    return ( R ? (   sqrt(1 + 2*dr/sqrt(R) + dr*dr/R)   ) : 0 );
+	// Equation was determined by setting
+	// sqrt( (sx)^2 + (sy)^2 + (sz)^2 )  =  sqrt( x^2 + y^2 + z^2 ) + dr
+	// and solving for s.
+	double R = x*x + y*y + z*z;
+	return ( R ? (   sqrt(1 + 2*dr/sqrt(R) + dr*dr/R)   ) : 0 );
 }
+
+
 
 
 int surface_dimer_parameters(system_t *system, param_g *params) {
 
-    int i = 0; // generic counter
-
-    molecule_t *molecule_ptr;
-    atom_t *atom_ptr;
-    param_t *param_ptr;
-
-    // Default bond partner for atoms without explicit site neighbor
-    atom_t *origin = calloc( sizeof(atom_t), 1 ); // calloc sets pos[] fields all to 0
-		memnullcheck( origin, sizeof(atom_t), __LINE__-1, __FILE__);
+	int i = 0; // generic counter
+	
+	molecule_t *molecule_ptr;
+	atom_t *atom_ptr;
+	param_t *param_ptr;
+	
+	// Default bond partner for atoms without explicit site neighbor
+	atom_t *origin = calloc( sizeof(atom_t), 1 ); // calloc sets pos[] fields all to 0
+	memnullcheck( origin, sizeof(atom_t), __LINE__-1, __FILE__);
 
 	system->polar_damp = params->alpha;
 
-    for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+	for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+	
+		for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+	
+			for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+	
+				if( !strcasecmp( param_ptr->atomtype, atom_ptr->atomtype )) {
 
-        for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-
-            for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
-
-                if( !strcasecmp( param_ptr->atomtype, atom_ptr->atomtype )) {
-
-                    atom_ptr->charge  = param_ptr->charge;
-                    atom_ptr->epsilon = param_ptr->epsilon;
-                    atom_ptr->sigma   = param_ptr->sigma;
-                    atom_ptr->omega   = param_ptr->omega;
+					atom_ptr->charge  = param_ptr->charge;
+					atom_ptr->epsilon = param_ptr->epsilon;
+					atom_ptr->sigma   = param_ptr->sigma;
+					atom_ptr->omega   = param_ptr->omega;
 					atom_ptr->polarizability = param_ptr->pol;
 
-                    double perturbation_vector[3];
+					double perturbation_vector[3];
 
-                    // Find the the atom that defines the bond axis and store for easy reference
-                    atom_t *snPtr = 0;
-                    if( atom_ptr->site_neighbor_id == 0 )
-                        snPtr = origin;
-                    else {
-                        snPtr = find_atom_by_id( system, atom_ptr->site_neighbor_id );
-                        if( !snPtr ) {
-                            snPtr = origin;
-                            printf( "\n*** WARNING ***\n" );
-                            printf( "Bonding partner for atom %d not found ",      atom_ptr->bond_id );
-                            printf( "--> %d, possibly invalid. Using origin.\n\n", atom_ptr->site_neighbor_id );
-                        }
-                    }
+					// Find the the atom that defines the bond axis and store for easy reference
+					atom_t *snPtr = 0;
+					if( atom_ptr->site_neighbor_id == 0 )
+						snPtr = origin;
+					else {
+						snPtr = find_atom_by_id( system, atom_ptr->site_neighbor_id );
+						if( !snPtr ) {
+							snPtr = origin;
+							printf( "\n*** WARNING ***\n" );
+							printf( "Bonding partner for atom %d not found ",      atom_ptr->bond_id );
+							printf( "--> %d, possibly invalid. Using origin.\n\n", atom_ptr->site_neighbor_id );
+						}
+					}
 
-                    // Generate the vector along which the dr perturbations will occur
-                    for (i = 0; i < 3; i++)
-                        perturbation_vector[i] = atom_ptr->pos[i] - snPtr->pos[i];
+					// Generate the vector along which the dr perturbations will occur
+					for (i = 0; i < 3; i++)
+						perturbation_vector[i] = atom_ptr->pos[i] - snPtr->pos[i];
 
-                    // Determine how much the bond vector should be scaled to increase the length by dr.
-                    double scale = find_scale_factor(perturbation_vector[0], perturbation_vector[1], perturbation_vector[2], param_ptr->dr);
+					// Determine how much the bond vector should be scaled to increase the length by dr.
+					double scale = find_scale_factor(perturbation_vector[0], perturbation_vector[1], perturbation_vector[2], param_ptr->dr);
+					
+					// Scale the perturbation vector
+					for (i = 0; i < 3; i++)
+						perturbation_vector[i] *= scale;
+					
+					// Add the vector back to the bond partner coordinates to get the new position.
+					for (i = 0; i < 3; i++)
+						atom_ptr->pos[i] = snPtr->pos[i] + perturbation_vector[i];
 
-                    // Scale the perturbation vector
-                    for (i = 0; i < 3; i++)
-                        perturbation_vector[i] *= scale;
+				}
+			} // for param_ptr
+		} // for atom_ptr
+	} // for molecule_ptr
 
-                    // Add the vector back to the bond partner coordinates to get the new position.
-                    for (i = 0; i < 3; i++)
-                        atom_ptr->pos[i] = snPtr->pos[i] + perturbation_vector[i];
+	free(origin);
 
-                }
-            } // for param_ptr
-        } // for atom_ptr
-    } // for molecule_ptr
-
-    free(origin);
-
-    return (0);
+	return (0);
 }
+
+
 
 
 /* fit potential energy parameters via simulated annealing */
@@ -645,30 +662,31 @@ int surface_fit(system_t *system) {
 	// print some header info
 	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) 
 			printf( "SURFACE: Atom type: %d @ %s\n", param_ptr->ntypes, param_ptr->atomtype );
-	printf("*** any input energy values greater than %f K will not contribute to the fit ***\n", max_energy);
+	if ( ! system->fit_boltzmann_weight ) 
+		printf("*** any input energy values greater than %f K will not contribute to the fit ***\n", max_energy);
 
-//write params and current_error to stdout
+	//write params and current_error to stdout
 	printf("*** Initial Fit: \n");
 	output_params ( temperature, current_error, params );
 	printf("*****************\n");
 
-//set the minimum error we've found
+	//set the minimum error we've found
 	global_minimum = current_error;
 	last_error     = current_error;
 	for( j=0; j<nCurves; j++ )
 			for(i = 0; i < nPoints; i++)
 					curve[j].global[i] = curve[j].output[i];
 
-//initialize stuff for qshift
+	//initialize stuff for qshift
 	if ( system->surf_qshift_on ) {
 		qshiftData = malloc(sizeof(qshiftData_t));
 		quadrupole = calcquadrupole(system);
 	}
 
-// ANNEALING
-// Loop over temperature. When the temperature reaches MIN_TEMPERATURE
-// we quit. Assuming we find an error smaller than the initial error
-// we'll spit out a fit_geometry.pqr file, and you'll want to re-anneal.
+	// ANNEALING
+	// Loop over temperature. When the temperature reaches MIN_TEMPERATURE
+	// we quit. Assuming we find an error smaller than the initial error
+	// we'll spit out a fit_geometry.pqr file, and you'll want to re-anneal.
 	for(nSteps = 0; temperature > MIN_TEMPERATURE; ++nSteps) {
 
 		// randomly perturb the parameters
@@ -699,7 +717,7 @@ int surface_fit(system_t *system) {
 
 				// output the new global minimum
 				if(current_error < global_minimum) {
-					global_minimum = current_error;
+					system->fit_best_square_error = global_minimum = current_error;
 					new_global_min ( system, nCurves, nPoints, curve );
 				}
 			}
@@ -718,7 +736,5 @@ int surface_fit(system_t *system) {
 
 	// Return all memory back to the system
 	free_all_mem (nCurves, curve, params, qshiftData, r_input);
-
 	return(0);
 }
-

@@ -11,19 +11,19 @@ University of South Florida
 //convert string *a to a double and store at the address of f.
 int safe_atof ( char * a, double * f ) {
 	if ( sscanf(a,"%lf",f) == 0 ) return 1; //failure
- 	return 0; //success
+	return 0; //success
 }
 	
 //convert string *a to an int and store at the address of f.
 int safe_atoi ( char * a, int * i ) {
 	if ( sscanf(a,"%d",i) == 0 ) return 1; //failure
- 	return 0; //success
+	return 0; //success
 }
 
 //convert string *a to an unsigned int and store at the address of f.
 int safe_atou ( char * a, uint32_t * i ) {
 	if ( sscanf(a,"%u",i) == 0 ) return 1; //failure
- 	return 0; //success
+	return 0; //success
 }
 
 //converts string *a to a long
@@ -78,22 +78,25 @@ int do_command (system_t * system, char ** token ) {
 		die(-1);
 	}
 
-	//surf options
-	else if(!strcasecmp(token[0],"surf_virial")) {
-		if(!strcasecmp(token[1], "on" ))
-			system->surf_virial = 1;
-		else if (!strcasecmp(token[1], "off" ))
-			system->surf_virial = 0;
-		else return 1; //unrecognized argument
+
+
+	// surf options
+	////////////////////////
+	
+
+	// Option for fitting against arbitrary configurations, VS the default behavior of fitting
+	// against a small set of orientations, while only varying their separation distance.
+	else if(!strcasecmp(token[0], "fit_arbitrary_configs")) {
+	    
+		if(!strcasecmp(token[1], "on")) {
+			system->surf_fit_arbitrary_configs = 1; 
+		}
+		else if (!strcasecmp(token[1], "off")) {
+			system->surf_fit_arbitrary_configs = 0; 
+		}
+		else return 1;
 	}
-	else if(!strcasecmp(token[0], "virial_dt" ))
-		{ if ( safe_atof(token[1],&(system->virial_dt)) ) return 1; }
-	else if(!strcasecmp(token[0], "virial_tmax" ))
-		{ if ( safe_atof(token[1],&(system->virial_tmax)) ) return 1; }
-	else if(!strcasecmp(token[0], "virial_tmin" ))
-		{ if ( safe_atof(token[1],&(system->virial_tmin)) ) return 1; }
-	else if(!strcasecmp(token[0], "virial_npts" ))
-		{ if ( safe_atoi(token[1],&(system->virial_npts)) ) return 1; }
+	
 	else if(!strcasecmp(token[0],"surf_decomp")) {
 		if(!strcasecmp(token[1], "on" ))
 			system->surf_decomp = 1;
@@ -256,14 +259,14 @@ int do_command (system_t * system, char ** token ) {
 		else if (!strcasecmp(token[1], "off"))
 			system->polarization = 0; 
 		else return 1;
-	}    
+	}
 	else if(!strcasecmp(token[0], "polarvdw") || !strcasecmp(token[0], "cdvdw")) {
 		if(!strcasecmp(token[1], "on")) {
 			system->polarvdw = 1; 
 			system->polarization=1;
 			system->polar_iterative=1; //matrix inversion destroys A_matrix before vdw can use it.
 			output("INPUT: Forcing polar_iterative ON for CP-VdW.\n");
-		}    
+		}
 		else if (!strcasecmp(token[1], "evects")) {
 			system->polarvdw = 2; //calculate eigenvectors
 			system->polarization=1;
@@ -614,7 +617,7 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "polar_ewald_alpha")) {
 		if ( safe_atof(token[1],&(system->polar_ewald_alpha)) ) return 1;
 		system->polar_ewald_alpha_set = 1;
-	}	
+	}
 
 	else if(!strcasecmp(token[0], "polarizability_tensor")) {
 		if(!strcasecmp(token[1],"on"))
@@ -836,13 +839,6 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->frozen_output,token[1]);
 		} else return 1;
 	}
-	else if (!strcasecmp(token[0], "virial_output")) {
-		if(!system->virial_output) {
-			system->virial_output = calloc(MAXLINE,sizeof(char));
-			memnullcheck(system->virial_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-			strcpy(system->virial_output,token[1]);
-		} else return 1;
-	}
 	else if (!strcasecmp(token[0], "insert_input")) {
 		if(!system->insert_input) {
 			system->insert_input = calloc(MAXLINE,sizeof(char));
@@ -871,6 +867,7 @@ int do_command (system_t * system, char ** token ) {
 	}
 
 	// surface fit input parameters
+	
 	else if( !strcasecmp( token[0], "fit_schedule")) {
 		register double temp = atof(token[1]);
 		if( temp<= 0.0 || temp>=1.0 ) {
@@ -898,8 +895,15 @@ int do_command (system_t * system, char ** token ) {
 		else
 			{ if ( safe_atof(token[1],&(system->fit_start_temp)) ) return 1; }
 	}
+	else if(!strcasecmp(token[0], "fit_boltzmann_weight")) {
+		if(!strcasecmp(token[1],"on"))
+			system->fit_boltzmann_weight = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->fit_boltzmann_weight = 0;
+		else return 1;
+	}
 	else if(!strcasecmp(token[0], "fit_input")) {
-	// navigate to the end of the input file linked list
+		// navigate to the end of the input file linked list
 		fileNode_t *node = &(system->fit_input_list);
 		while( node->next )
 			node = node->next;
@@ -991,9 +995,10 @@ void setdefaults(system_t * system) {
 	system->fit_input_list.data.count = 0;
 
 	// Initialize surface fitting parameters
-	system->fit_schedule         = 0;
-	system->fit_start_temp       = 0;
-	system->fit_max_energy       = 0;
+	system->surf_fit_arbitrary_configs = 0;   // default is to use a small set of orientations, varying their separation
+	system->fit_schedule               = 0;
+	system->fit_start_temp             = 0;
+	system->fit_max_energy             = 0;
 
 	// Initialize insertion parameters
 	system->num_insertion_molecules   = 0;
@@ -1097,7 +1102,7 @@ system_t *setup_system(char *input_file) {
 	//read the main input file and sets values to flags and sets options
 	system = read_config(input_file); 
 	if(!system) {
-   	// error message generated in read_config()
+		// error message generated in read_config()
 		return(NULL);
 	} else
 		output("INPUT: finished reading config file\n");
@@ -1138,7 +1143,7 @@ system_t *setup_system(char *input_file) {
 	flag_all_pairs(system);
 	output("INPUT: finished calculating pairwise interactions\n");
 
-	if(!(system->sg || system->rd_only || system->pbc->volume == 0)) {
+	if(!(system->sg || system->rd_only)) {
 		sprintf(linebuf, "INPUT: Ewald gaussian width = %f A\n", system->ewald_alpha);
 		output(linebuf);
 		sprintf(linebuf, "INPUT: Ewald kmax = %d\n", system->ewald_kmax);
@@ -1153,6 +1158,10 @@ system_t *setup_system(char *input_file) {
 }
 
 
+
+
+
+
 // readFitInputFiles() stores all of data points found in the fit input files
 // linked to by system->fit_input_list. It returns an array of type curveData_t,
 // each element of which provides specific data about the curve it describes, as
@@ -1160,466 +1169,468 @@ system_t *setup_system(char *input_file) {
 
 curveData_t *readFitInputFiles( system_t *system, int nCurves )
 {
-    // General Algorithm:
-    // This function traverses the list of fit_input files (@ system->fit_input_list), reading
-    // each one a line at a time. It parses the line, determining whether it is a line with
-    // data or metadata. If metadata, the value is stored in the appropriate curveData_t
-    // field. If it is a point value, it is temporarily stored in a linked list--this is
-    // done because A) the number of data points is not initially known, and B) the list can
-    // be constructed in sorted order--just in case the points are stored out of order
-    // in the input file. Once the entire file has been processed, an array is allocated and
-    // the list data is transferred into the array (the function that processes the data
-    // expects an array). The function then moves on to the next input file...
-    // Before returning, the function verifies that each curve has the same number of points
-    // and that the r-values of the curves all correspond to each other, and that the increment
-    // between r-values is identical (to within threshold_for_identical_DeltaR). If everything
-    // checks out, the normalized curve-weights are calculated and the function returns.
-
-    // Precision to use when comparing delta-r values for equality:
-    const double threshold_for_identical_DeltaR = 1.0E-12;
-
-
-    FILE *fp_fit;
-    char linebuf[MAXLINE ],  // Line buffer for reading file input
-         token1[ MAXLINE ],  // Variables for parsing parameters in input files.
-         token2[ MAXLINE ],
-         token3[ MAXLINE ],
-         errMsg[ MAXLINE ];  // Output buffer for error messages
-
-
-
-    // Allocate memory for list of curve data/metadata
-    curveData_t *curve_input = calloc( nCurves, sizeof(curveData_t));
-    if( !curve_input )
-    {
-        error( "INPUT: Exhausted memory while allocating array for curve data.\n" );
-        return (NULL);
-    }
-
-
-
-
-
-    // Read in point data/metadata array for each input curve and store
-    // the data in one of the curveData_t array elements we just allocated
-    ///////////////////////////////////////////////////////////////////////
-
-    fileNode_t *fNode = system->fit_input_list.next;
-    int currentCurve = 0;
-
-    while( fNode )
-    {
-
-        // orderedPairNode_t's will be used in making linked lists of data points.
-        // When all points have been read, an array of the appropriate size will
-        // be allocated and the list items will be transferred into the array.
-        // The linked list will be maintained in order, sorted by r-value from
-        // least to greatest. The list is never explicitly sorted, but when each
-        // element is added, it is inserted at its in-order location.
-        typedef struct _orderedPairNode {
-            double r; // Separation distance
-            double E; // Energy value
-            struct _orderedPairNode *next;
-        } orderedPairNode_t;
-
-        // The list head, although a node, contains no data itself
-        // and only serves as a pointer to the first element.
-        orderedPairNode_t pointList; // The list head
-        pointList.next = 0;          // The list starts out empty
-
-        orderedPairNode_t *nodePtr = &pointList; // Our list iterator
-
-
-
-        // Initialize metadata for the current curve
-        curve_input[ currentCurve ].nPoints = 0;
-        curve_input[ currentCurve ].alpha1  = 0;
-        curve_input[ currentCurve ].beta1   = 0;
-        curve_input[ currentCurve ].gamma1  = 0;
-        curve_input[ currentCurve ].alpha2  = 0;
-        curve_input[ currentCurve ].beta2   = 0;
-        curve_input[ currentCurve ].gamma2  = 0;
-        curve_input[ currentCurve ].r       = 0;
-        curve_input[ currentCurve ].input   = 0;
-        curve_input[ currentCurve ].weight  = 1;
+	// General Algorithm:
+	// This function traverses the list of fit_input files (@ system->fit_input_list), reading
+	// each one a line at a time. It parses the line, determining whether it is a line with
+	// data or metadata. If metadata, the value is stored in the appropriate curveData_t
+	// field. If it is a point value, it is temporarily stored in a linked list--this is
+	// done because A) the number of data points is not initially known, and B) the list can
+	// be constructed in sorted order--just in case the points are stored out of order
+	// in the input file. Once the entire file has been processed, an array is allocated and
+	// the list data is transferred into the array (the function that processes the data
+	// expects an array). The function then moves on to the next input file...
+	// Before returning, the function verifies that each curve has the same number of points
+	// and that the r-values of the curves all correspond to each other, and that the increment
+	// between r-values is identical (to within threshold_for_identical_DeltaR). If everything
+	// checks out, the normalized curve-weights are calculated and the function returns.
+	
+	// Precision to use when comparing delta-r values for equality:
+	const double threshold_for_identical_DeltaR = 1.0E-12;
+	
+	
+	FILE *fp_fit;
+	char linebuf[MAXLINE ],  // Line buffer for reading file input
+	     token1[ MAXLINE ],  // Variables for parsing parameters in input files.
+	     token2[ MAXLINE ],
+	     token3[ MAXLINE ],
+	     errMsg[ MAXLINE ];  // Output buffer for error messages
+	
+	
+	
+	// Allocate memory for list of curve data/metadata
+	curveData_t *curve_input = calloc( nCurves, sizeof(curveData_t));
+	if( !curve_input )
+	{
+		error( "INPUT: Exhausted memory while allocating array for curve data.\n" );
+		return (NULL);
+	}
 
 
 
 
 
-        // Open file for reading
-        ////////////////////////////
+	// Read in point data/metadata array for each input curve and store
+	// the data in one of the curveData_t array elements we just allocated
+	///////////////////////////////////////////////////////////////////////
+	
+	fileNode_t *fNode = system->fit_input_list.next;
+	int currentCurve = 0;
+	
+	while( fNode )
+	{
 
-        char *filename = fNode->data.filename;
-        printf( "INPUT: Loading %s\n", filename );
-        fp_fit = fopen( filename, "r" );
+		// orderedPairNode_t's will be used in making linked lists of data points.
+		// When all points have been read, an array of the appropriate size will
+		// be allocated and the list items will be transferred into the array.
+		// The linked list will be maintained in order, sorted by r-value from
+		// least to greatest. The list is never explicitly sorted, but when each
+		// element is added, it is inserted at its in-order location.
+		typedef struct _orderedPairNode {
+			double r; // Separation distance
+			double E; // Energy value
+			struct _orderedPairNode *next;
+		} orderedPairNode_t;
+
+		// The list head, although a node, contains no data itself
+		// and only serves as a pointer to the first element.
+		orderedPairNode_t pointList; // The list head
+		pointList.next = 0;          // The list starts out empty
+		
+		orderedPairNode_t *nodePtr = &pointList; // Our list iterator
+		
+		
+		
+		// Initialize metadata for the current curve
+		curve_input[ currentCurve ].nPoints = 0;
+		curve_input[ currentCurve ].alpha1  = 0;
+		curve_input[ currentCurve ].beta1   = 0;
+		curve_input[ currentCurve ].gamma1  = 0;
+		curve_input[ currentCurve ].alpha2  = 0;
+		curve_input[ currentCurve ].beta2   = 0;
+		curve_input[ currentCurve ].gamma2  = 0;
+		curve_input[ currentCurve ].r       = 0;
+		curve_input[ currentCurve ].input   = 0;
+		curve_input[ currentCurve ].weight  = 1;
+		
+		
+		
+		
+		
+		// Open file for reading
+		////////////////////////////
+		
+		char *filename = fNode->data.filename;
+		printf( "INPUT: Loading %s\n", filename );
+		fp_fit = fopen( filename, "r" );
 				filecheck(fp_fit,filename,READ);
 
 
 
-        // Strip path from filename and save the remainder
-        // for use as an id in the curveData_t structure
-        ////////////////////////////////////////////////////
-        {
-
-            char *i  = filename; // iterator for raw filename
-            char *fn = filename; // temp pointer saving last good place in raw filename
-
-            // Define the appropriate file separator character for the OS
-            #ifndef _WIN32
-            const char file_separator = '/';
-            #else
-            const char file_separator = '\\';
-            #endif
-
-            // Use iterator to look for file separator characters in the filename
-            while( *i != '\0' )
-            {
-                if( (*i) == file_separator )
-                    fn = i+1;
-                i++;
-            }
-
-            curve_input[currentCurve].filename = malloc( (strlen(fn) + 1 ) * sizeof(char) );
-            // Use the filename as the id, at least until a proper id is found in the file
-            curve_input[currentCurve].id       = malloc( (strlen(fn) + 1 ) * sizeof(char) );
-            if( !(curve_input[currentCurve].filename && curve_input[currentCurve].filename) )
-            {
-                error( "INPUT: Exhausted memory while allocating curve id/filename fields.\n" );
-                if( curve_input[currentCurve].filename )
-                    free( curve_input[currentCurve].filename );
-                if( curve_input[currentCurve].id )
-                    free( curve_input[currentCurve].id );
-                return (NULL);
-            }
-            strcpy( curve_input[currentCurve].filename, fn );
-            strcpy( curve_input[currentCurve].id,       fn );
-        }
-
-
-
-
-
-        // Parse and store data found in the input file
-        //////////////////////////////////////////////////
-
-        while( fgets(linebuf, MAXLINE, fp_fit) )
-        {
-            memset(token1, 0, MAXLINE);
-            memset(token2, 0, MAXLINE);
-            memset(token3, 0, MAXLINE);
-            sscanf(linebuf, "%s %s %s", token1, token2, token3 );
-
-            if( !strcasecmp(token1, "id")) {
-                // Free memory for previous id
-                free( curve_input[currentCurve].id );
-                // Allocate memory for new id
-                curve_input[currentCurve].id = malloc( (strlen(token2) + 1) * sizeof(char) );
-                // If allocation fails, free all memory and exit
-                if( !curve_input[currentCurve].id ) {
-                    sprintf( errMsg, "INPUT: Exhausted memory while reading data from %s\n", filename );
-                    error( errMsg );
-                    fclose( fp_fit );
-                    // Free list memory
-                    nodePtr = pointList.next;
-                    while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
-                    // Free id memory
-                    int i;
-                    for( i=0; i<=currentCurve; i++ ) {
-                        if( curve_input[i].filename )
-                            free( curve_input[i].filename );
-                        if( curve_input[i].id )
-                            free( curve_input[i].id);
-                    }
-                    return( NULL );
-                }
-                // If allocation was successful, copy new id into curve_input
-                strcpy( curve_input[ currentCurve ].id, token2 );
-            }
-
-            else if( !strcasecmp(token1, "alpha1" )) {
-                curve_input[ currentCurve ].alpha1 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].alpha1 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "alpha2" )) {
-                curve_input[ currentCurve ].alpha2 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].alpha2 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "beta1" )) {
-                curve_input[ currentCurve ].beta1 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].beta1 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "beta2" )) {
-                curve_input[ currentCurve ].beta2 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].beta2 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "gamma1" )) {
-                curve_input[ currentCurve ].gamma1 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].gamma1 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "gamma2" ))  {
-                curve_input[ currentCurve ].gamma2 = atof( token2 );
-                if( !strcasecmp( token3, "pi" ))
-                    curve_input[ currentCurve ].gamma2 *= M_PI;
-            }
-
-            else if( !strcasecmp(token1, "weight" ))
-                curve_input[ currentCurve ].weight = atof( token2 );
-
-            else if(  (token1[0]=='*') || (token1[0]==0)  )
-                ; // Do nothing for comment lines and blank lines
-            else
-            {
-
-                // If we get here, this line SHOULD be a data-point.
-                // We will now store the point in our linked list.
-                //////////////////////////////////////////////////////
-
-
-                // Create a new node
-                orderedPairNode_t *newNodePtr = malloc( sizeof(orderedPairNode_t));
-                if( !newNodePtr )
-                {
-                    sprintf( errMsg, "INPUT: Exhausted memory while reading data from %s\n", filename );
-                    error( errMsg );
-                    fclose( fp_fit );
-                    // Free list memory
-                    nodePtr = pointList.next;
-                    while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
-                    // Free id memory
-                    int i; for( i=0; i<=currentCurve; i++ ) { free( curve_input[i].filename ); free( curve_input[i].id);}
-                    return (NULL);
-                }
-
-                // Transfer data to new node
-                double r =                      // for convenient referencing of current r-value
-                newNodePtr->r = atof( token1 ); // molecule-molecule distance
-                newNodePtr->E = atof( token2 ); // energy value at distance r
-
-                // Check for an invalid r-value
-                // An r-value of 0.0 may be indicative of a corrupt input line or an invalid keyword
-                if( r <= 0.0 )
-                {
-                    sprintf( errMsg, "INPUT: Invalid r-value (%.2lf) in %s\n", r, filename );
-                    error( errMsg );
-                    if( r==0.0 )
-                    {
-                        error( "       Verify that all keywords in input file are spelled correctly.\n" );
-                        error( "       Keywords are not case sensitive.\n" );
-                    }
-                    fclose( fp_fit );
-                    // Free list memory
-                    nodePtr = pointList.next;
-                    while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
-                    // Free id memory
-                    int i; for( i=0; i<=currentCurve; i++ ) { free( curve_input[i].filename ); free( curve_input[i].id);}
-                    return (NULL);
-                }
-
-                // Increment point-count metadata for this curve
-                curve_input[ currentCurve ].nPoints++;
-
-                // Reset nodePtr and advance it to the correct list location
-                nodePtr = &pointList;
-                while(   (nodePtr->next)   &&   ((nodePtr->next->r) < r)   )
-                    // Stop list-traversal if there is no next item, or if next r-value is >= to the current
-                    // r-value (consequently maintaining a sorted list).
-                    // Recall that for the && operator, the 2nd condition will not be evaluated if the 1st
-                    // fails, i.e., we will not check the next r-value if there is no next r-value...
-                    nodePtr = nodePtr->next;
-
-                // Link newNode into the list at the location determined by previous while loop
-                newNodePtr->next = nodePtr->next;
-                nodePtr->next = newNodePtr;
-
-
-            } // done processing this line, proceed to the next...
-        } // while (fgets), i.e.  while(!EOF)
-        fclose(fp_fit);
-
-
-
-
-
-
-        // Ensure some point data was actually read
-        ////////////////////////////////////////////
-        if(!curve_input[ currentCurve ].nPoints)
-        {
-            sprintf( errMsg, "INPUT: No data points found in file %s\n", filename );
-            error( errMsg );
-            // Free list memory
-            nodePtr = pointList.next;
-            while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
-            // Free memory for curve identification
-            int i; for( i=0; i<=currentCurve; i++ ) {free( curve_input[i].filename ); free( curve_input[i].id);}
-            return(NULL);
-        }
-
-
-
-
-
-
-        // Allocate array space to hold data points and copy
-        // data from the list to the array.
-        ///////////////////////////////////////////////////////
-
-        curve_input[ currentCurve ].r      = calloc( curve_input[ currentCurve ].nPoints, sizeof(double) );
-        curve_input[ currentCurve ].input  = calloc( curve_input[ currentCurve ].nPoints, sizeof(double) );
-
-        if( !curve_input[ currentCurve ].r || !curve_input[ currentCurve ].input )
-        {
-            sprintf( errMsg, "INPUT: Exhausted memory transferring curve data to array, for curve: %s\n", filename );
-            error( errMsg );
-            // Free list memory
-            nodePtr = pointList.next;
-            while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
-            // Free curveData_t memory
-            int i;
-            for( i=0; i<=currentCurve; i++ ) {
-                if( curve_input[i].filename ) free( curve_input[i].filename );
-                if( curve_input[i].id       ) free( curve_input[i].id );
-                if( curve_input[i].r        ) free( curve_input[i].r );
-                if( curve_input[i].input    ) free( curve_input[i].input    );
-            }
-            return (NULL);
-        }
-
-        nodePtr = &pointList;  // reset nodePtr to list head
-        int N=0;               // reset N to first array element
-        // Copy point data from the linked list into the array
-        while( nodePtr->next )
-        {
-            nodePtr = nodePtr->next;
-            curve_input[ currentCurve ].r[N]     = nodePtr->r;
-            curve_input[ currentCurve ].input[N] = nodePtr->E;
-            ++N;
-        }
-
-        // Free memory used by the list
-        nodePtr = pointList.next;
-        while( nodePtr )
-        {
-            orderedPairNode_t *temp = nodePtr;
-            nodePtr = nodePtr->next;
-            free(temp);
-        }
-
-
-
-        fNode = fNode->next;
-        ++currentCurve;
-    } // while(fNode) i.e., Process next file in the list...
-
-
-
-
-
-
-     // Normalize curve weights 
-    ////////////////////////////
-
-    int totalWeight = 0;
-    // Get the combined sum of all curve weights
-    for( currentCurve=0; currentCurve < nCurves; currentCurve++ )
-        totalWeight += curve_input[currentCurve].weight;
-    // Divide each curves individual weight by the total weight
-    for( currentCurve=0; currentCurve < nCurves; currentCurve++ )
-        curve_input[currentCurve].normalized_weight = (double) curve_input[currentCurve].weight / totalWeight;
-
-
-
-
-
-
-
-     // Check data validity...
-    ///////////////////////////
-
-    // Check that all curves have the same number of points
-    int lastPointCount = curve_input[0].nPoints;
-    for( currentCurve=1; currentCurve<nCurves; ++currentCurve )
-        if( lastPointCount == curve_input[currentCurve].nPoints )
-            lastPointCount =  curve_input[currentCurve].nPoints;
-        else
-        {
-            error( "INPUT: All curves must have the same number of data points.\n" );
-            // Free curveData_t memory
-            int i;
-            for( i=0; i<=currentCurve; i++ ) {
-                if( curve_input[i].filename ) free( curve_input[i].filename );
-                if( curve_input[i].id       ) free( curve_input[i].id );
-                if( curve_input[i].r        ) free( curve_input[i].r );
-                if( curve_input[i].input    ) free( curve_input[i].input    );
-            }
-            return( NULL );
-        }
-
-
-    // Check that all corresponding points on all the curves have identical r-values
-    int currentPoint;
-    for( currentPoint=0; currentPoint<curve_input[0].nPoints; ++currentPoint )
-    {
-        double lastRValue = curve_input[0].r[currentPoint];
-        for( currentCurve=1; currentCurve<nCurves; ++currentCurve )
-            if( lastRValue == curve_input[currentCurve].r[currentPoint] )
-                lastRValue =  curve_input[currentCurve].r[currentPoint];
-            else
-            {
-                error( "INPUT: Every curve must have identical r-values.\n" );
-                // Free curveData_t memory
-                int i;
-                for( i=0; i<=currentCurve; ++i ) {
-                    if( curve_input[i].filename ) free( curve_input[i].filename );
-                    if( curve_input[i].id       ) free( curve_input[i].id );
-                    if( curve_input[i].r        ) free( curve_input[i].r );
-                    if( curve_input[i].input    ) free( curve_input[i].input    );
-                }
-                return( NULL );
-            }
-    }
-
-
-    // Ensure that delta-r values are uniform
-    // Since we know the magnitude and quantity of r-values are identical across all
-    // curves, we will only check the delta-r's of the first curve.
-
-
-    // The standard by which all other delta-r values will be judged:
-    double reference_deltaR = curve_input[0].r[1] - curve_input[0].r[0];
-
-    for( currentPoint=2; currentPoint<curve_input[0].nPoints; ++currentPoint )
-    {
-        double deltaR = curve_input[0].r[currentPoint] - curve_input[0].r[currentPoint-1];
-        if( fabs(deltaR - reference_deltaR) > threshold_for_identical_DeltaR )
-        {
-            error( "INPUT: Data points on curve must be evenly spaced.\n         " );
-            sprintf( errMsg, "       Tolerance currently set at: +/- %.17lf\n", threshold_for_identical_DeltaR );
-            error( errMsg );
-            // Free curveData_t memory
-            int i;
-            for( i=0; i<=currentCurve; i++ ) {
-                if( curve_input[i].filename ) free( curve_input[i].filename );
-                if( curve_input[i].filename ) free( curve_input[i].id       );
-                if( curve_input[i].r        ) free( curve_input[i].r        );
-                if( curve_input[i].input    ) free( curve_input[i].input    );
-            }
-            return( NULL );
-        }
-    }
-
-    return curve_input;
+		// Strip path from filename and save the remainder
+		// for use as an id in the curveData_t structure
+		////////////////////////////////////////////////////
+		{
+
+			char *i  = filename; // iterator for raw filename
+			char *fn = filename; // temp pointer saving last good place in raw filename
+			
+			// Define the appropriate file separator character for the OS
+			#ifndef _WIN32
+			const char file_separator = '/';
+			#else
+			const char file_separator = '\\';
+			#endif
+			
+			// Use iterator to look for file separator characters in the filename
+			while( *i != '\0' )
+			{
+				if( (*i) == file_separator )
+					fn = i+1;
+				i++;
+			}
+			
+			curve_input[currentCurve].filename = malloc( (strlen(fn) + 1 ) * sizeof(char) );
+			// Use the filename as the id, at least until a proper id is found in the file
+			curve_input[currentCurve].id       = malloc( (strlen(fn) + 1 ) * sizeof(char) );
+			if( !(curve_input[currentCurve].filename && curve_input[currentCurve].filename) )
+			{
+				error( "INPUT: Exhausted memory while allocating curve id/filename fields.\n" );
+				if( curve_input[currentCurve].filename )
+					free( curve_input[currentCurve].filename );
+				if( curve_input[currentCurve].id )
+					free( curve_input[currentCurve].id );
+				return (NULL);
+			}
+			strcpy( curve_input[currentCurve].filename, fn );
+			strcpy( curve_input[currentCurve].id,       fn );
+		}
+
+
+
+
+
+		// Parse and store data found in the input file
+		//////////////////////////////////////////////////
+
+		while( fgets(linebuf, MAXLINE, fp_fit) )
+		{
+			memset(token1, 0, MAXLINE);
+			memset(token2, 0, MAXLINE);
+			memset(token3, 0, MAXLINE);
+			sscanf(linebuf, "%s %s %s", token1, token2, token3 );
+			
+			if( !strcasecmp(token1, "id")) {
+				// Free memory for previous id
+				free( curve_input[currentCurve].id );
+				// Allocate memory for new id
+				curve_input[currentCurve].id = malloc( (strlen(token2) + 1) * sizeof(char) );
+				// If allocation fails, free all memory and exit
+				if( !curve_input[currentCurve].id ) {
+					sprintf( errMsg, "INPUT: Exhausted memory while reading data from %s\n", filename );
+					error( errMsg );
+					fclose( fp_fit );
+					// Free list memory
+					nodePtr = pointList.next;
+					while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
+					// Free id memory
+					int i;
+					for( i=0; i<=currentCurve; i++ ) {
+						if( curve_input[i].filename )
+							free( curve_input[i].filename );
+						if( curve_input[i].id )
+							free( curve_input[i].id);
+					}
+					return( NULL );
+				}
+				// If allocation was successful, copy new id into curve_input
+				strcpy( curve_input[ currentCurve ].id, token2 );
+			}
+
+			else if( !strcasecmp(token1, "alpha1" )) {
+				curve_input[ currentCurve ].alpha1 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].alpha1 *= M_PI;
+			}
+
+			else if( !strcasecmp(token1, "alpha2" )) {
+				curve_input[ currentCurve ].alpha2 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].alpha2 *= M_PI;
+			}
+
+			else if( !strcasecmp(token1, "beta1" )) {
+				curve_input[ currentCurve ].beta1 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].beta1 *= M_PI;
+			}
+			
+			else if( !strcasecmp(token1, "beta2" )) {
+				curve_input[ currentCurve ].beta2 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].beta2 *= M_PI;
+			}
+			
+			else if( !strcasecmp(token1, "gamma1" )) {
+				curve_input[ currentCurve ].gamma1 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].gamma1 *= M_PI;
+			}
+			
+			else if( !strcasecmp(token1, "gamma2" ))  {
+				curve_input[ currentCurve ].gamma2 = atof( token2 );
+				if( !strcasecmp( token3, "pi" ))
+					curve_input[ currentCurve ].gamma2 *= M_PI;
+			}
+			
+			else if( !strcasecmp(token1, "weight" ))
+				curve_input[ currentCurve ].weight = atof( token2 );
+			
+			else if(  (token1[0]=='*') || (token1[0]==0)  )
+				; // Do nothing for comment lines and blank lines
+			else
+			{
+
+				// If we get here, this line SHOULD be a data-point.
+				// We will now store the point in our linked list.
+				//////////////////////////////////////////////////////
+
+
+				// Create a new node
+				orderedPairNode_t *newNodePtr = malloc( sizeof(orderedPairNode_t));
+				if( !newNodePtr )
+				{
+					sprintf( errMsg, "INPUT: Exhausted memory while reading data from %s\n", filename );
+					error( errMsg );
+					fclose( fp_fit );
+					// Free list memory
+					nodePtr = pointList.next;
+					while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
+					// Free id memory
+					int i; for( i=0; i<=currentCurve; i++ ) { free( curve_input[i].filename ); free( curve_input[i].id);}
+					return (NULL);
+				}
+
+				// Transfer data to new node
+				double r =                      // for convenient referencing of current r-value
+				newNodePtr->r = atof( token1 ); // molecule-molecule distance
+				newNodePtr->E = atof( token2 ); // energy value at distance r
+				
+				// Check for an invalid r-value
+				// An r-value of 0.0 may be indicative of a corrupt input line or an invalid keyword
+				if( r <= 0.0 )
+				{
+					sprintf( errMsg, "INPUT: Invalid r-value (%.2lf) in %s\n", r, filename );
+					error( errMsg );
+					if( r==0.0 )
+					{
+						error( "       Verify that all keywords in input file are spelled correctly.\n" );
+						error( "       Keywords are not case sensitive.\n" );
+					}
+					fclose( fp_fit );
+					// Free list memory
+					nodePtr = pointList.next;
+					while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
+					// Free id memory
+					int i; for( i=0; i<=currentCurve; i++ ) { free( curve_input[i].filename ); free( curve_input[i].id);}
+					return (NULL);
+				}
+
+				// Increment point-count metadata for this curve
+				curve_input[ currentCurve ].nPoints++;
+				
+				// Reset nodePtr and advance it to the correct list location
+				nodePtr = &pointList;
+				while(   (nodePtr->next)   &&   ((nodePtr->next->r) < r)   ) {
+					// Stop list-traversal if there is no next item, or if next r-value is >= to the current
+					// r-value (consequently maintaining a sorted list).
+					// Recall that for the && operator, the 2nd condition will not be evaluated if the 1st
+					// fails, i.e., we will not check the next r-value if there is no next r-value...
+					nodePtr = nodePtr->next;
+				}
+				
+				// Link newNode into the list at the location determined by previous while loop
+				newNodePtr->next = nodePtr->next;
+				nodePtr->next = newNodePtr;
+
+
+			} // done processing this line, proceed to the next...
+		} // while (fgets), i.e.  while(!EOF)
+		fclose(fp_fit);
+
+
+
+
+
+
+		// Ensure some point data was actually read
+		////////////////////////////////////////////
+		if(!curve_input[ currentCurve ].nPoints)
+		{
+			sprintf( errMsg, "INPUT: No data points found in file %s\n", filename );
+			error( errMsg );
+			// Free list memory
+			nodePtr = pointList.next;
+			while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
+			// Free memory for curve identification
+			int i; for( i=0; i<=currentCurve; i++ ) {free( curve_input[i].filename ); free( curve_input[i].id);}
+			return(NULL);
+		}
+		
+		
+		
+		
+		
+		
+		// Allocate array space to hold data points and copy
+		// data from the list to the array.
+		///////////////////////////////////////////////////////
+		
+		curve_input[ currentCurve ].r      = calloc( curve_input[ currentCurve ].nPoints, sizeof(double) );
+		curve_input[ currentCurve ].input  = calloc( curve_input[ currentCurve ].nPoints, sizeof(double) );
+		
+		if( !curve_input[ currentCurve ].r || !curve_input[ currentCurve ].input )
+		{
+			sprintf( errMsg, "INPUT: Exhausted memory transferring curve data to array, for curve: %s\n", filename );
+			error( errMsg );
+			// Free list memory
+			nodePtr = pointList.next;
+			while( nodePtr ){orderedPairNode_t *temp = nodePtr; nodePtr = nodePtr->next; free(temp);}
+			// Free curveData_t memory
+			int i;
+			for( i=0; i<=currentCurve; i++ ) {
+				if( curve_input[i].filename ) free( curve_input[i].filename );
+				if( curve_input[i].id       ) free( curve_input[i].id );
+				if( curve_input[i].r        ) free( curve_input[i].r );
+				if( curve_input[i].input    ) free( curve_input[i].input    );
+			}
+			return (NULL);
+		}
+
+		nodePtr = &pointList;  // reset nodePtr to list head
+		int N=0;               // reset N to first array element
+		// Copy point data from the linked list into the array
+		while( nodePtr->next )
+		{
+			nodePtr = nodePtr->next;
+			curve_input[ currentCurve ].r[N]     = nodePtr->r;
+			curve_input[ currentCurve ].input[N] = nodePtr->E;
+			++N;
+		}
+
+		// Free memory used by the list
+		nodePtr = pointList.next;
+		while( nodePtr )
+		{
+			orderedPairNode_t *temp = nodePtr;
+			nodePtr = nodePtr->next;
+			free(temp);
+		}
+
+
+
+		fNode = fNode->next;
+		++currentCurve;
+	} // while(fNode) i.e., Process next file in the list...
+
+
+
+
+
+
+	 // Normalize curve weights 
+	////////////////////////////
+	
+	int totalWeight = 0;
+	// Get the combined sum of all curve weights
+	for( currentCurve=0; currentCurve < nCurves; currentCurve++ )
+		totalWeight += curve_input[currentCurve].weight;
+	// Divide each curves individual weight by the total weight
+	for( currentCurve=0; currentCurve < nCurves; currentCurve++ )
+		curve_input[currentCurve].normalized_weight = (double) curve_input[currentCurve].weight / totalWeight;
+
+
+
+
+
+
+
+	// Check data validity...
+	///////////////////////////
+	
+	// Check that all curves have the same number of points
+	int lastPointCount = curve_input[0].nPoints;
+	for( currentCurve=1; currentCurve<nCurves; ++currentCurve )
+	if( lastPointCount == curve_input[currentCurve].nPoints )
+		lastPointCount =  curve_input[currentCurve].nPoints;
+	else
+	{
+		error( "INPUT: All curves must have the same number of data points.\n" );
+		// Free curveData_t memory
+		int i;
+		for( i=0; i<=currentCurve; i++ ) {
+			if( curve_input[i].filename ) free( curve_input[i].filename );
+			if( curve_input[i].id       ) free( curve_input[i].id );
+			if( curve_input[i].r        ) free( curve_input[i].r );
+			if( curve_input[i].input    ) free( curve_input[i].input    );
+		}
+		return( NULL );
+	}
+
+
+	// Check that all corresponding points on all the curves have identical r-values
+	int currentPoint;
+	for( currentPoint=0; currentPoint<curve_input[0].nPoints; ++currentPoint )
+	{
+		double lastRValue = curve_input[0].r[currentPoint];
+		for( currentCurve=1; currentCurve<nCurves; ++currentCurve ) {
+			if( lastRValue == curve_input[currentCurve].r[currentPoint] )
+				lastRValue =  curve_input[currentCurve].r[currentPoint];
+			else
+			{
+				error( "INPUT: Every curve must have identical r-values.\n" );
+				// Free curveData_t memory
+				int i;
+				for( i=0; i<=currentCurve; ++i ) {
+					if( curve_input[i].filename ) free( curve_input[i].filename );
+					if( curve_input[i].id       ) free( curve_input[i].id );
+					if( curve_input[i].r        ) free( curve_input[i].r );
+					if( curve_input[i].input    ) free( curve_input[i].input    );
+				}
+				return( NULL );
+			}
+		}
+	}
+
+
+	// Ensure that delta-r values are uniform
+	// Since we know the magnitude and quantity of r-values are identical across all
+	// curves, we will only check the delta-r's of the first curve.
+	
+	
+	// The standard by which all other delta-r values will be judged:
+	double reference_deltaR = curve_input[0].r[1] - curve_input[0].r[0];
+	
+	for( currentPoint=2; currentPoint<curve_input[0].nPoints; ++currentPoint )
+	{
+		double deltaR = curve_input[0].r[currentPoint] - curve_input[0].r[currentPoint-1];
+		if( fabs(deltaR - reference_deltaR) > threshold_for_identical_DeltaR )
+		{
+			error( "INPUT: Data points on curve must be evenly spaced.\n         " );
+			sprintf( errMsg, "       Tolerance currently set at: +/- %.17lf\n", threshold_for_identical_DeltaR );
+			error( errMsg );
+			// Free curveData_t memory
+			int i;
+			for( i=0; i<=currentCurve; i++ ) {
+				if( curve_input[i].filename ) free( curve_input[i].filename );
+				if( curve_input[i].filename ) free( curve_input[i].id       );
+				if( curve_input[i].r        ) free( curve_input[i].r        );
+				if( curve_input[i].input    ) free( curve_input[i].input    );
+			}
+			return( NULL );
+		}
+	}
+
+	return curve_input;
 }
 
 

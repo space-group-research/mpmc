@@ -1,3 +1,5 @@
+#ifndef MCH
+#define MCH
 
 extern int rank, size;
 
@@ -20,3 +22,5 @@ extern int rank, size;
 #include <structs.h>
 #include <function_prototypes.h>
 
+
+#endif /*ifndef MCH*/

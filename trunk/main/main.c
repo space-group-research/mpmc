@@ -143,36 +143,55 @@ int main(int argc, char **argv) {
 		output("MAIN: *************************************************\n");
 	}
 
+
+
 	if(system->ensemble == ENSEMBLE_SURF) { /* surface */
 		if(surface(system) < 0) {
 			error("MAIN: surface module failed on error, exiting\n");
 			die(1);
 		}
 	}
+	
+	
 	else if(system->ensemble == ENSEMBLE_SURF_FIT) { /* surface fitting */
-		if(surface_fit(system) < 0) {
+	    
+		if( system->surf_fit_arbitrary_configs ) {
+			if( surface_fit_arbitrary( system ) < 0 ) {
+				error("MAIN: surface fitting module (for arbitrary configurations) failed on error, exiting\n");
+				die(1);
+			}
+		}
+		else if(surface_fit(system) < 0) {
 			error("MAIN: surface fitting module failed on error, exiting\n");
 			die(1);
 		}
 	}
+	
+	
 	else if(system->ensemble == ENSEMBLE_REPLAY) { /* replay trajectory and recalc energies, etc. */
 		if(replay_trajectory(system) < 0) {
 			error("MAIN: trajectory replay failed, exiting\n");
 			die(1);
 		}
 	}
+	
+	
 	else if(system->ensemble == ENSEMBLE_TE) {
 		if(calculate_te(system) < 0) {
 			error("MAIN: single-point energy calculation failed, exiting\n");
 			die(1);
 		}
 	}
+	
+	
 	else { //else run monte carlo
 		if(mc(system) < 0) {
 			error("MAIN: MC failed on error, exiting\n");
 			die(1);
 		}
 	}
+
+
 
 	/* cleanup */
 	output("MAIN: freeing all data structures....");

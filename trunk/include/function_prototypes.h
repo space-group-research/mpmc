@@ -274,7 +274,7 @@ double co2_fugacity(double, double);
 
 
 //useful math calls
-double ddangle(double*, double*);
 double dddotprod(double*, double*);
 double didotprod(double*, int*);
 int iidotprod(int*, int*);
+double min ( double a, double b );

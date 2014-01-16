@@ -66,7 +66,7 @@ void cavity_volume(system_t *system) {
 		/* linear transform vector into real coordinates */
 		for(p = 0; p < 3; p++)
 			for(q = 0; q < 3; q++)
-				pos_vec[p] += system->pbc->basis[p][q]*grid_vec[q];
+				pos_vec[p] += system->pbc->basis[q][p]*grid_vec[q];
 
 		/* check if the random point lies within an empty cavity */
 		if(is_point_empty(system, pos_vec[0], pos_vec[1], pos_vec[2])) ++hits;
@@ -162,12 +162,12 @@ void cavity_update_grid(system_t *system) {
 				/* project the grid point onto our actual basis */
 				for(p = 0; p < 3; p++)
 					for(q = 0, grid_vector[p] = 0; q < 3; q++)
-						grid_vector[p] += system->pbc->basis[p][q]*grid_component[q];
+						grid_vector[p] += system->pbc->basis[q][p]*grid_component[q];
 
 				/* put into real coordinates */
 				for(p = 0; p < 3; p++)
 					for(q = 0; q < 3; q++)
-						grid_vector[p] -= 0.5*system->pbc->basis[p][q];
+						grid_vector[p] -= 0.5*system->pbc->basis[q][p];
 
 				/* if an atomic coordinate lies within a sphere centered on the grid point, then bin it */
 				for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {

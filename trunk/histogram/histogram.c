@@ -108,7 +108,7 @@ void wrap1coord(double *unwrapped, double *wrapped, system_t *system)
 	/* multiply this rounded fractional unit vector by basis */
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)
-			offset[i]+=system->pbc->basis[i][j]*unit[j];
+			offset[i]+=system->pbc->basis[j][i]*unit[j];
 
 	/* subtract this distance from the incoming vector */
 	for(i=0;i<3;i++) wrapped[i] = unwrapped[i] - offset[i];
@@ -200,7 +200,7 @@ int frac2cart(double *answer, double *frac, system_t *system)
 
 	for(i=0;i<3;i++){
 		for(j=0;j<3;j++){
-			answer[i]+=system->pbc->basis[i][j]*frac[j];
+			answer[i]+=system->pbc->basis[j][i]*frac[j];
 		}
 	}
 

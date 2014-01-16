@@ -631,7 +631,7 @@ void make_move(system_t *system) {
 					rand[p] = 0.5 - get_rand();
 				for(p = 0; p < 3; p++)
 					for(q = 0, com[p] = 0; q < 3; q++)
-						com[p] += system->pbc->basis[p][q]*rand[q];
+						com[p] += system->pbc->basis[q][p]*rand[q];
 			}
 
 			/* process the inserted molecule */

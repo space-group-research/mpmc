@@ -2,9 +2,6 @@
 
 int calculate_te (system_t *system) {
 
-	int j;
-	char linebuf[MAXLINE];
-
 	energy(system);
 
 #ifdef PRINT_EFIELD

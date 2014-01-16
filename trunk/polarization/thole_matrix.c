@@ -38,8 +38,8 @@ void thole_amatrix(system_t *system) {
 	int i, j, ii, jj, N, p, q;
 	atom_t **atom_array;
 	pair_t *pair_ptr;
-	double damp1, damp2, wdamp1, wdamp2, v, s;
-	double r, r2, ir3, ir5, ir;
+	double damp1=0, damp2=0, wdamp1=0, wdamp2=0, v, s;
+	double r, r2, ir3, ir5, ir=0;
 	double rcut, rcut2, rcut3;
 	rcut = system->pbc->cutoff;
 	rcut2 = rcut*rcut; rcut3 = rcut2*rcut;
@@ -258,7 +258,8 @@ void thole_bmatrix_dipoles(system_t *system) {
 
 void LU_decomp(double **a,int n,int *indx,double *d)
 {
-  int i,j,k,imax=0;
+  unsigned int j;
+  int i,k,imax=0;
   double big,dum,sum,temp,*vv;
 
   vv=(double *)malloc(n*sizeof(double));

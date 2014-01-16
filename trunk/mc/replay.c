@@ -5,7 +5,7 @@ int replay_trajectory (system_t * system) {
 
 //need to read in molecules and shit and loop through the trajectory file.
 
-	int j, errchk;
+	int errchk;
 	double initial_energy, final_energy;
 	char linebuf[MAXLINE];
 	double p, psum, psum2;
@@ -15,7 +15,7 @@ int replay_trajectory (system_t * system) {
 	rewind(finput);
 	if ( system->sorbateCount > 1 ) {
 		system->sorbateGlobal = calloc(system->sorbateCount, sizeof(sorbateAverages_t));
-		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__-1);
+		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__);
 	}
 
 	//now we need to loop. we will follow this procedure

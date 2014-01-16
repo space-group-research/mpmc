@@ -43,7 +43,7 @@ void thole_field(system_t *system) {
 void thole_field_nopbc(system_t *system) {
 
 	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
+	atom_t *atom_ptr;
 	pair_t *pair_ptr;
 	int p;
 	double r;
@@ -78,7 +78,7 @@ void thole_field_nopbc(system_t *system) {
 void thole_field_wolf(system_t *system) {
 
 	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
+	atom_t *atom_ptr;
 	pair_t *pair_ptr;
 	int p; //dimensionality
 	double r, rr; //r and 1/r (reciprocal of r)
@@ -89,7 +89,7 @@ void thole_field_wolf(system_t *system) {
 	double erR; //complementary error functions
 		erR=erfc(a*R);
 	double cutoffterm = (erR*rR*rR + 2.0*a*OneOverSqrtPi*exp(-a*a*R*R)*rR);
-	double bigmess;
+	double bigmess=0;
 
 	//init lookup table if needed
 	if ( system->polar_wolf_alpha_lookup && !(system->polar_wolf_alpha_table) )

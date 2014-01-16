@@ -1,4 +1,3 @@
-
 #include <mc.h>
 
 /* this function (a) determines what move will be made next time make_move() is called and (b) backups up the state to be restore upon rejection */
@@ -7,12 +6,12 @@ void checkpoint(system_t *system) {
 	int j;
 	int i_exchange, i_adiabatic;
 	int num_molecules_exchange, num_molecules_adiabatic, altered;
-	double num_molecules_exchange_double, num_molecules_adiabatic_double;
+	double num_molecules_adiabatic_double; 
 	molecule_t **ptr_array_exchange, **ptr_array_adiabatic;
 	molecule_t *molecule_ptr, *prev_molecule_ptr;
 
 	int alt;
-	sorbateInfo_t * sorbate_ptr;
+	// sorbateInfo_t * sorbate_ptr;  (unused variable)
 
 	/* save the current observables */
 	memcpy(system->checkpoint->observables, system->observables, sizeof(observables_t));
@@ -126,8 +125,6 @@ void checkpoint(system_t *system) {
 		else {
 			// Otherwise, perform the original MPMC treatment:
 			--num_molecules_exchange;
-//			num_molecules_exchange_double = (double)num_molecules_exchange;
-//			altered = num_molecules_exchange - (int)rint(num_molecules_exchange_double*get_rand());
 			altered = (int)floor(get_rand()*system->observables->N);
 			system->checkpoint->molecule_altered = ptr_array_exchange[altered];
 

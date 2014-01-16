@@ -188,7 +188,8 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 	double img[3];
 	double d[3], r, r2;
 	double di[3], ri, ri2;
-	double rnd;
+	// double rnd;  (unused variable)
+
 
 	/* get the real displacement */
 	pair_ptr->recalculate_energy = 0;	/* reset the recalculate flag */
@@ -252,14 +253,15 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 void pairs(system_t *system) {
 
 	int i, j, n;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
+	// molecule_t *molecule_ptr;     (unused variable)
+	// atom_t *atom_ptr;    (unused variable)
 	pair_t *pair_ptr;
 	molecule_t **molecule_array;
 	atom_t **atom_array;
 	/* needed for GS ranking metric */
-	int p;
-	double r, rmin;
+	// int p;   (unused variable)
+	// double r;    (unused variable)
+	double rmin;
 
 	// get array of atom ptrs
 	rebuild_arrays(system);
@@ -547,8 +549,8 @@ void unupdate_pairs_remove(system_t *system) {
 void setup_pairs(system_t * system) {
 
 	int i, j, n;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr, **atom_array;
+	// molecule_t *molecule_ptr;  (unused variable)
+	atom_t **atom_array; //, *atom_ptr;   (unused variable)
 	pair_t *pair_ptr, *prev_pair_ptr;
 
 	system->natoms = countNatoms(system);

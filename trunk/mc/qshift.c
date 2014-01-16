@@ -10,7 +10,7 @@ void qshift_do(
 		double scale_r, 
 		double Quadrupole
 ){
-	double xH2Qold, xH2Qnew;
+	double xH2Qold=0, xH2Qnew;
 	int FLAG = 0;
 	atom_t * atom_ptr;
 
@@ -47,7 +47,7 @@ void qshift_do(
 
 //take system variables, return quadrupole
 double calcquadrupole ( system_t * system ) {
-	double x, q;
+	double x=0, q=0;
 	int FLAG=0;
 
 	atom_t *atom_ptr;

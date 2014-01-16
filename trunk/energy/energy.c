@@ -64,11 +64,11 @@ double cavity_absolute_check ( system_t * system ) {
 /* returns the total potential energy for the system and updates our observables */
 double energy(system_t *system) {
 
-	molecule_t *molecule_ptr;
+	// molecule_t *molecule_ptr;  (unused variable)
 	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy;
 	double kinetic_energy;
-	struct timeval old_time, new_time;
-	char linebuf[MAXLINE];
+	// struct timeval old_time, new_time;  (unused variable)
+	// char linebuf[MAXLINE];   (unused variable)
 
 #ifdef POLARTIMING
 	static double timing = 0;
@@ -76,6 +76,7 @@ double energy(system_t *system) {
 #endif
 
 	/* zero the initial values */
+	kinetic_energy = 0;
 	potential_energy = 0;
 	rd_energy = 0;
 	coulombic_energy = 0;
@@ -176,7 +177,18 @@ double energy(system_t *system) {
 
 	/* sum the total potential energy */
 	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy;
+	
 	/* not truly potential, but stick it there for convenience of MC */
+	
+	/**
+	 *    POSSIBLE BUG: kinetic_energy was uninitialized, and previously only given a value inside the conditional: 
+	 *
+	 *        if(!(system->sg || system->rd_only)) {}
+	 *
+	 *    If this conditional fails, but (system->gwp) is true (idk if this is possible), an un-initialized value would have been
+	 *    added to potential_energy. Now, 0 is being added, but am not sure if this is the desired behavior. -bt
+	 **/
+	
 	if(system->gwp) potential_energy += kinetic_energy;
 	system->observables->energy = potential_energy;
 
@@ -236,39 +248,48 @@ double energy_no_observables(system_t *system) {
 	else if(!system->gwp)
 		rd_energy = lj(system);
 
-  /* get the electrostatic potential */
-  if(!(system->sg || system->rd_only)) {
-
-    if(system->spectre)
-      coulombic_energy = coulombic_nopbc(system->molecules);
-    else if(system->gwp) {
-      coulombic_energy = coulombic_nopbc_gwp(system);
-    } else
-      coulombic_energy = coulombic(system);
-
+	/* get the electrostatic potential */
+	if(!(system->sg || system->rd_only)) {
+	
+	if(system->spectre) {
+		coulombic_energy = coulombic_nopbc(system->molecules);
+	} else if(system->gwp) {
+		coulombic_energy = coulombic_nopbc_gwp(system);
+	} else {
+		coulombic_energy = coulombic(system);
+	}
+	
 		/* get the polarization potential */
-		if(system->polarization) {
-#ifdef CUDA
-      if(system->cuda)
-        polar_energy = (double)polar_cuda(system);
-      else
-        polar_energy = polar(system);
-#else
-      polar_energy = polar(system);
-#endif /* CUDA */
-		}
+	if(system->polarization) {
+		#ifdef CUDA
+		
+			if(system->cuda)
+				polar_energy = (double)polar_cuda(system);
+			else
+				polar_energy = polar(system);
+		
+		#else
+		
+			polar_energy = polar(system);
 
-		if(system->polarvdw) {
-#ifdef CUDA
-      if (system->cuda) {
-        error("error: cuda polarvdw not yet implemented!\n");
-        die(-1);
-      }
-      else
-      vdw_energy = vdw(system);
-#else
-      vdw_energy = vdw(system);
-#endif
+		#endif /* CUDA */
+	}
+	
+	if(system->polarvdw) {
+		#ifdef CUDA
+		
+			if (system->cuda) {
+				error("error: cuda polarvdw not yet implemented!\n");
+				die(-1);
+			}
+			else
+				vdw_energy = vdw(system);
+		
+		#else
+		
+			vdw_energy = vdw(system);
+			
+		#endif
 		}
 	}
 

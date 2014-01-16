@@ -239,7 +239,6 @@ void revert_volume_change( system_t * system ) {
 /* make an exact copy of src */
 molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 
-	int i, j;
 	molecule_t *dst;
 	atom_t *atom_dst_ptr, *prev_atom_dst_ptr, *atom_src_ptr;
 	pair_t *pair_dst_ptr, *prev_pair_dst_ptr, *pair_src_ptr;
@@ -263,6 +262,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 	memcpy(dst->wrapped_com, src->wrapped_com, 3*sizeof(double));
 
 #ifdef QM_ROTATION
+	int i, j;
 	if(system->quantum_rotation) {
 		dst->quantum_rotational_energies = calloc(system->quantum_rotation_level_max, sizeof(double));
 		memnullcheck(dst->quantum_rotational_energies, system->quantum_rotation_level_max*sizeof(double),__LINE__-1, __FILE__);
@@ -373,7 +373,6 @@ void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 	atom_t *atom_ptr;
 	double trans_x, trans_y, trans_z;
-	double boxlength;
 
 	trans_x = scale*get_rand()*pbc->cutoff;
 	trans_y = scale*get_rand()*pbc->cutoff;
@@ -399,7 +398,7 @@ void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
 void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 	atom_t *atom_ptr;
-	double x, y, z, magnitude, angle;
+	double x, y, z, angle;
 	double com[3];
 	int i, ii, n;
 	double *new_coord_array;
@@ -514,16 +513,18 @@ void displace_gwp(molecule_t *molecule, double scale) {
 /* perform a random translation/rotation of a molecule for SPECTRE algorithm */
 void spectre_displace(system_t *system, molecule_t *molecule, double trans_scale, double max_charge, double max_target) {
 
-	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int p;
 	double  trans[3];
 	double delta_charge;
 
 	/* randomly translate */
-	for(p = 0; p < 3; p++)
-		trans[p] = trans_scale*get_rand()*max_target; if(get_rand() < 0.5) trans[p] *= -1.0;
-
+	for(p = 0; p < 3; p++) {
+		trans[p] = trans_scale*get_rand()*max_target; 
+		if(get_rand() < 0.5) 
+			trans[p] *= -1.0;
+	}
+	
 	for(atom_ptr = molecule->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
 
 		/* position reassignment */
@@ -758,12 +759,7 @@ void make_move(system_t *system) {
 
 /* this function (a) undoes what make_move() did and (b) determines the next move sequence by calling checkpoint() */
 void restore(system_t *system) {
-
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
-	pair_t *prev_pair_ptr, *pair_ptr;
-	double keep_temperature;
-
+	
 	// restore the remaining observables 
 	memcpy(system->observables, system->checkpoint->observables, sizeof(observables_t));
 

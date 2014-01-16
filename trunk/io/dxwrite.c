@@ -55,7 +55,7 @@ int calculate_bonds(system_t *system)
 {
 	int inner_index=0,outer_index=0;
 	int bonds=0;
-	double bondlength;
+	// double bondlength; (unused variable)
 	molecule_t *mol;
 	atom_t *atom;
 	atom_t *atom2;
@@ -80,7 +80,7 @@ void print_frozen_bonds(FILE *fp_frozen, system_t *system)
 {
 	int inner_index=0,outer_index=0;
 	int bonds=0;
-	double bondlength;
+	// double bondlength;  (unused variable)
 	molecule_t *mol;
 	atom_t *atom;
 	atom_t *atom2;
@@ -140,7 +140,6 @@ void print_frozen_colors(FILE *fp_frozen, system_t *system)
 
 void write_frozen(FILE *fp_frozen, system_t *system)
 {
-	int i,j,k;
 	int numatoms;
 	int numbonds;
 
@@ -155,7 +154,7 @@ void write_frozen(FILE *fp_frozen, system_t *system)
 	print_frozen_bonds(fp_frozen,system);
 	fprintf(fp_frozen,"attribute \"element type\" string \"lines\"\n");
 	fprintf(fp_frozen,"attribute \"ref\" string \"positions\"\n");
-        fprintf(fp_frozen,"object 3 class array type float rank 0 items %d data follows\n",numatoms);
+	fprintf(fp_frozen,"object 3 class array type float rank 0 items %d data follows\n",numatoms);
 	print_frozen_masses(fp_frozen,system);
 	fprintf(fp_frozen,"attribute \"dep\" string \"positions\"\n");
 	fprintf(fp_frozen,"object 4 class array type float rank 1 shape 3 items %d data follows\n",numatoms);

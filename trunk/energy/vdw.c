@@ -144,7 +144,7 @@ double * lapack_diag ( struct mtx * M, int jobtype ) {
 	char uplo='L'; //operate on lower triagle
 	double * work; //working space for dsyev
 	int lwork; //size of work array
-	int rval; //returned from dsyev_
+	int rval=0; //returned from dsyev_
 	double * eigvals;
 	char linebuf[MAXLINE];
 
@@ -205,7 +205,7 @@ double eigen2energy ( double * eigvals, int dim, double temperature ) {
 //calculate energies for isolated molecules
 //if we don't know it, calculate it and save the value
 double calc_e_iso ( system_t * system, double * sqrtKinv, molecule_t * mptr ) {
-	int nstart, nsize, curr_dimM;
+	int nstart, nsize; // , curr_dimM;  (unused variable)
 	double e_iso; //total vdw energy of isolated molecules
 	struct mtx * Cm_iso; //matrix Cm_isolated
 	double * eigvals; //eigenvalues of Cm_cm
@@ -233,7 +233,7 @@ double calc_e_iso ( system_t * system, double * sqrtKinv, molecule_t * mptr ) {
 		free_mtx(Cm_iso);
 
 		//convert a.u. -> s^-1 -> K
-    return e_iso * au2invsec * halfHBAR ;
+		return e_iso * au2invsec * halfHBAR ;
 	}	
 
 	//unmatched molecule
@@ -246,7 +246,7 @@ double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
 	char linebuf[MAXLINE];
 	double e_iso = 0;
 	molecule_t * mp;
-	atom_t * ap;
+	// atom_t * ap;  (unused variable)
 	vdw_t * vp;
 	vdw_t * vpscan;
 
@@ -294,7 +294,7 @@ double sum_eiso_vdw ( system_t * system, double * sqrtKinv ) {
 		free_vdw_eiso(system->vdw_eiso_info);
 		system->vdw_eiso_info = NULL;
 	}
-			
+	
 	return e_iso;
 }
 
@@ -558,7 +558,7 @@ double twobody(system_t * system) {
 //returns interaction VDW energy
 double vdw(system_t *system) {
 
-	int N, dimC; //number of atoms, number of non-zero rows in C-Matrix
+	int N; //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
 	double e_total, e_iso; //total energy, isolation energy (atoms @ infinity)
 	double * sqrtKinv; //matrix K^(-1/2); cholesky decomposition of K
 	double ** Am = system->A_matrix; //A_matrix

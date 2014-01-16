@@ -44,11 +44,11 @@ double coulombic_reciprocal(system_t *system) {
 
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
-	int q, p, kmax, l[3];
+	int p, kmax, l[3]; //, q (unused variable)
 	double alpha;
-	double k[3], k_squared, gaussian, position_product;
+	double k[3], k_squared, position_product; //, gaussian (unused variable)
 	double SF_re, SF_im; /* structure factor */
-	double multiplier; //geometric multiplier
+	// double multiplier; //geometric multiplier (unused variable)
 	double potential = 0;
 
 	alpha = system->ewald_alpha;
@@ -121,7 +121,7 @@ double coulombic_real_FH(molecule_t * molecule_ptr, pair_t * pair_ptr, double ga
 	double fh_2nd_order, fh_4th_order;
 	double r = pair_ptr->rimg;
 	double rr = r*r;
-	double rrr = rr*r;
+	// double rrr = rr*r;  (unused variable)
 	double ir = 1.0/r;
 	double ir2 = ir*ir;
 	double ir3 = ir*ir2;

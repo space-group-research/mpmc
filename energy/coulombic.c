@@ -44,7 +44,7 @@ double coulombic_reciprocal(system_t *system) {
 
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
-	int p, kmax, l[3]; //, q (unused variable)
+	int p, q, kmax, l[3];
 	double alpha;
 	double k[3], k_squared, position_product; //, gaussian (unused variable)
 	double SF_re, SF_im; /* structure factor */
@@ -63,8 +63,10 @@ double coulombic_reciprocal(system_t *system) {
 				if (iidotprod(l,l) > kmax*kmax) continue;
 
 				/* get the reciprocal lattice vectors */
-				for(p = 0; p < 3; p++) 
-					k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
+				for(p = 0; p < 3; p++) {
+					for(q = 0, k[p] = 0; q < 3; q++)
+						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[p][q]*l[q];
+				}
 				k_squared = dddotprod(k,k);
 
 				/* structure factor */

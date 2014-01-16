@@ -150,7 +150,7 @@ int wrapall(molecule_t *molecules, pbc_t *pbc) {
 
 			for(i = 0; i < 3; i++) {
 				for(j = 0, dimg[i] = 0; j < 3; j++)
-					dimg[i] += pbc->basis[i][j]*d[j];
+					dimg[i] += pbc->basis[j][i]*d[j];
 
 				/* store the wrapped com coordinate */
 				molecule_ptr->wrapped_com[i] = dimg[i];
@@ -389,7 +389,7 @@ int write_molecules(system_t *system, FILE * fp) {
 
 				for(p = 0; p < 3; p++)
 					for(q = 0, box_pos[p] = 0; q < 3; q++)
-						box_pos[p] += system->pbc->basis[p][q]*box_occupancy[q];
+						box_pos[p] += system->pbc->basis[q][p]*box_occupancy[q];
 
 				for(p = 0; p < 3; p++)
 					if(ext_output == 0)

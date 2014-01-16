@@ -216,7 +216,7 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 	/* matrix multiply to project back into our basis */
 	for(p = 0; p < 3; p++)
 		for(q = 0, di[p] = 0; q < 3; q++)
-			di[p] += system->pbc->basis[p][q]*img[q];
+			di[p] += system->pbc->basis[q][p]*img[q];
 
 	/* now correct the displacement */
 	for(p = 0; p < 3; p++)

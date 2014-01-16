@@ -34,11 +34,11 @@ double coulombic_reciprocal_gwp(system_t *system) {
 					norm += l[p]*l[p];
 
 				/* get the reciprocal lattice vectors */
-				for(p = 0, k_squared = 0; p < 3; p++) {
+				for(p = 0; p < 3; p++) {
 					for(q = 0, k[p] = 0; q < 3; q++)
-						k[p] += system->pbc->reciprocal_basis[p][q]*2.0*M_PI*((double)l[q]);
-					k_squared += k[p]*k[p];
+						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[p][q]*l[q];
 				}
+				k_squared = dddotprod(k,k);
 
 				/* make sure we are within k-max */
 				if((norm <= kmax*kmax) && (k_squared > 0.0)) {

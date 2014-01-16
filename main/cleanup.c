@@ -63,9 +63,10 @@ void free_my_atoms ( molecule_t * molecules ) {
 /* free a molecule and all of it's associated stuff */
 void free_molecule(system_t *system, molecule_t *molecule) {
 
-	int i;
+	
 
 #ifdef QM_ROTATION
+	int i;
 	if(system->quantum_rotation && !molecule->frozen) {
 
 		free(molecule->quantum_rotational_energies);
@@ -116,7 +117,7 @@ void free_all_pairs(system_t * system) {
 // free all molecules
 void free_all_molecules(system_t * system, molecule_t * molecules) {
 
-	int i, j;
+	int i;
 	molecule_t **marray = NULL;
 	molecule_t *mptr;
 
@@ -142,9 +143,7 @@ void free_all_molecules(system_t * system, molecule_t * molecules) {
 void free_matrices(system_t *system) {
 
 	int i, N;
-	molecule_t * molecule_ptr;
-	atom_t * atom_ptr;
-
+	
 	if ( !system->A_matrix && !system->B_matrix )
 		return; //nothing to do
 

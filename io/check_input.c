@@ -448,7 +448,7 @@ void ensemble_replay_options(system_t * system) {
 }
 
 void mc_options (system_t * system) {
-	int i, j;
+	int i;
 	char linebuf[MAXLINE];
 
 	if (system->numsteps < 1) {
@@ -468,6 +468,7 @@ void mc_options (system_t * system) {
 	}
 
 #ifdef MPI
+	int j;
 	if(system->parallel_tempering ) {
 		if (!system->ptemp_freq) system->ptemp_freq = PTEMP_FREQ_DEFAULT;
 		system->ptemp = calloc(1,sizeof(ptemp_t));

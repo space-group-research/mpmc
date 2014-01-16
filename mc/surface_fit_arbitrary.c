@@ -7,7 +7,6 @@
 // calculates the current error for a surface energy versus the ab-initio curve
 double error_calc_fr_arbitrary_configurations( system_t *system, int nConfigs, configData_t *configuration, double max_energy ) {
 	
-	char out[1024];
 	int i;
 	double abInitio, model, weight;
 	double current_error = 0;
@@ -529,8 +528,6 @@ void dumpbestfitenergies( system_t * system, int nConfigs, configData_t * config
 
 // fit potential energy parameters via simulated annealing 
 int surface_fit_arbitrary( system_t *system ) {
-
-	char out[1024];
 	
 	// override default simulated annealing values, if they were specified in the input file
 	double temperature    = ((system->fit_start_temp     ) ? system->fit_start_temp     : TEMPERATURE    );
@@ -539,7 +536,7 @@ int surface_fit_arbitrary( system_t *system ) {
 	system->fit_max_energy = max_energy;
 
 	// used only if qshift is on
-	double quadrupole;
+	double quadrupole=0;
 
 	int i, j,       // generic counters
 	    nSteps;

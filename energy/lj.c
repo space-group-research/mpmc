@@ -168,7 +168,7 @@ double lj(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	pair_t *pair_ptr;
-	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12, r, sigma6;
+	double sigma_over_r, term12, term6, sigma_over_r6, sigma_over_r12, r; // , sigma6;   (unused variable)
 	double potential, potential_classical, cutoff;
 	int i[3], p, q;
 	double a[3];

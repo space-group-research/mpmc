@@ -19,7 +19,6 @@ University of South Florida
 /* calculate the energy for the surface scan - same as function energy() but without observables */
 double surface_energy(system_t *system, int energy_type) {
 
-	molecule_t *molecule_ptr;
 	double rd_energy, coulombic_energy, polar_energy, vdw_energy;
 
 	/* zero the initial values */
@@ -258,7 +257,6 @@ void molecule_rotate_quaternion(molecule_t *molecule, double alpha, double beta,
 /* calculate the isotropic potential energy surface of a molecule */
 int surface(system_t *system) {
 
-	int i;
 	int ao, bo, go, am, bm, gm, surf_print; /* for surf_output */
 	int avg_counter;
 	double avg_factor;
@@ -595,7 +593,7 @@ int surface_fit(system_t *system) {
 	double schedule       = ((system->fit_schedule       ) ? system->fit_schedule       : SCHEDULE       );
 
 	//used only if qshift is on
-	double quadrupole;
+	double quadrupole=0;
 
 	int i, j,  // generic counters
 	nCurves,   // number of curves to fit against
@@ -603,7 +601,6 @@ int surface_fit(system_t *system) {
 	nSteps;
 	double *r_input=0; // Master list of r-values
 	curveData_t *curve=0;   // Array to hold curve point data
-	atom_t *atom_ptr=0;
 	param_t *param_ptr;
 	param_g *params;
 	double r_min, r_max, r_inc;

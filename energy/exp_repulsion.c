@@ -15,7 +15,7 @@ double exp_fh_corr( system_t * system, molecule_t * molecule_ptr, pair_t * pair_
 	double ir = 1.0/pair_ptr->rimg;
 	double ir2 = ir*ir;
 	double ir3 = ir2*ir;
-	double ir4 = ir3*ir;
+	// double ir4 = ir3*ir;   (unused variable)
 
 	if ( (order != 2) && (order != 4) ) return NAN; //must be order 2 or 4
 
@@ -87,7 +87,7 @@ double exp_crystal_self ( system_t * system, atom_t * aptr, double cutoff ) {
 	double eps = aptr->epsilon;
 	int i[3], p, q;
 	double a[3];
-	double prefactor;
+	// double prefactor;   (unused variable)
 
 	if ( aptr->sigma == 0 || aptr->epsilon == 0 ) return 0; //skip if no LJ interaction
 
@@ -140,9 +140,10 @@ double exp_repulsion(system_t *system) {
 					if ( system->rd_lrc ) pair_ptr->lrc = exp_lrc_corr(system,atom_ptr,pair_ptr,cutoff);
 
 					// to include a contribution, we require
-					if ( 	( pair_ptr->rimg - SMALL_dR < cutoff ) && //inside cutoff?
-								( !pair_ptr->rd_excluded	|| system->rd_crystal ) && //either not excluded OR rd_crystal is ON
-								! pair_ptr->frozen ) { //not frozen
+					if (     (  pair_ptr->rimg - SMALL_dR < cutoff )  //inside cutoff?
+					      && ( !pair_ptr->rd_excluded	|| system->rd_crystal ) //either not excluded OR rd_crystal is ON
+					      &&   ! pair_ptr->frozen ) //not frozen
+					{
 
 						//loop over unit cells
 						if ( system->rd_crystal ) {

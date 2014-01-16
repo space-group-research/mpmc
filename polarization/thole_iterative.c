@@ -93,7 +93,7 @@ fprintf(stderr,"TOTAL DIPOLE RRMS %lf\n", totalrms);
 }
 
 int are_we_done_yet ( system_t * system, int iteration_counter ) {
-	int keep_iterating, i, p;
+	int i, p;
 	int N = system->natoms;
 	atom_t ** aa = system->atom_array;
 	double allowed_sqerr, error;
@@ -169,11 +169,10 @@ void update_ranking ( system_t * system, int * ranked_array ) {
 /* returns the number of iterations required */
 int thole_iterative(system_t *system) {
 
-	int i, j, ii, jj, N, p, q, sorted;
+	int i, N, p;
 	int iteration_counter, keep_iterating;
-	double error, carry;
 	atom_t ** aa; //atom array
-	int *ranked_array, ranked, tmp, index;
+	int *ranked_array;
 
 	aa = system->atom_array;
 	N = system->natoms;

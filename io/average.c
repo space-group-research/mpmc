@@ -115,7 +115,7 @@ void count_sorbates( system_t *system ) {
 // update the stats for the individual sorbates
 void update_sorbate_info ( system_t *system ) {
 
-	molecule_t *molecule_ptr;
+	// molecule_t *molecule_ptr;  (unused variable)
 
 	double sorbed_mass, pressure;
 	int i;
@@ -150,7 +150,7 @@ void update_sorbate_info ( system_t *system ) {
 void calc_system_mass( system_t * system ) {
 
 	molecule_t * molecule_ptr;
-	double frozen_mass;
+	// double frozen_mass;  (unused variable)
 	
 	system->observables->total_mass = 0;
 	system->observables->frozen_mass = 0;
@@ -248,7 +248,7 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t * sinfo ) {
 
 void update_root_averages(system_t *system, observables_t *observables, avg_observables_t *avg_observables) {
 
-	double particle_mass, curr_density;
+	double particle_mass=0, curr_density;
 	double frozen_mass = system->observables->frozen_mass;
 
 	molecule_t *molecule_ptr;

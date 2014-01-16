@@ -128,11 +128,11 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 		token_frozen[MAXLINE], token_moleculeid[MAXLINE], token_x[MAXLINE], token_y[MAXLINE], token_z[MAXLINE],
 		token_mass[MAXLINE], token_charge[MAXLINE], token_alpha[MAXLINE], token_epsilon[MAXLINE],
 		token_sigma[MAXLINE], token_omega[MAXLINE], token_gwp_alpha[MAXLINE];
-	int i, current_frozen, current_adiabatic, current_spectre, current_target, current_moleculeid, 
+	int current_frozen, current_adiabatic, current_spectre, current_target, current_moleculeid, 
 		current_atomid, current_site_neighbor, moveable, spectres, targets, atom_counter;
 	double current_x, current_y, current_z,
 		current_mass, current_charge, current_alpha, current_epsilon, 
-		current_sigma, current_omega, current_gwp_alpha, current_molecule_mass;
+		current_sigma, current_omega, current_gwp_alpha; //, current_molecule_mass; (unused variable)
 
 	fpos_t file_pos;
 	fgetpos(fp,&file_pos); //get file pointer position, we will restore this when done
@@ -339,7 +339,7 @@ void addSorbateToList( system_t *, char * );
 
 molecule_t *read_insertion_molecules(system_t *system) {
 
-	int i, j;
+	int j;
 
 	molecule_t *molecules, 
 	           *molecule_ptr;
@@ -356,7 +356,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	           token_moleculeid[MAXLINE],
 	           token_x[MAXLINE], token_y[MAXLINE], token_z[MAXLINE],
 	           token_mass[MAXLINE],
-		   token_charge[MAXLINE],
+	           token_charge[MAXLINE],
 	           token_alpha[MAXLINE], token_epsilon[MAXLINE], token_sigma[MAXLINE], 
 	           token_omega[MAXLINE], token_gwp_alpha[MAXLINE];
 	
@@ -369,14 +369,9 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	           current_site_neighbor;
 	double     current_x, current_y, current_z,
 	           current_mass,  current_charge, 
-                   current_alpha, current_epsilon, current_sigma, current_omega, current_gwp_alpha, 
-	           current_molecule_mass;
+	           current_alpha, current_epsilon, current_sigma, current_omega, current_gwp_alpha; 
 
-	int        moveable, 
-	           spectres, 
-	           targets,
-
-	           atom_counter;
+	int        atom_counter;
 
 
 	// allocate the start of the list 
@@ -508,7 +503,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 
 			++atom_counter;
 			atom_ptr->id        = atom_counter;
-                        atom_ptr->bond_id   = current_atomid;
+			atom_ptr->bond_id   = current_atomid;
 			memset(atom_ptr->atomtype, 0, MAXLINE);
 			strcpy(atom_ptr->atomtype, token_atomtype);
 			atom_ptr->frozen    = current_frozen;
@@ -575,7 +570,7 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	// allocate space for array that will give direct access to insertion-candidate
 	// molecules in the linked list. 
 	system->insertion_molecules_array = malloc( molecule_counter * sizeof(molecule_t*) );
-	memnullcheck(system->insertion_molecules_array, molecule_counter*sizeof(molecule_t *), __LINE__-1, __FILE__-1);
+	memnullcheck(system->insertion_molecules_array, molecule_counter*sizeof(molecule_t *), __LINE__-1, __FILE__);
 
 	// point array pointers to their corresponding molecules
 	molecule_counter=0;
@@ -622,7 +617,7 @@ void addSorbateToList( system_t * system, char *sorbate_type ){
 
 	// grow array
 	system->sorbateInfo = realloc(system->sorbateInfo, system->sorbateCount*sizeof(sorbateInfo_t));
-	memnullcheck(system->sorbateInfo, system->sorbateCount*sizeof(sorbateInfo_t), __LINE__-1, __FILE__-1);
+	memnullcheck(system->sorbateInfo, system->sorbateCount*sizeof(sorbateInfo_t), __LINE__-1, __FILE__);
 
 	// set sorbate type for the new element
 	strcpy( system->sorbateInfo[system->sorbateCount-1].id, sorbate_type );

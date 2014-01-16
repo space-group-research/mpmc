@@ -103,8 +103,6 @@ int open_files(system_t *system) {
 
 void close_files(system_t *system) {
 
-	int i;
-
 	if(system->file_pointers.fp_energy) fclose(system->file_pointers.fp_energy);
 	if(system->file_pointers.fp_energy_csv) fclose(system->file_pointers.fp_energy_csv);
 	if(system->file_pointers.fp_histogram) fclose(system->file_pointers.fp_histogram);
@@ -187,7 +185,7 @@ void spectre_wrapall(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int p;
-	double target[3];
+	double target[3] = {0,0,0};
 	double d[3], l;
 
 	/* boxlength */
@@ -224,12 +222,13 @@ void spectre_wrapall(system_t *system) {
 }
 
 int write_molecules_wrapper(system_t * system, char * filename) {
-	int rval, j;
-	char * filenameno, filenameold[MAXLINE];
+	int rval;
+	char  filenameold[MAXLINE]; 
 	FILE * fp;
 
 #ifdef MPI
-
+	int j;
+	char * filenameno;
 	//make a new filename with the core/or bath number appended
 	if ( system->parallel_tempering )
 		filenameno=make_filename(filename,system->ptemp->index[rank]); //append bath index to filename
@@ -281,7 +280,7 @@ int write_molecules(system_t *system, FILE * fp) {
 	int atom_box, molecule_box, p, q;
 	double box_pos[3], box_occupancy[3];
 	int l, m, n, box_labels[2][2][2], diff;
-	char linebuf[MAXLINE];
+	// char linebuf[MAXLINE];  (unused variable)
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int i, j, k;
@@ -562,11 +561,11 @@ void write_states(system_t * system) {
 	molecule_t *molecules = system->molecules;
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
-	char linebuf[MAXLINE];
-	double box_pos[3], box_occupancy[3];
-	int l, m, n, box_labels[2][2][2], diff;
-	int i, j, k;
-	int atom_box, molecule_box, p, q;
+	// char linebuf[MAXLINE]; (unused variable)
+	// double box_pos[3], box_occupancy[3];  (unused variables)
+	// int l, m, n, box_labels[2][2][2], diff;  (unused variables) 
+	int i, j; // , k;  (unused variable)
+	// int atom_box, molecule_box, p, q;  (unused variables)
 	int num_frozen_molecules, num_moveable_molecules;
 	int num_frozen_atoms, num_moveable_atoms;
 	int ext_output = 0; // By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
@@ -686,70 +685,71 @@ void write_states(system_t * system) {
 
 void write_surface_traj(FILE *fpsurf, system_t * system) {
 
-        molecule_t *molecules = system->molecules;
-        molecule_t *molecule_ptr;
-        atom_t *atom_ptr;
-        char linebuf[MAXLINE];
-        double box_pos[3], box_occupancy[3];
-        int l, m, n, box_labels[2][2][2], diff;
-        int i, j, k;
-        int atom_box, molecule_box, p, q;
-        int num_frozen_molecules, num_moveable_molecules;
-        int num_frozen_atoms, num_moveable_atoms;
-        int ext_output = 0; // Don't want to use extended output for surface trajectory file.
+	molecule_t *molecules = system->molecules;
+	molecule_t *molecule_ptr;
+	atom_t *atom_ptr;
+	// char linebuf[MAXLINE];  (unused variable)
+	// double box_pos[3], box_occupancy[3]; (unused variables)
+	// int l, m, n, box_labels[2][2][2], diff;  (unused variables)
+	int i, j; //, k; (unused variable)
+	// int atom_box, molecule_box, p, q; (unused variables) 
+	// int num_frozen_molecules, num_moveable_molecules;  (unused variables)
+	// int num_frozen_atoms, num_moveable_atoms;  (unused variable)
+	// int ext_output = 0; // Don't want to use extended output for surface trajectory file.  (unused variable)
 
 	//don't bother if we'd be writing to /dev/null
-	if ( ! strncmp("/dev/null",system->surf_output,9) ) return;
+	if ( ! strncmp("/dev/null",system->surf_output,9) ) 
+		return;
 
-        fprintf(fpsurf, "#;");
+	fprintf(fpsurf, "#;");
 #ifdef MPI
-        fprintf(fpsurf, "Rn%d;", rank);
+	fprintf(fpsurf, "Rn%d;", rank);
 #endif
 
-        /* write pqr formatted states */
-        for(molecule_ptr = molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
-                for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++) {
+	/* write pqr formatted states */
+	for(molecule_ptr = molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++) {
+		
+			/* REDUCED & CONDENSED OUTPUT */
+			fprintf(fpsurf, "@,");
+			fprintf(fpsurf, "%d,", i);              /* give each one a unique id */
+			fprintf(fpsurf, "%s,", atom_ptr->atomtype);
+			fprintf(fpsurf, "%s,", molecule_ptr->moleculetype);
+			if(atom_ptr->adiabatic)
+				fprintf(fpsurf, "%s,", "A");
+			else if(atom_ptr->frozen)
+				fprintf(fpsurf, "%s,", "F");
+			else if(atom_ptr->spectre)
+				fprintf(fpsurf, "%s,", "S");
+			else if(atom_ptr->target)
+				fprintf(fpsurf, "%s,", "T");
+			else
+				fprintf(fpsurf, "%s,", "M");
+			fprintf(fpsurf, "%d,", j);              /* give each molecule a unique id */
+			
+			/* Regular (PDB compliant) Coordinate Output */
+			if( (atom_ptr->wrapped_pos[0] < 0.0005) && (atom_ptr->wrapped_pos[0] > -0.0005) )
+				fprintf(fpsurf, "*,");
+			else
+				fprintf(fpsurf, "%.3f,", atom_ptr->wrapped_pos[0]);
+			
+			if( (atom_ptr->wrapped_pos[1] < 0.0005) && (atom_ptr->wrapped_pos[1] > -0.0005) )
+				fprintf(fpsurf, "*,");
+			else
+				fprintf(fpsurf, "%.3f,", atom_ptr->wrapped_pos[1]);
+			
+			if( (atom_ptr->wrapped_pos[2] < 0.0005) || (atom_ptr->wrapped_pos[2] > -0.0005) )
+				fprintf(fpsurf, "*,");
+			else
+				fprintf(fpsurf, "%.3f", atom_ptr->wrapped_pos[2]);
+			
+			fprintf(fpsurf, ";");
+		
+		}
+	}
 
-			                        /* REDUCED & CONDENSED OUTPUT */
-                        fprintf(fpsurf, "@,");
-                        fprintf(fpsurf, "%d,", i);              /* give each one a unique id */
-                        fprintf(fpsurf, "%s,", atom_ptr->atomtype);
-                        fprintf(fpsurf, "%s,", molecule_ptr->moleculetype);
-                        if(atom_ptr->adiabatic)
-                                fprintf(fpsurf, "%s,", "A");
-                        else if(atom_ptr->frozen)
-                                fprintf(fpsurf, "%s,", "F");
-                        else if(atom_ptr->spectre)
-                                fprintf(fpsurf, "%s,", "S");
-                        else if(atom_ptr->target)
-                                fprintf(fpsurf, "%s,", "T");
-                        else
-                                fprintf(fpsurf, "%s,", "M");
-                        fprintf(fpsurf, "%d,", j);              /* give each molecule a unique id */
-
-                        /* Regular (PDB compliant) Coordinate Output */
-                        if( (atom_ptr->wrapped_pos[0] < 0.0005) && (atom_ptr->wrapped_pos[0] > -0.0005) )
-                                fprintf(fpsurf, "*,");
-                        else
-                                fprintf(fpsurf, "%.3f,", atom_ptr->wrapped_pos[0]);
-
-                        if( (atom_ptr->wrapped_pos[1] < 0.0005) && (atom_ptr->wrapped_pos[1] > -0.0005) )
-                                fprintf(fpsurf, "*,");
-                        else
-                                fprintf(fpsurf, "%.3f,", atom_ptr->wrapped_pos[1]);
-
-                        if( (atom_ptr->wrapped_pos[2] < 0.0005) || (atom_ptr->wrapped_pos[2] > -0.0005) )
-                                fprintf(fpsurf, "*,");
-                        else
-                                fprintf(fpsurf, "%.3f", atom_ptr->wrapped_pos[2]);
-
-                        fprintf(fpsurf, ";");
-
-                }
-        }
-
-        fprintf(fpsurf, "!;");
-        fflush(fpsurf);
+	fprintf(fpsurf, "!;");
+	fflush(fpsurf);
 
 }
 

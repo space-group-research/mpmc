@@ -104,7 +104,7 @@ void output_pqrs ( system_t * system, int nCurves, curveData_t * curve ) {
 		// Apply rotation associated with i-th curve and separate COM by 5 Angstroms
 		surface_dimer_geometry(system, 5.0, curve[i].alpha1, curve[i].beta1, curve[i].gamma1,
 		                                    curve[i].alpha2, curve[i].beta2, curve[i].gamma2, 0);
-		sprintf( filename, "%s.pqr\0", curve[i].id );
+		sprintf( filename, "%s.pqr", curve[i].id );
 		write_molecules_wrapper( system, filename );
 		
 		// Restore the molecule to its initial orientation
@@ -153,7 +153,7 @@ param_g * record_params ( system_t * system ) {
 	memnullcheck(param_list,sizeof(param_t), __LINE__-1, __FILE__);
 	
 	param_t * param_ptr = param_list; //used to seek through param list
-	param_t * prev_param_ptr;
+	param_t * prev_param_ptr=0;
 
 	rval->alpha = system->polar_damp;
 	rval->last_alpha = system->polar_damp;
@@ -216,10 +216,10 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 	double scale_alpha = ((system->surf_scale_alpha_on) ? system->surf_scale_alpha : SCALE_ALPHA );
 	double scale_pol = ((system->surf_scale_pol_on) ? system->surf_scale_pol : SCALE_POL );
 
-	double delta_q;
+	double delta_q=0;
 
 	int nchargedsites=0;
-	double initcharge;
+	double initcharge=0;
 
 	//if qshift is on, determine the qshift parameters for this time step
 	// these will be applied in the following loop

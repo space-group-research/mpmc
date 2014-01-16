@@ -9,6 +9,7 @@ University of South Florida
 int rank, size;
 
 #include <mc.h>
+#include "surface_fit_arbitrary.h"
 
 //kill MPI before quitting, when neccessary
 void die( int code ){
@@ -27,9 +28,6 @@ void usage(char *progname) {
 int main(int argc, char **argv) {
 
 	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
-	int i, j, N;
-	molecule_t *molecule_ptr;
-	atom_t *atom_ptr;
 	char linebuf[MAXLINE];
 	char input_file[MAXLINE];
 	system_t *system;

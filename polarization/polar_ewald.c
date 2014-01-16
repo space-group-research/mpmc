@@ -79,9 +79,8 @@ void real_term ( system_t * system ) {
 void recip_term ( system_t * system ) {
 	molecule_t * mptr;
 	atom_t * aptr;
-	pair_t * pptr;
-	int p, q, l[3], kmax;
-	double r, ea, k[3], k2, kdotr, kweight[3], float1, float2;
+	int p, l[3], kmax;
+	double ea, k[3], k2, kweight[3], float1, float2;
 	ea = system->polar_ewald_alpha; //actually sqrt(ea)
 	kmax = system->ewald_kmax;
 
@@ -181,7 +180,7 @@ void induced_real_term(system_t * system) {
 	molecule_t * mptr;
 	atom_t * aptr;
 	pair_t * pptr;
-	double erfcar, expa2r2, r, ir, ir3, ir5, explr;
+	double erfcar, expa2r2, r, ir, ir3, ir5;
 	double T; //dipole-interaction tensor component
 	double s1, s2; //common term (s_2 via eq 10. JCP 133 243101)
 	int p, q; //dimensions
@@ -381,7 +380,7 @@ void ewald_palmo_contraction ( system_t * system ) {
 //see nymand and linse jcp 112 6152 (2000)
 void ewald_full ( system_t * system ) {
 
-	int max_iter=system->polar_max_iter;
+	//int max_iter=system->polar_max_iter;  (unused variable)
 	int keep_iterating, iteration_counter;
 
 	//calculate static e-field

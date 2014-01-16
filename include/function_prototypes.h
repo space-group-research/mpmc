@@ -56,6 +56,13 @@ void rebuild_arrays (system_t *); //builds atom and molecule arrays for the curr
 void write_observables_csv(FILE *, system_t *, observables_t *, double);
 void update_sorbate_info(system_t *);
 int safe_atof(char *, double *);
+int safe_atoi ( char * a, int * i );
+int safe_atou ( char * a, uint32_t * i );
+int safe_atol ( char * a, long unsigned int * l );
+
+
+
+
 int check_system(system_t *);
 system_t *read_config(char *);
 int setup_simulation_box(FILE *, system_t *);

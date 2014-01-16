@@ -63,10 +63,11 @@ void compute_bin(double *cart_coords, system_t *system, int *bin_vector)
 {
 	double frac_coords[3];
 	int Abin,Bbin,Cbin;
-	int index;
+	/* unused variables
 	int xdim=system->grids->histogram->x_dim;
 	int ydim=system->grids->histogram->y_dim;
 	int zdim=system->grids->histogram->z_dim;
+	*/
 
 	/* we need the fractional coords to simplify the bin calculation */
 	cart2frac(frac_coords,cart_coords,system);
@@ -125,7 +126,6 @@ void wrap1coord(double *unwrapped, double *wrapped, system_t *system)
 void population_histogram(system_t *system)
 {
 	molecule_t *mol_p;
-	char linebuf[MAXLINE];
 	int bin[3];
 	double wrappedcoords[3];
 	for(mol_p = system->molecules; mol_p; mol_p = mol_p->next){
@@ -235,7 +235,7 @@ double magnitude(double *vector){
 
 void allocate_histogram_grid(system_t *system)
 {
-	int i,j,k;
+	int i,j;
 	int x_dim=system->grids->histogram->x_dim;
 	int y_dim=system->grids->histogram->y_dim;
 	int z_dim=system->grids->histogram->z_dim;
@@ -319,7 +319,6 @@ void offset_dx_origin(double *real_origin_cartesian, histogram_t *hist, system_t
  * see DX userguide.pdf appendix B for details. */
 void setup_dx_variables(histogram_t *hist, system_t *system)
 {
-	int i,j,k;
 	double vec[3],origin[3];
 
 	/* setup counts */
@@ -353,7 +352,7 @@ void setup_histogram(system_t *system){
 	double trial_vec1[3];
 	double trial_vec2[3];
 	double magA,magB,magC;
-	int Nbins,i,j,x_dim,y_dim,z_dim;
+	int Nbins,x_dim,y_dim,z_dim;
 
 	/* get the magnitudes of all the basis vectors and test the frac2cart routine.
 	 * define a fractional vector (1,0,0) and transform it with our basis.

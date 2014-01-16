@@ -216,30 +216,29 @@ void register_reject(system_t *system) {
 /* implements the Markov chain */
 int mc(system_t *system) {
 
-	int i;
 	int j, msgsize;
 	double initial_energy, final_energy, current_energy;
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
-	sorbateInfo_t * sinfo_mpi;
-	double *temperature_mpi;
-	char *snd_strct, *rcv_strct;
-	char linebuf[MAXLINE];
+	sorbateInfo_t * sinfo_mpi=0;
+	double *temperature_mpi=0;
+	char *snd_strct=0, *rcv_strct=0;
+	// char linebuf[MAXLINE];  (unused variable)
 #ifdef MPI
 	MPI_Datatype msgtype;
 #endif /* MPI */
 
 	/* allocate the statistics structures */
 	observables_mpi = calloc(1, sizeof(observables_t));
-	memnullcheck(observables_mpi, sizeof(observables_t), __LINE__-1, __FILE__-1);
+	memnullcheck(observables_mpi, sizeof(observables_t), __LINE__-1, __FILE__);
 	avg_nodestats_mpi = calloc(1, sizeof(avg_nodestats_t));
-	memnullcheck(avg_nodestats_mpi, sizeof(avg_nodestats_t), __LINE__-1, __FILE__-1);
+	memnullcheck(avg_nodestats_mpi, sizeof(avg_nodestats_t), __LINE__-1, __FILE__);
 	// if multiple-sorbates, allocate sorb statistics struct
 	if ( system->sorbateCount > 1 ) {
 		sinfo_mpi = calloc(system->sorbateCount, sizeof(sorbateInfo_t));
-		memnullcheck(sinfo_mpi, sizeof(sorbateInfo_t), __LINE__-1, __FILE__-1);
+		memnullcheck(sinfo_mpi, sizeof(sorbateInfo_t), __LINE__-1, __FILE__);
 		system->sorbateGlobal = calloc(system->sorbateCount, sizeof(sorbateAverages_t));
-		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__-1);
+		memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__-1, __FILE__);
 	}
 
 	// compute message size	
@@ -254,12 +253,12 @@ int mc(system_t *system) {
 
 	/* allocate MPI structures */
 	snd_strct = calloc(msgsize, 1);
-	memnullcheck(snd_strct,sizeof(msgsize), __LINE__-1, __FILE__-1);
+	memnullcheck(snd_strct,sizeof(msgsize), __LINE__-1, __FILE__);
 	if(!rank) {
 		rcv_strct = calloc(size, msgsize);
-		memnullcheck(rcv_strct, size*sizeof(msgsize), __LINE__-1, __FILE__-1);
+		memnullcheck(rcv_strct, size*sizeof(msgsize), __LINE__-1, __FILE__);
 		temperature_mpi = calloc(size, sizeof(double)); //temperature list for parallel tempering
-		memnullcheck(temperature_mpi, size*sizeof(double), __LINE__-1, __FILE__-1);
+		memnullcheck(temperature_mpi, size*sizeof(double), __LINE__-1, __FILE__);
 	}
 
 	/* update the grid for the first time */

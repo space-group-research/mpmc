@@ -208,7 +208,7 @@ void minimum_image(system_t *system, atom_t *atom_i, atom_t *atom_j, pair_t *pai
 
 	for(p = 0; p < 3; p++) {
 		for(q = 0, img[p] = 0; q < 3; q++) {
-			img[p] += system->pbc->reciprocal_basis[p][q]*d[q];
+			img[p] += system->pbc->reciprocal_basis[q][p]*d[q];
 		}
 		img[p] = rint(img[p]);
 	}

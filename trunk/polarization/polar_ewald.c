@@ -79,7 +79,7 @@ void real_term ( system_t * system ) {
 void recip_term ( system_t * system ) {
 	molecule_t * mptr;
 	atom_t * aptr;
-	int p, l[3], kmax;
+	int p, q, l[3], kmax;
 	double ea, k[3], k2, kweight[3], float1, float2;
 	ea = system->polar_ewald_alpha; //actually sqrt(ea)
 	kmax = system->ewald_kmax;
@@ -92,10 +92,11 @@ void recip_term ( system_t * system ) {
 				// if |l|^2 > kmax^2, then it doesn't contribute (outside the k-space cutoff)
 				if ( iidotprod(l,l) > kmax*kmax ) continue; 
 
-				for ( p=0; p<3; p++ ) //make recip lattice vector
-					k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
-
-				k2 = dddotprod(k,k); // |k|^2
+				for(p = 0; p < 3; p++) {
+					for(q = 0, k[p] = 0; q < 3; q++)
+						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[q][p]*l[q];
+				}
+				k2 = dddotprod(k,k);
 
 				kweight[0] = k[0]/k2 * exp(-k2/(4.0*ea*ea));
 				kweight[1] = k[1]/k2 * exp(-k2/(4.0*ea*ea));
@@ -235,7 +236,7 @@ void induced_recip_term(system_t * system) {
 	atom_t * aptr;
 	atom_t ** aarray = NULL;
 	int i, j, N, l[3];
-	int p;
+	int p, q;
 	double Psin, Pcos, kweight;
 	double a = system->polar_ewald_alpha;
 	double kmax = system->ewald_kmax;
@@ -260,10 +261,11 @@ void induced_recip_term(system_t * system) {
 		// if |l|^2 > kmax^2, then it doesn't contribute (outside the k-space cutoff)
 		if ( iidotprod(l,l) > kmax*kmax ) continue; 
 
-		for ( p=0; p<3; p++ ) //make recip lattice vector
-			k[p] = 2.0*M_PI*didotprod(system->pbc->reciprocal_basis[p],l);
-
-		k2 = dddotprod(k,k); // |k|^2
+		for(p = 0; p < 3; p++) {
+			for(q = 0, k[p] = 0; q < 3; q++)
+				k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[q][p]*l[q];
+		}
+		k2 = dddotprod(k,k);
 
 		for ( p=0; p<3; p++ ) 	
 			kweight = 8.0*M_PI/system->pbc->volume * exp(-k2/(4.0*a*a))/k2 * k[p];

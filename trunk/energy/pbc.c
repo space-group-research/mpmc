@@ -59,7 +59,7 @@ void pbc_reciprocal(pbc_t *pbc) {
 
 	pbc->reciprocal_basis[1][0] = inverse_volume*(pbc->basis[1][2]*pbc->basis[2][0] - pbc->basis[1][0]*pbc->basis[2][2]);
 	pbc->reciprocal_basis[1][1] = inverse_volume*(pbc->basis[0][0]*pbc->basis[2][2] - pbc->basis[0][2]*pbc->basis[2][0]);
-	pbc->reciprocal_basis[1][2] = inverse_volume*(pbc->basis[0][2]*pbc->basis[1][2] - pbc->basis[0][0]*pbc->basis[1][2]);
+	pbc->reciprocal_basis[1][2] = inverse_volume*(pbc->basis[0][2]*pbc->basis[1][0] - pbc->basis[0][0]*pbc->basis[1][2]);
 
 	pbc->reciprocal_basis[2][0] = inverse_volume*(pbc->basis[1][0]*pbc->basis[2][1] - pbc->basis[1][1]*pbc->basis[2][0]);
 	pbc->reciprocal_basis[2][1] = inverse_volume*(pbc->basis[0][1]*pbc->basis[2][0] - pbc->basis[0][0]*pbc->basis[2][1]);

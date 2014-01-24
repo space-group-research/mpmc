@@ -99,8 +99,9 @@ void wrap1coord(double *unwrapped, double *wrapped, system_t *system)
 	
 	/* put coords in fractional representation */
 	for(i=0;i<3;i++)
-		for(j=0;j<3;j++)
-			frac[i]+=system->pbc->reciprocal_basis[i][j]*unwrapped[j];
+		for(j=0;j<3;j++) 
+			//we use transpose(recip_basis), because transpose(recip_basis).basis_vector = <1,0,0> , <0,1,0> or <0,0,1>
+			frac[i]+=system->pbc->reciprocal_basis[j][i]*unwrapped[j];
 
 	/* any fractional coord > .5 or < -.5 round to 1,-1 etc. */	
 	for(i=0;i<3;i++) unit[i] = rint(frac[i]);
@@ -138,7 +139,7 @@ void population_histogram(system_t *system)
 			(system->grids->histogram->grid[(bin[0])][(bin[1])][(bin[2])])++;
 		} 
 	}
-	
+ 
 }
 /* This writes out the grid with the Cbin (last index) varying 
  * the fastest.  Line break between dimensions, double line
@@ -204,6 +205,7 @@ int frac2cart(double *answer, double *frac, system_t *system)
 		}
 	}
 
+
 	return 1;
 }
 
@@ -218,7 +220,8 @@ int cart2frac(double *answer, double *cart, system_t *system){
 
         for(i=0;i<3;i++){
                 for(j=0;j<3;j++){
-                        answer[i]+=system->pbc->reciprocal_basis[i][j]*cart[j];
+												//we use transpose(recip_basis), because transpose(recip_basis).basis_vector = <1,0,0> , <0,1,0> or <0,0,1>
+                        answer[i]+=system->pbc->reciprocal_basis[j][i]*cart[j];
                 }
         }
 

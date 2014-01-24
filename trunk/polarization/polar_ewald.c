@@ -94,7 +94,7 @@ void recip_term ( system_t * system ) {
 
 				for(p = 0; p < 3; p++) {
 					for(q = 0, k[p] = 0; q < 3; q++)
-						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[q][p]*l[q];
+						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[p][q]*l[q];
 				}
 				k2 = dddotprod(k,k);
 
@@ -263,7 +263,7 @@ void induced_recip_term(system_t * system) {
 
 		for(p = 0; p < 3; p++) {
 			for(q = 0, k[p] = 0; q < 3; q++)
-				k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[q][p]*l[q];
+				k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[p][q]*l[q];
 		}
 		k2 = dddotprod(k,k);
 

@@ -36,7 +36,7 @@ double coulombic_reciprocal_gwp(system_t *system) {
 				/* get the reciprocal lattice vectors */
 				for(p = 0; p < 3; p++) {
 					for(q = 0, k[p] = 0; q < 3; q++)
-						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[q][p]*l[q];
+						k[p] += 2.0*M_PI*system->pbc->reciprocal_basis[p][q]*l[q];
 				}
 				k_squared = dddotprod(k,k);
 

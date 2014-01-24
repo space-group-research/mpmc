@@ -143,7 +143,7 @@ int wrapall(molecule_t *molecules, pbc_t *pbc) {
 			/* get the minimum imaging distance for the com */
 			for(i = 0; i < 3; i++) {
 				for(j = 0, d[i] = 0; j < 3; j++) {
-					d[i] += pbc->reciprocal_basis[i][j]*molecule_ptr->com[j];
+					d[i] += pbc->reciprocal_basis[j][i]*molecule_ptr->com[j];
 				}
 				d[i] = rint(d[i]);
 			}

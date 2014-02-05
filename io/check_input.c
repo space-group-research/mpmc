@@ -913,6 +913,9 @@ int check_system(system_t *system) {
 	if(system->dreiding) output("INPUT: Molecular potential is DREIDING\n");
 	if(system->lj_buffered_14_7) output("INPUT: Molecular potential is lj_buffered_14_7\n");
 	if(system->lj_buffered_14_7) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");
+	if(system->disp_expansion) output("INPUT: Using the dispersion expansion for LJ-interactions.\n");
+	if(system->disp_expansion_exp_repulsion) output("INPUT: Using the exponential repulsion for LJ-interactions.\n");
+	if(system->disp_expansion_exp_repulsion_alternate) output("INPUT: Using the alternate exponential repulsion for LJ-interactions.\n");
 	if(system->feynman_hibbs) feynman_hibbs_options(system);
 	if(system->simulated_annealing) simulated_annealing_options(system);
 	if(system->calc_hist) hist_options(system);

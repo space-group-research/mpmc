@@ -583,6 +583,30 @@ int do_command (system_t * system, char ** token ) {
 			system->lj_buffered_14_7 = 0;
 		else return 1;
 	}
+
+	else if(!strcasecmp(token[0], "disp_expansion")) {
+		if(!strcasecmp(token[1],"on"))
+			system->disp_expansion = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->disp_expansion = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "disp_expansion_exp_repulsion")) {
+		if(!strcasecmp(token[1],"on"))
+			system->disp_expansion_exp_repulsion = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->disp_expansion_exp_repulsion = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "disp_expansion_exp_repulsion_alternate")) {
+		if(!strcasecmp(token[1],"on"))
+			system->disp_expansion_exp_repulsion_alternate = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->disp_expansion_exp_repulsion_alternate = 0;
+		else return 1;
+	}
 	
 	else if(!strcasecmp(token[0], "wrapall")) {
 		if(!strcasecmp(token[1],"on"))

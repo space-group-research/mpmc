@@ -49,6 +49,8 @@ double surface_energy(system_t *system, int energy_type) {
 				rd_energy = dreiding_nopbc(system->molecules);
 			else if(system->lj_buffered_14_7)
 				rd_energy = lj_buffered_14_7_nopbc(system);
+			else if(system->disp_expansion)
+				rd_energy = disp_expansion_nopbc(system);
 			else 
 				rd_energy = lj_nopbc(system);
 			
@@ -67,6 +69,8 @@ double surface_energy(system_t *system, int energy_type) {
 				rd_energy = dreiding_nopbc(system->molecules);
 			} else if(system->lj_buffered_14_7) {
 				rd_energy = lj_buffered_14_7_nopbc(system);
+			} else if(system->disp_expansion) {
+				rd_energy = disp_expansion_nopbc(system);
 			} else {
 				rd_energy = lj_nopbc(system);
 			}

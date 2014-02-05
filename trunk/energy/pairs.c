@@ -142,12 +142,18 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			pair_ptr->sigrep = 1.5*HBAR/KB*au2invseconds*atom_i->omega*atom_j->omega *
 				atom_i->polarizability*atom_j->polarizability/(atom_i->omega + atom_j->omega)/pow(pair_ptr->sigma,6);
 		}
-		else if ( system->polarvdw && system->cdvdw_exp_repulsion ) {// mix for buckingham repulsion
+		else if ( (system->polarvdw && system->cdvdw_exp_repulsion) || system->disp_expansion_exp_repulsion) {// mix for buckingham repulsion
 			// sigma == C, epsilon == rho
 			// U = C exp(-R/(2*rho))
 			pair_ptr->sigma = pow(pow(atom_i->sigma,atom_i->epsilon) * pow(atom_j->sigma,atom_j->epsilon),1.0/((atom_i->epsilon+atom_j->epsilon)));
 			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);
-		} 
+		}
+		else if (system->disp_expansion_exp_repulsion_alternate) {// mix for buckingham repulsion
+			// sigma == r, epsilon == rho, C = 216 K
+			// U = C exp(-(R-r)/(2*rho))
+			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
+			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);
+		}
 		else { /* lorentz-berthelot */
 			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
 				pair_ptr->attractive_only = 1;

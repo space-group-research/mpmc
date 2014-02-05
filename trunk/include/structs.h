@@ -36,6 +36,7 @@ typedef struct _atom {
 	char atomtype[MAXLINE];
 	int frozen, adiabatic, spectre, target;
 	double mass, charge, polarizability, epsilon, sigma, omega;
+	double c6, c8, c10, c12;
 	double es_self_point_energy;
 	double pos[3], wrapped_pos[3]; //absolute and wrapped (into main unit cell) position
 	double ef_static[3], ef_static_self[3], ef_induced[3], ef_induced_change[3];
@@ -382,7 +383,7 @@ typedef struct _system {
 	//force-field options
 	int rd_only, rd_anharmonic;
 	double rd_anharmonic_k, rd_anharmonic_g;
-	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing;
+	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, disp_expansion, disp_expansion_exp_repulsion, disp_expansion_exp_repulsion_alternate;
 	//es_options
 	int wolf;
 	double ewald_alpha, polar_ewald_alpha;

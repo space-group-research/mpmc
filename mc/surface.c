@@ -586,8 +586,6 @@ int surface_dimer_parameters(system_t *system, param_g *params) {
 }
 
 
-
-
 /* fit potential energy parameters via simulated annealing */
 int surface_fit(system_t *system) {
 
@@ -610,6 +608,14 @@ int surface_fit(system_t *system) {
 	double r_min, r_max, r_inc;
 	double current_error, last_error, global_minimum;
 	qshiftData_t * qshiftData = NULL; //used only with qshift
+
+	// ee_local variables
+	int a = 0;
+	int globalFound = 0;
+	double initEps[2];
+	double initSig[2];
+	double globalEps[2];
+	double globalSig[2];
 
 	// Record number of curves for convenient reference
 	nCurves = system->fit_input_list.data.count;
@@ -661,8 +667,15 @@ int surface_fit(system_t *system) {
 	params = record_params ( system );
 
 	// print some header info
-	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) 
+	for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 			printf( "SURFACE: Atom type: %d @ %s\n", param_ptr->ntypes, param_ptr->atomtype );
+			
+			if(param_ptr->epsilon != 0) {
+				initEps[a] = param_ptr->epsilon;
+				initSig[a] = param_ptr->sigma;
+				a++;
+			}
+	}
 	if ( ! system->fit_boltzmann_weight ) 
 		printf("*** any input energy values greater than %f K will not contribute to the fit ***\n", max_energy);
 
@@ -720,6 +733,17 @@ int surface_fit(system_t *system) {
 				if(current_error < global_minimum) {
 					system->fit_best_square_error = global_minimum = current_error;
 					new_global_min ( system, nCurves, nPoints, curve );
+
+					// Store the LJ parameters corresponding to global min
+					a = 0;
+					globalFound = 1;
+					for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+						if(param_ptr->epsilon != 0) {
+							globalEps[a] = param_ptr->epsilon;
+							globalSig[a] = param_ptr->sigma;
+							a++;
+						}
+					}
 				}
 			}
 		}
@@ -734,6 +758,172 @@ int surface_fit(system_t *system) {
 
 	// Output the Fit Curves
 	output_fit ( nCurves, nPoints, curve, max_energy, r_input );
+
+	// Exhaustive Enumeration -- Chris Cioce
+	// 	TODO: + Add keyword to allow user-defined input of rangeEps, rangeSig, delEps and delSig
+	// 	      + Keep track of global min & associated params so that printing to stdout is not necessary (current output file is huge [~100Mb])
+	if (system->ee_local) {
+		int b, c, d, nE1, nE2, nS1, nS2;
+		double currEps[2];
+		double currSig[2];
+		double rangeEps = 0.1;
+		double delEps = 0.01;
+		double rangeSig = 0.1;
+		double delSig = 0.01;
+		double E1, E2, E1start, E1stop, E1incr, E2start, E2stop, E2incr, E1c, E2c;
+		double S1, S2, S1start, S1stop, S1incr, S2start, S2stop, S2incr, S1c, S2c;
+
+		if(globalFound == 1) {
+			printf("\nEE_LOCAL ~> Improved surface found! Using updated global minimum parameters.\n");
+			currEps[0] = globalEps[0];
+			currEps[1] = globalEps[1];
+			currSig[0] = globalSig[0];
+			currSig[1] = globalSig[1];
+		} else {
+			printf("\nEE_LOCAL ~> Improved surface not found. Using initial parameters.\n");
+			currEps[0] = initEps[0];
+			currEps[1] = initEps[1];
+			currSig[0] = initSig[0];
+			currSig[1] = initSig[1];
+		}
+
+		for(a=0; a<2; a++) {
+			printf("EE_LOCAL ~> InitEps[%d]: %f\tInitSig[%d]: %f\tGlobalEps[%d]: %f\tGlobalSig[%d]: %f\n",a,initEps[a],a,initSig[a],a,globalEps[a],a,globalSig[a]);
+		}
+
+		E1start = currEps[0] - (currEps[0]*rangeEps);
+		E1stop  = currEps[0] + (currEps[0]*rangeEps);
+		E1incr  = currEps[0] * delEps;
+		E2start = currEps[1] - (currEps[1]*rangeEps);
+		E2stop  = currEps[1] + (currEps[1]*rangeEps);
+		E2incr  = currEps[1] * delEps;
+		S1start = currSig[0] - (currSig[0]*rangeSig);
+		S1stop  = currSig[0] + (currSig[0]*rangeSig);
+		S1incr  = currSig[0] * delSig;
+		S2start = currSig[1] - (currSig[1]*rangeSig);
+		S2stop  = currSig[1] + (currSig[1]*rangeSig);
+		S2incr  = currSig[1] * delSig;
+		nE1 = ((E1stop - E1start) / E1incr) + 1;
+		nE2 = ((E2stop - E2start) / E2incr) + 1;
+		nS1 = ((S1stop - S1start) / S1incr) + 1;
+		nS2 = ((S2stop - S2start) / S2incr) + 1;
+		printf("EE_LOCAL ~> E1start = %f\tE1stop = %f\tE1incr = %f\tnE1 = %d\n",E1start,E1stop,E1incr,nE1);
+		printf("EE_LOCAL ~> E2start = %f\tE2stop = %f\tE2incr = %f\tnE2 = %d\n",E2start,E2stop,E2incr,nE2);
+		printf("EE_LOCAL ~> S1start = %f\tS1stop = %f\tS1incr = %f\tnS1 = %d\n",S1start,S1stop,S1incr,nS1);
+		printf("EE_LOCAL ~> S2start = %f\tS2stop = %f\tS2incr = %f\tnS2 = %d\n",S2start,S2stop,S2incr,nS2);
+		printf("EE_LOCAL ~> Will now perform %d total iterations...\n",(nE1*nE2*nS1*nS2));
+
+		E1c = E1start;
+		E2c = E2start;
+		S1c = S1start;
+		S2c = S2start;
+
+		// Set initial parameters
+		for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+			if(param_ptr->epsilon == currEps[0]) {
+				param_ptr->epsilon = E1c;
+			}
+			if(param_ptr->epsilon == currEps[1]) {
+				param_ptr->epsilon = E2c;
+			}
+			if(param_ptr->sigma == currSig[0]) {
+				param_ptr->sigma = S1c;
+			}
+			if(param_ptr->sigma == currSig[1]) {
+				param_ptr->sigma = S2c;
+			}
+		}
+
+		// apply initial parameters
+		surface_dimer_parameters ( system, params);
+		get_curves ( system, nCurves, curve, r_min, r_max, r_inc );
+
+		//calc current error
+		current_error = error_calc ( system, nCurves, nPoints, curve, max_energy);
+
+		//record parameters. we will determine which ones need to be adjusted later
+		//params = record_params ( system );
+
+		//write params and current_error to stdout
+		printf("*** Initial Fit: \n");
+		output_params ( 0.0, current_error, params );
+		printf("*****************\n");
+
+		// Main loops
+		int master = 1;
+		for(a=0; a<=nE1; a++) {
+			for(b=0; b<=nE2; b++) {
+				for(c=0; c<=nS1; c++) {
+					for(d=0; d<=nS2; d++) {
+						printf("\nMASTER: %d\ta: %d\t(%f)\tb: %d\t(%f)\tc: %d\t(%f)\td: %d\t(%f)\n", master, a, E1c, b, E2c, c, S1c, d, S2c);
+
+						// apply parameters
+						surface_dimer_parameters ( system, params);
+						get_curves ( system, nCurves, curve, r_min, r_max, r_inc );
+
+						// calc current error
+						current_error = error_calc ( system, nCurves, nPoints, curve, max_energy);
+
+						// write params and current_error to stdout
+						output_params ( 0.0, current_error, params );
+
+						// Set updated S2 parameter
+						for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+							if(param_ptr->sigma == S2c) {
+								param_ptr->sigma = (S2c+S2incr);
+							}
+						}
+						S2c = S2c += S2incr;
+						master++;
+					} // END S2 loop
+
+					// Set updated S1 & S2 parameters
+					for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+						if(param_ptr->sigma == S1c) {
+							param_ptr->sigma = (S1c+S1incr);
+						}
+						if(param_ptr->sigma == S2c) {
+							param_ptr->sigma = S2start;
+						}
+					}
+
+					S1c = S1c += S1incr;
+					S2c = S2start;
+
+				} // END S1 loop
+
+				// Set updated E2 & S1 parameters
+				for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+					if(param_ptr->epsilon == E2c) {
+						param_ptr->epsilon = (E2c+E2incr);
+					}
+					if(param_ptr->sigma == S1c) {
+						param_ptr->sigma = S1start;
+					}
+				}
+
+				E2c = E2c += E2incr;
+				S1c = S1start;
+
+			} // END E2 loop
+
+			// Set updated E1 & E2 parameters
+			for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+				if(param_ptr->epsilon == E1c) {
+					param_ptr->epsilon = (E1c+E1incr);
+				}
+				if(param_ptr->epsilon == E2c) {
+					param_ptr->epsilon = E2start;
+				}
+			}
+
+			E1c = E1c += E1incr;
+			E2c = E2start;
+
+		} // END E1 loop
+
+		fflush(stdout);
+	}
 
 	// Return all memory back to the system
 	free_all_mem (nCurves, curve, params, qshiftData, r_input);

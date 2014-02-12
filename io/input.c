@@ -208,6 +208,17 @@ int do_command (system_t * system, char ** token ) {
 		}
 		else return 1;
 	}
+	else if(!strcasecmp(token[0], "ee_local")) {
+		if (!strcasecmp(token[1],"on")) {
+			system->ee_local = 1;
+			printf("INPUT: exhaustive_enumeration is ON.\n");
+		}
+		else if (!strcasecmp(token[1],"off")) {
+			system->ee_local = 0;
+			printf("INPUT: exhaustive_enumeration is OFF.\n");
+		}
+		else return 1;
+	}
 
 	//spectre options
 	else if(!strcasecmp(token[0], "spectre")) {

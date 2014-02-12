@@ -350,6 +350,7 @@ typedef struct _system {
 	double * virial_coef;
 	double virial_tmin, virial_tmax, virial_dt;
 	int  virial_npts;
+	int ee_local;
 
 	//monte carlo controls
 	int numsteps, corrtime, step;

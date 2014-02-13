@@ -612,6 +612,7 @@ int surface_fit(system_t *system) {
 	// ee_local variables
 	int a = 0;
 	int globalFound = 0;
+	double oldGlobal;
 	double initEps[2];
 	double initSig[2];
 	double globalEps[2];
@@ -737,6 +738,7 @@ int surface_fit(system_t *system) {
 					// Store the LJ parameters corresponding to global min
 					a = 0;
 					globalFound = 1;
+					oldGlobal = current_error;	// keep track for ee_local
 					for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
 						if(param_ptr->epsilon != 0) {
 							globalEps[a] = param_ptr->epsilon;
@@ -760,27 +762,22 @@ int surface_fit(system_t *system) {
 	output_fit ( nCurves, nPoints, curve, max_energy, r_input );
 
 	// Exhaustive Enumeration -- Chris Cioce
-	// 	TODO: + Add keyword to allow user-defined input of rangeEps, rangeSig, delEps and delSig
-	// 	      + Keep track of global min & associated params so that printing to stdout is not necessary (current output file is huge [~100Mb])
 	if (system->ee_local) {
 		int b, c, d, nE1, nE2, nS1, nS2;
 		double currEps[2];
 		double currSig[2];
-		double rangeEps = 0.1;
-		double delEps = 0.01;
-		double rangeSig = 0.1;
-		double delSig = 0.01;
+		double newGlobal;
 		double E1, E2, E1start, E1stop, E1incr, E2start, E2stop, E2incr, E1c, E2c;
 		double S1, S2, S1start, S1stop, S1incr, S2start, S2stop, S2incr, S1c, S2c;
 
 		if(globalFound == 1) {
-			printf("\nEE_LOCAL ~> Improved surface found! Using updated global minimum parameters.\n");
+			printf("\nEE_LOCAL ~> SA found an improved surface. Using current global minimum parameters for EE.\n");
 			currEps[0] = globalEps[0];
 			currEps[1] = globalEps[1];
 			currSig[0] = globalSig[0];
 			currSig[1] = globalSig[1];
 		} else {
-			printf("\nEE_LOCAL ~> Improved surface not found. Using initial parameters.\n");
+			printf("\nEE_LOCAL ~> SA did not find an improved surface. Using initial parameters for EE.\n");
 			currEps[0] = initEps[0];
 			currEps[1] = initEps[1];
 			currSig[0] = initSig[0];
@@ -791,18 +788,18 @@ int surface_fit(system_t *system) {
 			printf("EE_LOCAL ~> InitEps[%d]: %f\tInitSig[%d]: %f\tGlobalEps[%d]: %f\tGlobalSig[%d]: %f\n",a,initEps[a],a,initSig[a],a,globalEps[a],a,globalSig[a]);
 		}
 
-		E1start = currEps[0] - (currEps[0]*rangeEps);
-		E1stop  = currEps[0] + (currEps[0]*rangeEps);
-		E1incr  = currEps[0] * delEps;
-		E2start = currEps[1] - (currEps[1]*rangeEps);
-		E2stop  = currEps[1] + (currEps[1]*rangeEps);
-		E2incr  = currEps[1] * delEps;
-		S1start = currSig[0] - (currSig[0]*rangeSig);
-		S1stop  = currSig[0] + (currSig[0]*rangeSig);
-		S1incr  = currSig[0] * delSig;
-		S2start = currSig[1] - (currSig[1]*rangeSig);
-		S2stop  = currSig[1] + (currSig[1]*rangeSig);
-		S2incr  = currSig[1] * delSig;
+		E1start = currEps[0] - (currEps[0]*system->range_eps);
+		E1stop  = currEps[0] + (currEps[0]*system->range_eps);
+		E1incr  = currEps[0] * system->step_eps;
+		E2start = currEps[1] - (currEps[1]*system->range_eps);
+		E2stop  = currEps[1] + (currEps[1]*system->range_eps);
+		E2incr  = currEps[1] * system->step_eps;
+		S1start = currSig[0] - (currSig[0]*system->range_sig);
+		S1stop  = currSig[0] + (currSig[0]*system->range_sig);
+		S1incr  = currSig[0] * system->step_sig;
+		S2start = currSig[1] - (currSig[1]*system->range_sig);
+		S2stop  = currSig[1] + (currSig[1]*system->range_sig);
+		S2incr  = currSig[1] * system->step_sig;
 		nE1 = ((E1stop - E1start) / E1incr) + 1;
 		nE2 = ((E2stop - E2start) / E2incr) + 1;
 		nS1 = ((S1stop - S1start) / S1incr) + 1;
@@ -811,7 +808,7 @@ int surface_fit(system_t *system) {
 		printf("EE_LOCAL ~> E2start = %f\tE2stop = %f\tE2incr = %f\tnE2 = %d\n",E2start,E2stop,E2incr,nE2);
 		printf("EE_LOCAL ~> S1start = %f\tS1stop = %f\tS1incr = %f\tnS1 = %d\n",S1start,S1stop,S1incr,nS1);
 		printf("EE_LOCAL ~> S2start = %f\tS2stop = %f\tS2incr = %f\tnS2 = %d\n",S2start,S2stop,S2incr,nS2);
-		printf("EE_LOCAL ~> Will now perform %d total iterations...\n",(nE1*nE2*nS1*nS2));
+		printf("EE_LOCAL ~> Will now perform %d total iterations in parameter subspace...\n",(nE1*nE2*nS1*nS2));
 
 		E1c = E1start;
 		E2c = E2start;
@@ -844,18 +841,19 @@ int surface_fit(system_t *system) {
 		//record parameters. we will determine which ones need to be adjusted later
 		//params = record_params ( system );
 
-		//write params and current_error to stdout
+		//write params and current_error to stdout <-- just for visual verification
 		printf("*** Initial Fit: \n");
 		output_params ( 0.0, current_error, params );
 		printf("*****************\n");
 
 		// Main loops
+		globalFound = 0;
 		int master = 1;
 		for(a=0; a<=nE1; a++) {
 			for(b=0; b<=nE2; b++) {
 				for(c=0; c<=nS1; c++) {
 					for(d=0; d<=nS2; d++) {
-						printf("\nMASTER: %d\ta: %d\t(%f)\tb: %d\t(%f)\tc: %d\t(%f)\td: %d\t(%f)\n", master, a, E1c, b, E2c, c, S1c, d, S2c);
+						//printf("MASTER: %d\ta: %d\t(%f)\tb: %d\t(%f)\tc: %d\t(%f)\td: %d\t(%f)\n", master, a, E1c, b, E2c, c, S1c, d, S2c);	// Debug output
 
 						// apply parameters
 						surface_dimer_parameters ( system, params);
@@ -864,8 +862,25 @@ int surface_fit(system_t *system) {
 						// calc current error
 						current_error = error_calc ( system, nCurves, nPoints, curve, max_energy);
 
-						// write params and current_error to stdout
-						output_params ( 0.0, current_error, params );
+						//output_params ( 0.0, current_error, params );	// Debug output
+
+						// check for new global minimum
+						if(current_error < global_minimum) {
+							system->fit_best_square_error = global_minimum = current_error;
+							new_global_min ( system, nCurves, nPoints, curve );
+
+							// Store the LJ parameters corresponding to global min
+							a = 0;
+							globalFound = 1;
+							newGlobal = current_error;
+							for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
+								if(param_ptr->epsilon != 0) {
+									globalEps[a] = param_ptr->epsilon;
+									globalSig[a] = param_ptr->sigma;
+									a++;
+								}
+							}
+						}
 
 						// Set updated S2 parameter
 						for(param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
@@ -922,8 +937,21 @@ int surface_fit(system_t *system) {
 
 		} // END E1 loop
 
-		fflush(stdout);
-	}
+		// If a new global min is found, write to stdout
+		// TODO: Adjust printf statements to prettify final output :D
+		if(globalFound == 1) {
+			printf("\nEE_LOCAL ~> EE found an improved surface. Parameters written to fit_geometry.pqr\n");
+			//printf("EE_LOCAL ~> E1: %f\tS1: %f\tE2: %f\tS2: %f\n", globalEps[0], globalSig[0], globalEps[1], globalSig[1]);
+			printf("EE_LOCAL ~> SA Global Min: %f\n", oldGlobal);
+			printf("EE_LOCAL ~> EE Global Min: %f\n", newGlobal);
+			printf("            ----------------------------\n");
+			printf("            ----------------------------\n");
+			printf("               ====> %.2f %% improvement\n\n", ((oldGlobal-newGlobal)/oldGlobal)*100);
+		} else {
+			printf("EE_LOCAL ~> EE was unable to find an improved surface versus SA. Oh well, at least you tried...and for that, we thank you!\n\n");
+		}
+
+	} // END ee_local
 
 	// Return all memory back to the system
 	free_all_mem (nCurves, curve, params, qshiftData, r_input);

@@ -40,6 +40,27 @@ void check_ensemble ( system_t * system, int ensemble ) {
 
 void ensemble_surf_fit_options ( system_t * system ) {
 
+	char linebuf[MAXLINE];
+
+	/* ee_local */
+	if(system->ee_local) {
+		if ( ! system->range_eps) system->range_eps= RANGE_EPS;
+		if ( ! system->range_sig) system->range_sig= RANGE_SIG;
+		if ( ! system->step_eps ) system->step_eps = STEP_EPS;
+		if ( ! system->step_sig ) system->step_sig = STEP_SIG;
+
+		if(system->step_eps > system->range_eps) {
+			error("INPUT: step_eps is greater than the range_eps\n");
+			die(-1);
+		} else if (system->step_sig > system->range_sig) {
+			error("INPUT: step_sig is greater than the range_sig\n");
+			die(-1);
+		} else {
+			sprintf(linebuf, "INPUT: ee_local vars: range_eps = %.3f, step_eps = %.3f, range_sig = %.3f, step_sig = %.3f\n", system->range_eps, system->step_eps, system->range_sig, system->step_sig);
+			output(linebuf);
+		}
+	}
+
 	// Record number of curves for convenient reference
 	int nCurves = system->fit_input_list.data.count;
 

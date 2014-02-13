@@ -351,6 +351,7 @@ typedef struct _system {
 	double virial_tmin, virial_tmax, virial_dt;
 	int  virial_npts;
 	int ee_local;
+	double range_eps, range_sig, step_eps, step_sig;
 
 	//monte carlo controls
 	int numsteps, corrtime, step;

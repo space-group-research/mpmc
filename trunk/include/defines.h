@@ -144,5 +144,11 @@ enum {
 #define VIRIAL_TMAX 1000
 #define VIRIAL_NPTS 25
 
+// Defines for exhaustive enumeration, ee_local
+#define RANGE_EPS 0.1
+#define RANGE_SIG 0.1
+#define STEP_EPS 0.01
+#define STEP_SIG 0.01
+
 // Maximum coef for each basis vector when searching for shortest vector
 #define MAX_VECT_COEF 5

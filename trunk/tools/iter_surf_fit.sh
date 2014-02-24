@@ -8,7 +8,7 @@
 # TODO: Add functional support for main loops
 
 # Error Check Input File for Correct Starting Conditions
-[[ $# -lt 1 ]] && echo $0 usage: "[mpmc suft_fit input file]" && exit 1
+[[ $# -lt 1 ]] && echo $0 usage: "[mpmc suft_fit input file] [OPTIONAL: random]" && exit 1
 
 # Declare function to draw sample from a uniform distribution over the half-open interval [low, high).
 # *** NOTE: Requires python & numpy be installed on your system ***
@@ -20,6 +20,7 @@ EOF`
 }
 
 extract () {
+	sed -n '/#r-value/,/^$/p' ./runlog.log | tail -n+2  | grep -e '^$' -v | grep -v MAIN > ./fit
 	awk '{print $1, $2}' ./fit > EOE.fit.dat
 	awk '{print $1, $3}' ./fit > PAR.fit.dat
 	awk '{print $1, $4}' ./fit > S.fit.dat
@@ -27,7 +28,7 @@ extract () {
 	awk '{print $1, $6}' ./fit > X.fit.dat
 }
 
-mpmc="mpmc"
+mpmc="mpmc"							# Rename this variable to your main MPMC directory
 sched=`grep "fit_schedule" $1 | awk '{print $2}'`
 maxE=`grep "fit_start_temp" $1 | awk '{print $2}'`
 
@@ -38,6 +39,18 @@ initPQR=`grep "pqr_input" $1 | awk '{print $2}'`
 [[ `grep ^ATOM $initPQR | wc -l` -ne 10 ]] && echo "Input model $initPQR is not a 5-site model" && exit 1	# TODO: I really should make this entirely general, but whatev for now
 
 if [ "$2" == "random" ]; then
+modChk=`python << EOF
+import imp
+try:
+    imp.find_module('numpy')
+    found=True
+except ImportError:
+    found=False
+print found
+EOF`
+
+	[ "$modChk" == "False" ] && echo "Python Error: numpy module is not installed on your system, which is needed to generate random numbers. Exiting..." && exit 1
+
 	initEps=(`grep ^ATOM $initPQR | head -5 | awk '{print $13}' | uniq | grep -wv 0.00000`)
 	initSig=(`grep ^ATOM $initPQR | head -5 | awk '{print $14}' | uniq | grep -wv 0.00000`)
 
@@ -79,12 +92,8 @@ do
 		mv ./runlog.log $resDir
 		cp ./fit_geometry.pqr $resDir
 
-		# Descend Into Directory
-		cd $resDir
-
-		# Perform Extraction
-		tail -104 ./runlog.log | head -101 > ./fit
-		extract
+                cd $resDir	# Descend
+                extract		# Perform Extraction of Individual Curves
 
 		# Ascend Back To The Main Directory
 		cd ..
@@ -123,12 +132,8 @@ do
                 mv ./runlog.log $resDir
                 cp ./fit_geometry.pqr $resDir
 
-                # Descend Into Directory
-                cd $resDir
-
-                # Perform Extraction
-                tail -104 ./runlog.log | head -101 > ./fit
-                extract
+                cd $resDir	# Descend
+                extract		# Perform Extraction of Individual Curves
 
                 # Ascend Back To The Main Directory
                 cd ..
@@ -158,12 +163,8 @@ until [ $cc -eq 3 ]; do
                 mv ./runlog.log $resDir
                 cp ./fit_geometry.pqr $resDir
 
-                # Descend Into Directory
-                cd $resDir
-
-                # Perform Extraction
-                tail -104 ./runlog.log | head -101 > ./fit
-                extract
+                cd $resDir	# Descend
+                extract		# Perform Extraction of Individual Curves
 
                 # Ascend Back To The Main Directory
                 cd ..

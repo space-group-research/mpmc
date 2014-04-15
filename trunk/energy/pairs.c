@@ -86,6 +86,15 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 	/* get the frozen interactions */
 	pair_ptr->frozen = atom_i->frozen && atom_j->frozen;
 
+	/* get mixed dispersion coefficients */
+	if (system->disp_expansion)
+	{
+		pair_ptr->c6 = sqrt(atom_i->c6*atom_j->c6)*0.021958709/(3.166811429*0.000001); // Convert H*Bohr^6 to K*Angstrom^6, etc
+		pair_ptr->c8 = sqrt(atom_i->c8*atom_j->c8)*0.0061490647/(3.166811429*0.000001); // Dispersion coeffs should be inputed in a.u.
+		pair_ptr->c10 = sqrt(atom_i->c10*atom_j->c10)*0.0017219135/(3.166811429*0.000001);
+		pair_ptr->c12 = sqrt(atom_i->c12*atom_j->c12)*0.00048218489/(3.166811429*0.000001);
+	}
+
 	/* get the mixed LJ parameters */
 	if(!system->sg) {
 		if (system->waldmanhagler && !system->cdvdw_sig_repulsion) { //wh mixing rule
@@ -149,7 +158,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);
 		}
 		else if (system->disp_expansion_exp_repulsion_alternate) {// mix for buckingham repulsion
-			// sigma == r, epsilon == rho, C = 216 K
+			// sigma == r, epsilon == rho, C ~= 216 K
 			// U = C exp(-(R-r)/(2*rho))
 			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
 			pair_ptr->epsilon = 0.5*(atom_i->epsilon + atom_j->epsilon);

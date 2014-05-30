@@ -927,7 +927,8 @@ int check_system(system_t *system) {
 	if(system->sg) output("INPUT: Molecular potential is Silvera-Goldman\n");
 	if(system->waldmanhagler) output("INPUT: Using Waldman-Hagler mixing rules for LJ-interactions.\n");
 	if(system->halgren_mixing) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");
-	if( system->waldmanhagler && system->halgren_mixing) { 
+	if(system->c6_mixing) output("INPUT: Using C6 mixing rules for LJ-interactions.\n");
+	if( ( system->waldmanhagler && system->halgren_mixing ) || ( system->waldmanhagler && system->c6_mixing ) || ( system->halgren_mixing && system->c6_mixing ) ) { 
 		error("INPUT: more than one mixing rule specified\n");
 		return(-1);
 	}

@@ -163,6 +163,13 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
 			pair_ptr->epsilon = 2.0*atom_i->epsilon*atom_j->epsilon/(atom_i->epsilon + atom_j->epsilon);
 		}
+    else if (system->c6_mixing) {
+      pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
+      if (pair_ptr->sigma!=0.0)
+        pair_ptr->epsilon = 64.0*sqrt(atom_i->epsilon*atom_j->epsilon)*pow(atom_i->sigma,3.0)*pow(atom_j->sigma,3.0)/pow(atom_i->sigma+atom_j->sigma,6.0);
+      else
+        pair_ptr->epsilon = 0.0;
+    }
 		else { /* lorentz-berthelot */
 			if((atom_i->sigma < 0.0) || (atom_j->sigma < 0.0)) {
 				pair_ptr->attractive_only = 1;

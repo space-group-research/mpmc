@@ -610,6 +610,14 @@ int do_command (system_t * system, char ** token ) {
 			system->disp_expansion = 0;
 		else return 1;
 	}
+
+	else if(!strcasecmp(token[0], "c6_mixing")) {
+		if(!strcasecmp(token[1],"on"))
+			system->c6_mixing = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->c6_mixing = 0;
+		else return 1;
+	}
 	
 	else if(!strcasecmp(token[0], "wrapall")) {
 		if(!strcasecmp(token[1],"on"))

@@ -386,7 +386,7 @@ typedef struct _system {
 	//force-field options
 	int rd_only, rd_anharmonic;
 	double rd_anharmonic_k, rd_anharmonic_g;
-	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, disp_expansion;
+	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, c6_mixing, disp_expansion;
 	//es_options
 	int wolf;
 	double ewald_alpha, polar_ewald_alpha;

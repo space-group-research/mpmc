@@ -543,6 +543,9 @@ int surface_dimer_parameters(system_t *system, param_g *params) {
 					atom_ptr->sigma   = param_ptr->sigma;
 					atom_ptr->omega   = param_ptr->omega;
 					atom_ptr->polarizability = param_ptr->pol;
+					atom_ptr->c6 = param_ptr->c6;
+					atom_ptr->c8 = param_ptr->c8;
+					atom_ptr->c10 = param_ptr->c10;
 
 					double perturbation_vector[3];
 

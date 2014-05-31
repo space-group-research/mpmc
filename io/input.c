@@ -147,6 +147,18 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[1],&(system->surf_scale_pol)) ) return 1; }
 		system->surf_scale_pol_on = 1;
 	}
+	else if(!strcasecmp(token[0], "surf_scale_c6")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_c6)) ) return 1; }
+		system->surf_scale_c6_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_c8")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_c8)) ) return 1; }
+		system->surf_scale_c8_on = 1;
+	}
+	else if(!strcasecmp(token[0], "surf_scale_c10")) {
+		{ if ( safe_atof(token[1],&(system->surf_scale_c10)) ) return 1; }
+		system->surf_scale_c10_on = 1;
+	}
 	else if(!strcasecmp(token[0], "surf_qshift")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->surf_qshift_on = 1;

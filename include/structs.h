@@ -258,8 +258,8 @@ typedef struct _checkpoint {
 typedef struct _param_type {
 	char atomtype[MAXLINE];
 	int ntypes, axis;
-	double charge, epsilon, sigma, omega, dr, pol;
-	double last_charge, last_epsilon, last_sigma, last_dr, last_omega, last_pol;
+	double charge, epsilon, sigma, omega, dr, pol, c6, c8, c10;
+	double last_charge, last_epsilon, last_sigma, last_dr, last_omega, last_pol, last_c6, last_c8, last_c10;
 	struct _param_type *next;
 } param_t;
 
@@ -334,9 +334,9 @@ typedef struct _system {
 	//surface fitting options
 	int surf_fit_arbitrary_configs;
 	int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on, surf_scale_pol_on;
-	int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on;
+	int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on, surf_scale_c6_on, surf_scale_c8_on, surf_scale_c10_on;
 	fileNode_t fit_input_list;
-	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha, surf_scale_pol;
+	double surf_scale_epsilon, surf_scale_r, surf_scale_omega, surf_scale_sigma, surf_scale_q, surf_scale_alpha, surf_scale_pol, surf_scale_c6, surf_scale_c8, surf_scale_c10;
 	double surf_quadrupole, surf_weight_constant;
 	double fit_start_temp, fit_max_energy, fit_schedule;
 	int fit_boltzmann_weight;

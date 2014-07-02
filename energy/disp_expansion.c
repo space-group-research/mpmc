@@ -34,7 +34,8 @@ double disp_expansion(system_t *system)
 
 						double repulsion = 0.0;
 
-						repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
+						if (pair_ptr->epsilon!=0.0&&pair_ptr->sigma!=0.0)
+							repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
 
 						//pair_ptr->rd_energy = -tang_toennies_damping_function(pair_ptr,6)*c6/r6-tang_toennies_damping_function(pair_ptr,8)*c8/r8-tang_toennies_damping_function(pair_ptr,10)*c10/r10;
 						pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10-c12/r12+repulsion;
@@ -80,7 +81,8 @@ double disp_expansion_nopbc(system_t *system)
 
 						double repulsion = 0.0;
 
-						repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
+						if (pair_ptr->epsilon!=0.0&&pair_ptr->sigma!=0.0)
+							repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
 
 						//pair_ptr->rd_energy = -tang_toennies_damping_function(pair_ptr,6)*c6/r6-tang_toennies_damping_function(pair_ptr,8)*c8/r8-tang_toennies_damping_function(pair_ptr,10)*c10/r10;
 						pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10-c12/r12+repulsion;

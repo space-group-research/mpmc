@@ -70,7 +70,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 	} else {
 
 		/* exclude null repulsion/dispersion interations */
-		if((atom_i->epsilon == 0.0) || (atom_i->sigma == 0.0) || (atom_j->epsilon == 0.0) || (atom_j->sigma == 0.0))
+		if( ( (atom_i->epsilon == 0.0) || (atom_i->sigma == 0.0) || (atom_j->epsilon == 0.0) || (atom_j->sigma == 0.0) ) && (atom_i->c6 == 0.0 && atom_i->c8 == 0.0 && atom_i->c10 == 0.0 && atom_j->c6 == 0.0 && atom_j->c8 == 0.0 && atom_j->c10 == 0.0) )
 			pair_ptr->rd_excluded = 1;
 		else
 			pair_ptr->rd_excluded = 0;

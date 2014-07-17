@@ -91,8 +91,23 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 	{
 		pair_ptr->c6 = sqrt(atom_i->c6*atom_j->c6)*0.021958709/(3.166811429*0.000001); // Convert H*Bohr^6 to K*Angstrom^6, etc
 		pair_ptr->c8 = sqrt(atom_i->c8*atom_j->c8)*0.0061490647/(3.166811429*0.000001); // Dispersion coeffs should be inputed in a.u.
-		pair_ptr->c10 = sqrt(atom_i->c10*atom_j->c10)*0.0017219135/(3.166811429*0.000001);
-		pair_ptr->c12 = sqrt(atom_i->c12*atom_j->c12)*0.00048218489/(3.166811429*0.000001);
+		if (system->extrapolate_disp_coeffs&&pair_ptr->c6!=0.0&&pair_ptr->c8!=0.0)
+		{
+			pair_ptr->c10 = 49.0/40.0*pair_ptr->c8*pair_ptr->c8/pair_ptr->c6;
+			pair_ptr->c12 = pair_ptr->c6*pow(pair_ptr->c10/pair_ptr->c8,3.0);
+			pair_ptr->c14 = pair_ptr->c8*pow(pair_ptr->c12/pair_ptr->c10,3.0);
+			pair_ptr->c16 = pair_ptr->c10*pow(pair_ptr->c14/pair_ptr->c12,3.0);
+			pair_ptr->c18 = pair_ptr->c12*pow(pair_ptr->c16/pair_ptr->c14,3.0);
+			pair_ptr->c20 = pair_ptr->c14*pow(pair_ptr->c18/pair_ptr->c16,3.0);
+		}
+		else if (system->extrapolate_disp_coeffs)
+		{
+			pair_ptr->c10 = 0.0; //either c6 or c8 is zero so lets set c10 to zero too
+		}
+		else
+		{
+			pair_ptr->c10 = sqrt(atom_i->c10*atom_j->c10)*0.0017219135/(3.166811429*0.000001);
+		}
 	}
 
 	/* get the mixed LJ parameters */

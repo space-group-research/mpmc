@@ -623,6 +623,22 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 
+	else if(!strcasecmp(token[0], "extrapolate_disp_coeffs")) {
+		if(!strcasecmp(token[1],"on"))
+			system->extrapolate_disp_coeffs = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->extrapolate_disp_coeffs = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "damp_dispersion")) {
+		if(!strcasecmp(token[1],"on"))
+			system->damp_dispersion = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->damp_dispersion = 0;
+		else return 1;
+	}
+
 	else if(!strcasecmp(token[0], "c6_mixing")) {
 		if(!strcasecmp(token[1],"on"))
 			system->c6_mixing = 1;

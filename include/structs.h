@@ -25,7 +25,7 @@ typedef struct _pair {
 	double d_prev[3]; //last known position
 	double rd_energy, es_real_energy, es_self_intra_energy;
 	double sigrep;
-	double c6,c8,c10,c12;
+	double c6,c8,c10,c12,c14,c16,c18,c20;
 	struct _atom * atom; 
 	struct _molecule * molecule;
 	struct _pair * next;
@@ -37,7 +37,7 @@ typedef struct _atom {
 	char atomtype[MAXLINE];
 	int frozen, adiabatic, spectre, target;
 	double mass, charge, polarizability, epsilon, sigma, omega;
-	double c6, c8, c10, c12;
+	double c6, c8, c10;
 	double es_self_point_energy;
 	double pos[3], wrapped_pos[3]; //absolute and wrapped (into main unit cell) position
 	double ef_static[3], ef_static_self[3], ef_induced[3], ef_induced_change[3];
@@ -387,6 +387,7 @@ typedef struct _system {
 	int rd_only, rd_anharmonic;
 	double rd_anharmonic_k, rd_anharmonic_g;
 	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, c6_mixing, disp_expansion;
+	int extrapolate_disp_coeffs, damp_dispersion;
 	//es_options
 	int wolf;
 	double ewald_alpha, polar_ewald_alpha;

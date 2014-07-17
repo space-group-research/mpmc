@@ -446,7 +446,16 @@ int write_molecules(system_t *system, FILE * fp) {
 	fprintf(fp, "REMARK BOX BASIS[2] = %20.14lf %20.14lf %20.14lf\n", 
 		system->pbc->basis[2][0], system->pbc->basis[2][1], system->pbc->basis[2][2]);
 
-		/* output the connectivity information */
+	/*if surface fitting, write some surface fit info as a remark*/
+	if ( system->ensemble == ENSEMBLE_SURF_FIT ) {
+		if ( system->fit_boltzmann_weight )
+			fprintf(fp,"REMARK SURFACE FITTING BOLTZMANN TEMPERATURE = %lf\n", system->fit_max_energy);
+		else
+			fprintf(fp,"REMARK SURFACE FITTING MAX_ENERGY = %lf\n", system->fit_max_energy);
+		fprintf(fp,"REMARK SURFACE FITTING SQUARE_ERROR = %lf\n", system->fit_best_square_error);
+	}    
+
+	/* output the connectivity information */
 	fprintf(fp, "END\n");
 	fflush(fp);
 

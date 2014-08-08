@@ -1,6 +1,9 @@
-
 #ifndef STRUCTS_H
 #define STRUCTS_H
+
+#include "defines.h"
+#include "dSFMT.h"
+
 
 /* complex value */
 typedef struct _complex_t {

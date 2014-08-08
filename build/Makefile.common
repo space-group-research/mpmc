@@ -43,7 +43,7 @@ energy: $(ENERGY_OBJ)
 %.o: $(ENERGY)/%.c $(DEPS)
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
 ifeq ($(CUDA),yes)
-	$(NVCC) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar_cuda.cu
+	$(NVCC) -arch=compute_13 -code=sm_13 $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar_cuda.cu
 endif
 # input/output functions
 io: $(IO_OBJ)

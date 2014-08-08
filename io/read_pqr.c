@@ -175,7 +175,7 @@ molecule_t *read_molecules(FILE * fp, system_t *system) {
 		memset(token_c10,          0, MAXLINE);
 
 		/* parse the line */
-		sscanf(linebuf, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
+		sscanf(linebuf, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
 			token_atom, token_atomid, token_atomtype, token_moleculetype, token_frozen, 
 			token_moleculeid, token_x, token_y, token_z, token_mass, token_charge, 
 			token_alpha, token_epsilon, token_sigma, token_omega, token_gwp_alpha,

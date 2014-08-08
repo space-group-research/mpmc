@@ -2,6 +2,8 @@
 #define FXN_PROTOTYPES_H
 
 
+#include "dSFMT.h"
+
 /* energy */
 double energy(system_t *);
 double energy_no_observables(system_t *);

@@ -1,3 +1,5 @@
+#ifndef DEFINES_H
+#define DEFINES_H
 
 #ifndef M_PI
 #define M_PI			3.14159265358979323846
@@ -152,3 +154,6 @@ enum {
 
 // Maximum coef for each basis vector when searching for shortest vector
 #define MAX_VECT_COEF 5
+
+
+#endif

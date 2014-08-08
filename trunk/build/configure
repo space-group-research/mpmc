@@ -184,8 +184,8 @@ if [ $CUDA = "yes" ]; then
 
 	if [ $HOSTNAME = "circe" ]; then
 		DEFINES="$DEFINES -DCUDA"
-		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/apps/cuda/3.0/include"
-		EXTRA_LIBS="$EXTRA_LIBS -L/opt/apps/cuda/3.0/lib64 -lcudart"
+		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/apps/cuda/6.0/include -I../mersenne "
+		EXTRA_LIBS="$EXTRA_LIBS -L/apps/cuda/6.0/lib64 -lcudart"
 	elif [ $HOSTNAME == "llnl" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-3.0/include"

@@ -28,8 +28,14 @@ void usage(char *progname) {
 int main(int argc, char **argv) {
 
 	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
+	FILE *procfile;
+        FILE *host;
 	char linebuf[MAXLINE];
 	char input_file[MAXLINE];
+	char nodename[MAXLINE];
+        char cpu[MAXLINE];
+        char model[12];
+        struct stat info;
 	system_t *system;
 
 	/* set the default rank */
@@ -48,6 +54,40 @@ int main(int argc, char **argv) {
 	output("For version info, use \"svn info\"\n" );
 	sprintf(linebuf, "MAIN: processes started on %d cores\n", size);
 	output(linebuf);
+
+        /* Collect and output hostname & processor info */
+        if(access("/proc/cpuinfo",R_OK)!=-1) {                                          // Linux
+                host = popen("hostname","r");
+                fgets(nodename, MAXLINE, host);
+                sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
+                output(linebuf);
+                pclose(host);
+
+                procfile = fopen("/proc/cpuinfo", "r");
+                while (!feof(procfile)) {
+                        fgets(cpu, MAXLINE, procfile);
+                        strncpy(model, cpu, 10);
+                        if(strcmp(model,"model name")==0) {
+                                sprintf(linebuf, "MAIN: CPU -> %s", cpu);
+                                output(linebuf);
+                                break;
+                        }
+                }
+                fclose(procfile);
+        }/* else if (stat("/Applications",&info)==0) {                                  // Mac OS X
+                output("MAIN: Mac OS X detected\n");
+                host = popen("hostname", "r");
+                fgets(nodename, MAXLINE, host);
+                sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
+                output(linebuf);
+                pclose(host);
+
+                procfile = popen("sysctl -n machdep.cpu.brand_string","r");
+                fgets(cpu, MAXLINE, procfile);
+                sprintf(linebuf, "MAIN: CPU -> %s", cpu);
+                output(linebuf);
+                pclose(procfile);
+        }*/
 
 	/* get the config file arg */
 	strcpy(input_file, argv[1]);

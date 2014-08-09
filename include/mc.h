@@ -13,6 +13,9 @@ extern int rank, size;
 #include <limits.h>
 #include <stdint.h>
 #include <math.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef MPI
 #include <mpi.h>

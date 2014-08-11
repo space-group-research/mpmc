@@ -370,7 +370,8 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	           token_mass[MAXLINE],
 	           token_charge[MAXLINE],
 	           token_alpha[MAXLINE], token_epsilon[MAXLINE], token_sigma[MAXLINE], 
-	           token_omega[MAXLINE], token_gwp_alpha[MAXLINE];
+	           token_omega[MAXLINE], token_gwp_alpha[MAXLINE],
+		   token_c6[MAXLINE], token_c8[MAXLINE], token_c10[MAXLINE];
 	
 	int        current_frozen, 
 	           current_adiabatic,
@@ -381,7 +382,8 @@ molecule_t *read_insertion_molecules(system_t *system) {
 	           current_site_neighbor;
 	double     current_x, current_y, current_z,
 	           current_mass,  current_charge, 
-	           current_alpha, current_epsilon, current_sigma, current_omega, current_gwp_alpha; 
+	           current_alpha, current_epsilon, current_sigma, current_omega, current_gwp_alpha,
+		   current_c6, current_c8, current_c10; 
 
 	int        atom_counter;
 
@@ -423,16 +425,20 @@ molecule_t *read_insertion_molecules(system_t *system) {
 		memset( token_sigma,        0, MAXLINE);
 		memset( token_omega,        0, MAXLINE);
 		memset( token_gwp_alpha,    0, MAXLINE);
+		memset(token_c6,            0, MAXLINE);
+		memset(token_c8,            0, MAXLINE);
+		memset(token_c10,           0, MAXLINE);
 
 		// parse the input line 
-		sscanf(linebuf, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
+		sscanf(linebuf, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
 		       token_atom, token_atomid, token_atomtype, 
 		       token_moleculetype, 
 		       token_frozen, 
 		       token_moleculeid, 
 		       token_x, token_y, token_z, 
 		       token_mass, token_charge, 
-		       token_alpha, token_epsilon, token_sigma, token_omega, token_gwp_alpha
+		       token_alpha, token_epsilon, token_sigma, token_omega, token_gwp_alpha,
+		       token_c6, token_c8, token_c10
 		);
 
 		if(!strcasecmp(token_atom, "ATOM") && strcasecmp(token_moleculetype, "BOX")) {
@@ -460,6 +466,9 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			current_sigma         = atof(token_sigma);
 			current_omega         = atof(token_omega);
 			current_gwp_alpha     = atof(token_gwp_alpha);
+			current_c6            = atof(token_c6);
+			current_c8            = atof(token_c8);
+			current_c10           = atof(token_c10);
 
 			if ( system->cdvdw_sig_repulsion ) {
 				if ( current_epsilon != 1.0 ) {
@@ -532,6 +541,9 @@ molecule_t *read_insertion_molecules(system_t *system) {
 			atom_ptr->sigma     = current_sigma;
 			atom_ptr->omega     = current_omega;
 			atom_ptr->gwp_alpha = current_gwp_alpha;
+			atom_ptr->c6 = current_c6;
+			atom_ptr->c8 = current_c8;
+			atom_ptr->c10 = current_c10;
 			if(current_gwp_alpha != 0.)
 				atom_ptr->gwp_spin = 1;
 			else

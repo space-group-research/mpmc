@@ -95,10 +95,6 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 		{
 			pair_ptr->c10 = 49.0/40.0*pair_ptr->c8*pair_ptr->c8/pair_ptr->c6;
 			pair_ptr->c12 = pair_ptr->c6*pow(pair_ptr->c10/pair_ptr->c8,3.0);
-			pair_ptr->c14 = pair_ptr->c8*pow(pair_ptr->c12/pair_ptr->c10,3.0);
-			pair_ptr->c16 = pair_ptr->c10*pow(pair_ptr->c14/pair_ptr->c12,3.0);
-			pair_ptr->c18 = pair_ptr->c12*pow(pair_ptr->c16/pair_ptr->c14,3.0);
-			pair_ptr->c20 = pair_ptr->c14*pow(pair_ptr->c18/pair_ptr->c16,3.0);
 		}
 		else if (system->extrapolate_disp_coeffs)
 		{

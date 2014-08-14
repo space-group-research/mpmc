@@ -160,7 +160,11 @@ case "$MODE" in
 				EXTRA_LIBS="-L/usr/lib64/openmpi -lmpi -lm"
 			;;
 			*)
-				CC="mpicc"
+				if [ $COMPILER = "icc" ]; then
+					CC="mpiicc"
+				else
+					CC="mpicc"
+				fi
 			;;
 		esac
 	;;
@@ -184,7 +188,7 @@ if [ $CUDA = "yes" ]; then
 
 	if [ $HOSTNAME = "circe" ]; then
 		DEFINES="$DEFINES -DCUDA"
-		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/apps/cuda/6.0/include"
+		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/apps/cuda/6.0/include "
 		EXTRA_LIBS="$EXTRA_LIBS -L/apps/cuda/6.0/lib64 -lcudart"
 	elif [ $HOSTNAME == "llnl" ]; then
 		DEFINES="$DEFINES -DCUDA"
@@ -224,7 +228,7 @@ CC=$CC
 CFLAGS=$CFLAGS
 
 DEFINES=$DEFINES
-EXTRA_INCLUDES=$EXTRA_INCLUDES -I../mersenne
+EXTRA_INCLUDES=$EXTRA_INCLUDES
 EXTRA_LIBS=$EXTRA_LIBS
 GCC_EXTRA_LIBS=$GCC_EXTRA_LIBS
 CUDA=$CUDA

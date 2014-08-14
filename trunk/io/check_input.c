@@ -523,7 +523,7 @@ void mc_options (system_t * system) {
 		}
 		/* set temperature of baths */
 		system->ptemp->index = calloc(size,sizeof(int));
-		memnullcheck(system->ptemp->index, size*sizeof(int), __LINE__-1, __FILE__-1);
+		memnullcheck(system->ptemp->index, size*sizeof(int), __LINE__ -1, __FILE__);
 		for ( j=0; j<size; j++ ) {
 			system->ptemp->templist[j] = system->temperature * 
 				pow(pow(system->max_temperature/system->temperature,1.0/(size-1)), j);

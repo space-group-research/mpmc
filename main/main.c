@@ -34,8 +34,7 @@ int main(int argc, char **argv) {
 	char input_file[MAXLINE];
 	char nodename[MAXLINE];
         char cpu[MAXLINE];
-        char model[12];
-        //struct stat info;
+        struct stat info;
 	system_t *system;
 
 	/* set the default rank */
@@ -66,15 +65,14 @@ int main(int argc, char **argv) {
                 procfile = fopen("/proc/cpuinfo", "r");
                 while (!feof(procfile)) {
                         fgets(cpu, MAXLINE, procfile);
-                        strncpy(model, cpu, 10);
-                        if(strcmp(model,"model name")==0) {
+                        if(strncasecmp(cpu,"model name",10)==0) {
                                 sprintf(linebuf, "MAIN: CPU -> %s", cpu);
                                 output(linebuf);
                                 break;
                         }
                 }
                 fclose(procfile);
-        }/* else if (stat("/Applications",&info)==0) {                                  // Mac OS X
+        } else if (stat("/Applications",&info)==0) {                                  // Mac OS X
                 output("MAIN: Mac OS X detected\n");
                 host = popen("hostname", "r");
                 fgets(nodename, MAXLINE, host);
@@ -87,7 +85,7 @@ int main(int argc, char **argv) {
                 sprintf(linebuf, "MAIN: CPU -> %s", cpu);
                 output(linebuf);
                 pclose(procfile);
-        }*/
+        }
 
 	/* get the config file arg */
 	strcpy(input_file, argv[1]);

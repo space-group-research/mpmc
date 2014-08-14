@@ -86,26 +86,6 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 	/* get the frozen interactions */
 	pair_ptr->frozen = atom_i->frozen && atom_j->frozen;
 
-	/* get mixed dispersion coefficients */
-	if (system->disp_expansion)
-	{
-		pair_ptr->c6 = sqrt(atom_i->c6*atom_j->c6)*0.021958709/(3.166811429*0.000001); // Convert H*Bohr^6 to K*Angstrom^6, etc
-		pair_ptr->c8 = sqrt(atom_i->c8*atom_j->c8)*0.0061490647/(3.166811429*0.000001); // Dispersion coeffs should be inputed in a.u.
-		if (system->extrapolate_disp_coeffs&&pair_ptr->c6!=0.0&&pair_ptr->c8!=0.0)
-		{
-			pair_ptr->c10 = 49.0/40.0*pair_ptr->c8*pair_ptr->c8/pair_ptr->c6;
-			pair_ptr->c12 = pair_ptr->c6*pow(pair_ptr->c10/pair_ptr->c8,3.0);
-		}
-		else if (system->extrapolate_disp_coeffs)
-		{
-			pair_ptr->c10 = 0.0; //either c6 or c8 is zero so lets set c10 to zero too
-		}
-		else
-		{
-			pair_ptr->c10 = sqrt(atom_i->c10*atom_j->c10)*0.0017219135/(3.166811429*0.000001);
-		}
-	}
-
 	/* get the mixed LJ parameters */
 	if(!system->sg) {
 		if (system->waldmanhagler && !system->cdvdw_sig_repulsion) { //wh mixing rule
@@ -173,6 +153,28 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
 			// U = C exp(-alpha(R-r))
 			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);
 			pair_ptr->epsilon = 2.0*atom_i->epsilon*atom_j->epsilon/(atom_i->epsilon + atom_j->epsilon);
+
+			if (system->schmidt_ff)
+				pair_ptr->epsilon = (atom_i->epsilon+atom_j->epsilon)*atom_i->epsilon*atom_j->epsilon/(atom_i->epsilon*atom_i->epsilon+atom_j->epsilon*atom_j->epsilon);
+
+			/* get mixed dispersion coefficients */
+			pair_ptr->c6 = sqrt(atom_i->c6*atom_j->c6)*0.021958709/(3.166811429*0.000001); // Convert H*Bohr^6 to K*Angstrom^6, etc
+			pair_ptr->c8 = sqrt(atom_i->c8*atom_j->c8)*0.0061490647/(3.166811429*0.000001); // Dispersion coeffs should be inputed in a.u.
+			if (system->extrapolate_disp_coeffs&&pair_ptr->c6!=0.0&&pair_ptr->c8!=0.0)
+			{
+				pair_ptr->c10 = 49.0/40.0*pair_ptr->c8*pair_ptr->c8/pair_ptr->c6;
+				pair_ptr->c12 = pair_ptr->c6*pow(pair_ptr->c10/pair_ptr->c8,3.0);
+			}
+			else if (system->extrapolate_disp_coeffs)
+			{
+				pair_ptr->c10 = 0.0; //either c6 or c8 is zero so lets set c10 to zero too
+				pair_ptr->c12 = 0.0;
+			}
+			else
+			{
+				pair_ptr->c10 = sqrt(atom_i->c10*atom_j->c10)*0.0017219135/(3.166811429*0.000001);
+				pair_ptr->c12 = 0.0;
+			}
 		}
 		else if (system->c6_mixing) {
 			pair_ptr->sigma = 0.5*(atom_i->sigma + atom_j->sigma);

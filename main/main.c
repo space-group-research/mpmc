@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 	char nodename[MAXLINE];
         char cpu[MAXLINE];
         char model[12];
-        struct stat info;
+        //struct stat info;
 	system_t *system;
 
 	/* set the default rank */

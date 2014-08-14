@@ -4,7 +4,7 @@
 #########################################
 
 TOP=..
-INCLUDES=-I$(TOP)/include 
+INCLUDES=-I$(TOP)/include -I$(TOP)/mersenne
 MTINCLUDES=-I$(TOP)/mersenne
 
 ENERGY=$(TOP)/energy

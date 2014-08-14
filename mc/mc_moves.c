@@ -51,7 +51,7 @@ void temper_system ( system_t * system, double current_energy ) {
 
 	//make the bath index
 	bath2core = calloc(size, sizeof(int));
-	memnullcheck(bath2core, size*sizeof(int),__LINE__-1,__FILE__-1);
+	memnullcheck(bath2core, size*sizeof(int),__LINE__-1,__FILE__);
 	for ( i=0; i<size; i++ )
 		for ( j=0; j<size; j++ )
 			if ( system->ptemp->index[j] == i ) bath2core[i] = j;
@@ -62,11 +62,11 @@ void temper_system ( system_t * system, double current_energy ) {
 
 	//we will use this array to designate whether a particular core is a master or slave
 	is_master = calloc(size,sizeof(int));
-	memnullcheck(is_master,size*sizeof(int),__LINE__-1,__FILE__-1);
+	memnullcheck(is_master,size*sizeof(int),__LINE__-1,__FILE__);
 
 	//build the partner list
 	partner_list = calloc(size, sizeof(int));
-	memnullcheck(partner_list, size*sizeof(int),__LINE__-1,__FILE__-1);
+	memnullcheck(partner_list, size*sizeof(int),__LINE__-1,__FILE__);
 	master = lucky;
 	slave = (lucky+1) % size; //this assigns the slave bath index to the variable
 	do {
@@ -121,8 +121,8 @@ void temper_system ( system_t * system, double current_energy ) {
 	//now we need to update the templist and index on each core
 	update_templist = calloc(size,sizeof(double));
 	update_index = calloc(size,sizeof(int));
-	memnullcheck(update_templist, size*sizeof(double), __LINE__-1, __FILE__-1);
-	memnullcheck(update_index, size*sizeof(int), __LINE__-1, __FILE__-1);
+	memnullcheck(update_templist, size*sizeof(double), __LINE__-1, __FILE__);
+	memnullcheck(update_index, size*sizeof(int), __LINE__-1, __FILE__);
 	// create updated arrays on head node
 	MPI_Gather(&new_templist_val, 1, MPI_DOUBLE, update_templist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Gather(&new_index_val, 1, MPI_INT, update_index, 1, MPI_INT, 0, MPI_COMM_WORLD);

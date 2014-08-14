@@ -615,7 +615,7 @@ int surface_fit(system_t *system) {
 	// ee_local variables
 	int a = 0;
 	int globalFound = 0;
-	double oldGlobal;
+	double oldGlobal = 0;
 	double initEps[2];
 	double initSig[2];
 	double globalEps[2];
@@ -769,9 +769,9 @@ int surface_fit(system_t *system) {
 		int b, c, d, nE1, nE2, nS1, nS2;
 		double currEps[2];
 		double currSig[2];
-		double newGlobal;
-		double E1, E2, E1start, E1stop, E1incr, E2start, E2stop, E2incr, E1c, E2c;
-		double S1, S2, S1start, S1stop, S1incr, S2start, S2stop, S2incr, S1c, S2c;
+		double newGlobal=0;
+		double E1start, E1stop, E1incr, E2start, E2stop, E2incr, E1c, E2c; // E1, E2 (unused)
+		double S1start, S1stop, S1incr, S2start, S2stop, S2incr, S1c, S2c; // S1, S2 (unused)
 
 		if(globalFound == 1) {
 			printf("\nEE_LOCAL ~> SA found an improved surface. Using current global minimum parameters for EE.\n");
@@ -891,7 +891,8 @@ int surface_fit(system_t *system) {
 								param_ptr->sigma = (S2c+S2incr);
 							}
 						}
-						S2c = S2c += S2incr;
+						S2c += S2incr;
+						
 						master++;
 					} // END S2 loop
 
@@ -905,7 +906,7 @@ int surface_fit(system_t *system) {
 						}
 					}
 
-					S1c = S1c += S1incr;
+					S1c += S1incr;
 					S2c = S2start;
 
 				} // END S1 loop
@@ -920,7 +921,7 @@ int surface_fit(system_t *system) {
 					}
 				}
 
-				E2c = E2c += E2incr;
+				E2c += E2incr;
 				S1c = S1start;
 
 			} // END E2 loop
@@ -935,7 +936,7 @@ int surface_fit(system_t *system) {
 				}
 			}
 
-			E1c = E1c += E1incr;
+			E1c += E1incr;
 			E2c = E2start;
 
 		} // END E1 loop

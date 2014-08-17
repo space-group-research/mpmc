@@ -51,6 +51,7 @@ typedef struct _atom {
 	double gwp_alpha;
 	int site_neighbor_id; // dr fluctuations will be applied along the vector from this atom to the atom identified by this variable
 	pair_t *pairs;
+	double lrc_self, last_volume; // currently only used in disp_expansion.c
 	struct _atom *next;
 
 } atom_t;

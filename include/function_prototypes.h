@@ -16,6 +16,8 @@ double dreiding(system_t *);
 double dreiding_nopbc(molecule_t *);
 double lj_buffered_14_7(system_t *);
 double lj_buffered_14_7_nopbc(system_t *);
+double disp_expansion_lrc(const system_t *, pair_t *, const double);
+double disp_expansion_lrc_self(const system_t *, atom_t *, const double);
 double disp_expansion(system_t *);
 double disp_expansion_nopbc(system_t *);
 long factorial(long);

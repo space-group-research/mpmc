@@ -105,7 +105,7 @@ double disp_expansion(system_t *system)
 		{
 			for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next)
 			{
-				atom_ptr->lrc_self += disp_expansion_lrc_self(system,atom_ptr,system->pbc->cutoff);
+				atom_ptr->lrc_self = disp_expansion_lrc_self(system,atom_ptr,system->pbc->cutoff);
 				potential += atom_ptr->lrc_self;
 			}
 		}

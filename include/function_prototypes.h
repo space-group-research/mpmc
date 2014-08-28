@@ -20,7 +20,7 @@ double disp_expansion_lrc(const system_t *, pair_t *, const double);
 double disp_expansion_lrc_self(const system_t *, atom_t *, const double);
 double disp_expansion(system_t *);
 double disp_expansion_nopbc(system_t *);
-long factorial(long);
+double factorial(int);
 double tt_damping(int,double);
 void countN(system_t *);
 void update_com(molecule_t *);

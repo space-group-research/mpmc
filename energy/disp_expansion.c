@@ -162,12 +162,13 @@ double disp_expansion_nopbc(system_t *system)
 	return potential;
 }
 
-long factorial(long n)
+double factorial(int n)
 {
-  if (n == 0)
-    return 1;
-  else
-    return(n * factorial(n-1));
+  int i;
+  double fac = 1.0;
+  for (i=2;i<=n;i++)
+    fac *= i;
+  return fac;
 }
 
 double tt_damping(int n, double br)
@@ -176,7 +177,7 @@ double tt_damping(int n, double br)
   int i;
   for (i=0;i<=n;i++)
   {
-    sum += pow(br,i)/(double)(factorial(i));
+    sum += pow(br,i)/factorial(i);
   }
   return 1.0-exp(-br)*sum;
 }

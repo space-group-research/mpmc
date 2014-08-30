@@ -1,15 +1,13 @@
 #summary One-sentence summary of this page.
 
 = Quantum Rotation Options =
-== I don't know anything about this stuff ==
 
 || *Command* || *Description* ||
 || {{{ quantum_rotation [on|off] }}} || Enables quantum rotational eigenspectrum calculation. *(default = off)* ||
-|| {{{ quantum_rotation_hindered [on|off] }}} || *(default = off)* ||
+|| {{{ quantum_rotation_hindered [on|off] }}} || Calculate the rotational energy levels using the hindered potential sin^2^θ. *(default = off)* ||
 || {{{ quantum_rotation_hindered_barrier [double] }}} || ||
-|| {{{ quantum_rotation_B [double] }}} || ||
-|| {{{ quantum_rotation_level_max [int] }}} || *(default = 36)* ||
-|| {{{ quantum_rotation_l_max [int] }}} || *(default = 5)* ||
-|| {{{ quantum_rotation_sum [int] }}} || *(default = 10)* ||
+|| {{{ quantum_rotation_B [double] }}} || Sets the rotational constant. For H,,2,,, it is 85.35060622 Kelvin. ||
+|| {{{ quantum_rotation_level_max [int] }}} || Number of rotational energy levels to solve for (Equal to (l_max + 1)^2^). *(default = 36)* ||
+|| {{{ quantum_rotation_l_max [int] }}} || Total angular momentum quantum number. *(default = 5)* ||
+|| {{{ quantum_rotation_sum [int] }}} || Number of rotational energy levels to sum over. *(default = 10)* ||
 || {{{ quantum_vibration [on|off] }}} || *(default = off)* ||
-

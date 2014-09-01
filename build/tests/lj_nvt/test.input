@@ -1,0 +1,22 @@
+job_name                test
+
+ensemble                nvt
+
+temperature             5
+
+move_probability        1.0
+
+wrapall                 on
+
+numsteps                10000
+corrtime                100
+
+rd_lrc                  on
+
+read_pqr_box            on
+
+pqr_input               test.pqr
+pqr_output              /dev/null
+pqr_restart             /dev/null
+traj_output             /dev/null
+energy_output           /dev/null

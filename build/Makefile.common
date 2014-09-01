@@ -73,3 +73,32 @@ qrot: $(QROT_OBJ)
 mt: $(MT_OBJ)
 %.o: $(MT)/%.c $(DEPS)
 	$(CC) $(CFLAGS) $(MTFLAGS) $(DEFINES) $(MTINCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<
+
+test: disp_expansion_single_point lj_single_point lj_lrc_125 lj_lrc_27 lj_npt lj_muvt lj_nvt socMOF_single_point_nonpolar socMOF_single_point_polar
+
+disp_expansion_single_point:
+	@cd tests/disp_expansion_single_point && python run.py
+
+socMOF_single_point_nonpolar:
+	@cd tests/socMOF_single_point_nonpolar && python run.py
+
+socMOF_single_point_polar:
+	@cd tests/socMOF_single_point_polar && python run.py
+
+lj_npt:
+	@cd tests/lj_npt && python run.py
+
+lj_muvt:
+	@cd tests/lj_muvt && python run.py
+
+lj_nvt:
+	@cd tests/lj_nvt && python run.py
+
+lj_single_point:
+	@cd tests/lj_single_point && python run.py
+
+lj_lrc_27:
+	@cd tests/lj_lrc_27 && python run.py
+
+lj_lrc_125:
+	@cd tests/lj_lrc_125 && python run.py

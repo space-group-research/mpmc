@@ -1,0 +1,21 @@
+job_name                test
+
+ensemble                total_energy
+
+rd_lrc                  on
+
+polarization            on
+polar_damp_type         exponential
+polar_damp              2.1304
+polar_iterative         on
+polar_max_iter          50
+polar_gs_ranked         on
+polar_palmo             on
+
+read_pqr_box            on
+
+pqr_input               test.pqr
+pqr_output              /dev/null
+pqr_restart             /dev/null
+traj_output             /dev/null
+energy_output           /dev/null

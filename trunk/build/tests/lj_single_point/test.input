@@ -1,0 +1,15 @@
+job_name                test
+
+ensemble                total_energy
+
+rd_lrc                  off
+
+basis1               1000.0    0.0    0.0
+basis2                  0.0 1000.0    0.0
+basis3                  0.0    0.0 1000.0
+
+pqr_input               test.pqr
+pqr_output              /dev/null
+pqr_restart             /dev/null
+traj_output             /dev/null
+energy_output           /dev/null

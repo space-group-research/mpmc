@@ -3,7 +3,7 @@
 if [ $# != 6 ]
 then
 	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
-	echo "     hostnames: generic circe llnl spin time"
+	echo "     hostnames: generic circe stampede llnl spin time"
 	echo "     compilers: gcc gdb pgi icc"
 	exit 1
 fi
@@ -43,7 +43,7 @@ case "$HOSTNAME" in
 		case "$COMPILER" in
 			"gdb")
 				CC="gcc"
-				CFLAGS="-g -Wall -Wall "
+				CFLAGS="-g -Wall -Werror "
 				EXTRA_LIBS="-lm -rdynamic"
 			;;
 			"gcc")
@@ -64,6 +64,28 @@ case "$HOSTNAME" in
 				ln -s /usr/lib64/liblapack.so.3 ./lib/liblapack.a
 				ln -s /usr/lib64/libg2c.so.0 ./lib/libg2c.a
 				ln -s /usr/lib64/libblas.so.3 ./lib/libblas.a
+			;;
+			*)
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
+				exit 1
+		esac
+	;;
+	"stampede") # @ Texas Advanced Computing Center
+		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g -Wall -Werror"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
+			"gcc")
+				CC="gcc"
+				CFLAGS="-O3 -Wall -Werror"
+				EXTRA_LIBS="-lm"
+			;;
+			"icc")
+				CC="icc"
+				CFLAGS="-O3 -ip -unroll -Wall -Werror-all"
+				EXTRA_LIBS="-lm"
 			;;
 			*)
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
@@ -160,7 +182,7 @@ case "$MODE" in
 				EXTRA_LIBS="-L/usr/lib64/openmpi -lmpi -lm"
 			;;
 			*)
-				if [ $COMPILER = "icc" ]; then
+				if [ $COMPILER = "icc" ] && [ $HOSTNAME != "stampede" ]; then
 					CC="mpiicc"
 				else
 					CC="mpicc"

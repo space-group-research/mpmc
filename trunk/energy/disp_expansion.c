@@ -183,7 +183,7 @@ double tt_damping(int n, double br)
 	const double result = 1.0-exp(-br)*sum;
 
 	if (result>0.000000001)
-		return 1.0-exp(-br)*sum;
+		return result;
 	else
 		return 0.0; /* This is so close to zero lets just call it zero to avoid rounding error and the simulation blowing up */
 }

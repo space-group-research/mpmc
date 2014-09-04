@@ -164,20 +164,26 @@ double disp_expansion_nopbc(system_t *system)
 
 double factorial(int n)
 {
-  int i;
-  double fac = 1.0;
-  for (i=2;i<=n;i++)
-    fac *= i;
-  return fac;
+	int i;
+	double fac = 1.0;
+	for (i=2;i<=n;i++)
+		fac *= i;
+	return fac;
 }
 
 double tt_damping(int n, double br)
 {
-  double sum = 0.0;
-  int i;
-  for (i=0;i<=n;i++)
-  {
-    sum += pow(br,i)/factorial(i);
-  }
-  return 1.0-exp(-br)*sum;
+	double sum = 0.0;
+	int i;
+	for (i=0;i<=n;i++)
+	{
+		sum += pow(br,i)/factorial(i);
+	}
+
+	const double result = 1.0-exp(-br)*sum;
+
+	if (result>0.000000001)
+		return 1.0-exp(-br)*sum;
+	else
+		return 0.0; /* This is so close to zero lets just call it zero to avoid rounding error and the simulation blowing up */
 }

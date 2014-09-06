@@ -3,7 +3,7 @@
 if [ $# != 6 ]
 then
 	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
-	echo "     hostnames: generic circe stampede llnl spin time"
+	echo "     hostnames: generic circe stampede trestles llnl spin time"
 	echo "     compilers: gcc gdb pgi icc"
 	exit 1
 fi
@@ -85,6 +85,33 @@ case "$HOSTNAME" in
 			"icc")
 				CC="icc"
 				CFLAGS="-O3 -ip -unroll -Wall -Werror-all"
+				EXTRA_LIBS="-lm"
+			;;
+			*)
+				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
+				exit 1
+		esac
+	;;
+	"trestles") # @ San Diego Supercomputer Center
+		case "$COMPILER" in
+			"gdb")
+				CC="gcc"
+				CFLAGS="-g -Wall -Werror"
+				EXTRA_LIBS="-lm -rdynamic"
+			;;
+			"gcc")
+				CC="gcc"
+				CFLAGS="-O3 -Wall -Werror"
+				EXTRA_LIBS="-lm"
+			;;
+			"icc")
+				CC="icc"
+				CFLAGS="-O3 -ip -unroll -Wall -Werror-all"
+				EXTRA_LIBS="-lm"
+			;;
+			"pgi")
+				CC="pgcc"
+				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
 				EXTRA_LIBS="-lm"
 			;;
 			*)
@@ -181,8 +208,17 @@ case "$MODE" in
 				EXTRA_INCLUDES="-I/usr/include/openmpi"
 				EXTRA_LIBS="-L/usr/lib64/openmpi -lmpi -lm"
 			;;
+			"stampede")
+				if [ $COMPILER = "icc" ]; then CC="mpicc"; fi
+			;;
+			"trestles")
+				if [ $COMPILER = "icc" ]; then
+					CC="mpicc"
+					CFLAGS="-O3 -unroll"
+				fi
+			;;
 			*)
-				if [ $COMPILER = "icc" ] && [ $HOSTNAME != "stampede" ]; then
+				if [ $COMPILER = "icc" ]; then
 					CC="mpiicc"
 				else
 					CC="mpicc"

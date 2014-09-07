@@ -112,7 +112,7 @@ case "$HOSTNAME" in
 			"pgi")
 				CC="pgcc"
 				CFLAGS="-O3 -fastsse -Mipa=fast,inline,libinline"
-				EXTRA_LIBS="-lm"
+				EXTRA_LIBS="-lacml -lacml_mp -lpgmp -lpgftnrtl -lm"
 			;;
 			*)
 				echo "error: compiler $COMPILER not supported for machine $HOSTNAME"
@@ -215,6 +215,8 @@ case "$MODE" in
 				if [ $COMPILER = "icc" ]; then
 					CC="mpicc"
 					CFLAGS="-O3 -unroll"
+				elif [ $COMPILER = "pgi" ]; then
+					CFLAGS="$CFLAGS -I/opt/openmpi/pgi/ib/include/"
 				fi
 			;;
 			*)

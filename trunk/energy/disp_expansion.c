@@ -61,10 +61,7 @@ double disp_expansion(system_t *system)
 
 					/* pair LRC */
 					if ( system->rd_lrc )
-					{
 						pair_ptr->lrc = disp_expansion_lrc(system,pair_ptr,system->pbc->cutoff);
-						potential += pair_ptr->lrc;
-					}
 
 					/* make sure we're not excluded or beyond the cutoff */
 					if(!((pair_ptr->rimg > system->pbc->cutoff) || pair_ptr->rd_excluded || pair_ptr->frozen)) {
@@ -90,10 +87,14 @@ double disp_expansion(system_t *system)
 							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10-tt_damping(12,pair_ptr->epsilon*r)*c12/r12+repulsion;
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
+
+						if(system->cavity_autoreject)
+							if(r < system->cavity_autoreject_scale)
+								pair_ptr->rd_energy = MAXVALUE;
 					}
 
 				}
-				potential += pair_ptr->rd_energy;
+				potential += pair_ptr->rd_energy + pair_ptr->lrc;
 			}
 		}
 	}
@@ -151,6 +152,10 @@ double disp_expansion_nopbc(system_t *system)
 							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10-tt_damping(12,pair_ptr->epsilon*r)*c12/r12+repulsion;
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
+
+						if(system->cavity_autoreject)
+							if(r < system->cavity_autoreject_scale)
+								pair_ptr->rd_energy = MAXVALUE;
 					}
 
 				}

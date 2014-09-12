@@ -6,7 +6,6 @@ extern int rank, size;
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <values.h>
 #include <sys/time.h>
 #include <time.h>
 #include <signal.h>

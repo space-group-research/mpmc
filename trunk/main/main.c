@@ -36,6 +36,8 @@ int main(int argc, char **argv) {
         char cpu[MAXLINE];
         struct stat info;
 	system_t *system;
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
 
 	/* set the default rank */
 	rank = 0; size = 1;
@@ -51,7 +53,7 @@ int main(int argc, char **argv) {
 #endif /* MPI */
 
 	output("For version info, use \"svn info\"\n" );
-	sprintf(linebuf, "MAIN: processes started on %d cores\n", size);
+	sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	output(linebuf);
 
         /* Collect and output hostname & processor info */

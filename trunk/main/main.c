@@ -27,7 +27,6 @@ void usage(char *progname) {
 
 int main(int argc, char **argv) {
 
-	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
 	FILE *procfile;
         FILE *host;
 	char linebuf[MAXLINE];
@@ -52,6 +51,7 @@ int main(int argc, char **argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif /* MPI */
 
+	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
 	output("For version info, use \"svn info\"\n" );
 	sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	output(linebuf);
@@ -74,8 +74,8 @@ int main(int argc, char **argv) {
                         }
                 }
                 fclose(procfile);
-        } else if (stat("/Applications",&info)==0) {                                  // Mac OS X
-                output("MAIN: Mac OS X detected\n");
+        } else if (stat("/Applications",&info)==0) {                                  // Mac OS
+                output("MAIN: Mac OS detected\n");
                 host = popen("hostname", "r");
                 fgets(nodename, MAXLINE, host);
                 sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);

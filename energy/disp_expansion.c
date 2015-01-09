@@ -154,7 +154,7 @@ double disp_expansion_nopbc(system_t *system)
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
 						if(system->cavity_autoreject)
-							if(r < system->cavity_autoreject_scale)
+							if(r < system->cavity_autoreject_scale*pair_ptr->sigma)
 								pair_ptr->rd_energy = MAXVALUE;
 					}
 

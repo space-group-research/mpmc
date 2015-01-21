@@ -282,6 +282,9 @@ int do_command (system_t * system, char ** token ) {
 	else if (!strcasecmp(token[0],"cavity_autoreject_scale")) {
 		{ if ( safe_atof(token[1],&(system->cavity_autoreject_scale)) ) return 1; }
 	}
+	else if (!strcasecmp(token[0],"cavity_autoreject_repulsion")) {
+		{ if ( safe_atof(token[1],&(system->cavity_autoreject_repulsion)) ) return 1; }
+	}
 
 	//polar options
 	else if(!strcasecmp(token[0], "polarization")) {

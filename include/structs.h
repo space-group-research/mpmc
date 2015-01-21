@@ -376,7 +376,7 @@ typedef struct _system {
 	int cavity_bias, cavity_grid_size;
 	cavity_t ***cavity_grid;
 	int cavities_open;
-	double cavity_radius, cavity_volume, cavity_autoreject_scale;
+	double cavity_radius, cavity_volume, cavity_autoreject_scale, cavity_autoreject_repulsion;
 
 	//spectre
 	int spectre;

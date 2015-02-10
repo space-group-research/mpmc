@@ -64,7 +64,7 @@ double disp_expansion(system_t *system)
 						pair_ptr->lrc = disp_expansion_lrc(system,pair_ptr,system->pbc->cutoff);
 
 					/* make sure we're not excluded or beyond the cutoff */
-					if(!((pair_ptr->rimg > system->pbc->cutoff) || pair_ptr->rd_excluded || pair_ptr->frozen)) {
+					if(!(pair_ptr->rd_excluded || pair_ptr->frozen)) {
 						const double r = pair_ptr->rimg;
 						const double r2 = r*r;
 						const double r4 = r2*r2;
@@ -133,7 +133,7 @@ double disp_expansion_nopbc(system_t *system)
 
 				if(pair_ptr->recalculate_energy) {
 					/* make sure we're not excluded or beyond the cutoff */
-					if(!((pair_ptr->rimg > system->pbc->cutoff) || pair_ptr->rd_excluded || pair_ptr->frozen)) {
+					if(!(pair_ptr->rd_excluded || pair_ptr->frozen)) {
 						const double r = pair_ptr->rimg;
 						const double r2 = r*r;
 						const double r4 = r2*r2;

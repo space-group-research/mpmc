@@ -9,7 +9,7 @@ double disp_expansion_lrc( const system_t * system,  pair_t * pair_ptr, const do
 
 		pair_ptr->last_volume = system->pbc->volume;
 
-		return -4.0*M_PI*(pair_ptr->c6/(3.0*cutoff*cutoff*cutoff)+pair_ptr->c8/(5.0*cutoff*cutoff*cutoff*cutoff*cutoff)+pair_ptr->c10/(7.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff)+pair_ptr->c12/(9.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff))/system->pbc->volume;
+		return -4.0*M_PI*(pair_ptr->c6/(3.0*cutoff*cutoff*cutoff)+pair_ptr->c8/(5.0*cutoff*cutoff*cutoff*cutoff*cutoff)+pair_ptr->c10/(7.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff))/system->pbc->volume;
 	}
 
 	else return pair_ptr->lrc; /* use stored value */
@@ -24,19 +24,13 @@ double disp_expansion_lrc_self( const system_t * system, atom_t * atom_ptr, cons
 
 		if ( system->extrapolate_disp_coeffs)
 		{
-			double c10, c12;
+			double c10;
 			if (atom_ptr->c6!=0.0&&atom_ptr->c8!=0.0)
-			{
 				c10 = 49.0/40.0*atom_ptr->c8*atom_ptr->c8/atom_ptr->c6;
-				c12 = atom_ptr->c6*pow(c10/atom_ptr->c8,3.0);
-			}
 			else
-			{
 				c10 = 0.0;
-				c12 = 0.0;
-			}
 
-			return -4.0*M_PI*(atom_ptr->c6/(3.0*cutoff*cutoff*cutoff)+atom_ptr->c8/(5.0*cutoff*cutoff*cutoff*cutoff*cutoff)+c10/(7.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff)+c12/(9.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff))/system->pbc->volume;
+			return -4.0*M_PI*(atom_ptr->c6/(3.0*cutoff*cutoff*cutoff)+atom_ptr->c8/(5.0*cutoff*cutoff*cutoff*cutoff*cutoff)+c10/(7.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff))/system->pbc->volume;
 		}
 		else
 			return -4.0*M_PI*(atom_ptr->c6/(3.0*cutoff*cutoff*cutoff)+atom_ptr->c8/(5.0*cutoff*cutoff*cutoff*cutoff*cutoff)+atom_ptr->c10/(7.0*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff*cutoff))/system->pbc->volume;
@@ -76,7 +70,6 @@ double disp_expansion(system_t *system)
 						const double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;
 						const double c10 = pair_ptr->c10;
-						const double c12 = pair_ptr->c12;
 
 						double repulsion = 0.0;
 
@@ -84,7 +77,7 @@ double disp_expansion(system_t *system)
 							repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
 
 						if (system->damp_dispersion)
-							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10-tt_damping(12,pair_ptr->epsilon*r)*c12/r12+repulsion;
+							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10+repulsion;
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
@@ -145,7 +138,6 @@ double disp_expansion_nopbc(system_t *system)
 						const double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;
 						const double c10 = pair_ptr->c10;
-						const double c12 = pair_ptr->c12;
 
 						double repulsion = 0.0;
 
@@ -153,7 +145,7 @@ double disp_expansion_nopbc(system_t *system)
 							repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon*(r-pair_ptr->sigma)); // K = 10^-3 H ~= 316 K
 
 						if (system->damp_dispersion)
-							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10-tt_damping(12,pair_ptr->epsilon*r)*c12/r12+repulsion;
+							pair_ptr->rd_energy = -tt_damping(6,pair_ptr->epsilon*r)*c6/r6-tt_damping(8,pair_ptr->epsilon*r)*c8/r8-tt_damping(10,pair_ptr->epsilon*r)*c10/r10+repulsion;
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 

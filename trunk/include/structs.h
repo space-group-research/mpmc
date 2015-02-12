@@ -28,7 +28,7 @@ typedef struct _pair {
 	double d_prev[3]; //last known position
 	double rd_energy, es_real_energy, es_self_intra_energy;
 	double sigrep;
-	double c6,c8,c10,c12;
+	double c6,c8,c10;
 	struct _atom * atom; 
 	struct _molecule * molecule;
 	struct _pair * next;

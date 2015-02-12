@@ -6,6 +6,7 @@
 || {{{ cavity_autoreject [on|off] }}} || Automatically rejects any monte carlo move which would put two LJ sites (not on the same molecule) that are too close. *(default = off)* ||
 || {{{ cavity_autoreject_absolute }}} || Like cavity_autoreject, but applies to non-LJ sites as well. *(default = off)* ||
 || {{{ cavity_autoreject_scale [double] }}} || Sets threshold (distance) for triggering cavity_autoreject. ||
+|| {{{ cavity_autoreject_repulsion [double] }}} || Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only works in combination with disp_expansion. *(default = off)* ||
 || {{{ cdvdw [on|off|evects|comp] }}} || Turns on coupled-dipole method van der Waals. Evects prints eigenvectors and comp prints a comparision to a two-body decomposition. Also activated polarization. *(default = off)* ||
 || {{{ dreiding [on|off] }}} || Dreiding potential. *(default = off)* ||
 || {{{ feynman_hibbs [on|off] }}} || Turns on Feynman-Hibbs quantum corrections. *(default = off)* ||
@@ -17,12 +18,14 @@
 || {{{ scale_charge [double] }}} || Scales the charges on all frozen atoms. ||
 || {{{ sg [on|off] }}} || Silvera-Goldman potential. *(default = off)* ||
 
+
 == SPECTRE Options ==
 
 || *Command* || *Description* ||
 || {{{ spectre [on|off] }}} || *(default = off)* ||
 || {{{ spectre_max_charge [double] }}} || ||
 || {{{ spectre_max_target [double] }}} || ||
+
 
 == RD Options ==
 
@@ -31,11 +34,13 @@
 || {{{ rd_lrc [on|off] }}} || Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. *(default = ON)* ||
 || {{{ rd_only }}} || Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) ||
 
+
 == Mixing Rules ==
 || {{{ waldmanhagler [on|off] }}} || Use Waldman-Hagler mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). *(default = off)* ||
 || {{{ halgren_mixing [on|off] }}} || Use Halgren mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). *(default = off)* ||
+|| {{{ c6_mixing [on|off] }}} || Use the known C6 mixing rule to calculate the Lennard-Jones epsilon. The Lennard-Jones sigma is calculated using arithmetic mean. *(default = off)* ||
 || {{{ cdvdw_9th_repulsion [on|off] }}} || Use 9th power mixing rule (rep_ij = (rep_ii^(1/9)+rep_jj^(1/9))^9) for repulsion interactions (used in conjunction with coupled-dipole vdW) *(default = off)* ||
-|| {{{ cdvdw_sig_rep [on|off] }}} || Calculate repulsion using 3/2*hbar*w_i*w_j*alpha_i*alpha_j/(w_i+w_j)*sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) *(default = off)* ||
+|| {{{ cdvdw_sig_rep [on|off] }}} || Calculate repulsion using 3/2`*`hbar`*`w_i`*`w_j`*`alpha_i`*`alpha_j/(w_i+w_j)`*`sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) *(default = off)* ||
 || {{{ cdvdw_exp_rep [on|off] }}} || Uses exponential repulsion sigma*exp(-r/2epsilon), using some mixing rule I found somewhere -- see source code. *(default = off)* ||
 
 
@@ -74,6 +79,16 @@
 || {{{ polar_self [on|off] }}} || Include molecular self-induction. *(default = off)* ||
 || {{{ polar_rrms [on|off] }}} || Calcuate root-mean-square fluctuation in dipoles elements during iterative solution. *(default = off)* ||
 
+
+== Disp Expansion Options ==
+
+|| *Command* || *Description* ||
+|| {{{ disp_expansion [on|off] }}} || Activates a RD potential similar to the Tang-Toennies potential. E_rd = -C6/r`^`6-C8/r`^`8-C10/r`^`10+315.775`*`exp(-epsilon`*`(r-sigma)). *(default = off)* ||
+|| {{{ damp_dispersion [on|off] }}} || Damps the dispersion interaction according to Tang and Toennies's incomplete gamma functions. *(default = off)* ||
+|| {{{ extrapolate_disp_coeffs [on|off] }}} || Extrapolates C10 from C6 and C8. *(default = off)* ||
+|| {{{ schmidt_ff [on|off] }}} || Activates JR Schmidt's mixing rule for the slope parameter (epsilon) of the repulsion. *(default = off)* ||
+
+
 == Anharmonic Bond Potential ==
 
 || *Command* || *Description* ||
@@ -81,4 +96,3 @@
 || {{{ rd_anharmonic_k [double] }}} || Harmonic term (order 2). ||
 || {{{ rd_anharmonic_g [double] }}} || Anharmonic term (order 4). ||
 || {{{ feynman_kleinert [on|off] }}} || ???Iterative Feynman-Kleinert correction for anharmonic bond potential. *(default = off)* ||
-

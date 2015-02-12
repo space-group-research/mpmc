@@ -16,4 +16,8 @@
 || {{{ surf_scale_omega [double] }}} || Magnitude of omega fluctuations to sites with non-zero omega. *(default = 0.001)* ||
 || {{{ surf_scale_pol [double] }}} || Magnitude of alpha (polarizabilities) fluctuations to sites with non-zero alpha. *(default = 0)* ||
 || {{{ surf_qshift [on|off] }}} || Adjusts position of H2Q sites while adjusting charges of H2Q and H2G to remain charge neutral and conserve quadrupole. *(default = off)* ||
-
+|| {{{ surf_global_axis [on|off] }}} || Use quaternions to rotate the molecules about the cartesian axes during surface fitting (as opposed to the local axes which is the default) *(default = off)* ||
+|| {{{ surf_scale_pol [double] }}} || Magnitude of polarizability fluctuations to sites with non-zero polarizability. *(default = 0)* ||
+|| {{{ surf_scale_c6 [double] }}} || Magnitude of C6 fluctuations to sites with non-zero C6. *(default = 0)* ||
+|| {{{ surf_scale_c8 [double] }}} || Magnitude of C8 fluctuations to sites with non-zero C8. *(default = 0)* ||
+|| {{{ surf_scale_c10 [double] }}} || Magnitude of C10 fluctuations to sites with non-zero C10. *(default = 0)* ||

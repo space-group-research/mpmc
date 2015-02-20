@@ -361,7 +361,7 @@ typedef struct _system {
 	//monte carlo controls
 	int numsteps, corrtime, step;
 	int ptemp_freq;
-	double move_probability, rot_probability, insert_probability;
+	double move_factor, rot_factor, insert_probability;
 	double adiabatic_probability, spinflip_probability, gwp_probability, volume_probability;
 	double volume_change_factor, last_volume; //NPT
 	//auto-reject options

@@ -719,18 +719,18 @@ void make_move(system_t *system) {
 	
 			/* change coords of 'altered' */
 			if(system->rd_anharmonic)
-				displace_1D(system, system->checkpoint->molecule_altered, system->move_probability);
+				displace_1D(system, system->checkpoint->molecule_altered, system->move_factor);
 			else if(system->spectre)
-				spectre_displace(system, system->checkpoint->molecule_altered, system->move_probability, 
+				spectre_displace(system, system->checkpoint->molecule_altered, system->move_factor, 
 					system->spectre_max_charge, system->spectre_max_target);
 			else if(system->gwp) {
 				if(system->checkpoint->molecule_altered->atoms->gwp_spin) {
-					displace(system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_probability);
+					displace(system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_factor);
 					displace_gwp(system->checkpoint->molecule_altered, system->gwp_probability);
 				} else
-					displace(system->checkpoint->molecule_altered, system->pbc, system->move_probability, system->rot_probability);
+					displace(system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
 			} else
-				displace(system->checkpoint->molecule_altered, system->pbc, system->move_probability, system->rot_probability);
+				displace(system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
 
 		break;
 		case MOVETYPE_ADIABATIC :

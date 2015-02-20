@@ -988,7 +988,7 @@ int check_system(system_t *system) {
 	if(system->lj_buffered_14_7) output("INPUT: Molecular potential is lj_buffered_14_7\n");
 	if(system->lj_buffered_14_7) output("INPUT: Using Halgren mixing rules for LJ-interactions.\n");
 	if(system->disp_expansion) output("INPUT: Using the dispersion coefficient expansion and exponential repulsion for LJ-interactions.\n");
-	if(system->extrapolate_disp_coeffs) output("INPUT: Extrapolating C10 and C12 coefficients from the C6 and C8 coefficients with disp_expansion.\n");
+	if(system->extrapolate_disp_coeffs) output("INPUT: Extrapolating the C10 coefficient from the C6 and C8 coefficients with disp_expansion.\n");
 	if(system->damp_dispersion) output("INPUT: Using Tang-Toennies damping for dispersion interactions with disp_expansion.\n");
 	if(system->schmidt_ff) output("INPUT: Using the Schmidt mixing rule for exponential repulsions with disp_expansion.\n");
 	if(system->feynman_hibbs) feynman_hibbs_options(system);

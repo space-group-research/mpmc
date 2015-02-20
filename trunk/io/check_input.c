@@ -667,25 +667,77 @@ void mc_options (system_t * system) {
 		} //calculated fugacities
 	} //ensemble UVT
 
-	sprintf(linebuf, "INPUT: insert probability is %.3f\n", system->insert_probability);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: move probability is %.3f\n", system->move_probability);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: gwp probability is %.3f\n", system->gwp_probability);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: rotation probability is %.3f\n", system->rot_probability);
-	output(linebuf);
-	sprintf(linebuf, "INPUT: spinflip probability is %.3f\n", system->spinflip_probability);
+
+
+	switch ( system->ensemble ) {
+	
+		case ENSEMBLE_UVT :	
+	
+			sprintf(linebuf, "INPUT: insert/delete probability is %lf.\n", system->insert_probability);
+			output(linebuf);
+
+			if(system->quantum_rotation)
+			{
+				sprintf(linebuf, "INPUT: spinflip probability is %lf.\n", system->spinflip_probability*(1.0-system->insert_probability));
+				output(linebuf);
+
+				sprintf(linebuf, "INPUT: displace probability is %lf.\n", (1.0-system->spinflip_probability)*(1.0-system->insert_probability));
+				output(linebuf);
+			}
+			else
+			{
+				sprintf(linebuf, "INPUT: displace probability is %lf.\n", 1.0-system->insert_probability);
+				output(linebuf);
+			}
+	
+		break;
+		case ENSEMBLE_NVT :
+		case ENSEMBLE_NVE :
+
+			sprintf(linebuf, "INPUT: spinflip probability is %lf.\n", system->spinflip_probability);
+			output(linebuf);
+
+			sprintf(linebuf, "INPUT: displace probability is %lf.\n", 1.0-system->spinflip_probability);
+			output(linebuf);
+
+		break;
+		case ENSEMBLE_NPT :	
+	
+			if ( system->volume_probability == 0.0 )
+			{
+				sprintf(linebuf, "INPUT: volume change probability is 1/N_molecules.\n");
+				output(linebuf);
+
+				sprintf(linebuf, "INPUT: displace probability is 1-1/N_molecules.\n");
+				output(linebuf);
+			}
+			else
+			{
+				sprintf(linebuf, "INPUT: volume change probability is %.3f\n", system->volume_probability);
+				output(linebuf);
+
+				sprintf(linebuf, "INPUT: displace probability is %.3f\n", 1.0-system->volume_probability);
+				output(linebuf);
+			}
+
+			sprintf(linebuf, "INPUT: volume change factor is %lf.\n", system->volume_change_factor);
+			output(linebuf);
+
+		break;
+		
+	}
+
+
+
+	sprintf(linebuf, "INPUT: translation change factor is %.3f\n", system->move_probability);
 	output(linebuf);
 
-	if ( system->ensemble == ENSEMBLE_NPT ) {
-		if ( system->volume_probability == 0.0 )
-			sprintf(linebuf, "INPUT: volume change probability is 1/N_molecules.\n");
-		else
-			sprintf(linebuf, "INPUT: volume change probability is %.3f\n", system->volume_probability);
-		output(linebuf);
+	sprintf(linebuf, "INPUT: rotation change factor is %.3f\n", system->rot_probability);
+	output(linebuf);
 
-		sprintf(linebuf, "INPUT: volume change factor is %lf.\n", system->volume_change_factor);
+	if (system->gwp)
+	{
+		sprintf(linebuf, "INPUT: gwp change factor is %.3f\n", system->gwp_probability);
 		output(linebuf);
 	}
 

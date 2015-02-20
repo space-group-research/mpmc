@@ -405,11 +405,15 @@ int do_command (system_t * system, char ** token ) {
 	
 	/* set Monte Carlo options */
 	else if(!strcasecmp(token[0], "move_probability")) 
-		{ if ( safe_atof(token[1],&(system->move_probability)) ) return 1; }
+		{ output("WARNING: move_probability is deprecated, use move_factor instead\n"); if ( safe_atof(token[1],&(system->move_factor)) ) return 1; }
+	else if(!strcasecmp(token[0], "rot_probability")) 
+		{ output("WARNING: rot_probability is deprecated, use rot_factor instead\n"); if ( safe_atof(token[1],&(system->rot_factor)) ) return 1; }
+	else if(!strcasecmp(token[0], "move_factor")) 
+		{ if ( safe_atof(token[1],&(system->move_factor)) ) return 1; }
 	else if(!strcasecmp(token[0], "gwp_probability")) 
 		{ if ( safe_atof(token[1],&(system->gwp_probability)) ) return 1; }
-	else if(!strcasecmp(token[0], "rot_probability")) 
-		{ if ( safe_atof(token[1],&(system->rot_probability)) ) return 1; }
+	else if(!strcasecmp(token[0], "rot_factor")) 
+		{ if ( safe_atof(token[1],&(system->rot_factor)) ) return 1; }
 	else if(!strcasecmp(token[0], "insert_probability")) 
 		{ if ( safe_atof(token[1],&(system->insert_probability)) ) return 1; }
 	else if(!strcasecmp(token[0], "adiabatic_probability")) 
@@ -1040,7 +1044,7 @@ void setdefaults(system_t * system) {
 
 	/* set the default scaling to 1 */
 	system->scale_charge = 1.0;
-	system->rot_probability = 1.0;
+	system->rot_factor = 1.0;
 	system->spinflip_probability = 0.0;
 	system->volume_probability = 0.0;
 

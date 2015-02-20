@@ -729,10 +729,10 @@ void mc_options (system_t * system) {
 
 
 
-	sprintf(linebuf, "INPUT: translation change factor is %.3f\n", system->move_probability);
+	sprintf(linebuf, "INPUT: translation change factor is %.3f\n", system->move_factor);
 	output(linebuf);
 
-	sprintf(linebuf, "INPUT: rotation change factor is %.3f\n", system->rot_probability);
+	sprintf(linebuf, "INPUT: rotation change factor is %.3f\n", system->rot_factor);
 	output(linebuf);
 
 	if (system->gwp)
@@ -1017,8 +1017,8 @@ int check_system(system_t *system) {
 	if(system->gwp) {
 		output("INPUT: Gaussian wavepacket code active\n");
 		if(system->gwp_probability == 0.) {
-			output("INPUT: GWP move scaling not input - setting equal to move_probability\n");
-			system->gwp_probability = system->move_probability;
+			output("INPUT: GWP move scaling not input - setting equal to move_factor\n");
+			system->gwp_probability = system->move_factor;
 		}
 	}
 

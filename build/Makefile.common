@@ -49,7 +49,7 @@ cuda: $(CUDA_OBJ)
 	$(NVCC) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<
 
 opencl: $(OPENCL_OBJ)
-%.o: $(POLAR_OBJ)/%.c $(DEPS)
+%.o: $(POLAR_GPU)/%.c $(DEPS)
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<
 
 clean:

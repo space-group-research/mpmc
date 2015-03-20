@@ -1,11 +1,11 @@
 #!/bin/sh
 
-if [ $# != 6 ]
+if [ $# != 7 ]
 then
-	echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
+        echo "usage: $0 <hostname> <compiler> <serial | parallel> <CUDA: yes|no> <OPENCL: yes|no> <QM Rotation: yes|no> <Coupled-Dipole VDW: yes|no>"
 	echo "     hostnames: generic circe stampede trestles llnl spin time"
 	echo "     compilers: gcc gdb pgi icc"
-	exit 1
+        exit 1
 fi
 
 
@@ -13,16 +13,20 @@ HOSTNAME=$1
 COMPILER=$2
 MODE=$3
 CUDA=$4
-QM_ROTATION=$5
-VDW=$6
-
-NVCC="nvcc"
+OPENCL=$5
+QM_ROTATION=$6
+VDW=$7
 
 
 ## Check for machine and compiler. Set CC/CFLAGS/LIBS.
 case "$HOSTNAME" in
 	"llnl")
 		case "$COMPILER" in
+			"gcc")
+				CC="gcc"
+				CFLAGS="-O3"
+				EXTRA_LIBS="-lm"
+			;;
 			"gdb")
 				CC="gcc"
 				CFLAGS="-g "
@@ -249,22 +253,37 @@ if [ $CUDA = "yes" ]; then
 	if [ $HOSTNAME = "circe" ]; then
 		DEFINES="$DEFINES -DCUDA"
 		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/apps/cuda/6.0/include "
-		EXTRA_LIBS="$EXTRA_LIBS -L/apps/cuda/6.0/lib64 -lcudart"
+		EXTRA_LIBS="$EXTRA_LIBS -L/apps/cuda/6.0/lib64 -lcudart -lstdc++"
 	elif [ $HOSTNAME == "llnl" ]; then
+		NVCC="/opt/cudatoolkit-6.5/bin/nvcc"
 		DEFINES="$DEFINES -DCUDA"
-		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-3.0/include"
-		EXTRA_LIBS="$EXTRA_LIBS -L/opt/cudatoolkit-3.0/lib64 -lcudart"
+		EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-6.5/include"
+		EXTRA_LIBS="$EXTRA_LIBS -L/opt/cudatoolkit-6.5/lib64 -lcudart -lstdc++"
 	else
 		DEFINES="$DEFINES -DCUDA"
-		EXTRA_LIBS="$EXTRA_LIBS -lcudart"
+		EXTRA_LIBS="$EXTRA_LIBS -lcudart -lstdc++"
 	fi
 fi
 
-## Set CUDA flag
-if [ $CUDA = "yes" ]; then
-	NVCC=$NVCC
-else
-	NVCC=
+
+# set openCL variables
+if [ $OPENCL = "yes" ]
+then
+        if [ $HOSTNAME == "llnl" ]
+        then
+                DEFINES="$DEFINES -DOPENCL"
+                #EXTRA_INCLUDES="$EXTRA_INCLUDES -I/usr/include -I/usr/nvidia/include/CL -I/g/g15/lowe26/mpmc/mpmc/trunk/include/OpenCL"
+                EXTRA_INCLUDES="$EXTRA_INCLUDES -I/opt/cudatoolkit-6.5/include/CL"
+                EXTRA_LIBS="$EXTRA_LIBS -L/usr/lib64 -L/opt/cudatoolkit-6.5/lib64 -lOpenCL"
+        elif [ $HOSTNAME == "radon" ]
+        then
+                DEFINES="$DEFINES -DOPENCL"
+                EXTRA_INCLUDES="$EXTRA_INCLUDES -I/home/loweew/workspace_mpmc/mpmc/include/OpenCL -I/home/loweew/workspace_mpmc/mpmc/include/CL"
+                EXTRA_LIBS="$EXTRA_LIBS -L/usr/lib64 -lOpenCL"
+        else
+                DEFINES="$DEFINES -DOPENCL"
+                EXTRA_LIBS="$EXTRA_LIBS -framework OpenCL"
+        fi
 fi
 
 ## Libs for gcc need to be specified in a different position
@@ -283,7 +302,7 @@ fi
 
 cat > Makefile << EOF
 
-#HOSTNAME=$HOSTNAME COMPILER=$COMPILER MODE=$MODE CUDA=$CUDA QM_ROTATION=$QM_ROTATION" 
+#HOSTNAME=$HOSTNAME COMPILER=$COMPILER MODE=$MODE CUDA=$CUDA OPENCL=$OPENCL QM_ROTATION=$QM_ROTATION" 
 CC=$CC
 CFLAGS=$CFLAGS
 
@@ -291,7 +310,9 @@ DEFINES=$DEFINES
 EXTRA_INCLUDES=$EXTRA_INCLUDES
 EXTRA_LIBS=$EXTRA_LIBS
 GCC_EXTRA_LIBS=$GCC_EXTRA_LIBS
+
 CUDA=$CUDA
+OPENCL=$OPENCL
 QM_ROTATION=$QM_ROTATION
 
 NVCC=$NVCC
@@ -299,4 +320,5 @@ NVCC=$NVCC
 include Makefile.common
 
 EOF
+
 

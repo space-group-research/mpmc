@@ -1,0 +1,7 @@
+MPMC Version id: 0.11
+	MC insertions selected from a separate linked list.
+MAIN: running parameters found in input
+INPUT: ERROR: invalid command on line 16.
+> #polar_palmo		on
+
+MAIN: could not initialize the simulation

@@ -28,8 +28,7 @@ double error_calc_fr_arbitrary_configurations( system_t *system, int nConfigs, c
 		}
 		
 #ifdef DEBUG
-sprintf( out, "abInitio: %0.10lf    model: %0.10lf    weight: %0.10lf\n", abInitio, model, weight );
-output( out );
+printf("abInitio: %0.10lf    model: %0.10lf    weight: %0.10lf\n", abInitio, model, weight );
 #endif
 		
 		current_error += weight * (abInitio - model) * (abInitio - model);
@@ -579,8 +578,7 @@ int surface_fit_arbitrary( system_t *system ) {
 	current_error = error_calc_fr_arbitrary_configurations( system, nConfigs, configuration, max_energy );
 
 #ifdef DEBUG
-	sprintf( out, "Error: %0.5lf\n", current_error ); 
-	output( out );
+	printf("Error: %0.5lf\n", current_error ); 
 #endif
 	
 
@@ -636,8 +634,7 @@ int surface_fit_arbitrary( system_t *system ) {
 		
 // Remove when working properly		
 #ifdef DEBUG 
-sprintf( out, "Error: %0.8lf\n", current_error );
-output(out);
+printf("Error: %0.8lf\n", current_error );
 #endif
 		
 

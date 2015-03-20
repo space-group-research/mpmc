@@ -1,0 +1,152 @@
+MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License
+For version info, use "svn info"
+MAIN: processes started on 1 cores @ 2015-3-19 23:37:45
+MAIN: Job running on node -> surface22
+MAIN: CPU -> model name	: Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz
+MAIN: running parameters found in input
+INPUT: finished reading config file
+INPUT: Canonical ensemble
+INPUT: each core performing 50 simulation steps
+INPUT: system correlation time is 10 steps
+INPUT: system temperature is 77.000 K
+INPUT: system free_volume is 6335.290 A^3
+INPUT: spinflip probability is 0.000000.
+INPUT: displace probability is 1.000000.
+INPUT: translation change factor is 0.010
+INPUT: rotation change factor is 1.000
+INPUT: rd long-range corrections are ON
+INPUT: Feynman-Hibbs effective potential activated
+INPUT: Feynman-Hibbs fourth-order quantum correction activated
+INPUT: Thole polarization activated
+INPUT: CUDA GPU Thole SCF solver activated
+INPUT: Thole exponential damping activated
+INPUT: Thole damping parameter is 2.1304
+INPUT: Thole iterative solver activated
+INPUT: using polar max SCF iterations = 10
+INPUT: Pre-cond/SOR/ESOR gamma = 1.000
+INPUT: Job Name: untitled
+INPUT: initial molecular coordinates are in ./socMOF+BSSP.initial.pdb
+INPUT: will be writing final configuration to ./socMOF+BSSP.final.pdb
+INPUT: will be writing restart configuration to ./socMOF+BSSP.restart.pdb
+INPUT: will be writing energy output to ./socMOF+BSSP.energy.dat
+INPUT: will be writing trajectory to ./socMOF+BSSP.traj.pdb
+INPUT: dipole field will be written to ./socMOF+BSSP.dipole.dat
+INPUT: field field will be written to ./socMOF+BSSP.field.dat
+INPUT: CUDA GPU acceleration activated
+INPUT: config file validated
+INPUT: finished reading in molecules
+INPUT: unit cell volume = 11324.990 A^3 (cutoff = 11.228 A)
+INPUT: Basis vectors { a =   22.457 	b =   22.457 	c =   22.457 }
+INPUT: Basis angles  { α =   90.000 	β =   90.000 	γ =   90.000 }
+INPUT: simulation box configured.
+INPUT: finished allocating pair lists
+INPUT: finished calculating pairwise interactions
+INPUT: Ewald gaussian width = 0.311711 A
+INPUT: Ewald kmax = 7
+MAIN: the simulation has been initialized
+MAIN: signal handler installed
+MT: core[0] seeds are set to 972111672 736101287 1040115890 749870723
+MAIN: *************************************************
+MAIN: *** starting Canonical Monte Carlo simulation ***
+MAIN: *************************************************
+MC: initial values:
+OUTPUT: potential energy = -128936.26438 +- -nan K
+OUTPUT: electrostatic energy = -8861.48665 +- -nan K
+OUTPUT: repulsion/dispersion energy = -93916.09414 +- -nan K
+OUTPUT: polarization energy = -26158.68359 +- -nan K
+OUTPUT: N = 156.00000 +- -nan molecules
+OUTPUT: density = 0.04611 +- -nan g/cm^3
+OUTPUT: pore density = 0.08243 +- -nan g/cm^3
+OUTPUT: wt % = 3.95856 +- -nan %
+OUTPUT: wt % (ME) = 4.12172 +- -nan %
+OUTPUT: excess adsorption ratio = 41.21719 +- -nan mg/g
+
+OUTPUT: BF = 1.0859 +- inf
+OUTPUT: AR = 0.80000 (0.00000 I/ 0.00000 R/ 0.80000 D)
+OUTPUT: potential energy = -128983.73335 +- 47.46897 K
+OUTPUT: electrostatic energy = -8905.36931 +- 43.88266 K
+OUTPUT: repulsion/dispersion energy = -93857.47244 +- 58.62170 K
+OUTPUT: polarization energy = -26220.89160 +- 62.20801 K
+OUTPUT: N = 156.00000 +- 0.00000 molecules
+OUTPUT: density = 0.04611 +- 0.00000 g/cm^3
+OUTPUT: pore density = 0.08243 +- 0.00000 g/cm^3
+OUTPUT: wt % = 3.95856 +- 0.00000 %
+OUTPUT: wt % (ME) = 4.12172 +- 0.00000 %
+OUTPUT: excess adsorption ratio = 41.21719 +- 0.00000 mg/g
+OUTPUT: heat capacity = 0.0031599 +- 0.0044688 kJ/mol K
+
+OUTPUT: Canonical Monte Carlo simulation running on 1 cores
+OUTPUT: Root collecting statistics at Thu Mar 19 23:37:49 2015
+OUTPUT: Completed step 20/50  (40.000 %)
+OUTPUT: 0.136 sec/step, ETA = 0.001 hrs
+OUTPUT: BF = 0.75664 +- 0.71198
+OUTPUT: AR = 0.60000 (0.00000 I/ 0.00000 R/ 0.60000 D)
+OUTPUT: potential energy = -128964.97664 +- 33.21017 K
+OUTPUT: electrostatic energy = -8909.77986 +- 25.71671 K
+OUTPUT: repulsion/dispersion energy = -93825.75277 +- 46.38576 K
+OUTPUT: polarization energy = -26229.44401 +- 36.92004 K
+OUTPUT: N = 156.00000 +- 0.00000 molecules
+OUTPUT: density = 0.04611 +- 0.00000 g/cm^3
+OUTPUT: pore density = 0.08243 +- 0.00000 g/cm^3
+OUTPUT: wt % = 3.95856 +- 0.00000 %
+OUTPUT: wt % (ME) = 4.12172 +- 0.00000 %
+OUTPUT: excess adsorption ratio = 41.21719 +- 0.00000 mg/g
+OUTPUT: heat capacity = 0.0030933 +- 0.0020219 kJ/mol K
+
+OUTPUT: Canonical Monte Carlo simulation running on 1 cores
+OUTPUT: Root collecting statistics at Thu Mar 19 23:37:50 2015
+OUTPUT: Completed step 30/50  (60.000 %)
+OUTPUT: 0.137 sec/step, ETA = 0.001 hrs
+OUTPUT: BF = 0.79739 +- 0.60557
+OUTPUT: AR = 0.60000 (0.00000 I/ 0.00000 R/ 0.60000 D)
+OUTPUT: potential energy = -128958.61050 +- 24.33075 K
+OUTPUT: electrostatic energy = -8950.88234 +- 44.94540 K
+OUTPUT: repulsion/dispersion energy = -93801.59388 +- 40.73661 K
+OUTPUT: polarization energy = -26206.13428 +- 34.99840 K
+OUTPUT: N = 156.00000 +- 0.00000 molecules
+OUTPUT: density = 0.04611 +- 0.00000 g/cm^3
+OUTPUT: pore density = 0.08243 +- 0.00000 g/cm^3
+OUTPUT: wt % = 3.95856 +- 0.00000 %
+OUTPUT: wt % (ME) = 4.12172 +- 0.00000 %
+OUTPUT: excess adsorption ratio = 41.21719 +- 0.00000 mg/g
+OUTPUT: heat capacity = 0.0024905 +- 0.0010986 kJ/mol K
+
+OUTPUT: Canonical Monte Carlo simulation running on 1 cores
+OUTPUT: Root collecting statistics at Thu Mar 19 23:37:52 2015
+OUTPUT: Completed step 40/50  (80.000 %)
+OUTPUT: 0.137 sec/step, ETA = 0.000 hrs
+OUTPUT: BF = 0.72672 +- 0.44617
+OUTPUT: AR = 0.55000 (0.00000 I/ 0.00000 R/ 0.55000 D)
+OUTPUT: potential energy = -128911.37744 +- 50.85424 K
+OUTPUT: electrostatic energy = -8973.31069 +- 41.41358 K
+OUTPUT: repulsion/dispersion energy = -93728.35112 +- 79.75077 K
+OUTPUT: polarization energy = -26209.71563 +- 27.34518 K
+OUTPUT: N = 156.00000 +- 0.00000 molecules
+OUTPUT: density = 0.04611 +- -nan g/cm^3
+OUTPUT: pore density = 0.08243 +- 0.00000 g/cm^3
+OUTPUT: wt % = 3.95856 +- 0.00000 %
+OUTPUT: wt % (ME) = 4.12172 +- 0.00000 %
+OUTPUT: excess adsorption ratio = 41.21719 +- 0.00000 mg/g
+OUTPUT: heat capacity = 0.014507 +- 0.0048534 kJ/mol K
+
+OUTPUT: Canonical Monte Carlo simulation running on 1 cores
+OUTPUT: Root collecting statistics at Thu Mar 19 23:37:53 2015
+OUTPUT: Completed step 50/50  (100.000 %)
+OUTPUT: 0.138 sec/step, ETA = 0.000 hrs
+OUTPUT: BF = 0.76604 +- 0.40197
+OUTPUT: AR = 0.58000 (0.00000 I/ 0.00000 R/ 0.58000 D)
+OUTPUT: potential energy = -128878.21185 +- 53.14187 K
+OUTPUT: electrostatic energy = -8977.21897 +- 34.03916 K
+OUTPUT: repulsion/dispersion energy = -93677.09119 +- 82.87161 K
+OUTPUT: polarization energy = -26223.90169 +- 26.45280 K
+OUTPUT: N = 156.00000 +- 0.00000 molecules
+OUTPUT: density = 0.04611 +- -nan g/cm^3
+OUTPUT: pore density = 0.08243 +- 0.00000 g/cm^3
+OUTPUT: wt % = 3.95856 +- 0.00000 %
+OUTPUT: wt % (ME) = 4.12172 +- 0.00000 %
+OUTPUT: excess adsorption ratio = 41.21719 +- 0.00000 mg/g
+OUTPUT: heat capacity = 0.019801 +- 0.0053445 kJ/mol K
+
+MAIN: freeing all data structures.......done
+MAIN: simulation exiting successfully
+

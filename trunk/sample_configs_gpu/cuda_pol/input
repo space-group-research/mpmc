@@ -1,0 +1,36 @@
+
+cuda			on
+
+ensemble		nvt
+numsteps		50
+corrtime		10
+move_factor		0.01
+insert_probability	0.666
+
+polarization		on
+polar_damp_type		exponential
+polar_damp		2.1304
+polar_iterative		on
+
+polar_max_iter		10
+
+temperature		77.0
+free_volume             6335.29
+h2_fugacity		on
+
+feynman_hibbs		on
+feynman_hibbs_order	4
+
+basis1			22.4567	0.0	0.0
+basis2			0.0	22.4567	0.0
+basis3			0.0	0.0	22.4567
+
+wrapall			on
+pqr_input		socMOF+BSSP.initial.pdb
+pqr_output		socMOF+BSSP.final.pdb
+pqr_restart		socMOF+BSSP.restart.pdb
+energy_output		socMOF+BSSP.energy.dat
+dipole_output		socMOF+BSSP.dipole.dat
+field_output		socMOF+BSSP.field.dat
+traj_output		socMOF+BSSP.traj.pdb
+

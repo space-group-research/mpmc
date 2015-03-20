@@ -12,6 +12,7 @@ IO=$(TOP)/io
 MAIN=$(TOP)/main
 MC=$(TOP)/mc
 POLAR=$(TOP)/polarization
+POLAR_GPU=$(TOP)/polarization_gpu
 HIST=$(TOP)/histogram
 QROT=$(TOP)/quantum_rotation
 MT=$(TOP)/mersenne
@@ -25,15 +26,31 @@ MC_OBJ = cavity.o fugacity.o mc.o mc_moves.o pimc.o qshift.o surface.o surf_fit.
 POLAR_OBJ = thole_field.o thole_iterative.o thole_matrix.o thole_polarizability.o polar_ewald.o polar_wolf_lookup.o
 HIST_OBJ = histogram.o
 QROT_OBJ = rotational_basis.o rotational_eigenspectrum.o rotational_integrate.o rotational_potential.o
+CUDA_OBJ = polar_cuda.o
+OPENCL_OBJ = polar_ocl.o
 MT_OBJ = dSFMT.o mt.o
 
 ifeq ($(QM_ROTATION),yes)
 all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(QROT_OBJ) $(MT_OBJ)
 	$(CC) $(CFLAGS) $(DEFINES) *.o -o $(TARGET) $(LIBS) $(EXTRA_LIBS) $(MORE_EXTRA_LIBS)
+else ifeq ($(CUDA),yes)
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(MT_OBJ) $(CUDA_OBJ)
+	$(CC) $(CFLAGS) $(DEFINES) *.o -o $(TARGET) $(LIBS) $(EXTRA_LIBS) $(GCC_EXTRA_LIBS) $(MORE_EXTRA_LIBS)
+else ifeq ($(OPENCL),yes)
+all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(MT_OBJ) $(OPENCL_OBJ)
+	$(CC) $(CFLAGS) $(DEFINES) *.o -o $(TARGET) $(LIBS) $(EXTRA_LIBS) $(GCC_EXTRA_LIBS) $(MORE_EXTRA_LIBS)
 else
 all:	$(ENERGY_OBJ) $(IO_OBJ) $(MAIN_OBJ) $(MC_OBJ) $(POLAR_OBJ) $(HIST_OBJ) $(MT_OBJ)
 	$(CC) $(CFLAGS) $(DEFINES) *.o -o $(TARGET) $(LIBS) $(EXTRA_LIBS) $(GCC_EXTRA_LIBS) $(MORE_EXTRA_LIBS)
 endif
+
+cuda: $(CUDA_OBJ)
+%.o: $(POLAR_GPU)/%.cu $(DEPS)
+	$(NVCC) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<
+
+opencl: $(OPENCL_OBJ)
+%.o: $(POLAR_OBJ)/%.c $(DEPS)
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $<
 
 clean:
 	rm -f *.o *.oo *.ipa mpmc
@@ -42,9 +59,6 @@ clean:
 energy: $(ENERGY_OBJ)
 %.o: $(ENERGY)/%.c $(DEPS)
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c -o $@ $< 
-ifeq ($(CUDA),yes)
-	$(NVCC) -arch=compute_13 -code=sm_13 $(DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $(ENERGY)/polar_cuda.cu
-endif
 # input/output functions
 io: $(IO_OBJ)
 %.o: $(IO)/%.c $(DEPS)

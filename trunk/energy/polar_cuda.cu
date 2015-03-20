@@ -8,7 +8,6 @@ University of South Florida
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <values.h>
 #include <time.h>
 #include <signal.h>
 #include <math.h>

@@ -4,6 +4,9 @@
 #include "defines.h"
 #include "dSFMT.h"
 
+#ifdef OPENCL
+#include "CL/cl.h"
+#endif
 
 /* complex value */
 typedef struct _complex_t {
@@ -321,7 +324,21 @@ typedef struct _surf_preserve_rotation {
 } surf_preserve_rotation;
 
 
+#ifdef OPENCL
+typedef struct _ocl {
+        /* kernel that performs a single iteration through the dipole field equations */
+        cl_context context;
+        cl_kernel kernel;
+        cl_kernel palmo_echg;
+        cl_kernel thole_estat;
+        cl_kernel potential_reduction;
+        cl_program program;
+        cl_command_queue queue;
+        cl_device_id *device_id;
+        cl_platform_id *platforms;
 
+} ocl_t;
+#endif
 
 
 
@@ -330,6 +347,11 @@ typedef struct _system {
 	int ensemble;
 	int gwp;
 	int cuda;
+        int opencl;
+#ifdef OPENCL
+        ocl_t *ocl;
+#endif
+
 
 	//for manual specification of random seeds
 	int preset_seeds_on;

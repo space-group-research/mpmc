@@ -557,7 +557,7 @@ void mc_options (system_t * system) {
 		output(linebuf);
 	}
 
-	if((system->ensemble == ENSEMBLE_NPT)) {
+	if(system->ensemble == ENSEMBLE_NPT) {
 		if (system->pressure <= 0.0) {
 			error("INPUT: invalid pressure set for NPT\n");
 			die(-1);

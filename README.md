@@ -37,7 +37,7 @@ MPMC can be updated with the following command.
 ```
 git pull
 ```
-#### Wiki link
+#### Wiki Link
 
 https://github.com/mpmccode/mpmc/wiki
 

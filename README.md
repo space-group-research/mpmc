@@ -39,7 +39,7 @@ git pull
 ```
 #### Wiki link
 
-(https://github.com/mpmccode/mpmc/wiki)
+https://github.com/mpmccode/mpmc/wiki
 
 ## Publications
 

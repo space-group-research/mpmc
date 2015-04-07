@@ -10,9 +10,9 @@ Optimized for the study of nanoscale interfaces, MPMC supports simulation of Cou
 
 Currently a basic build of MPMC only requires a modern C compiler. Optionally MPMC may be configured to use either [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW requires [LAPACK](http://www.netlib.org/lapack/).
 
-#### Cloning MPMC
+#### Downloading MPMC
 
-MPMC can be cloned with the following command.
+MPMC can be downloaded with the following command.
 
 ```
 git clone http://github.com/mpmccode/mpmc

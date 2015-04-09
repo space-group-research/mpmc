@@ -1045,6 +1045,7 @@ void setdefaults(system_t * system) {
 	/* set the default scaling to 1 */
 	system->scale_charge = 1.0;
 	system->rot_factor = 1.0;
+	system->move_factor = 1.0;
 	system->spinflip_probability = 0.0;
 	system->volume_probability = 0.0;
 

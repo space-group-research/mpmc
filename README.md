@@ -1,8 +1,47 @@
+## MPMC
+
 MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by Jon Belof and is now maintained by a group of researchers (Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and Brian Space) in the Deparment of Chemistry and SMMARTT Materials Research Center at the University of South Florida. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia's CUDA and the OpenCL architecture).
 
 Optimized for the study of nanoscale interfaces, MPMC supports simulation of Coulomb and Lennard-Jones systems, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.
 
-# Publications
+## Getting Started
+
+#### Libraries
+
+Currently a basic build of MPMC only requires a modern C compiler. Optionally MPMC may be configured to use either [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW requires [LAPACK](http://www.netlib.org/lapack/).
+
+#### Downloading MPMC
+
+MPMC can be downloaded with the following command.
+
+```
+git clone http://github.com/mpmccode/mpmc
+```
+
+#### Compiling MPMC
+
+Once MPMC has been downloaded it may be compiled with the following commands.
+
+```
+cd build
+./configure generic gcc no no no no
+make
+```
+
+Make sure to add MPMC to your path after compiling. The different configuration options can be seen by running `./configure`
+
+#### Updating MPMC
+
+MPMC can be updated with the following command.
+
+```
+git pull
+```
+#### Wiki Link
+
+https://github.com/mpmccode/mpmc/wiki
+
+## Publications
 
 * P. Nugent, T. Pham, K. McLaughlin, P.A. Georgiev, W. Lohstroh, J.P. Embs, M.J. Zaworotko, B. Space, and J. Eckert, "Dramatic effect of pore size reduction on the dynamics of hydrogen adsorbed in metal-organic materials.", Journal of Materials Chemistry A, 2, 13884-13891 (2014). 
 

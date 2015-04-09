@@ -43,6 +43,20 @@ https://github.com/mpmccode/mpmc/wiki
 
 ## Publications
 
+* T. Pham, K.A. Forrest, A. Hogan, B. Tudor, K. McLaughlin, J.L. Belof, J. Eckert, and B. Space, "Understanding Hydrogen Sorption in In-soc-MOF: A Charged Metal-Organic Framework with Open-Metal Sites, Narrow Channels, and Counterions.", Crystal Growth & Design, 15(3), 1460-1471 (2015).
+
+* Y. Zhang, B. Li, R. Krishna, Z. Wu, D. Ma, Z. Shi, T. Pham, K.A. Forrest, B. Space, and S. Ma, "Highly selective adsorption of ethylene over ethane in a MOF featuring the combination of open metal site and π-complexation.", Chemical Communications, 51, 2714-2717 (2015).
+
+* T. Pham, K.A. Forrest, R. Banerjee, M.G. Orcajo, J. Eckert, and B. Space, "Understanding the H2 Sorption Trends in the M-MOF-74 Series (M= Mg, Ni, Co, Zn).", The Journal of Physical Chemistry C, 119(2), 1078-1090 (2014).
+
+* T. Pham, K.A. Forrest, K. McDonald, and B. Space, "Modeling PCN-61 and PCN-66: Isostructural rht-Metal–Organic Frameworks with Distinct CO2 Sorption Mechanisms.", Crystal Growth & Design, 14(11), 5599-5607 (2014).
+
+* T. Pham, K.A. Forrest, K. McLaughlin, J. Eckert, and B. Space, "Capturing the H2–Metal Interaction in Mg-MOF-74 Using Classical Polarization.", The Journal of Physical Chemistry C, 118(39), 22683-22690 (2014).
+
+* T. Pham, K.A. Forrest, P. Georgiev, W. Lohstroh, D. Xue, A. Hogan, M. Eddaoudi, B. Space, and J. Eckert, "A high rotational barrier for physisorbed hydrogen in an fcu-metal–organic framework.", Chemical Communications, 50(91), 14109-14112 (2014).
+
+* P. Nugent, T. Pham, K. McLaughlin, P.A. Georgiev, W. Lohstroh, J.P. Embs, M.J. Zaworotko, B. Space, and J. Eckert, "Dramatic effect of pore size reduction on the dynamics of hydrogen adsorbed in metal-organic materials.", Journal of Materials Chemistry A, 2, 13884-13891 (2014).
+
 * P. Nugent, T. Pham, K. McLaughlin, P.A. Georgiev, W. Lohstroh, J.P. Embs, M.J. Zaworotko, B. Space, and J. Eckert, "Dramatic effect of pore size reduction on the dynamics of hydrogen adsorbed in metal-organic materials.", Journal of Materials Chemistry A, 2, 13884-13891 (2014). 
 
 * K.A. Forrest, T. Pham, K. McLaughlin, A. Hogan, and B. Space, "Insights into an intriguing gas sorption mechanism in a polar metal-organic framework with open-metal sites and narrow channels.", Chemical Communications, 50, 7283-7286 (2014). 

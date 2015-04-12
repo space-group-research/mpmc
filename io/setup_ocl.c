@@ -1,4 +1,6 @@
 
+/* OpenCL kernel for polarization */
+/* Will Lowe, Jon Belof */
 
 #ifdef OPENCL
 ocl_t *setup_ocl() {

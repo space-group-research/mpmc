@@ -15,8 +15,8 @@ configure_file (
 set(CMAKE_BUILD_TYPE Release)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall")
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall")
 endif()
 
 set(LIB m)
@@ -94,25 +94,25 @@ endif()
 
 if(CUDA)
 	message("-- CUDA Enabled")
-    message("WARNING: CUDA untested")
-    find_package(CUDA REQUIRED)
-    set(SRC ${SRC} polarization_gpu/polar_cuda.cu)
+	message("WARNING: CUDA untested")
+	find_package(CUDA REQUIRED)
+	set(SRC ${SRC} polarization_gpu/polar_cuda.cu)
 else()
 	message("-- CUDA Disabled")
 endif()
 
 if(OPENCL)
 	message("-- OpenCl Enabled")
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-    find_package(OpenCL REQUIRED)
-    if(NOT OPENCL_FOUND)
-        message(FATAL_ERROR "--OpenCl not found! Exiting ...")
-    endif()
-    set(SRC ${SRC}
-        src/polarization_gpu/polar_ocl.c
-        src/io/setup_ocl.c)
-    set(INCLUDE ${INCLUDE} ${OpenCL_INCLUDE_DIRS})
-    set(LIB ${LIB} ${OpenCL_LIBRARIES})
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+	find_package(OpenCL REQUIRED)
+	if(NOT OPENCL_FOUND)
+		message(FATAL_ERROR "--OpenCl not found! Exiting ...")
+	endif()
+	set(SRC ${SRC}
+		src/polarization_gpu/polar_ocl.c
+		src/io/setup_ocl.c)
+	set(INCLUDE ${INCLUDE} ${OpenCL_INCLUDE_DIRS})
+	set(LIB ${LIB} ${OpenCL_LIBRARIES})
 else()
 	message("-- OpenCl Disabled")
 endif()
@@ -123,7 +123,7 @@ if(QM_ROTATION)
 		src/quantum_rotation/rotational_basis.c
 		src/quantum_rotation/rotational_eigenspectrum.c
 		src/quantum_rotation/rotational_integrate.c
-        src/quantum_rotation/rotational_potential.c)
+		src/quantum_rotation/rotational_potential.c)
 	set(LIB ${LIB} lapack)
 else()
 	message("-- QM Rotation Disabled")
@@ -140,9 +140,9 @@ endif()
 
 include_directories(${INCLUDE})
 if(CUDA)
-    cuda_add_executable(${PROJECT_NAME} ${SRC})
+	cuda_add_executable(${PROJECT_NAME} ${SRC})
 else()
-    add_executable(${PROJECT_NAME} ${SRC})
+	add_executable(${PROJECT_NAME} ${SRC})
 endif()
 target_link_libraries(${PROJECT_NAME} ${LIB})
 

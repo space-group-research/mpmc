@@ -16,11 +16,13 @@ extern int rank, size;
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <cmake_config.h>
+#include <defines.h>
+
 #ifdef MPI
 #include <mpi.h>
 #endif /* MPI */
 
-#include <defines.h>
 #include <structs.h>
 #include <function_prototypes.h>
 

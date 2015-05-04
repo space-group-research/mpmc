@@ -112,6 +112,9 @@ curveData_t *readFitInputFiles( system_t *, int );
 molecule_t *read_insertion_molecules(system_t *);
 void count_sorbates( system_t * );
 void write_virial_output(system_t *, double, double, double);
+#ifdef OPENCL
+ocl_t *setup_ocl();
+#endif
 
 /* main */
 void die(int);

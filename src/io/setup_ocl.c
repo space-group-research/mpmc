@@ -2,6 +2,8 @@
 /* OpenCL kernel for polarization */
 /* Will Lowe, Jon Belof */
 
+#include <mc.h>
+
 #ifdef OPENCL
 ocl_t *setup_ocl() {
 
@@ -585,4 +587,3 @@ ocl_t *setup_ocl() {
 	return ocl;
 }
 #endif
-

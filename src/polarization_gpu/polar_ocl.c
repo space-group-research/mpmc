@@ -5,18 +5,9 @@ Vanderbilt University
 
 */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <limits.h>
-#include <time.h>
-#include <signal.h>
-#include <math.h>
+#include <mc.h>
 
-#include <defines.h>
-#include <structs.h>
-
-#include "cl.h"
+#include "CL/cl.h"
 
 #define BLOCKSIZE	384	/* optimal on Fermi */
 

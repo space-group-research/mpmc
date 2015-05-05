@@ -15,7 +15,7 @@ Currently a basic build of MPMC only requires a modern C compiler. Optionally MP
 MPMC can be downloaded with the following command.
 
 ```
-git clone http://github.com/mpmccode/mpmc
+git clone https://github.com/mpmccode/mpmc
 ```
 
 #### Compiling MPMC

@@ -1,0 +1,5 @@
+#cmakedefine MPI
+#cmakedefine CUDA
+#cmakedefine OPENCL
+#cmakedefine QM_ROTATION
+#cmakedefine VDW

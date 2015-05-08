@@ -65,7 +65,6 @@ double disp_expansion(system_t *system)
 						const double r6 = r4*r2;
 						const double r8 = r6*r2;
 						const double r10 = r8*r2;
-						const double r12 = r10*r2;
 
 						double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;
@@ -142,7 +141,6 @@ double disp_expansion_nopbc(system_t *system)
 						const double r6 = r4*r2;
 						const double r8 = r6*r2;
 						const double r10 = r8*r2;
-						const double r12 = r10*r2;
 
 						double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;

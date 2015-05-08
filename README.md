@@ -8,14 +8,14 @@ Optimized for the study of nanoscale interfaces, MPMC supports simulation of Cou
 
 #### Libraries
 
-Currently a basic build of MPMC only requires a modern C compiler. Optionally MPMC may be configured to use either [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW requires [LAPACK](http://www.netlib.org/lapack/).
+Currently a basic build of MPMC only requires a modern C compiler. Optionally MPMC may be configured to use either [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW or QM Rotation requires [LAPACK](http://www.netlib.org/lapack/).
 
 #### Downloading MPMC
 
 MPMC can be downloaded with the following command.
 
 ```
-git clone http://github.com/mpmccode/mpmc
+git clone https://github.com/mpmccode/mpmc
 ```
 
 #### Compiling MPMC
@@ -23,12 +23,13 @@ git clone http://github.com/mpmccode/mpmc
 Once MPMC has been downloaded it may be compiled with the following commands.
 
 ```
+mkdir build
 cd build
-./configure generic gcc no no no no
+cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF ../
 make
 ```
 
-Make sure to add MPMC to your path after compiling. The different configuration options can be seen by running `./configure`
+Make sure to add MPMC to your path after compiling.
 
 #### Updating MPMC
 
@@ -37,6 +38,7 @@ MPMC can be updated with the following command.
 ```
 git pull
 ```
+
 #### Wiki Link
 
 https://github.com/mpmccode/mpmc/wiki

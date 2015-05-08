@@ -646,6 +646,14 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 
+	else if(!strcasecmp(token[0], "disp_expansion_mbvdw")) {
+		if(!strcasecmp(token[1],"on"))
+			system->disp_expansion_mbvdw = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->disp_expansion_mbvdw = 0;
+		else return 1;
+	}
+
 	else if(!strcasecmp(token[0], "schmidt_ff")) {
 		if(!strcasecmp(token[1],"on"))
 			system->schmidt_ff = 1;

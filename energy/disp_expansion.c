@@ -67,9 +67,12 @@ double disp_expansion(system_t *system)
 						const double r10 = r8*r2;
 						const double r12 = r10*r2;
 
-						const double c6 = pair_ptr->c6;
+						double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;
 						const double c10 = pair_ptr->c10;
+
+						if (system->disp_expansion_mbvdw==1)
+							c6 = 0.0;
 
 						double repulsion = 0.0;
 
@@ -82,18 +85,24 @@ double disp_expansion(system_t *system)
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
 						if(system->cavity_autoreject)
-                        {
+						{
 							if(r < system->cavity_autoreject_scale*pair_ptr->sigma)
 								pair_ptr->rd_energy = MAXVALUE;
 							if(system->cavity_autoreject_repulsion!=0.0&&repulsion>system->cavity_autoreject_repulsion)
 								pair_ptr->rd_energy = MAXVALUE;
-                        }
+						}
 					}
 
 				}
 				potential += pair_ptr->rd_energy + pair_ptr->lrc;
 			}
 		}
+	}
+
+	if (system->disp_expansion_mbvdw==1)
+	{
+		thole_amatrix(system);
+		potential += vdw(system);
 	}
 
 	/* calculate self LRC interaction */
@@ -135,9 +144,12 @@ double disp_expansion_nopbc(system_t *system)
 						const double r10 = r8*r2;
 						const double r12 = r10*r2;
 
-						const double c6 = pair_ptr->c6;
+						double c6 = pair_ptr->c6;
 						const double c8 = pair_ptr->c8;
 						const double c10 = pair_ptr->c10;
+
+						if (system->disp_expansion_mbvdw==1)
+							c6 = 0.0;
 
 						double repulsion = 0.0;
 
@@ -150,18 +162,24 @@ double disp_expansion_nopbc(system_t *system)
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
 						if(system->cavity_autoreject)
-                        {
+						{
 							if(r < system->cavity_autoreject_scale*pair_ptr->sigma)
 								pair_ptr->rd_energy = MAXVALUE;
 							if(system->cavity_autoreject_repulsion!=0.0&&repulsion>system->cavity_autoreject_repulsion)
 								pair_ptr->rd_energy = MAXVALUE;
-                        }
+						}
 					}
 
 				}
 				potential += pair_ptr->rd_energy;
 			}
 		}
+	}
+
+	if (system->disp_expansion_mbvdw==1)
+	{
+		thole_amatrix(system);
+		potential += vdw(system);
 	}
 
 	return potential;

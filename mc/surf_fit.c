@@ -285,7 +285,7 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 		}
 
 		//if polarvdw is on, also adjust omega
-		if  ( system->polarvdw ) {
+		if  ( system->polarvdw || system->disp_expansion_mbvdw ) {
 			if( param_ptr->omega > 0.0 )
 				param_ptr->omega += scale_omega*(0.5 - get_rand());
 			if( param_ptr->omega < 0.0 ) param_ptr->omega = param_ptr->last_omega;
@@ -297,6 +297,13 @@ void surf_perturb ( system_t * system, double quadrupole, qshiftData_t * qshiftD
 		}
 		//otherwise adjust sigma
 		else {
+			if ( param_ptr->sigma > 0.0 )
+				param_ptr->sigma += scale_sigma*(0.5 - get_rand());
+			if( param_ptr->sigma < 0.0 ) param_ptr->sigma = param_ptr->last_sigma;
+		}
+
+		//need to adjust sigma in this case, too
+		if ( system->disp_expansion_mbvdw ) {
 			if ( param_ptr->sigma > 0.0 )
 				param_ptr->sigma += scale_sigma*(0.5 - get_rand());
 			if( param_ptr->sigma < 0.0 ) param_ptr->sigma = param_ptr->last_sigma;

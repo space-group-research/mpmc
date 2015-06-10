@@ -1,6 +1,6 @@
 #include <mc.h>
 
-//Copyright 2013 Adam Hogan
+//Copyright 2013-2015 Adam Hogan
 
 double disp_expansion_lrc( const system_t * system,  pair_t * pair_ptr, const double cutoff ) /* ignoring the exponential repulsion bit because it decays exponentially */
 {

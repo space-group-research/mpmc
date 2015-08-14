@@ -828,7 +828,7 @@ void io_files_options(system_t * system) {
 		printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
 		free(filename);
 #else
-		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", filename );
+		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart );
 #endif
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_restart, "off")) {	// Optionally turn off restart configuration output

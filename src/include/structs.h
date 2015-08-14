@@ -356,6 +356,9 @@ typedef struct _system {
 	//for manual specification of random seeds
 	int preset_seeds_on;
 	uint32_t preset_seeds[4];
+	
+	// is this a restart of a parallel job?
+	int parallel_restarts;
 
 	//surface fitting options
 	int surf_fit_arbitrary_configs;

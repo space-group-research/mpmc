@@ -1,6 +1,5 @@
 #include <mc.h>
 
-
 void check_ensemble ( system_t * system, int ensemble ) {
 
 	switch(ensemble) {
@@ -818,40 +817,19 @@ void hist_options ( system_t * system ) {
 
 void io_files_options(system_t * system) {
 	char linebuf[MAXLINE];
-
-	if(!system->pqr_input) {
-		system->pqr_input = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-		strcpy(system->pqr_input,system->job_name);
-		strcat(system->pqr_input,".initial.pqr");
-		sprintf(linebuf,"INPUT: input PQR file not specified...will try to read coordinates from ./%s\n", system->pqr_input);
-		output(linebuf);
-	} else {
-		sprintf(linebuf, "INPUT: initial molecular coordinates are in ./%s\n", system->pqr_input);
-		output(linebuf);
-	}
-
-	if(!system->pqr_output) {	// (CRC)
-		system->pqr_output = calloc(MAXLINE,sizeof(char));
-		memnullcheck(system->pqr_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-		strcpy(system->pqr_output,system->job_name);
-		strcat(system->pqr_output,".final.pqr");
-		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
-		output(linebuf);
-	} else if(!strcasecmp(system->pqr_output, "off")) {	// Optionally turn off final configuration output
-		error("INPUT: **Warning: PQR final configuration file disabled; writing to /dev/null\n");
-		sprintf(system->pqr_output,"/dev/null");
-	} else {
-		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
-		output(linebuf);
-	}
-
+	
 	if(!system->pqr_restart) {	// (CRC)
 		system->pqr_restart = calloc(MAXLINE,sizeof(char));
 		memnullcheck(system->pqr_restart,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 		strcpy(system->pqr_restart,system->job_name);
 		strcat(system->pqr_restart,".restart.pqr");
-		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
+#ifdef MPI 
+		char *filename = make_filename( system->pqr_restart, rank );
+		printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
+		free(filename);
+#else
+		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", filename );
+#endif
 		output(linebuf);
 	} else if(!strcasecmp(system->pqr_restart, "off")) {	// Optionally turn off restart configuration output
 		error("INPUT: **Warning: PQR restart file disabled; writing to /dev/null\n");
@@ -860,6 +838,114 @@ void io_files_options(system_t * system) {
 		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
 		output(linebuf);
 	}
+	
+
+	if(!system->pqr_output) {	// (CRC)
+		system->pqr_output = calloc(MAXLINE,sizeof(char));
+		memnullcheck(system->pqr_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+		strcpy(system->pqr_output,system->job_name);
+		strcat(system->pqr_output,".final.pqr");
+#ifdef MPI
+		{
+			char *filename;
+			filename = make_filename( system->pqr_output, rank );
+			printf( "INPUT (node %d): will be writing final configuration to ./%s\n", rank, filename );
+			free(filename);
+		}
+#else		
+		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
+		output(linebuf);
+#endif
+	} else if(!strcasecmp(system->pqr_output, "off")) {	// Optionally turn off final configuration output
+		error("INPUT: **Warning: PQR final configuration file disabled; writing to /dev/null\n");
+		sprintf(system->pqr_output,"/dev/null");
+	} else {
+		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
+		output(linebuf);
+	}
+
+	
+	if( system->parallel_restarts) {
+		FILE *test;
+		char *filename;
+		
+		// Try to open a "final" file
+		filename = make_filename( system->pqr_output, rank );
+		test = fopen( filename, "r" );
+		if( test ) {
+			fclose(test);
+			if( !system->pqr_input ) {
+				system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
+				memnullcheck(system->pqr_input, MAXLINE * sizeof(char), __LINE__-1, __FILE__);
+			}
+			strcpy( system->pqr_input, filename );
+			free( filename );
+			
+			
+		} else {
+			// No final file available, try to open a "restart" file
+			filename = make_filename( system->pqr_restart, rank );
+			test = fopen( filename, "r" );
+			if(test) {
+				fclose(test);
+				if( !system->pqr_input ) {
+					system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
+					memnullcheck(system->pqr_input, MAXLINE * sizeof(char), __LINE__-1, __FILE__);
+				}
+				strcpy( system->pqr_input, filename );
+				free( filename );
+				
+				
+			} else {
+				
+				// No final or restart files available, try to open a "last" file
+				char *basename;
+				basename = make_filename( system->pqr_restart, rank );
+				filename = calloc( strlen(basename) + 16, sizeof(char));
+				memnullcheck(filename, (strlen(basename) + 16) * sizeof(char),__LINE__-1, __FILE__);
+				sprintf( filename, "%s.last", basename );
+				free(basename);
+				test = fopen( filename, "r" );
+				if( test ) {
+					fclose(test);
+					if( !system->pqr_input ) { 
+						system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
+						memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+					}
+					strcpy( system->pqr_input, filename );
+					free( filename );
+				
+				}else if(!system->pqr_input) {
+					
+					// Load the specified input file since one was named, and since none of 
+					// the parallel options were availabe.
+					system->pqr_input = calloc(MAXLINE,sizeof(char));
+					memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+					strcpy(system->pqr_input,system->job_name);
+					strcat(system->pqr_input,".initial.pqr");
+						
+				} // default
+			} // last
+		} // restart
+		
+		printf("INPUT (node %d): Reading coordinates from file: ./%s\n", rank, system->pqr_input);
+		
+		
+	} else {
+	
+		if(!system->pqr_input) {
+			system->pqr_input = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->pqr_input,system->job_name);
+			strcat(system->pqr_input,".initial.pqr");
+			sprintf(linebuf,"INPUT: input PQR file not specified...will try to read coordinates from ./%s\n", system->pqr_input);
+			output(linebuf);
+		} else {
+			sprintf(linebuf, "INPUT: initial molecular coordinates are in ./%s\n", system->pqr_input);
+			output(linebuf);
+		}
+	}
+
 
 	/* NEW: Energy output will default to on if not specified */
 	if(!system->energy_output) {	// (CRC)

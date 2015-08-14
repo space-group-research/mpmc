@@ -78,7 +78,13 @@ int do_command (system_t * system, char ** token ) {
 		die(-1);
 	}
 
-
+	
+	// Is this a restart of a parallel job?
+	////////////////////////////////////////
+	else if( !strcasecmp(token[0], "parallel_restarts" )) {
+		system->parallel_restarts = 1;
+		printf( "INPUT: parallel restart option selected.\n" );
+	}
 
 	// surf options
 	////////////////////////
@@ -1049,7 +1055,11 @@ int do_command (system_t * system, char ** token ) {
 
 
 void setdefaults(system_t * system) {
-
+	
+	// Default is that there is only a single geometry input file
+	// i.e., this is not a restart of a parallel job
+	system->parallel_restarts  = 0;
+	
 	/* set the default scaling to 1 */
 	system->scale_charge = 1.0;
 	system->rot_factor = 1.0;

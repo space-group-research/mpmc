@@ -222,7 +222,7 @@ void spectre_wrapall(system_t *system) {
 }
 
 int write_molecules_wrapper(system_t * system, char * filename) {
-	int rval;
+	int rval = -1;
 	char  filenameold[MAXLINE]; 
 	FILE * fp;
 

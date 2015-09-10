@@ -5,7 +5,6 @@ Department of Chemistry
 University of South Florida
 
 */
-const int revision = 175;
 int rank, size;
 
 #include <mc.h>
@@ -49,7 +48,7 @@ int main(int argc, char **argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif /* MPI */
 
-	sprintf(linebuf, "MPMC (Massively Parallel Monte Carlo) r%d - 2012 GNU Public License\n", revision);
+	sprintf(linebuf, "MPMC (Massively Parallel Monte Carlo) r%d - 2012 GNU Public License\n", VERSION);
 	output(linebuf);
 	sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	output(linebuf);

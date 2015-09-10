@@ -18,7 +18,7 @@ University of South Florida
 
 #define BLOCKSIZE	64	/* optimal on Fermi */
 
-#define MAXATOMS	2048	/* maximum N value */
+//#define MAXATOMS	2048	/* maximum N value */
 #define DAMP		2.1304f	/* exponential damping width */
 #define MATRIXSIZE	16
 
@@ -42,7 +42,7 @@ __constant__ float basis[MATRIXSIZE];		/* unit cell basis */
 __constant__ float recip_basis[MATRIXSIZE];	/* recip-space basis */
 
 /* kernel that performs a single iteration through the dipole field equations */
-__global__ void thole_iterative_cuda(float4 *arg_ptr) {
+__global__ void thole_iterative_cuda(float4 *arg_ptr, int DATA_ARRAY_SIZE ) {
 
 	int bid, tid, bsize, gsize;
 	int i, j, k;
@@ -71,10 +71,10 @@ __global__ void thole_iterative_cuda(float4 *arg_ptr) {
 	i = bid*bsize + tid;
 
 	// set the arrays 
-	pos = arg_ptr; arg_ptr += MAXATOMS;
-	estat = arg_ptr; arg_ptr += MAXATOMS;
-	mu_in = arg_ptr; arg_ptr += MAXATOMS;
-	mu_out = arg_ptr; arg_ptr += MAXATOMS;
+	pos = arg_ptr; arg_ptr += DATA_ARRAY_SIZE;
+	estat = arg_ptr; arg_ptr += DATA_ARRAY_SIZE;
+	mu_in = arg_ptr; arg_ptr += DATA_ARRAY_SIZE;
+	mu_out = arg_ptr; arg_ptr += DATA_ARRAY_SIZE;
 	eind_out = arg_ptr;
 
 	// clear the induced field
@@ -194,6 +194,18 @@ float polar_cuda(system_t *system) {
 	// polarization energy, to be returned
 	float potential;
 	cudaError_t error;
+	cudaDeviceProp  prop;
+	
+	error = cudaGetDeviceProperties( &prop, 0 );
+	if( error != cudaSuccess ) {
+        printf( "POLAR_CUDA: GPU is reporting an error:\n%s\n", cudaGetErrorString( error ) );
+		return(-1);
+    }
+    
+    const int PER_BLOCK_MEM_REQUIREMENT = BLOCKSIZE * 5 * sizeof( float4 );
+    const int MAXBLOCKS = prop.totalGlobalMem / PER_BLOCK_MEM_REQUIREMENT;
+    const int MAXATOMS  = MAXBLOCKS * BLOCKSIZE; 
+
 
 	// determine N 
 	N = system->natoms;
@@ -205,6 +217,7 @@ float polar_cuda(system_t *system) {
 	// grid/block size
 	gridsize = N/BLOCKSIZE + (N%BLOCKSIZE == 0?0:1);
 	blocksize = BLOCKSIZE;
+	const int DATA_ARRAY_SIZE = blocksize * gridsize; 
 
 	// calculate the field vectors
 	thole_field(system);
@@ -212,14 +225,16 @@ float polar_cuda(system_t *system) {
 	// allocate temporary host arrays
 	host_basis = (float *)calloc(MATRIXSIZE, sizeof(float));
 	host_recip_basis = (float *)calloc(MATRIXSIZE, sizeof(float));
-	host_arg_ptr = (float4 *)calloc(5*MAXATOMS, sizeof(float4));
+	host_arg_ptr = (float4 *)calloc(5*DATA_ARRAY_SIZE, sizeof(float4));
 	tmp_ptr = host_arg_ptr;
-	host_pos = tmp_ptr; tmp_ptr += MAXATOMS;
-	host_estat = tmp_ptr; tmp_ptr += MAXATOMS;
-	host_mu_in = tmp_ptr; tmp_ptr += MAXATOMS;
-	host_mu_out = tmp_ptr; tmp_ptr += MAXATOMS;
+	host_pos = tmp_ptr; tmp_ptr += DATA_ARRAY_SIZE;
+	host_estat = tmp_ptr; tmp_ptr += DATA_ARRAY_SIZE;
+	host_mu_in = tmp_ptr; tmp_ptr += DATA_ARRAY_SIZE;
+	host_mu_out = tmp_ptr; tmp_ptr += DATA_ARRAY_SIZE;
 	host_eind_out = tmp_ptr;
-	if(system->polar_palmo) host_echg_out = (float4 *)calloc(MAXATOMS, sizeof(float4));
+	if(system->polar_palmo) 
+		host_echg_out = (float4 *)calloc(DATA_ARRAY_SIZE, sizeof(float4));
+
 
 	// set some of the above arrays
 	for(molecule_ptr = system->molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next) {
@@ -257,8 +272,8 @@ float polar_cuda(system_t *system) {
 
 
 	// alloc aligned memory
-	cudaMalloc((void **)&arg_ptr, 5*MAXATOMS*sizeof(float4));
-	cudaMemcpy(arg_ptr, host_arg_ptr, 5*MAXATOMS*sizeof(float4), cudaMemcpyHostToDevice);
+	cudaMalloc((void **)&arg_ptr, 5*DATA_ARRAY_SIZE*sizeof(float4));
+	cudaMemcpy(arg_ptr, host_arg_ptr, 5*DATA_ARRAY_SIZE*sizeof(float4), cudaMemcpyHostToDevice);
 
 	// prefer 48KB of L1 cache rather than larger shared mem
 	cudaFuncSetCacheConfig(thole_iterative_cuda, cudaFuncCachePreferL1);
@@ -268,10 +283,10 @@ float polar_cuda(system_t *system) {
 	for(current_iteration = 0; current_iteration < system->polar_max_iter; current_iteration++) {
 
 		// launch the kernel
-		thole_iterative_cuda<<<gridsize, blocksize>>>(arg_ptr);
+		thole_iterative_cuda<<<gridsize, blocksize>>>(arg_ptr, DATA_ARRAY_SIZE);
 
 		// feed dipoles back in for another pass
-		cudaMemcpy((arg_ptr+2*MAXATOMS), (arg_ptr+3*MAXATOMS), MAXATOMS*sizeof(float4), cudaMemcpyDeviceToDevice);
+		cudaMemcpy((arg_ptr+2*DATA_ARRAY_SIZE), (arg_ptr+3*DATA_ARRAY_SIZE), DATA_ARRAY_SIZE*sizeof(float4), cudaMemcpyDeviceToDevice);
 
 	}
 
@@ -283,14 +298,14 @@ float polar_cuda(system_t *system) {
 	}
 
 	// copy back the results
-	cudaMemcpy(host_mu_out, (arg_ptr+3*MAXATOMS), MAXATOMS*sizeof(float4), cudaMemcpyDeviceToHost);
-	cudaMemcpy(host_eind_out, (arg_ptr+4*MAXATOMS), MAXATOMS*sizeof(float4), cudaMemcpyDeviceToHost);
+	cudaMemcpy(host_mu_out, (arg_ptr+3*DATA_ARRAY_SIZE), DATA_ARRAY_SIZE*sizeof(float4), cudaMemcpyDeviceToHost);
+	cudaMemcpy(host_eind_out, (arg_ptr+4*DATA_ARRAY_SIZE), DATA_ARRAY_SIZE*sizeof(float4), cudaMemcpyDeviceToHost);
 
 	// if PK active, do one more iteration to get the change in induced field
 	if(system->polar_palmo) {
 
-		thole_iterative_cuda<<<gridsize, blocksize>>>(arg_ptr);
-		cudaMemcpy(host_echg_out, (arg_ptr+4*MAXATOMS), MAXATOMS*sizeof(float4), cudaMemcpyDeviceToHost);
+		thole_iterative_cuda<<<gridsize, blocksize>>>(arg_ptr, DATA_ARRAY_SIZE );
+		cudaMemcpy(host_echg_out, (arg_ptr+4*DATA_ARRAY_SIZE), DATA_ARRAY_SIZE*sizeof(float4), cudaMemcpyDeviceToHost);
 
 	}
 

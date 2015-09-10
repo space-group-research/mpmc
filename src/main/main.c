@@ -5,7 +5,7 @@ Department of Chemistry
 University of South Florida
 
 */
-
+const int revision = 175;
 int rank, size;
 
 #include <mc.h>
@@ -21,19 +21,17 @@ void die( int code ){
 
 void usage(char *progname) {
 
-	if(!rank) fprintf(stderr, "usage: %s <config>\n", progname);
+	if(!rank){
+		fprintf(stderr, "usage: %s <config>\n", progname);
+		fprintf(stderr, "See: https://github.com/mpmccode/mpmc\n" );
+	}
 	exit(1);
 }
 
 int main(int argc, char **argv) {
 
-	FILE *procfile;
-        FILE *host;
 	char linebuf[MAXLINE];
 	char input_file[MAXLINE];
-	char nodename[MAXLINE];
-        char cpu[MAXLINE];
-        struct stat info;
 	system_t *system;
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
@@ -51,43 +49,55 @@ int main(int argc, char **argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif /* MPI */
 
-	output("MPMC (Massively Parallel Monte Carlo) 2012 GNU Public License\n");
-	output("For version info, use \"svn info\"\n" );
+	sprintf(linebuf, "MPMC (Massively Parallel Monte Carlo) r%d - 2012 GNU Public License\n", revision);
+	output(linebuf);
 	sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	output(linebuf);
+	
+	
+#ifndef MPI
+	FILE *procfile;
+	FILE *host;
+	char nodename[MAXLINE];
+	char cpu[MAXLINE];
+	struct stat info;
 
-        /* Collect and output hostname & processor info */
-        if(access("/proc/cpuinfo",R_OK)!=-1) {                                          // Linux
-                host = popen("hostname","r");
-                fgets(nodename, MAXLINE, host);
-                sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
-                output(linebuf);
-                pclose(host);
-
-                procfile = fopen("/proc/cpuinfo", "r");
-                while (!feof(procfile)) {
-                        fgets(cpu, MAXLINE, procfile);
-                        if(strncasecmp(cpu,"model name",10)==0) {
-                                sprintf(linebuf, "MAIN: CPU -> %s", cpu);
-                                output(linebuf);
-                                break;
-                        }
-                }
-                fclose(procfile);
-        } else if (stat("/Applications",&info)==0) {                                  // Mac OS
-                output("MAIN: Mac OS detected\n");
-                host = popen("hostname", "r");
-                fgets(nodename, MAXLINE, host);
-                sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
-                output(linebuf);
-                pclose(host);
-
-                procfile = popen("sysctl -n machdep.cpu.brand_string","r");
-                fgets(cpu, MAXLINE, procfile);
-                sprintf(linebuf, "MAIN: CPU -> %s", cpu);
-                output(linebuf);
-                pclose(procfile);
-        }
+	// These system calls were causing a fork() that does not play nice with some
+	// MPI implementations (causing some processes to never end... )
+	
+	/* Collect and output hostname & processor info */
+	if(access("/proc/cpuinfo",R_OK)!=-1) {                                          // Linux
+		host = popen("hostname","r");
+		fgets(nodename, MAXLINE, host);
+		sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
+		output(linebuf);
+		pclose(host);
+		
+		procfile = fopen("/proc/cpuinfo", "r");
+		while (!feof(procfile)) {
+			fgets(cpu, MAXLINE, procfile);
+			if(strncasecmp(cpu,"model name",10)==0) {
+			sprintf(linebuf, "MAIN: CPU -> %s", cpu);
+			output(linebuf);
+			break;
+		}
+	}
+	fclose(procfile);
+	} else if (stat("/Applications",&info)==0) {                                  // Mac OS
+		output("MAIN: Mac OS detected\n");
+		host = popen("hostname", "r");
+		fgets(nodename, MAXLINE, host);
+		sprintf(linebuf, "MAIN: Job running on node -> %s", nodename);
+		output(linebuf);
+		pclose(host);
+		
+		procfile = popen("sysctl -n machdep.cpu.brand_string","r");
+		fgets(cpu, MAXLINE, procfile);
+		sprintf(linebuf, "MAIN: CPU -> %s", cpu);
+		output(linebuf);
+		pclose(procfile);
+	}
+#endif // !MPI
 
 	/* get the config file arg */
 	strcpy(input_file, argv[1]);

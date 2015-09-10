@@ -3,3 +3,4 @@
 #cmakedefine OPENCL
 #cmakedefine QM_ROTATION
 #cmakedefine VDW
+#define VERSION ${VERSION}

@@ -7,6 +7,12 @@ option(OPENCL "Use OpenCL to offload polarization calculations to a GPU (require
 option(QM_ROTATION "Enable Quantum Mechanics Rigid Rotator calculations (requires LAPACK)" OFF)
 option(VDW "Enable Coupled-Dipole Van der Waals (requires LAPACK)" OFF)
 
+EXECUTE_PROCESS(
+	COMMAND git rev-list --count HEAD
+	OUTPUT_VARIABLE VERSION
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 configure_file (
 "${PROJECT_SOURCE_DIR}/src/include/cmake_config.h.in"
 "${PROJECT_BINARY_DIR}/src/include/cmake_config.h"
@@ -52,6 +58,7 @@ src/energy/exp_repulsion.c
 src/energy/coulombic.c
 src/energy/sg.c
 src/energy/lj.c
+src/energy/axilrod_teller.c
 src/mersenne/mt.c
 src/mersenne/dSFMT.h
 src/mersenne/dSFMT.c
@@ -96,7 +103,7 @@ if(CUDA)
 	message("-- CUDA Enabled")
 	message("WARNING: CUDA untested")
 	find_package(CUDA REQUIRED)
-	set(SRC ${SRC} polarization_gpu/polar_cuda.cu)
+	set(SRC ${SRC} src/polarization_gpu/polar_cuda.cu)
 else()
 	message("-- CUDA Disabled")
 endif()

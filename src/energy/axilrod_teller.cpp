@@ -130,25 +130,15 @@ double axilrod_teller ( system_t *system ) {
 									b = -1.0*ik;
 
 									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
-									printf("%f %f %f\n",a.components[0],a.components[1],a.components[2]);
-									printf("%f %f %f\n",b.components[0],b.components[1],b.components[2]);
-									printf("%f\n",a.dot ( b ) / ( a.norm() *b.norm() ));
 									a = ij;
 									b = -1.0*jk;
 
 									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
-									printf("%f %f %f\n",a.components[0],a.components[1],a.components[2]);
-									printf("%f %f %f\n",b.components[0],b.components[1],b.components[2]);
-									printf("%f\n",a.dot ( b ) / ( a.norm() *b.norm() ));
 
 									a = ik;
 									b = jk;
 
 									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
-									printf("%f %f %f\n",a.components[0],a.components[1],a.components[2]);
-									printf("%f %f %f\n",b.components[0],b.components[1],b.components[2]);
-									printf("%f\n",a.dot ( b ) / ( a.norm() *b.norm() ));
-									printf("-------------\n");
 									
 									potential += c9*((1.0+cos_part)/pow(rij*rik*rjk,3));
 								}

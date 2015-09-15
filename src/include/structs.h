@@ -147,7 +147,7 @@ typedef struct _avg_nodestats {
 
 typedef struct _observables {
 	double energy;
-	double coulombic_energy, rd_energy, polarization_energy, vdw_energy;
+	double coulombic_energy, rd_energy, polarization_energy, vdw_energy, three_body_energy;
 	double dipole_rrms;
 	double kinetic_energy; /* for NVE */
 	double temperature; /* for NVE */
@@ -166,6 +166,7 @@ typedef struct _avg_observables {
 	double rd_energy, rd_energy_sq, rd_energy_error;
 	double polarization_energy, polarization_energy_sq, polarization_energy_error;
 	double vdw_energy, vdw_energy_sq, vdw_energy_error;
+	double three_body_energy, three_body_energy_sq, three_body_energy_error;
 	double dipole_rrms, dipole_rrms_sq, dipole_rrms_error;
 	double density, density_sq, density_error;
 	double pore_density, pore_density_error;
@@ -417,6 +418,7 @@ typedef struct _system {
 	double rd_anharmonic_k, rd_anharmonic_g;
 	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, c6_mixing, disp_expansion;
 	int extrapolate_disp_coeffs, damp_dispersion, schmidt_ff, disp_expansion_mbvdw;
+    int axilrod_teller;
 	//es_options
 	int wolf;
 	double ewald_alpha, polar_ewald_alpha;

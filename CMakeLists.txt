@@ -58,7 +58,7 @@ src/energy/exp_repulsion.c
 src/energy/coulombic.c
 src/energy/sg.c
 src/energy/lj.c
-src/energy/axilrod_teller.c
+src/energy/axilrod_teller.cpp
 src/mersenne/mt.c
 src/mersenne/dSFMT.h
 src/mersenne/dSFMT.c

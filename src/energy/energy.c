@@ -65,7 +65,7 @@ double cavity_absolute_check ( system_t * system ) {
 double energy(system_t *system) {
 
 	// molecule_t *molecule_ptr;  (unused variable)
-	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy;
+	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy, three_body_energy;
 	double kinetic_energy;
 	// struct timeval old_time, new_time;  (unused variable)
 	// char linebuf[MAXLINE];   (unused variable)
@@ -82,6 +82,7 @@ double energy(system_t *system) {
 	coulombic_energy = 0;
 	polar_energy = 0;
 	vdw_energy = 0;
+    three_body_energy = 0;
 
 	system->natoms = countNatoms(system);
 
@@ -176,9 +177,15 @@ double energy(system_t *system) {
 	else if(!system->gwp)
 		rd_energy = lj(system);
 	system->observables->rd_energy = rd_energy;
+    
+	if (system->axilrod_teller)
+	{
+		three_body_energy = axilrod_teller(system);
+		system->observables->three_body_energy = three_body_energy;
+	}
 
 	/* sum the total potential energy */
-	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy;
+	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
 	
 	/* not truly potential, but stick it there for convenience of MC */
 	
@@ -222,7 +229,7 @@ double energy(system_t *system) {
 /* routines, widom insertion, etc. */
 double energy_no_observables(system_t *system) {
 
-	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy;
+	double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy, three_body_energy;
 
 	/* zero the initial values */
 	potential_energy = 0;
@@ -230,6 +237,7 @@ double energy_no_observables(system_t *system) {
 	coulombic_energy = 0;
 	polar_energy = 0;
 	vdw_energy = 0;
+	three_body_energy = 0;
 
 	/* get the pairwise terms necessary for the energy calculation */
 	pairs(system);
@@ -296,9 +304,12 @@ double energy_no_observables(system_t *system) {
 		#endif
 		}
 	}
-
+	
+	if (system->axilrod_teller)
+		three_body_energy = axilrod_teller(system);
+	
 	/* sum the total potential energy */
-	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy;
+	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
 
 	return(potential_energy);
 

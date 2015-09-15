@@ -659,6 +659,14 @@ int do_command (system_t * system, char ** token ) {
 			system->disp_expansion_mbvdw = 0;
 		else return 1;
 	}
+	
+	else if(!strcasecmp(token[0], "axilrod_teller")) {
+		if(!strcasecmp(token[1],"on"))
+			system->axilrod_teller = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->axilrod_teller = 0;
+		else return 1;
+	}
 
 	else if(!strcasecmp(token[0], "schmidt_ff")) {
 		if(!strcasecmp(token[1],"on"))

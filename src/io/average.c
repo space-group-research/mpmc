@@ -302,6 +302,13 @@ void update_root_averages(system_t *system, observables_t *observables, avg_obse
 		+ (observables->vdw_energy*observables->vdw_energy) / m;
 	avg_observables->vdw_energy_error = sdom*sqrt(avg_observables->vdw_energy_sq  
 		- avg_observables->vdw_energy*avg_observables->vdw_energy);
+	
+	avg_observables->three_body_energy = factor*avg_observables->three_body_energy 
+		+ observables->three_body_energy / m;
+	avg_observables->three_body_energy_sq = factor*avg_observables->three_body_energy_sq 
+		+ (observables->three_body_energy*observables->three_body_energy) / m;
+	avg_observables->three_body_energy_error = sdom*sqrt(avg_observables->three_body_energy_sq  
+		- avg_observables->three_body_energy*avg_observables->three_body_energy);
 
 	avg_observables->dipole_rrms = factor*avg_observables->dipole_rrms 
 		+ observables->dipole_rrms / m;

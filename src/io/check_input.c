@@ -1,4 +1,7 @@
 #include <mc.h>
+#ifdef MPI
+#include <mpi.h>
+#endif
 
 void check_ensemble ( system_t * system, int ensemble ) {
 
@@ -817,6 +820,7 @@ void hist_options ( system_t * system ) {
 
 void io_files_options(system_t * system) {
 	char linebuf[MAXLINE];
+	int j;
 	
 	if(!system->pqr_restart) {	// (CRC)
 		system->pqr_restart = calloc(MAXLINE,sizeof(char));
@@ -825,8 +829,15 @@ void io_files_options(system_t * system) {
 		strcat(system->pqr_restart,".restart.pqr");
 #ifdef MPI 
 		char *filename = make_filename( system->pqr_restart, rank );
-		printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
+		for ( j=0; j<size; j++ ) {
+			MPI_Barrier(MPI_COMM_WORLD);
+			if ( j == rank ) {
+				printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
+				fflush(stdout);
+			}
+		}
 		free(filename);
+		MPI_Barrier(MPI_COMM_WORLD);
 #else
 		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart );
 #endif
@@ -849,8 +860,15 @@ void io_files_options(system_t * system) {
 		{
 			char *filename;
 			filename = make_filename( system->pqr_output, rank );
-			printf( "INPUT (node %d): will be writing final configuration to ./%s\n", rank, filename );
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) {
+					printf( "INPUT (node %d): will be writing final configuration to ./%s\n", rank, filename );
+					fflush(stdout);
+				}
+			}
 			free(filename);
+			MPI_Barrier(MPI_COMM_WORLD);
 		}
 #else		
 		sprintf(linebuf, "INPUT: will be writing final configuration to ./%s\n", system->pqr_output);
@@ -869,7 +887,7 @@ void io_files_options(system_t * system) {
 		FILE *test;
 		char *filename;
 		
-		// Try to open a "final" file
+		// Try to open the plain restart file.
 		filename = make_filename( system->pqr_restart, rank );
 		test = fopen( filename, "r" );
 
@@ -902,18 +920,28 @@ void io_files_options(system_t * system) {
 				strcpy( system->pqr_input, filename );
 				free( filename );
 			
+			// if pqr_input is non-NULL, the user specified a default input file and we will use that, exiting
+			// the if/else tree here
 			}else if(!system->pqr_input) {
-				
-				// Load the specified input file since one was named, and since none of 
-				// the parallel options were availabe.
+				// if they did not specify a default input geometry file (and evidently none of the parallel options
+				// were available) then we will construct the default geometry input file name, based on the job name.
 				system->pqr_input = calloc(MAXLINE,sizeof(char));
 				memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 				strcpy(system->pqr_input,system->job_name);
 				strcat(system->pqr_input,".initial.pqr");
-			} // last
-		} // restart
+			} // default
+		} // pqr.last
 		
-		printf("INPUT (node %d): Reading coordinates from file: ./%s\n", rank, system->pqr_input);
+		#ifdef MPI
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) {
+					printf("INPUT (node %d): Reading coordinates from file: ./%s\n", rank, system->pqr_input);
+					fflush(stdout);
+				}
+			}
+			MPI_Barrier(MPI_COMM_WORLD);
+		#endif
 		
 		
 	} else {

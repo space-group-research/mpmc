@@ -8,7 +8,12 @@
 #include <limits.h>
 #include <math.h>
 #include <mc.h>
+#ifdef MPI
+#include <mpi.h>
+#endif
+
 #define RANDARRAYSIZE 1000
+
 
 //global variables (sorry bout that)
 int rand_array_used, rand_array_size;
@@ -50,7 +55,28 @@ void seed_mt_rand ( system_t * system, dsfmt_t * state, int rank ) {
 			seeds[i] = getseed();
 	}
 
-	fprintf(stdout,"MT: core[%d] seeds are set to %u %u %u %u\n", rank, seeds[0], seeds[1], seeds[2], seeds[3]);
+	#ifdef MPI
+		{
+			char out[MAXLINE];
+			int j;
+			sprintf(out,"MT: core[%d] seeds are set to %u %u %u %u\n", rank, seeds[0], seeds[1], seeds[2], seeds[3]);
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) {
+					printf( "%s", out );
+					fflush( stdout );
+				}
+			}
+			MPI_Barrier(MPI_COMM_WORLD);
+		}
+	#else
+		fprintf(stdout,"MT: core[%d] seeds are set to %u %u %u %u\n", rank, seeds[0], seeds[1], seeds[2], seeds[3]);
+	#endif
+
+
+
+
+	
 	//seed the rng
 	dsfmt_init_by_array(state, seeds, 4);
 	free(seeds);

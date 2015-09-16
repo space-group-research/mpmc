@@ -820,7 +820,6 @@ void hist_options ( system_t * system ) {
 
 void io_files_options(system_t * system) {
 	char linebuf[MAXLINE];
-	int j;
 	
 	if(!system->pqr_restart) {	// (CRC)
 		system->pqr_restart = calloc(MAXLINE,sizeof(char));
@@ -828,16 +827,19 @@ void io_files_options(system_t * system) {
 		strcpy(system->pqr_restart,system->job_name);
 		strcat(system->pqr_restart,".restart.pqr");
 #ifdef MPI 
-		char *filename = make_filename( system->pqr_restart, rank );
-		for ( j=0; j<size; j++ ) {
-			MPI_Barrier(MPI_COMM_WORLD);
-			if ( j == rank ) {
-				printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
-				fflush(stdout);
+		{
+			int j;
+			char *filename = make_filename( system->pqr_restart, rank );
+			for ( j=0; j<size; j++ ) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				if ( j == rank ) {
+					printf( "INPUT (node %d): will be writing restart configuration to ./%s\n", rank, filename );
+					fflush(stdout);
+				}
 			}
+			free(filename);
+			MPI_Barrier(MPI_COMM_WORLD);
 		}
-		free(filename);
-		MPI_Barrier(MPI_COMM_WORLD);
 #else
 		sprintf(linebuf, "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart );
 #endif
@@ -858,6 +860,7 @@ void io_files_options(system_t * system) {
 		strcat(system->pqr_output,".final.pqr");
 #ifdef MPI
 		{
+			int j;
 			char *filename;
 			filename = make_filename( system->pqr_output, rank );
 			for ( j=0; j<size; j++ ) {
@@ -933,6 +936,8 @@ void io_files_options(system_t * system) {
 		} // pqr.last
 		
 		#ifdef MPI
+		{
+			int j;
 			for ( j=0; j<size; j++ ) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				if ( j == rank ) {
@@ -941,6 +946,7 @@ void io_files_options(system_t * system) {
 				}
 			}
 			MPI_Barrier(MPI_COMM_WORLD);
+		}
 		#endif
 		
 		

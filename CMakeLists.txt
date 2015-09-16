@@ -97,7 +97,6 @@ endif()
 
 if(CUDA)
 	message("-- CUDA Enabled")
-	message("WARNING: CUDA untested")
 	find_package(CUDA REQUIRED)
 	set(SRC ${SRC} src/polarization_gpu/polar_cuda.cu)
 else()

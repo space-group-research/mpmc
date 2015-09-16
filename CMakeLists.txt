@@ -7,11 +7,7 @@ option(OPENCL "Use OpenCL to offload polarization calculations to a GPU (require
 option(QM_ROTATION "Enable Quantum Mechanics Rigid Rotator calculations (requires LAPACK)" OFF)
 option(VDW "Enable Coupled-Dipole Van der Waals (requires LAPACK)" OFF)
 
-EXECUTE_PROCESS(
-	COMMAND git rev-list --count HEAD
-	OUTPUT_VARIABLE VERSION
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+add_definitions( -D`echo VERSION=\\`git rev-list HEAD|wc -l\\``)
 
 configure_file (
 "${PROJECT_SOURCE_DIR}/src/include/cmake_config.h.in"

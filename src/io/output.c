@@ -7,6 +7,9 @@ University of South Florida
 */
 
 #include <mc.h>
+#ifdef MPI
+#include <mpi.h>
+#endif
 
 void error(char *msg) {
 

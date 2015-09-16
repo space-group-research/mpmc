@@ -870,9 +870,10 @@ void io_files_options(system_t * system) {
 		char *filename;
 		
 		// Try to open a "final" file
-		filename = make_filename( system->pqr_output, rank );
+		filename = make_filename( system->pqr_restart, rank );
 		test = fopen( filename, "r" );
-		if( test ) {
+
+		if(test) {
 			fclose(test);
 			if( !system->pqr_input ) {
 				system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
@@ -883,48 +884,32 @@ void io_files_options(system_t * system) {
 			
 			
 		} else {
-			// No final file available, try to open a "restart" file
-			filename = make_filename( system->pqr_restart, rank );
+			
+			// No restart files available, try to open a "last" file
+			char *basename;
+			basename = make_filename( system->pqr_restart, rank );
+			filename = calloc( strlen(basename) + 16, sizeof(char));
+			memnullcheck(filename, (strlen(basename) + 16) * sizeof(char),__LINE__-1, __FILE__);
+			sprintf( filename, "%s.last", basename );
+			free(basename);
 			test = fopen( filename, "r" );
-			if(test) {
+			if( test ) {
 				fclose(test);
-				if( !system->pqr_input ) {
+				if( !system->pqr_input ) { 
 					system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
-					memnullcheck(system->pqr_input, MAXLINE * sizeof(char), __LINE__-1, __FILE__);
+					memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
 				}
 				strcpy( system->pqr_input, filename );
 				free( filename );
+			
+			}else if(!system->pqr_input) {
 				
-				
-			} else {
-				
-				// No final or restart files available, try to open a "last" file
-				char *basename;
-				basename = make_filename( system->pqr_restart, rank );
-				filename = calloc( strlen(basename) + 16, sizeof(char));
-				memnullcheck(filename, (strlen(basename) + 16) * sizeof(char),__LINE__-1, __FILE__);
-				sprintf( filename, "%s.last", basename );
-				free(basename);
-				test = fopen( filename, "r" );
-				if( test ) {
-					fclose(test);
-					if( !system->pqr_input ) { 
-						system->pqr_input = (char *) calloc( MAXLINE, sizeof(char));
-						memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-					}
-					strcpy( system->pqr_input, filename );
-					free( filename );
-				
-				}else if(!system->pqr_input) {
-					
-					// Load the specified input file since one was named, and since none of 
-					// the parallel options were availabe.
-					system->pqr_input = calloc(MAXLINE,sizeof(char));
-					memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-					strcpy(system->pqr_input,system->job_name);
-					strcat(system->pqr_input,".initial.pqr");
-						
-				} // default
+				// Load the specified input file since one was named, and since none of 
+				// the parallel options were availabe.
+				system->pqr_input = calloc(MAXLINE,sizeof(char));
+				memnullcheck(system->pqr_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+				strcpy(system->pqr_input,system->job_name);
+				strcat(system->pqr_input,".initial.pqr");
 			} // last
 		} // restart
 		

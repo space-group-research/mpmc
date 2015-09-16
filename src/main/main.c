@@ -8,6 +8,9 @@ University of South Florida
 int rank, size;
 
 #include <mc.h>
+#ifdef MPI
+#include <mpi.h>
+#endif
 #include "surface_fit_arbitrary.h"
 
 //kill MPI before quitting, when neccessary
@@ -47,12 +50,13 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif /* MPI */
-
-	sprintf(linebuf, "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2015 GNU Public License\n", VERSION);
-	output(linebuf);
-	sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-	output(linebuf);
 	
+	if( !rank ) {
+		sprintf(linebuf, "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2015 GNU Public License\n", VERSION);
+		output(linebuf);
+		sprintf(linebuf, "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+		output(linebuf);
+	}
 	
 #ifndef MPI
 	FILE *procfile;

@@ -82,8 +82,16 @@ int do_command (system_t * system, char ** token ) {
 	// Is this a restart of a parallel job?
 	////////////////////////////////////////
 	else if( !strcasecmp(token[0], "parallel_restarts" )) {
-		system->parallel_restarts = 1;
-		printf( "INPUT: parallel restart option selected.\n" );
+		
+		if(!strcasecmp(token[1], "on")) {
+			system->parallel_restarts = 1;
+			output( "INPUT: parallel restart option selected.\n" );
+		}
+		else if (!strcasecmp(token[1], "off")) {
+			system->parallel_restarts = 0;
+		}
+		else return 1;
+		
 	}
 
 	// surf options
@@ -168,12 +176,12 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "surf_qshift")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->surf_qshift_on = 1;
-			printf("INPUT: surf_qshift is ON.\n");
-			printf("INPUT: only use qshift with x-axis aligned linear molecules.\n");
+			output("INPUT: surf_qshift is ON.\n");
+			output("INPUT: only use qshift with x-axis aligned linear molecules.\n");
 		}
 		else if (!strcasecmp(token[1],"off")) {
 			system->surf_qshift_on = 0;
-			printf("INPUT: surf_qshift is OFF.\n");
+			output("INPUT: surf_qshift is OFF.\n");
 		}
 		else return 1;
 	}
@@ -207,33 +215,33 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "surf_global_axis")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->surf_global_axis_on = 1;
-			printf("INPUT: surf_global_axis is ON.\n");
+			output("INPUT: surf_global_axis is ON.\n");
 		}
 		else if (!strcasecmp(token[1],"off")) {
 			system->surf_global_axis_on = 0;
-			printf("INPUT: surf_global_axis is OFF.\n");
+			output("INPUT: surf_global_axis is OFF.\n");
 		}
 		else return 1;
 	}
 	else if(!strcasecmp(token[0], "surf_descent")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->surf_descent = 1;
-			printf("INPUT: surf_descent is ON.\n");
+			output("INPUT: surf_descent is ON.\n");
 		}
 		else if (!strcasecmp(token[1],"off")) {
 			system->surf_descent = 0;
-			printf("INPUT: surf_descent is OFF.\n");
+			output("INPUT: surf_descent is OFF.\n");
 		}
 		else return 1;
 	}
 	else if(!strcasecmp(token[0], "ee_local")) {
 		if (!strcasecmp(token[1],"on")) {
 			system->ee_local = 1;
-			printf("INPUT: Exhaustive enumeration is ON\n");
+			output("INPUT: Exhaustive enumeration is ON\n");
 		}
 		else if (!strcasecmp(token[1],"off")) {
 			system->ee_local = 0;
-			printf("INPUT: Exhaustive enumeration is OFF\n");
+			output("INPUT: Exhaustive enumeration is OFF\n");
 		}
 		else return 1;
 	}

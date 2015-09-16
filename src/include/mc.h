@@ -19,10 +19,6 @@ extern int rank, size;
 #include <cmake_config.h>
 #include <defines.h>
 
-#ifdef MPI
-#include <mpi.h>
-#endif /* MPI */
-
 #include <structs.h>
 #include <function_prototypes.h>
 

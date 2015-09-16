@@ -12,7 +12,9 @@ University of South Florida
 
 #include <mc.h>
 #include <quaternion.h>
-
+#ifdef MPI
+#include <mpi.h>
+#endif
 
 //re-enumerate atoms and molecules -> set atom and molecule id's which get messed up in UVT runs
 void enumerate_particles ( system_t * system ) {

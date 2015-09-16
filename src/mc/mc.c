@@ -30,6 +30,9 @@ This result was verified via ideal gas (non-interacting system). See tools/ideal
 
 
 #include <mc.h>
+#ifdef MPI
+#include <mpi.h>
+#endif
 
 /* the prime quantity of interest */
 void boltzmann_factor(system_t *system, double initial_energy, double final_energy) {

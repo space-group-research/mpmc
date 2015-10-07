@@ -675,6 +675,14 @@ int do_command (system_t * system, char ** token ) {
 			system->axilrod_teller = 0;
 		else return 1;
 	}
+	
+	else if(!strcasecmp(token[0], "midzuno_kihara_approx")) {
+		if(!strcasecmp(token[1],"on"))
+			system->midzuno_kihara_approx = 1;
+		else if (!strcasecmp(token[1],"off")) 
+			system->midzuno_kihara_approx = 0;
+		else return 1;
+	}
 
 	else if(!strcasecmp(token[0], "schmidt_ff")) {
 		if(!strcasecmp(token[1],"on"))

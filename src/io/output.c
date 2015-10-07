@@ -366,6 +366,7 @@ int write_molecules(system_t *system, FILE * fp) {
 			fprintf(fp, " %8.5f", atom_ptr->c6);
 			fprintf(fp, " %8.5f", atom_ptr->c8);
 			fprintf(fp, " %8.5f", atom_ptr->c10);
+			fprintf(fp, " %8.5f", atom_ptr->c9);
 			fprintf(fp, "\n");
 
 		}
@@ -682,6 +683,7 @@ void write_states(system_t * system) {
 			fprintf(fp, " %8.5f", atom_ptr->c6);
 			fprintf(fp, " %8.5f", atom_ptr->c8);
 			fprintf(fp, " %8.5f", atom_ptr->c10);
+			fprintf(fp, " %8.5f", atom_ptr->c9);
 			fprintf(fp, "\n");
 
 		}

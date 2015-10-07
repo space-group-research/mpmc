@@ -3,7 +3,7 @@ extern "C" {
 }
 // TODO: Make everything C++
 
-//Copyright 2015 Adam Hogan
+// Copyright 2015 Adam Hogan
 
 class Vec {
 	public:
@@ -100,9 +100,24 @@ double axilrod_teller ( system_t *system ) {
 						for ( atom2 = molecule2->atoms; atom2; atom2 = atom2->next ) {
 							for ( atom3 = molecule3->atoms; atom3; atom3 = atom3->next ) {
 								if ( atom1!=atom2&&atom1!=atom3&&atom2!=atom3 ) {
-									// rough approximation for c9, need to hard code values later
-									c9 = sqrt ( atom1->c6*atom2->c6*atom3->c6 );
-
+									
+									double atom1_c9, atom2_c9, atom3_c9;
+									atom1_c9 = atom1->c9;
+									atom2_c9 = atom2->c9;
+									atom3_c9 = atom3->c9;
+									
+									// Midzuno-Kihara approximation for c9 http://dx.doi.org/10.1143/JPSJ.11.1045
+									if (system->midzuno_kihara_approx)
+									{
+										atom1_c9 = 3.0/4.0*atom1->polarizability*6.7483345*atom1->c6;
+										atom2_c9 = 3.0/4.0*atom2->polarizability*6.7483345*atom2->c6;
+										atom3_c9 = 3.0/4.0*atom3->polarizability*6.7483345*atom3->c6;
+									}
+									
+									// Mixing rule, ep. 20 of http://dx.doi.org/10.1063/1.440310
+									c9 = pow(pow(atom1->polarizability*6.7483345,3)*pow(atom2->polarizability*6.7483345,3)*pow(atom3->polarizability*6.7483345,3),1.0/3.0) * 
+									3.0/(1.0/(atom1_c9/pow(atom1->polarizability*6.7483345,3))+1.0/(atom2_c9/pow(atom2->polarizability*6.7483345,3))+1.0/(atom3_c9/pow(atom3->polarizability*6.7483345,3)));
+									
 									// reset fake pair ptr
 									temp.d_prev[0] = temp.d_prev[1] = temp.d_prev[2] = -999999999999.;
 									// get minimum image distance
@@ -129,16 +144,17 @@ double axilrod_teller ( system_t *system ) {
 									a = -1.0*ij;
 									b = -1.0*ik;
 
-									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
+									cos_part *= a.dot ( b ) / ( a.norm() * b.norm() );
+									
 									a = ij;
 									b = -1.0*jk;
 
-									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
+									cos_part *= a.dot ( b ) / ( a.norm() * b.norm() );
 
 									a = ik;
 									b = jk;
 
-									cos_part *= a.dot ( b ) / ( a.norm() *b.norm() );
+									cos_part *= a.dot ( b ) / ( a.norm() * b.norm() );
 									
 									potential += c9*((1.0+cos_part)/pow(rij*rik*rjk,3));
 								}
@@ -151,5 +167,6 @@ double axilrod_teller ( system_t *system ) {
 	}
 	// We're counting each pair 6 times
 	potential = potential/6;
+	printf("%f\n",potential);
 	return potential;
 }

@@ -317,6 +317,7 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 		atom_dst_ptr->c6 = atom_src_ptr->c6;
 		atom_dst_ptr->c8 = atom_src_ptr->c8;
 		atom_dst_ptr->c10 = atom_src_ptr->c10;
+		atom_dst_ptr->c9 = atom_src_ptr->c9;
 
 		memcpy(atom_dst_ptr->pos, atom_src_ptr->pos, 3*sizeof(double));
 		memcpy(atom_dst_ptr->wrapped_pos, atom_src_ptr->wrapped_pos, 3*sizeof(double));

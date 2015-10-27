@@ -15,7 +15,7 @@ class Vec {
 		double dot ( const Vec );
 		Vec operator+ ( const Vec & );
 		Vec operator* ( const double );
-		Vec operator= ( const Vec & );
+		Vec& operator= ( const Vec & );
 };
 
 Vec::Vec () {
@@ -72,7 +72,7 @@ Vec operator* ( const double x, const Vec right ) {
 	return result;
 }
 
-Vec Vec::operator= ( const Vec &right ) {
+Vec& Vec::operator= ( const Vec &right ) {
 	if( &right != this ) {  // Avoids self assignment
 		components[0] = right.components[0];
 		components[1] = right.components[1];
@@ -123,7 +123,7 @@ double axilrod_teller ( system_t *system ) {
 									3.0/(1.0/(atom1_c9/pow(atom1->polarizability*6.7483345,3))+1.0/(atom2_c9/pow(atom2->polarizability*6.7483345,3))+1.0/(atom3_c9/pow(atom3->polarizability*6.7483345,3)));
 									
 									if ( atom1->polarizability == 0.0 || atom2->polarizability == 0.0 || atom3->polarizability == 0.0 )
-										c9 = 0.0;
+										c9 = 0.0; // avoid division by zero
 									
 									c9 *= 0.0032539449/(3.166811429*0.000001); // convert H*Bohr^9 to K*Angstrom^9
 									

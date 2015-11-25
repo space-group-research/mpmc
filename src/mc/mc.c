@@ -345,9 +345,17 @@ int mc(system_t *system) {
 			register_accept(system);
 
 			/* SA */
-			if(system->simulated_annealing) 
-					system->temperature = system->simulated_annealing_target + 
-						(system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
+			if(system->simulated_annealing)
+			{
+				if (system->simulated_annealing_linear==1)
+				{
+					system->temperature = system->temperature + (system->simulated_annealing_target - system->temperature)/(system->numsteps - system->step);
+					if (system->numsteps - system->step == 0)
+						system->temperature = system->simulated_annealing_target;
+				}
+				else
+					system->temperature = system->simulated_annealing_target + (system->temperature - system->simulated_annealing_target)*system->simulated_annealing_schedule;
+			}
 
 		} else { 
 		/////////////// REJECT

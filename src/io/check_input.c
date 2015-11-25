@@ -263,6 +263,11 @@ void simulated_annealing_options( system_t * system) {
 		sprintf(linebuf, "INPUT: Simulated annealing target %lfK.", system->simulated_annealing_target);
 		output(linebuf);
 	}
+	
+	if (system->simulated_annealing_linear==1) {
+		sprintf(linebuf, "INPUT: Simulated annealing using a linear ramp.");
+		output(linebuf);
+	}
 
 	return;
 }

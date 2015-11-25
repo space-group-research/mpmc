@@ -463,6 +463,14 @@ int do_command (system_t * system, char ** token ) {
 			system->simulated_annealing = 0;
 		else return 1; //no match
 	}
+	
+	else if(!strcasecmp(token[0], "simulated_annealing_linear")) {
+		if(!strcasecmp(token[1], "on")) 
+			system->simulated_annealing_linear = 1;
+		else if(!strcasecmp(token[1], "off")) 
+			system->simulated_annealing_linear = 0;
+		else return 1; //no match
+	}
 
 	else if(!strcasecmp(token[0], "simulated_annealing_schedule")) 
 		{ if ( safe_atof(token[1],&(system->simulated_annealing_schedule)) ) return 1; }

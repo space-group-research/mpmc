@@ -409,7 +409,7 @@ typedef struct _system {
 	double spectre_max_charge, spectre_max_target;
 
 	//simulated annealing
-	int simulated_annealing;
+	int simulated_annealing, simulated_annealing_linear;
 	double simulated_annealing_schedule;
 	double simulated_annealing_target;
 

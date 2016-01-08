@@ -294,9 +294,9 @@ int write_molecules(system_t *system, FILE * fp) {
 	// By default, PDB compliant coordinates are printed (%8.3f), else extended output is used (%11.6f)
 	if(system->long_output)
 		ext_output = 1;
-	else if( (system->pbc->basis[0][0] >= 200.0) || (system->pbc->basis[0][1] >= 200.0) || (system->pbc->basis[0][2] >= 200.0) || 
-	         (system->pbc->basis[1][0] >= 200.0) || (system->pbc->basis[1][1] >= 200.0) || (system->pbc->basis[1][2] >= 200.0) || 
-	         (system->pbc->basis[2][0] >= 200.0) || (system->pbc->basis[2][1] >= 200.0) || (system->pbc->basis[2][2] >= 200.0) )
+	else if( (system->pbc->basis[0][0] >= 100.0) || (system->pbc->basis[0][1] >= 100.0) || (system->pbc->basis[0][2] >= 100.0) || 
+	         (system->pbc->basis[1][0] >= 100.0) || (system->pbc->basis[1][1] >= 100.0) || (system->pbc->basis[1][2] >= 100.0) || 
+	         (system->pbc->basis[2][0] >= 100.0) || (system->pbc->basis[2][1] >= 100.0) || (system->pbc->basis[2][2] >= 100.0) )
 		ext_output = 1;
 	else
 		ext_output = 0;

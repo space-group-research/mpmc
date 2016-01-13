@@ -1143,6 +1143,9 @@ void setdefaults(system_t * system) {
 	system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
 #endif /* QM_ROTATION */
 
+    // Default for wrapall
+	system->wrapall = 1;
+
 	//set default jobname
 	system->job_name = calloc(MAXLINE,sizeof(char));
 	memnullcheck(system->job_name,MAXLINE*sizeof(char),__LINE__-1, __FILE__);

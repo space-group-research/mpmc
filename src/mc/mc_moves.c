@@ -233,7 +233,7 @@ void revert_volume_change( system_t * system ) {
 			}
 		}
 	}
-
+	wrapall(system->molecules,system->pbc);
 	return;
 }
 

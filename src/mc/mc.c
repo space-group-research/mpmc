@@ -38,7 +38,6 @@ This result was verified via ideal gas (non-interacting system). See tools/ideal
 void boltzmann_factor(system_t *system, double initial_energy, double final_energy, double rot_partfunc) {
 
 	double delta_energy;
-	double partfunc_ratio;
 	double v_new, v_old;
 	double fugacity;
 
@@ -107,7 +106,6 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 		case ENSEMBLE_NVT :
 			switch ( system->checkpoint->movetype) {
 				case MOVETYPE_SPINFLIP : 
-					/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
 					system->nodestats->boltzmann_factor = rot_partfunc*exp(-delta_energy/system->temperature);
 				break;
 				default: /*DISPLACE*/

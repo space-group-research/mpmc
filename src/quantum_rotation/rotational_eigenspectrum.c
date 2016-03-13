@@ -285,7 +285,6 @@ void quantum_system_rotational_energies(system_t *system) {
 	int i, j;
 	molecule_t *molecule_ptr;
 
-
 	/* get the rotational eigenspectrum for each moveable molecule */
 	for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
 
@@ -294,27 +293,30 @@ void quantum_system_rotational_energies(system_t *system) {
 			/* generate the necessary grids */
 			quantum_rotational_grid(system, molecule_ptr);
 
-			/* get the energy levels */
+			/* get the eigenspectrum */
 			quantum_rotational_energies(system, molecule_ptr, system->quantum_rotation_level_max, system->quantum_rotation_l_max);
 
-			/* sum the levels (based upon symmetry) into molecular rotational partition functions */
+			/* sum over states into molecular rotational partition functions */
 			molecule_ptr->rot_partfunc_g = 0;
 			molecule_ptr->rot_partfunc_u = 0;
-			molecule_ptr->rot_partfunc = 0;
 			for(i = 0; i < system->quantum_rotation_sum; i++) {
 
 				/* symmetry-specific part funcs */
+				/* factor of 3 for ungerand comes from degeneracy of nuclear wavefunction */
 				if(molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_SYMMETRIC)
-					molecule_ptr->rot_partfunc_g += (2.0*((double)i) + 1.0)*exp(-molecule_ptr->quantum_rotational_energies[i]/system->temperature);
+					molecule_ptr->rot_partfunc_g += exp(-molecule_ptr->quantum_rotational_energies[i]/system->temperature);
 				else
-					molecule_ptr->rot_partfunc_u += (2.0*((double)i) + 1.0)*exp(-molecule_ptr->quantum_rotational_energies[i]/system->temperature);
-
-				/* equil part func */
-				molecule_ptr->rot_partfunc += (2.0 - pow((-1.0), ((double)i)))*(2.0*((double)i) + 1.0)*exp(-molecule_ptr->quantum_rotational_energies[i]/system->temperature);
+					molecule_ptr->rot_partfunc_u += 3.*exp(-molecule_ptr->quantum_rotational_energies[i]/system->temperature);
 
 			}
-			molecule_ptr->rot_partfunc_g *= 1.0;
-			molecule_ptr->rot_partfunc_u *= 3.0;
+
+			/* assign partition function ratio based upon spin symmetry */
+			if(molecule_ptr->nuclear_spin == NUCLEAR_SPIN_PARA) {
+				molecule_ptr->rot_partfunc = molecule_ptr->rot_partfunc_g/(molecule_ptr->rot_partfunc_g+molecule_ptr->rot_partfunc_u);
+			} else {
+				molecule_ptr->rot_partfunc = molecule_ptr->rot_partfunc_u/(molecule_ptr->rot_partfunc_g+molecule_ptr->rot_partfunc_u);
+			}
+
 		}
 
 	}

@@ -21,7 +21,7 @@ void countN ( system_t * system ) {
 			/* update the molecule counter */
 			system->observables->N += 1.0;
 			/* update the nuclear spin ratio */
-			if(molecule_ptr->nuclear_spin == NUCLEAR_SPIN_ORTHO)
+			if(molecule_ptr->nuclear_spin == NUCLEAR_SPIN_PARA)
 				system->observables->spin_ratio += 1.0;
 		}
 

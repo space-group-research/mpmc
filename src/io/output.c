@@ -935,7 +935,7 @@ int print_observables(system_t *system) {
 
 	printf("OUTPUT: volume = %.5f A^3\n", system->pbc->volume);
 
-	if(o->spin_ratio > 0.0) printf("OUTPUT: ortho spin ratio = %.5lf %%\n", o->spin_ratio*100.0);
+	if(o->spin_ratio > 0.0) printf("OUTPUT: para spin ratio = %.5lf %%\n", o->spin_ratio*100.0);
 	
 	printf("\n");
 	fflush(stdout);
@@ -1052,7 +1052,7 @@ int write_averages(system_t *system) {
 		printf("OUTPUT: volume = %.5f +- %.5f A^3\n", averages->volume, averages->volume_error);
 
 	if(averages->spin_ratio > 0.0) 
-		printf("OUTPUT: ortho spin ratio = %.5lf +- %.5lf %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
+		printf("OUTPUT: para spin ratio = %.5lf +- %.5lf %%\n", averages->spin_ratio*100.0, averages->spin_ratio_error*100.0);
 	
 	if( system->sorbateCount > 1 ){
 

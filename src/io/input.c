@@ -442,6 +442,10 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atoi(token[1],&(system->ptemp_freq)) ) return 1; }
 	/*end setting MC options*/
 
+#ifndef QM_ROTATION
+	system->spinflip_probability = 0;
+#endif /* QM_ROTATION */
+
 	/* parallel tempering options */
 	else if(!strcasecmp(token[0], "parallel_tempering")) {
 		if(!strcasecmp(token[1], "on")) 

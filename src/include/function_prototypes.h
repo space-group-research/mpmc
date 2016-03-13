@@ -144,7 +144,7 @@ void free_all_pairs(system_t *);
 /* mc */
 void temper_system ( system_t *, double );
 void enumerate_particles(system_t *);
-void boltzmann_factor(system_t *, double, double);
+void boltzmann_factor(system_t *, double, double, double);
 void register_accept(system_t *);
 void register_reject(system_t *);
 int mc(system_t *);

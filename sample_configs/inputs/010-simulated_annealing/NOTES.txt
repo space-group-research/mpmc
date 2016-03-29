@@ -2,7 +2,7 @@ Space group 2016
 D. Franz
 ================
 
-This is a sample simulated annealing script for the MOF NOTT-112.
+This is a sample simulated annealing (using NVT) script for the MOF NOTT-112.
 Two files are included.
 
 input.pqr (1) contains the MOF with a single H2 molecule about 2.5A from

@@ -1,0 +1,14 @@
+2016 Space group
+This is K. Forrest's work
+=========================
+
+Mg rho-ZMOF files are attached. Please note that we do not match experiment
+using these settings and parameters (in fact we over sorb massively). This is
+attributed to the fact that the wet chemists use a structure which is not fully
+activated (i.e. contains unaccounted for water molecules). The presence of this
+water has been confirmed experimentally using tga.
+
+If you want, you can try to reproduce these data for the Buch, BSS, and BSSP
+models for simulations in Mg-rho-ZMOF at 77 K with the included *.png
+
+The included model here is BSSP.

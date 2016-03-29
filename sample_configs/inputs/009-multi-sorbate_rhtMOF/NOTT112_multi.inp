@@ -1,0 +1,40 @@
+job_name                NOTT-2sorb
+
+ensemble                uvt
+
+numsteps                1000000
+corrtime                1000
+move_factor             0.01
+insert_probability      0.666
+rot_factor              0.01
+
+temperature             78.0
+! pressure is NOT included in multi-sorb. Only fugacities (below)
+
+!set based on insert.pqr sorbate order, in this case H2, CO2                                                                             
+user_fugacities 0.01 0.01
+
+feynman_hibbs           on                                                                                    
+feynman_hibbs_order     4 
+
+basis1                  47.005   0.0     0.0                                                                  
+basis2                  0.0      47.005  0.0                                                                  
+basis3                  0.0      0.0     47.005
+
+polarization            on
+polar_damp_type         exponential
+polar_damp              2.1304
+polar_wolf              on
+polar_wolf_alpha	0.13
+
+polar_iterative         on
+polar_palmo             on
+polar_gs_ranked         on
+polar_gamma             1.03
+polar_max_iter          4
+
+wrapall                 on
+pqr_input               input.pqr
+insert_input            insert.pqr
+pop_histogram           on
+pop_histogram_output    histogram.dat

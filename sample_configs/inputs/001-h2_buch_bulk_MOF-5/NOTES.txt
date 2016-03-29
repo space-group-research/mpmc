@@ -1,0 +1,7 @@
+2016 Space group
+D. Franz
+=====================
+
+Basic LJ bulk sorption modeling for H2 (using Buch model).
+
+(repulsion-dispersion only; no electrostatics + no polarizaion)

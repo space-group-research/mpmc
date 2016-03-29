@@ -1,0 +1,7 @@
+2016 Space group
+D. Franz
+======================
+
+This is a rigorous BSSP H2 sorption simulation in MOF-5.
+
+(Feynman-Hibbs corrections are applied -- that's the only difference of this sample with #003).

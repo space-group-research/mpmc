@@ -13,7 +13,7 @@ This is an index of the sample MPMC input files in this directory.
 005 - In-soc-MOF model with H2 (BSSP)
 006 - rho-ZMOF + H2 model sample
 007 - MOF-5 + H2 quantum rotations calculation sample
-008 - PES Fitting [[ NOT YET SUPPLIED ]]
+008 - PES Fitting examples for noble gases Ar and He
 009 - Multi-sorbate sorption (H2 + CO2) with NOTT-112 (an rht-MOF)
 010 - Simulated annealing H2 in NOTT-112
 011 - 1D chain replay

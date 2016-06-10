@@ -1,4 +1,4 @@
-! are comments yo
+! comment
 job_name                        MOF5+BSSP ! job name, which will determine output file names
 
 ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, NPT etc. are possible.
@@ -23,6 +23,8 @@ h2_fugacity                     on ! Fugacity option for pressure correction (fo
 feynman_hibbs			on ! A correction algorithm to improve energy with a bit of QM
 feynman_hibbs_order		4 ! Related to form of F-H equation
 
+
+!!free_volume			18280.82098 ! free volume (NOT total volume) of unit cell in A^3. This value is not correct for MOF-5 so it's commented out.
 basis1                          25.669  0.0     0.0 ! Unit cell "box" parameters. Cubes, e.g., are a diagonal matrix with identical values.
 basis2                          0.0     25.669  0.0
 basis3                          0.0     0.0     25.669

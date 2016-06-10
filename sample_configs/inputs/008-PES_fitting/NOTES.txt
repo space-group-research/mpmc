@@ -1,5 +1,19 @@
 2016 Space group
-D. Franz
-=====================
 
-To be added later.
+Compiled by Alejandro Navas.
+Instructed by Adam Hogan.
+Uploaded by Douglas Franz
+================================
+
+These are sample inputs for fitting noble gases in MPMC.
+
+Use, for example,
+
+/path/to/mpmc helium_fitting.input
+
+to run.
+
+All 3 files are required to run PES:
+	- *.input (MPMC input)
+	- *.pqr (initial parameters/coordinates)
+	- *.dat (PES input data)

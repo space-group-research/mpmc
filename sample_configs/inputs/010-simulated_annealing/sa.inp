@@ -1,0 +1,41 @@
+job_name                sample_SA
+
+ensemble                nvt
+
+numsteps                1000000
+corrtime                1000
+move_factor             0.01
+insert_probability      0.666
+rot_factor              0.01
+
+simulated_annealing     on
+simulated_annealing_schedule 0.99999
+temperature             40.0
+pressure                0.1
+free_volume             77892.10389
+
+basis1                  47.005   0.0     0.0
+basis2                  0.0      47.005  0.0
+basis3                  0.0      0.0     47.005
+
+h2_fugacity             on
+feynman_hibbs           on
+feynman_hibbs_order     4
+
+polarization            on
+polar_damp_type         exponential
+polar_damp              2.1304
+polar_wolf              on
+polar_wolf_alpha        0.13
+
+polar_iterative         on
+polar_palmo             on
+polar_gs_ranked         on
+polar_gamma             1.03
+polar_max_iter          4
+
+wrapall                 on
+pqr_input               input.pqr
+pop_histogram           on
+pop_histogram_output    histogram.dat
+

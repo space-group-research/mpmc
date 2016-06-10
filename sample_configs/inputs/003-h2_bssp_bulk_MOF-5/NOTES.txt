@@ -1,0 +1,7 @@
+2016 Space group
+D. Franz
+=====================
+
+Basic Polarized bulk sorption modeling for H2 (using BSSP model).
+
+(U = repulsion-dispersion + electrostatics + polarization)

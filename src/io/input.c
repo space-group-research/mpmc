@@ -442,9 +442,6 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atoi(token[1],&(system->ptemp_freq)) ) return 1; }
 	/*end setting MC options*/
 
-#ifndef QM_ROTATION
-	system->spinflip_probability = 0;
-#endif /* QM_ROTATION */
 
 	/* parallel tempering options */
 	else if(!strcasecmp(token[0], "parallel_tempering")) {
@@ -485,7 +482,7 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "pressure")) 
 		{ if ( safe_atof(token[1],&(system->pressure)) ) return 1; }
 
-/* fugacity shits */
+	/* fugacity shits */
 	else if(!strcasecmp(token[0], "h2_fugacity")) {
 		if(!strcasecmp(token[1], "on"))
 			system->h2_fugacity = 1;
@@ -734,7 +731,7 @@ int do_command (system_t * system, char ** token ) {
 	else if(!strcasecmp(token[0], "pbc_cutoff"))
 		{ if ( safe_atof(token[1],&(system->pbc->cutoff)) ) return 1; }
 
-//polar options
+	//polar options
 	else if(!strcasecmp(token[0], "polar_ewald")) {
 		if(!strcasecmp(token[1],"on"))
 			system->polar_ewald = 1;
@@ -846,33 +843,33 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 
-//quantum rotation stuff
-#ifdef QM_ROTATION
-	else if(!strcasecmp(token[0], "quantum_rotation")) {
-		if(!strcasecmp(token[1],"on"))
-			system->quantum_rotation = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->quantum_rotation = 0;
-		else return 1;
-	}
-	else if(!strcasecmp(token[0], "quantum_rotation_hindered")) {
-		if(!strcasecmp(token[1],"on"))
-			system->quantum_rotation_hindered = 1;
-		else if (!strcasecmp(token[1],"off")) 
-			system->quantum_rotation_hindered = 0;
-		else return 1;
-	}
-	else if(!strcasecmp(token[0], "quantum_rotation_hindered_barrier"))
-		{ if ( safe_atof(token[1],&(system->quantum_rotation_hindered_barrier)) ) return 1; }
-	else if(!strcasecmp(token[0], "quantum_rotation_B"))
-		{ if ( safe_atof(token[1],&(system->quantum_rotation_B)) ) return 1; }
-	else if(!strcasecmp(token[0], "quantum_rotation_level_max"))
-		{ if ( safe_atoi(token[1],&(system->quantum_rotation_level_max)) ) return 1; }
-	else if(!strcasecmp(token[0], "quantum_rotation_l_max"))
-		{ if ( safe_atoi(token[1],&(system->quantum_rotation_l_max)) ) return 1; }
-	else if(!strcasecmp(token[0], "quantum_rotation_sum"))
-		{ if ( safe_atoi(token[1],&(system->quantum_rotation_sum)) ) return 1; }
-#endif //end QM rotation
+	//quantum rotation stuff
+	#ifdef QM_ROTATION
+		else if(!strcasecmp(token[0], "quantum_rotation")) {
+			if(!strcasecmp(token[1],"on"))
+				system->quantum_rotation = 1;
+			else if (!strcasecmp(token[1],"off")) 
+				system->quantum_rotation = 0;
+			else return 1;
+		}
+		else if(!strcasecmp(token[0], "quantum_rotation_hindered")) {
+			if(!strcasecmp(token[1],"on"))
+				system->quantum_rotation_hindered = 1;
+			else if (!strcasecmp(token[1],"off")) 
+				system->quantum_rotation_hindered = 0;
+			else return 1;
+		}
+		else if(!strcasecmp(token[0], "quantum_rotation_hindered_barrier"))
+			{ if ( safe_atof(token[1],&(system->quantum_rotation_hindered_barrier)) ) return 1; }
+		else if(!strcasecmp(token[0], "quantum_rotation_B"))
+			{ if ( safe_atof(token[1],&(system->quantum_rotation_B)) ) return 1; }
+		else if(!strcasecmp(token[0], "quantum_rotation_level_max"))
+			{ if ( safe_atoi(token[1],&(system->quantum_rotation_level_max)) ) return 1; }
+		else if(!strcasecmp(token[0], "quantum_rotation_l_max"))
+			{ if ( safe_atoi(token[1],&(system->quantum_rotation_l_max)) ) return 1; }
+		else if(!strcasecmp(token[0], "quantum_rotation_sum"))
+			{ if ( safe_atoi(token[1],&(system->quantum_rotation_sum)) ) return 1; }
+	#endif //end QM rotation
 
 /* #ifdef XXX
 	else if(!strcasecmp(token[0], "quantum_vibration")) {
@@ -1138,16 +1135,18 @@ void setdefaults(system_t * system) {
 	system->insertion_molecules       = (molecule_t  *) 0;
 	system->insertion_molecules_array = (molecule_t **) 0;
 
-#ifdef QM_ROTATION
-	/* default QR parameters */
-	system->quantum_rotation_level_max = QUANTUM_ROTATION_LEVEL_MAX;
-	system->quantum_rotation_l_max = QUANTUM_ROTATION_L_MAX;
-	system->quantum_rotation_theta_max = QUANTUM_ROTATION_THETA_MAX;
-	system->quantum_rotation_phi_max = QUANTUM_ROTATION_PHI_MAX;
-	system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
-#endif /* QM_ROTATION */
+	#ifdef QM_ROTATION
+		/* default QR parameters */
+		system->quantum_rotation_level_max = QUANTUM_ROTATION_LEVEL_MAX;
+		system->quantum_rotation_l_max = QUANTUM_ROTATION_L_MAX;
+		system->quantum_rotation_theta_max = QUANTUM_ROTATION_THETA_MAX;
+		system->quantum_rotation_phi_max = QUANTUM_ROTATION_PHI_MAX;
+		system->quantum_rotation_sum = QUANTUM_ROTATION_SUM;
+	#else
+		system->spinflip_probability = 0;
+	#endif /* QM_ROTATION */
 
-    // Default for wrapall
+	// Default for wrapall
 	system->wrapall = 1;
 
 	//set default jobname

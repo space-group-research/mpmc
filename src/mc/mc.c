@@ -35,10 +35,9 @@ This result was verified via ideal gas (non-interacting system). See tools/ideal
 #endif
 
 /* the prime quantity of interest */
-void boltzmann_factor(system_t *system, double initial_energy, double final_energy) {
+void boltzmann_factor(system_t *system, double initial_energy, double final_energy, double rot_partfunc) {
 
 	double delta_energy;
-	double u, g, partfunc_ratio;
 	double v_new, v_old;
 	double fugacity;
 
@@ -95,14 +94,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 						system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
 					break;
 					case MOVETYPE_SPINFLIP :
-						g = system->checkpoint->molecule_altered->rot_partfunc_g;
-						u = system->checkpoint->molecule_altered->rot_partfunc_u;
-						if ( system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA ) 
-							partfunc_ratio = g/(g+u);
-						else
-							partfunc_ratio = u/(g+u);
-						/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
-						system->nodestats->boltzmann_factor = partfunc_ratio;
+						system->nodestats->boltzmann_factor = rot_partfunc*exp(-delta_energy/system->temperature);
 						break;
 					default:
 						error("MC: invalid mc move (not implemented for binary mixtures?)\n");
@@ -114,14 +106,7 @@ void boltzmann_factor(system_t *system, double initial_energy, double final_ener
 		case ENSEMBLE_NVT :
 			switch ( system->checkpoint->movetype) {
 				case MOVETYPE_SPINFLIP : 
-					g = system->checkpoint->molecule_altered->rot_partfunc_g;
-					u = system->checkpoint->molecule_altered->rot_partfunc_u;
-					if ( system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA ) 
-						partfunc_ratio = g/(g+u);
-					else
-						partfunc_ratio = u/(g+u);
-					/* set the boltz factor, including ratio of partfuncs for different symmetry rotational levels */
-					system->nodestats->boltzmann_factor = partfunc_ratio;
+					system->nodestats->boltzmann_factor = rot_partfunc*exp(-delta_energy/system->temperature);
 				break;
 				default: /*DISPLACE*/
 					system->nodestats->boltzmann_factor = exp(-delta_energy/system->temperature);
@@ -221,6 +206,7 @@ int mc(system_t *system) {
 
 	int j, msgsize;
 	double initial_energy, final_energy, current_energy;
+	double rot_partfunc;
 	observables_t *observables_mpi;
 	avg_nodestats_t *avg_nodestats_mpi;
 	sorbateInfo_t * sinfo_mpi=0;
@@ -277,6 +263,7 @@ int mc(system_t *system) {
 	/* solve for the rotational energy levels */
 	if(system->quantum_rotation) quantum_system_rotational_energies(system);
 #endif /* QM_ROTATION */
+	rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
 
 	/* be a bit forgiving of the initial state */
 	if(!finite(initial_energy)) 
@@ -327,12 +314,13 @@ int mc(system_t *system) {
 		if(system->quantum_rotation && (system->checkpoint->movetype == MOVETYPE_SPINFLIP))
 			quantum_system_rotational_energies(system);
 #endif /* QM_ROTATION */
+		rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
 
 		/* treat a bad contact as a reject */
 		if(!finite(final_energy)) {
 			system->observables->energy = MAXVALUE;
 			system->nodestats->boltzmann_factor = 0;
-		} else boltzmann_factor(system, initial_energy, final_energy);
+		} else boltzmann_factor(system, initial_energy, final_energy, rot_partfunc);
 
 		/* Metropolis function */
 		if((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0) ) {	

@@ -71,13 +71,10 @@ void pbc(system_t * system) {
 
 	pbc_t * pbc = system->pbc;
 
-	if ( (pbc->cutoff != 0.0) && (system->checkpoint->movetype != MOVETYPE_VOLUME) && system->ensemble != ENSEMBLE_REPLAY )
-		return; //nothing to do
-
 	/* get the unit cell volume and cutoff */
 	pbc->volume = pbc_volume(pbc);
 
-	pbc->cutoff = pbc_cutoff(pbc);
+	if(pbc->cutoff == 0.) pbc->cutoff = pbc_cutoff(pbc);
 
 	// calculate ewald_alpha and polar_ewald_alpha unless manually set
 	if ( system->ewald_alpha_set != 1 ) 

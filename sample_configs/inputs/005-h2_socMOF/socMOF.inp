@@ -1,0 +1,39 @@
+job_name		socMOF+BSSP
+
+ensemble                uvt
+
+numsteps                1000000
+corrtime                1000
+move_probability        0.001
+insert_probability      0.666
+rot_probability         0.01
+
+temperature             77.0
+pressure                1.0
+free_volume             6335.29
+
+basis1                  22.4567 0.0     0.0
+basis2                  0.0     22.4567 0.0
+basis3                  0.0     0.0     22.4567
+
+h2_fugacity             on
+
+feynman_hibbs           on
+feynman_hibbs_order     4
+
+polarization            on
+polar_damp_type         exponential
+polar_damp              2.1304
+
+polar_iterative         on
+polar_wolf		on
+polar_palmo             on
+polar_gs_ranked         on
+polar_gamma             1.03
+polar_max_iter          3
+
+wrapall                 on
+pqr_input               input.pqr
+pop_histogram           on
+pop_histogram_output    histogram.dat
+

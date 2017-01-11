@@ -1,0 +1,30 @@
+ensemble		surf_fit
+
+basis1                  1000000.0 0.0 0.0
+basis2                  0.0 1000000.0 0.0
+basis3                  0.0 0.0 1000000.0
+
+fit_max_energy		100
+fit_schedule            0.9999
+fit_start_temp		100
+
+surf_scale_r 0.00
+surf_scale_q 0.00
+surf_scale_sigma 0.1
+surf_scale_epsilon 100.0
+surf_descent on
+surf_weight_constant 0.1
+
+
+polarization off
+polar_damp_type exponential
+polar_damp 2.1304
+
+
+
+
+
+
+pqr_input		argon.pqr
+
+fit_input		argon.dat

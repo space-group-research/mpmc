@@ -36,6 +36,9 @@
 
 #include <time.h>
 
+/* XXX JB */
+#define OSX
+
 #ifdef OSX
 #include <limits.h>
 #include <stdint.h>

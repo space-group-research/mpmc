@@ -743,11 +743,10 @@ void make_move(system_t *system) {
 		break;
 		case MOVETYPE_SPINFLIP :
 	
-			/* XXX - should have separate function do spinfip move */
-			if(system->checkpoint->molecule_altered->nuclear_spin == NUCLEAR_SPIN_PARA)
-				system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_ORTHO;
-			else
+			if(get_rand() < 0.5)
 				system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_PARA;
+			else
+				system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_ORTHO;
 	
 		break;
 		case MOVETYPE_VOLUME :

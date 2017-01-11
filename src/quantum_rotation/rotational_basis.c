@@ -9,7 +9,7 @@ University of South Florida
 
 #include <mc.h>
 
-/* support the first 5 spherical harmonics, they are hard-coded but necessary for gaussian quadrature integration */
+/* support the first 8 spherical harmonics, they are hard-coded but necessary for gaussian quadrature integration */
 /* (doing something slick like a func ptr array [l][m] would be just as ugly) */
 double rotational_basis(int type, int l, int m, double theta, double phi) {
 

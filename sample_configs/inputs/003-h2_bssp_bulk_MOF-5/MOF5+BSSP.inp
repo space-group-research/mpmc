@@ -1,0 +1,36 @@
+job_name                        MOF5+BSSP ! job name, which will determine output file names
+
+ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT etc. are possible.
+
+numsteps                        1000000 ! Total number of MC steps to run.
+corrtime                        1000 ! Total number of sampling points to run (averaging points)
+
+insert_probability              0.667 ! Probability at each step to add or remove a sorbate molecule.
+move_factor	                0.01 ! Probability at each step to translate a molecule in phase space.
+rot_factor	                0.01 ! Probability at each step to rotate a molecule on its center of mass.
+
+temperature                     77.0 ! T of system in K
+pressure                        70.0 ! P of system in atm
+h2_fugacity                     on ! Fugacity option for pressure correction (for H2 it is usually negligable)
+
+basis1                          25.669  0.0     0.0 ! Unit cell "box" parameters. Cubes, e.g., are a diagonal matrix with identical values.
+basis2                          0.0     25.669  0.0
+basis3                          0.0     0.0     25.669
+
+polarization            	on		! turn explicit polarization calculation on (imperative for BSSP etc.)
+polar_damp_type         	exponential	
+polar_damp              	2.1304
+polar_wolf              	on
+polar_wolf_alpha		0.13
+
+polar_iterative         	on
+polar_palmo             	on
+polar_gs_ranked         	on
+polar_gamma             	1.03
+polar_max_iter          	4		! the above are parameters for polarization algorithm.
+
+wrapall                         on		! auto-wrap the unit cell with the given MOF (in case there is some deviation)
+pqr_input                       input.pqr	! define the input PDB file to read!
+pop_histogram           	on		! generate a histogram file for visualization later
+pop_histogram_output    	histogram.dat   ! filename for the above
+!parallel_restarts		on		! parallel restarts option (only available if included in compilation)

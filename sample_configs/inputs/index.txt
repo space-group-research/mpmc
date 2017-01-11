@@ -1,0 +1,22 @@
+============================
+Space group 2016
+D. Franz
+============================
+This is an index of the sample MPMC input files in this directory.
+
+============================
+000 - standard input: an example input with commentated input file and extra notes. 
+001 - MOF-5 + H2 model sample for bulk (70atm) lennard-jones simulation (uses H2 Buch model)
+002 - MOF-5 + H2 model sample for bulk (70atm) LJ + electrostatics (uses H2 BSS model)
+003 - MOF-5 + H2 model sample for bulk (70atm) LJ + ES + polization (uses H2 BSSP model)
+004 - MOF-5 + H2 model sample for low-pressure (1atm) and 50K (BSSP model)
+005 - In-soc-MOF model with H2 (BSSP)
+006 - rho-ZMOF + H2 model sample
+007 - MOF-5 + H2 quantum rotations calculation sample
+008 - PES Fitting examples for noble gases Ar and He
+009 - Multi-sorbate sorption (H2 + CO2) with NOTT-112 (an rht-MOF)
+010 - Simulated annealing H2 in NOTT-112
+011 - 1D chain replay
+012 - 3D crystal replay
+013 - CH4 bulk tempering with T=150K and P=5atm
+014 - N2 virial coefficient calculation

@@ -692,11 +692,35 @@ int do_command (system_t * system, char ** token ) {
 		else return 1;
 	}
 
-	else if(!strcasecmp(token[0], "schmidt_ff")) {
+	else if(!strcasecmp(token[0], "schmidt_mixing")) {
 		if(!strcasecmp(token[1],"on"))
-			system->schmidt_ff = 1;
+			system->schmidt_mixing = 1;
 		else if (!strcasecmp(token[1],"off")) 
-			system->schmidt_ff = 0;
+			system->schmidt_mixing = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "gilbert_smith_mixing")) {
+		if(!strcasecmp(token[1],"on"))
+			system->gilbert_smith_mixing = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->gilbert_smith_mixing = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "bohm_ahlrichs_mixing")) {
+		if(!strcasecmp(token[1],"on"))
+			system->bohm_ahlrichs_mixing = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->bohm_ahlrichs_mixing = 0;
+		else return 1;
+	}
+
+	else if(!strcasecmp(token[0], "wilson_popelier_mixing")) {
+		if(!strcasecmp(token[1],"on"))
+			system->wilson_popelier_mixing = 1;
+		else if (!strcasecmp(token[1],"off"))
+			system->wilson_popelier_mixing = 0;
 		else return 1;
 	}
 

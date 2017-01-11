@@ -417,7 +417,7 @@ typedef struct _system {
 	int rd_only, rd_anharmonic;
 	double rd_anharmonic_k, rd_anharmonic_g;
 	int sg, dreiding, waldmanhagler, lj_buffered_14_7, halgren_mixing, c6_mixing, disp_expansion;
-	int extrapolate_disp_coeffs, damp_dispersion, schmidt_ff, disp_expansion_mbvdw;
+	int extrapolate_disp_coeffs, damp_dispersion, schmidt_mixing, gilbert_smith_mixing, bohm_ahlrichs_mixing, wilson_popelier_mixing, disp_expansion_mbvdw;
 	int axilrod_teller, midzuno_kihara_approx;
 	//es_options
 	int wolf;

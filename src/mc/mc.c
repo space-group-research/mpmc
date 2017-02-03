@@ -314,7 +314,10 @@ int mc(system_t *system) {
 		if(system->quantum_rotation && (system->checkpoint->movetype == MOVETYPE_SPINFLIP))
 			quantum_system_rotational_energies(system);
 #endif /* QM_ROTATION */
-		rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
+		if (system->checkpoint->movetype!=MOVETYPE_REMOVE)
+			rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
+		else
+			rot_partfunc = system->checkpoint->molecule_backup->rot_partfunc;
 
 		/* treat a bad contact as a reject */
 		if(!finite(final_energy)) {

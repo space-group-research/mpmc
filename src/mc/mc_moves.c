@@ -712,6 +712,7 @@ void make_move(system_t *system) {
 				system->checkpoint->head->next = system->checkpoint->tail;
 			}
 			free_molecule(system, system->checkpoint->molecule_altered);
+			system->checkpoint->molecule_altered = NULL; /* Insurance against memory errors */
 			update_pairs_remove(system);
 
 			//reset atom and molecule id's
@@ -781,6 +782,7 @@ void restore(system_t *system) {
 			}
 			unupdate_pairs_insert(system);
 			free_molecule(system, system->checkpoint->molecule_altered);
+			system->checkpoint->molecule_altered = NULL; /* Insurance against memory errors */
 
 			//reset atom and molecule id's
 			enumerate_particles(system);
@@ -816,6 +818,7 @@ void restore(system_t *system) {
 				system->checkpoint->head->next = system->checkpoint->molecule_backup;
 			system->checkpoint->molecule_backup->next = system->checkpoint->tail;
 			free_molecule(system, system->checkpoint->molecule_altered);
+			system->checkpoint->molecule_altered = NULL; /* Insurance against memory errors */
 			system->checkpoint->molecule_backup = NULL;
 
 	}	

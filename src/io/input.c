@@ -32,6 +32,40 @@ int safe_atol ( char * a, long unsigned int * l ) {
 	return 0;
 }
 
+// converts .car style basis to MPMC style basis if user opts for carbasis
+// i.e. called when input contains carbasis x x x x x x
+void car2basis (system_t * system, double a, double b, double c, double alpha, double beta, double gamma) {
+    double b0[3] = {0,0,0};
+    double b1[3] = {0,0,0};
+    double b2[3] = {0,0,0};
+
+    b0[0] = a;
+    b0[1] = b*cos(M_PI/180.0 * gamma);
+    b0[2] = c*cos(M_PI/180.0 * beta);
+
+    b1[0] = 0;
+    b1[1] = b*sin(M_PI/180.0 * gamma);
+    b1[2] = ( (0*0 + b*0 + 0*c) - (b0[1]*b0[2]) )/b1[1];
+
+    b2[0] = 0;
+    b2[1] = 0;
+    b2[2] = sqrt( c*c - b0[2]*b0[2] - b1[2]*b1[2] );
+
+    // I'm transposing it manually
+    system->pbc->basis[0][0] = b0[0]; 
+    system->pbc->basis[0][1] = b1[0];
+    system->pbc->basis[0][2] = b2[0];
+    
+    system->pbc->basis[1][0] = b0[1];
+    system->pbc->basis[1][1] = b1[1];
+    system->pbc->basis[1][2] = b2[1];
+
+    system->pbc->basis[2][0] = b0[2];
+    system->pbc->basis[2][1] = b1[2];
+    system->pbc->basis[2][2] = b2[2];
+ 
+
+}
 
 /* check each input command and set system flags */
 int do_command (system_t * system, char ** token ) {
@@ -1074,6 +1108,7 @@ int do_command (system_t * system, char ** token ) {
 	}	
 
 	// set basis
+    // normal way
 	else if(!strcasecmp(token[0], "basis1")) {
 		{ if ( safe_atof(token[1],&(system->pbc->basis[0][0])) ) return 1; }
 		{ if ( safe_atof(token[2],&(system->pbc->basis[0][1])) ) return 1; }
@@ -1089,6 +1124,15 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atof(token[2],&(system->pbc->basis[2][1])) ) return 1; }
 		{ if ( safe_atof(token[3],&(system->pbc->basis[2][2])) ) return 1; }
 	}
+    // .car file way (a,b,c, alpha, beta, gamma)
+    // so if both carbasis and basis1/2/3 are in the input file, the last one will overwrite.
+    else if(!strcasecmp(token[0], "carbasis")) {
+        car2basis(system, 
+            atof(token[1]), atof(token[2]), atof(token[3]), 
+            atof(token[4]), atof(token[5]), atof(token[6])
+        );
+    }
+    // done with basis setting.
 
 	else if(!strcasecmp(token[0], "max_bondlength"))
 		{ if ( safe_atof(token[1],&(system->max_bondlength)) ) return 1; }

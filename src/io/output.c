@@ -1038,7 +1038,7 @@ int write_averages(system_t *system) {
 			printf("OUTPUT: excess adsorption ratio = %.5f +- %.5f mg/g\n", averages->excess_ratio, averages->excess_ratio_error);
 		if((averages->qst > 0.0) && isfinite(averages->qst)) {
 			printf("OUTPUT: qst = %.5lf kJ/mol\n", averages->qst);
-            printf("OUTPUT: qst_NVT = %.5lf kJ/mol\n", averages->qst_nvt);
+            printf("OUTPUT: Energy/particle = %.5lf kJ/mol\n", averages->qst_nvt);
         }
 		if((averages->compressibility > 0.0) && isfinite(averages->compressibility)) {
 			printf("OUTPUT: compressibility = %.6g +- %.6g atm^-1\n", averages->compressibility, averages->compressibility_error);

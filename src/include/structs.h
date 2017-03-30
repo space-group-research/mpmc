@@ -201,6 +201,7 @@ typedef struct _avg_observables {
 
 	/* these quantities are based on averages; the error is not easily calculated */
 	double qst;
+    double qst_nvt;
 	double heat_capacity;
 	double heat_capacity_error;
 	double compressibility;

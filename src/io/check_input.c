@@ -796,7 +796,7 @@ void hist_options ( system_t * system ) {
 		output("INPUT: no histogram outputfile selected, defaulting to histogram.dat\n");
 		system->histogram_output=calloc(MAXLINE,sizeof(char));
 		memnullcheck(system->histogram_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-		sprintf(system->histogram_output,"histogram.dat");
+		sprintf(system->histogram_output,"histogram.dx"); // dfranz changed .dat to .dx for easy VMD viewing
 	}
 	else{
 		sprintf(linebuf,"INPUT: histogram resolution set to %.3f A\n",system->hist_resolution);

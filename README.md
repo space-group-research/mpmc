@@ -23,6 +23,12 @@ git clone https://github.com/mpmccode/mpmc
 Once MPMC has been downloaded it may be compiled with the following commands.
 
 ```
+bash compile.sh
+```
+
+or
+
+```
 mkdir build
 cd build
 cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF ../

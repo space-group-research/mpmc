@@ -166,7 +166,9 @@ void write_histogram(FILE *fp_out, int ***grid, system_t *system)
 	fprintf(fp_out,"\n");
 	fprintf(fp_out,"object 2 class gridconnections counts %d %d %d\n",xdim,ydim,zdim);
 	fprintf(fp_out,"\n");
-	fprintf(fp_out,"object 3 class array type float rank 0 items %d data follows\n",system->grids->histogram->n_data_points);
+	// dfranz this line is deprecated for viewing .dx files in current VMD software
+    // maybe it should stay for something else? But I always have to delete it to view histograms.
+    //fprintf(fp_out,"object 3 class array type float rank 0 items %d data follows\n",system->grids->histogram->n_data_points);
 
 	for(i=0; i < xdim; i++){
 		for(j=0; j < ydim; j++){
@@ -290,6 +292,15 @@ void setup_deltas(histogram_t *hist, system_t *system)
 		for(j=0;j<3;j++)
 			hist->delta[i][j]=system->pbc->basis[j][i]/hist->count[i]; 
 	/* we divide by the count to get our actual step size in each dimension */
+
+    /* dfranz: IMPORTANT: CORRECTIONS FOR NON-ORTHORHOMBIC SYSTEMS */
+    // that is to say, the above is fine for cubic systems but results
+    // are a weird and rotated DX cell for non 90/90/90
+    hist->delta[1][0] = hist->delta[0][1];
+        hist->delta[0][1] = 0.0;
+    hist->delta[2][0] = hist->delta[0][2];
+        hist->delta[0][2] = 0.0;
+
 }
 
 /* Because OpenDX puts our data values at the points of the grid,

@@ -624,7 +624,7 @@ void mc_options (system_t * system) {
 				system->fugacities = malloc(sizeof(double));
 				memnullcheck(system->fugacities,sizeof(double),__LINE__-1, __FILE__);
 
-				system->fugacities[0] = get_peng_robinson_fugacity(system->temperature, system->pressure,"co2");
+				system->fugacities[0] = co2_fugacity(system->temperature, system->pressure);
 				if(system->co2_fugacity == 0.0) {
 					error("INPUT: error in CO2 fugacity assignment\n");
 					die(-1);

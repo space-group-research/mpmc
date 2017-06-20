@@ -91,6 +91,13 @@ typedef struct _vdw {
 	struct _vdw * next;
 } vdw_t;
 
+//constants for peng_robinson equation of state
+typedef struct _peng_robinson_constants {
+	double Tc;
+	double Pc;
+	double w;
+} peng_robinson_constants;
+
 //info about periodic boundary and unit cell geometry
 typedef struct _pbc {
 	double basis[3][3];		/* unit cell lattice (A) */

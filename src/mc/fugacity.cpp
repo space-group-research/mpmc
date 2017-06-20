@@ -1,7 +1,32 @@
-using namespace std;
-#include <mc.h>
+
 #include <vector>
 #include <string>
+#include <iostream>
+
+using namespace std;
+
+extern "C" {
+#include <mc.h>
+}
+
+#ifdef MPI
+#include <mpi.h>
+#endif
+
+void string_output(string message)
+{
+#ifdef MPI
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#else
+    int rank = 0;
+#endif
+
+	if(!rank)
+	{
+		cout << message << endl;
+	}
+}
 
 
 /************************************
@@ -152,17 +177,17 @@ double h2_fugacity(double temperature, double pressure) {
 
 	if((temperature == 77.0) && (pressure <= 200.0)) {
 
-		output("INPUT: fugacity calculation using Zhou function\n");
+		string_output("INPUT: fugacity calculation using Zhou function\n");
 		return(h2_fugacity_zhou(temperature, pressure));
 
 	}  else if(temperature >= 273.15) {
 
-		output("INPUT: fugacity calculation using Shaw function\n");
+		string_output("INPUT: fugacity calculation using Shaw function\n");
 		return(h2_fugacity_shaw(temperature, pressure));
 
 	} else {
 
-		output("INPUT: fugacity calculation using BACK EoS\n");
+		string_output("INPUT: fugacity calculation using BACK EoS\n");
 		return(h2_fugacity_back(temperature, pressure));
 
 	}
@@ -310,17 +335,17 @@ double ch4_fugacity(double temperature, double pressure) {
 		string species = "ch4";
         if((temperature >= 298.0) && (temperature <= 300.0) && (pressure <= 500.0)) {
 
-                output("INPUT: CH4 fugacity calculation using BACK EoS\n");
+                string_output("INPUT: CH4 fugacity calculation using BACK EoS\n");
                 return(ch4_fugacity_back(temperature, pressure));
 
         } else if((temperature == 150.0) && (pressure <= 200.0)) {
 
-                output("INPUT: CH4 fugacity calculation using Peng-Robinson EoS\n");
+                string_output("INPUT: CH4 fugacity calculation using Peng-Robinson EoS\n");
                 return(get_peng_robinson_fugacity(temperature, pressure, species));
 
         } else {
 
-                output("INPUT: Unknown if CH4 fugacity will be correct at the requested temperature & pressure...defaulting to use the BACK EoS.\n");
+                string_output("INPUT: Unknown if CH4 fugacity will be correct at the requested temperature & pressure...defaulting to use the BACK EoS.\n");
                 return(ch4_fugacity_back(temperature, pressure));
 
         }
@@ -487,31 +512,31 @@ double n2_fugacity(double temperature, double pressure) {
 	string species = "n2";
 	if((temperature == 78.0) && (pressure <= 1.0)) {
 	
-		output("INPUT: N2 fugacity calculation using Zhou\n");
+		string_output("INPUT: N2 fugacity calculation using Zhou\n");
 		return(n2_fugacity_zhou(temperature, pressure));
 	
 	} else if((temperature == 78.0) && (pressure >= 10.0) && (pressure <= 300.0)) {
 	
-		output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
+		string_output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
 		return(get_peng_robinson_fugacity(temperature, pressure, species));
 
 	} else if((temperature == 150.0) && (pressure < 175.0)) {
 	
-		output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
+		string_output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
 		return(get_peng_robinson_fugacity(temperature, pressure, species));
 
 	} else if((temperature == 150.0) && (pressure >= 175.0) && (pressure <= 325.0)) {
 	
-		output("INPUT: N2 fugacity calculation using BACK EoS\n");
+		string_output("INPUT: N2 fugacity calculation using BACK EoS\n");
 		return(n2_fugacity_back(temperature, pressure));
 	
 	} else if((temperature >= 298.0) && (temperature <= 300.0) && (pressure <= 350.0)) {
 	
-		output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
+		string_output("INPUT: N2 fugacity calculation using Peng-Robinson EoS\n");
 		return(get_peng_robinson_fugacity(temperature, pressure, species));
 
 	} else {
-		output("INPUT: Unknown if N2 fugacity will be correct at the requested temperature & pressure...defaulting to use the PR EoS.\n");
+		string_output("INPUT: Unknown if N2 fugacity will be correct at the requested temperature & pressure...defaulting to use the PR EoS.\n");
 		return(get_peng_robinson_fugacity(temperature, pressure, species));
 
 	}
@@ -606,7 +631,7 @@ double n2_fugacity_zhou(double temperature, double pressure) {
 
 	double fugacity_coefficient, fugacity;
 	
-	output("INPUT: N2 fugacity calculation using Zhou function\n");
+	string_output("INPUT: N2 fugacity calculation using Zhou function\n");
 	
 	pressure *= ATM2PSI;
 	

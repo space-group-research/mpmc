@@ -3,3 +3,5 @@ NOTES
 notes
 build
 build/*
+.idea/
+cmake-build-debug/

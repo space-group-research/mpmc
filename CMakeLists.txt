@@ -35,7 +35,7 @@ src/mc/replay.c
 src/mc/pimc.c
 src/mc/surface.c
 src/mc/surf_fit.c
-src/mc/fugacity.c
+src/mc/fugacity.cpp
 src/mc/cavity.c
 src/mc/checkpoint.c
 src/histogram/histogram.c

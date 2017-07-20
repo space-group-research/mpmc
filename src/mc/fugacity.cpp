@@ -34,7 +34,7 @@ void string_output(string message)
  ************************************/
 
 
-void get_peng_robinson_constants(_peng_robinson_constants peng_robinson_constants,
+void get_peng_robinson_constants(_peng_robinson_constants &peng_robinson_constants,
                                  string species)
 {
     //constants are taken from J.R.Elliot and Carl T. Lira's

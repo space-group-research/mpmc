@@ -21,6 +21,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall")
 endif()
 
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++" )
+
 set(LIB m)
 
 set(INCLUDE src/include src/mersenne ${PROJECT_BINARY_DIR}/src/include)

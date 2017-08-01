@@ -9,23 +9,9 @@ extern "C" {
 #include <mc.h>
 }
 
-#ifdef MPI
-#include <mpi.h>
-#endif
-
 void string_output(string message)
 {
-#ifdef MPI
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-#else
-    int rank = 0;
-#endif
-
-	if(!rank)
-	{
-		cout << message << endl;
-	}
+    output((char*)message.c_str());
 }
 
 

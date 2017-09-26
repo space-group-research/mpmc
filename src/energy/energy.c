@@ -97,6 +97,29 @@ double energy(system_t *system) {
 				|| system->observables->energy == 0.0 )
 		flag_all_pairs(system);
 
+	/* get the repulsion/dispersion potential */
+	if(system->rd_anharmonic)
+		rd_energy = anharmonic(system);
+	else if(system->sg)
+		rd_energy = sg(system);
+	else if(system->dreiding)
+		rd_energy = dreiding(system);
+	else if(system->lj_buffered_14_7)
+		rd_energy = lj_buffered_14_7(system);
+	else if(system->disp_expansion)
+		rd_energy = disp_expansion(system);
+	else if(system->cdvdw_exp_repulsion)
+		rd_energy = exp_repulsion(system);
+	else if(!system->gwp)
+		rd_energy = lj(system);
+	system->observables->rd_energy = rd_energy;
+    
+	if (system->axilrod_teller)
+	{
+		three_body_energy = axilrod_teller(system);
+		system->observables->three_body_energy = three_body_energy;
+	}
+
 	/* get the electrostatic potential */
 	if(!(system->sg || system->rd_only)) {
 
@@ -160,30 +183,6 @@ double energy(system_t *system) {
 		}
 
 	}
-
-	/* get the repulsion/dispersion potential */
-	if(system->rd_anharmonic)
-		rd_energy = anharmonic(system);
-	else if(system->sg)
-		rd_energy = sg(system);
-	else if(system->dreiding)
-		rd_energy = dreiding(system);
-	else if(system->lj_buffered_14_7)
-		rd_energy = lj_buffered_14_7(system);
-	else if(system->disp_expansion)
-		rd_energy = disp_expansion(system);
-	else if(system->cdvdw_exp_repulsion)
-		rd_energy = exp_repulsion(system);
-	else if(!system->gwp)
-		rd_energy = lj(system);
-	system->observables->rd_energy = rd_energy;
-    
-	if (system->axilrod_teller)
-	{
-		three_body_energy = axilrod_teller(system);
-		system->observables->three_body_energy = three_body_energy;
-	}
-
 	/* sum the total potential energy */
 	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
 	

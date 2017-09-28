@@ -53,9 +53,8 @@ double cavity_absolute_check ( system_t * system ) {
 		for ( atom_ptr=molecule_ptr->atoms; atom_ptr; atom_ptr=atom_ptr->next ) {
 			for ( pair_ptr=atom_ptr->pairs; pair_ptr; pair_ptr=pair_ptr->next ) {
 				if ( molecule_ptr == pair_ptr->molecule ) continue; //skip if on the same molecule
-				if ( pair_ptr->rimg < system->cavity_autoreject_scale ) {
-                    return MAXVALUE;
-                }
+				if ( pair_ptr->rimg < system->cavity_autoreject_scale )
+                   			return MAXVALUE;
 			}
 		}
 	}
@@ -75,7 +74,6 @@ double energy(system_t *system) {
 	static double timing = 0;
 	static int count = 0;
 #endif
-    //int count_skips=0;
 
 	/* zero the initial values */
 	kinetic_energy = 0;
@@ -84,7 +82,7 @@ double energy(system_t *system) {
 	coulombic_energy = 0;
 	polar_energy = 0;
 	vdw_energy = 0;
-    three_body_energy = 0;
+    	three_body_energy = 0;
 
 	system->natoms = countNatoms(system);
 
@@ -99,10 +97,10 @@ double energy(system_t *system) {
 				|| system->observables->energy == 0.0 )
 		flag_all_pairs(system);
 
-    if(system->cavity_autoreject_absolute)
+    	if(system->cavity_autoreject_absolute)
 		potential_energy += cavity_absolute_check( system );
 
-    if (potential_energy==0) { // only run energy check if bad contact not found.
+	if (potential_energy==0) { // only run energy check if bad contact not found.
 	/* get the repulsion/dispersion potential */
 	if(system->rd_anharmonic)
 		rd_energy = anharmonic(system);
@@ -189,11 +187,11 @@ double energy(system_t *system) {
 		}
 
 	}
-    } // end if cavity_autoreject_absolute did not find bad match. (if potential==0)
-    else {
-        // increment the counter for rejected moves. this is reported at the end of the simulation.
-        system->count_autorejects++;
-    }
+    	} // end if cavity_autoreject_absolute did not find bad match. (if potential==0)
+    	else {
+        	// increment the counter for rejected moves. this is reported at the end of the simulation.
+        	system->count_autorejects++;
+    	}
 	/* sum the total potential energy */
 	potential_energy = rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
 	
@@ -226,7 +224,6 @@ double energy(system_t *system) {
 	/* set last known volume*/
 	system->last_volume = system->pbc->volume;
 
-    //printf("current skip count: %i\n", count_skips);
 	return(potential_energy);
 
 }

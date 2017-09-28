@@ -401,7 +401,7 @@ typedef struct _system {
 	//auto-reject options
 	//first is in terms of sigma and only applies to LJ; latter is in Angstroms and applies to all pairs
 	int cavity_autoreject_absolute; 
-    int count_autorejects;
+    	int count_autorejects;
 	//parallel tempering options
 	int parallel_tempering;
 	double max_temperature;

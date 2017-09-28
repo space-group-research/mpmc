@@ -249,12 +249,7 @@ double lj(system_t *system) {
 						if(system->feynman_hibbs) 
 							pair_ptr->rd_energy += lj_fh_corr(system,molecule_ptr,pair_ptr,system->feynman_hibbs_order, term12, term6);
 
-						// if cavity_autoreject is on (cavity_autoreject_absolute is performed in energy.c)
-						if(system->cavity_autoreject)
-							if(pair_ptr->rimg < system->cavity_autoreject_scale*fabs(pair_ptr->sigma))
-								pair_ptr->rd_energy = MAXVALUE;
-
-					} //count contributions
+					} // if qualified contributions
 
 				} /* if recalculate */
 

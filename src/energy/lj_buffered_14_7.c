@@ -27,10 +27,6 @@ double lj_buffered_14_7(system_t *system)
 						potential_classical = pair_ptr->epsilon*first_term*second_term;
 						pair_ptr->rd_energy += potential_classical;
 
-						/* cavity autoreject */
-						if(system->cavity_autoreject)
-							if(pair_ptr->rimg < system->cavity_autoreject_scale*pair_ptr->sigma)
-								pair_ptr->rd_energy = MAXVALUE;
 					}
 				}
 				potential += pair_ptr->rd_energy;
@@ -65,10 +61,6 @@ double lj_buffered_14_7_nopbc(system_t *system)
 						potential_classical = pair_ptr->epsilon*first_term*second_term;
 						pair_ptr->rd_energy += potential_classical;
 
-						/* cavity autoreject */
-						if(system->cavity_autoreject)
-							if(pair_ptr->rimg < system->cavity_autoreject_scale*pair_ptr->sigma)
-								pair_ptr->rd_energy = MAXVALUE;
 					}
 				}
 				potential += pair_ptr->rd_energy;

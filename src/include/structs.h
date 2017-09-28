@@ -400,7 +400,8 @@ typedef struct _system {
 	double volume_change_factor, last_volume; //NPT
 	//auto-reject options
 	//first is in terms of sigma and only applies to LJ; latter is in Angstroms and applies to all pairs
-	int cavity_autoreject, cavity_autoreject_absolute; 
+	int cavity_autoreject_absolute; 
+    int count_autorejects;
 	//parallel tempering options
 	int parallel_tempering;
 	double max_temperature;

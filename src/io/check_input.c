@@ -748,16 +748,10 @@ void mc_options (system_t * system) {
 		output(linebuf);
 	}
 
-	/* autoreject insertions closer than some scaling factor of sigma */
-	if(system->cavity_autoreject) {
-		output("INPUT: cavity autorejection activated\n");
-		if((system->cavity_autoreject_scale <= 0.0) || (system->cavity_autoreject_scale > 1.0))
-			error("INPUT: cavity_autoreject_scale either not set or out of range\n");
-	}
 
 	if(system->cavity_autoreject_absolute) { 
 		output("INPUT: cavity autoreject absolute activated\n");
-		if((system->cavity_autoreject_scale <= 0.0) || (system->cavity_autoreject_scale > 1.0))
+		if((system->cavity_autoreject_scale <= 0.0) || (system->cavity_autoreject_scale > 1.78))
 			error("INPUT: cavity_autoreject_scale either not set or out of range\n");
 	}
 		

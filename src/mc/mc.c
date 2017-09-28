@@ -212,6 +212,7 @@ int mc(system_t *system) {
 	sorbateInfo_t * sinfo_mpi=0;
 	double *temperature_mpi=0;
 	char *snd_strct=0, *rcv_strct=0;
+    system->count_autorejects = 0; // initialize counter for skipped close (unphysical) contacts
 	// char linebuf[MAXLINE];  (unused variable)
 #ifdef MPI
 	MPI_Datatype msgtype;
@@ -525,6 +526,8 @@ int mc(system_t *system) {
 
 	free(observables_mpi);
 	free(avg_nodestats_mpi);
+
+    printf("MC: Total auto-rejected moves: %i\n", system->count_autorejects);
 
 	return(0);
 }

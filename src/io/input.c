@@ -313,13 +313,6 @@ int do_command (system_t * system, char ** token ) {
 		{ if ( safe_atoi(token[1],&(system->cavity_grid_size)) ) return 1; }
 	else if (!strcasecmp(token[0],"cavity_radius"))
 		{ if ( safe_atof(token[1],&(system->cavity_radius)) ) return 1; }
-	else if (!strcasecmp(token[0],"cavity_autoreject")) {
-		if (!strcasecmp(token[1], "on"))
-			system->cavity_autoreject = 1;
-		else if (!strcasecmp(token[1], "off"))
-			system->cavity_autoreject = 0;
-		else return 1; //no match
-	}
 	else if (!strcasecmp(token[0],"cavity_autoreject_absolute")) {
 		if (!strcasecmp(token[1], "on"))
 			system->cavity_autoreject_absolute = 1;

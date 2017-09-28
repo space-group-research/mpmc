@@ -90,11 +90,6 @@ double dreiding(system_t *system) {
 						}
 
 #endif /* XXX */
-						/* cause an autoreject on insertions closer than a certain amount */
-						if(system->cavity_autoreject) {
-							if(pair_ptr->rimg < system->cavity_autoreject_scale*pair_ptr->sigma)
-								pair_ptr->rd_energy = MAXVALUE;
-						}
 
 					}
 

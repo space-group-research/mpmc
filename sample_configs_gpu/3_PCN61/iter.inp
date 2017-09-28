@@ -29,8 +29,6 @@ h2_fugacity		on
 feynman_hibbs		on
 feynman_hibbs_order	4
 
-cavity_autoreject       on
-cavity_autoreject_scale 0.5
 
 wrapall			on
 pqr_input		input.pdb

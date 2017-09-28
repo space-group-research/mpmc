@@ -83,13 +83,6 @@ double disp_expansion(system_t *system)
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
-						if(system->cavity_autoreject)
-						{
-							if(r < system->cavity_autoreject_scale*pair_ptr->sigma)
-								pair_ptr->rd_energy = MAXVALUE;
-							if(system->cavity_autoreject_repulsion!=0.0&&repulsion>system->cavity_autoreject_repulsion)
-								pair_ptr->rd_energy = MAXVALUE;
-						}
 					}
 
 				}
@@ -159,13 +152,6 @@ double disp_expansion_nopbc(system_t *system)
 						else
 							pair_ptr->rd_energy = -c6/r6-c8/r8-c10/r10+repulsion;
 
-						if(system->cavity_autoreject)
-						{
-							if(r < system->cavity_autoreject_scale*pair_ptr->sigma)
-								pair_ptr->rd_energy = MAXVALUE;
-							if(system->cavity_autoreject_repulsion!=0.0&&repulsion>system->cavity_autoreject_repulsion)
-								pair_ptr->rd_energy = MAXVALUE;
-						}
 					}
 
 				}

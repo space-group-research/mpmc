@@ -34,10 +34,12 @@ extern "C" {
 #endif
 
 #ifdef __APPLE__
-	#include <OpenCL/cl.h>
-    #include <AvailabilityMacros.h>
+#include <OpenCL/cl.h>
+#include <AvailabilityMacros.h>
 #else
-	#include <CL/cl.h>
+
+#include <CL/cl.h>
+
 #endif
 
 /* cl_khr_fp64 extension - no extension #define since it has no functions  */
@@ -64,9 +66,11 @@ extern "C" {
      * before using.
      */
 #define cl_APPLE_SetMemObjectDestructor 1
-cl_int	CL_API_ENTRY clSetMemObjectDestructorAPPLE(  cl_mem /* memobj */, 
-                                            void (* /*pfn_notify*/)( cl_mem /* memobj */, void* /*user_data*/), 
-                                        void * /*user_data */ )             CL_EXT_SUFFIX__VERSION_1_0;  
+cl_int CL_API_ENTRY
+clSetMemObjectDestructorAPPLE(  cl_mem /* memobj */,
+void (* /*pfn_notify*/)( cl_mem /* memobj */, void* /*user_data*/),
+void * /*user_data */ )
+CL_EXT_SUFFIX__VERSION_1_0;
 
 
 /* Context Logging Functions
@@ -78,22 +82,34 @@ cl_int	CL_API_ENTRY clSetMemObjectDestructorAPPLE(  cl_mem /* memobj */,
      * clLogMessagesToSystemLog fowards on all log messages to the Apple System Logger 
      */
 #define cl_APPLE_ContextLoggingFunctions 1
-extern void CL_API_ENTRY clLogMessagesToSystemLogAPPLE(  const char * /* errstr */, 
-                                                const void * /* private_info */, 
-                                                size_t       /* cb */, 
-                                            void *       /* user_data */ )  CL_EXT_SUFFIX__VERSION_1_0;
+extern void CL_API_ENTRY
+
+clLogMessagesToSystemLogAPPLE(const char * /* errstr */,
+                              const void * /* private_info */,
+                              size_t       /* cb */,
+                              void *       /* user_data */ )
+
+CL_EXT_SUFFIX__VERSION_1_0;
 
 /* clLogMessagesToStdout sends all log messages to the file descriptor stdout */
-extern void CL_API_ENTRY clLogMessagesToStdoutAPPLE(   const char * /* errstr */, 
-                                              const void * /* private_info */, 
-                                              size_t       /* cb */, 
-                                          void *       /* user_data */ )    CL_EXT_SUFFIX__VERSION_1_0;
+extern void CL_API_ENTRY
+
+clLogMessagesToStdoutAPPLE(const char * /* errstr */,
+                           const void * /* private_info */,
+                           size_t       /* cb */,
+                           void *       /* user_data */ )
+
+CL_EXT_SUFFIX__VERSION_1_0;
 
 /* clLogMessagesToStderr sends all log messages to the file descriptor stderr */
-extern void CL_API_ENTRY clLogMessagesToStderrAPPLE(   const char * /* errstr */, 
-                                              const void * /* private_info */, 
-                                              size_t       /* cb */, 
-                                          void *       /* user_data */ )    CL_EXT_SUFFIX__VERSION_1_0;
+extern void CL_API_ENTRY
+
+clLogMessagesToStderrAPPLE(const char * /* errstr */,
+                           const void * /* private_info */,
+                           size_t       /* cb */,
+                           void *       /* user_data */ )
+
+CL_EXT_SUFFIX__VERSION_1_0;
 
 
 /************************ 
@@ -107,12 +123,14 @@ extern void CL_API_ENTRY clLogMessagesToStderrAPPLE(   const char * /* errstr */
 /* Additional Error Codes                                                  */
 #define CL_PLATFORM_NOT_FOUND_KHR                   -1001
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clIcdGetPlatformIDsKHR(cl_uint          /* num_entries */,
-                           cl_platform_id * /* platforms */,
-                           cl_uint *        /* num_platforms */);
+extern CL_API_ENTRY cl_int
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
+CL_API_CALL
+clIcdGetPlatformIDsKHR(cl_uint          /* num_entries */,
+                       cl_platform_id * /* platforms */,
+                       cl_uint *        /* num_platforms */);
+
+typedef CL_API_ENTRY cl_int(CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
         cl_uint          /* num_entries */,
         cl_platform_id * /* platforms */,
         cl_uint *        /* num_platforms */);
@@ -148,8 +166,19 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
 
 typedef union
 {
-    struct { cl_uint type; cl_uint data[5]; } raw;
-    struct { cl_uint type; cl_char unused[17]; cl_char bus; cl_char device; cl_char function; } pcie;
+  struct
+  {
+    cl_uint type;
+    cl_uint data[5];
+  } raw;
+  struct
+  {
+    cl_uint type;
+    cl_char unused[17];
+    cl_char bus;
+    cl_char device;
+    cl_char function;
+  } pcie;
 } cl_device_topology_amd;
 
 #define CL_DEVICE_TOPOLOGY_TYPE_PCIE_AMD            1
@@ -163,69 +192,69 @@ typedef union
 // </amd_internal>
 
 
-    #ifdef CL_VERSION_1_1
-       /***********************************
-        * cl_ext_device_fission extension *
-        ***********************************/
-        #define cl_ext_device_fission   1
-        
-        extern CL_API_ENTRY cl_int CL_API_CALL
-        clReleaseDeviceEXT( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1; 
-        
-        typedef CL_API_ENTRY cl_int 
-        (CL_API_CALL *clReleaseDeviceEXT_fn)( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+#ifdef CL_VERSION_1_1
+/***********************************
+ * cl_ext_device_fission extension *
+ ***********************************/
+#define cl_ext_device_fission   1
 
-        extern CL_API_ENTRY cl_int CL_API_CALL
-        clRetainDeviceEXT( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1; 
-        
-        typedef CL_API_ENTRY cl_int 
-        (CL_API_CALL *clRetainDeviceEXT_fn)( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+ extern CL_API_ENTRY cl_int CL_API_CALL
+ clReleaseDeviceEXT( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
 
-        typedef cl_ulong  cl_device_partition_property_ext;
-        extern CL_API_ENTRY cl_int CL_API_CALL
-        clCreateSubDevicesEXT(  cl_device_id /*in_device*/,
-                                const cl_device_partition_property_ext * /* properties */,
-                                cl_uint /*num_entries*/,
-                                cl_device_id * /*out_devices*/,
-                                cl_uint * /*num_devices*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+ typedef CL_API_ENTRY cl_int
+ (CL_API_CALL *clReleaseDeviceEXT_fn)( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
 
-    typedef CL_API_ENTRY cl_int 
-    ( CL_API_CALL * clCreateSubDevicesEXT_fn)(  cl_device_id /*in_device*/,
-                                                const cl_device_partition_property_ext * /* properties */,
-                                                cl_uint /*num_entries*/,
-                                                cl_device_id * /*out_devices*/,
-                                                cl_uint * /*num_devices*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+ extern CL_API_ENTRY cl_int CL_API_CALL
+ clRetainDeviceEXT( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
 
-        /* cl_device_partition_property_ext */
-        #define CL_DEVICE_PARTITION_EQUALLY_EXT             0x4050
-        #define CL_DEVICE_PARTITION_BY_COUNTS_EXT           0x4051
-        #define CL_DEVICE_PARTITION_BY_NAMES_EXT            0x4052
-        #define CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT  0x4053
-        
-        /* clDeviceGetInfo selectors */
-        #define CL_DEVICE_PARENT_DEVICE_EXT                 0x4054
-        #define CL_DEVICE_PARTITION_TYPES_EXT               0x4055
-        #define CL_DEVICE_AFFINITY_DOMAINS_EXT              0x4056
-        #define CL_DEVICE_REFERENCE_COUNT_EXT               0x4057
-        #define CL_DEVICE_PARTITION_STYLE_EXT               0x4058
-        
-        /* error codes */
-    #define CL_DEVICE_PARTITION_FAILED_EXT              -1057
-    #define CL_INVALID_PARTITION_COUNT_EXT              -1058
-    #define CL_INVALID_PARTITION_NAME_EXT               -1059
-        
-        /* CL_AFFINITY_DOMAINs */
-        #define CL_AFFINITY_DOMAIN_L1_CACHE_EXT             0x1
-        #define CL_AFFINITY_DOMAIN_L2_CACHE_EXT             0x2
-        #define CL_AFFINITY_DOMAIN_L3_CACHE_EXT             0x3
-        #define CL_AFFINITY_DOMAIN_L4_CACHE_EXT             0x4
-        #define CL_AFFINITY_DOMAIN_NUMA_EXT                 0x10
-        #define CL_AFFINITY_DOMAIN_NEXT_FISSIONABLE_EXT     0x100
-        
-        /* cl_device_partition_property_ext list terminators */
-        #define CL_PROPERTIES_LIST_END_EXT                  ((cl_device_partition_property_ext) 0)
-    #define CL_PARTITION_BY_COUNTS_LIST_END_EXT         ((cl_device_partition_property_ext) 0)
-    #define CL_PARTITION_BY_NAMES_LIST_END_EXT          ((cl_device_partition_property_ext) 0 - 1)
+ typedef CL_API_ENTRY cl_int
+ (CL_API_CALL *clRetainDeviceEXT_fn)( cl_device_id /*device*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+
+ typedef cl_ulong  cl_device_partition_property_ext;
+ extern CL_API_ENTRY cl_int CL_API_CALL
+ clCreateSubDevicesEXT(  cl_device_id /*in_device*/,
+                         const cl_device_partition_property_ext * /* properties */,
+                         cl_uint /*num_entries*/,
+                         cl_device_id * /*out_devices*/,
+                         cl_uint * /*num_devices*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+
+typedef CL_API_ENTRY cl_int
+( CL_API_CALL * clCreateSubDevicesEXT_fn)(  cl_device_id /*in_device*/,
+                                         const cl_device_partition_property_ext * /* properties */,
+                                         cl_uint /*num_entries*/,
+                                         cl_device_id * /*out_devices*/,
+                                         cl_uint * /*num_devices*/ ) CL_EXT_SUFFIX__VERSION_1_1;
+
+ /* cl_device_partition_property_ext */
+#define CL_DEVICE_PARTITION_EQUALLY_EXT             0x4050
+#define CL_DEVICE_PARTITION_BY_COUNTS_EXT           0x4051
+#define CL_DEVICE_PARTITION_BY_NAMES_EXT            0x4052
+#define CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT  0x4053
+
+ /* clDeviceGetInfo selectors */
+#define CL_DEVICE_PARENT_DEVICE_EXT                 0x4054
+#define CL_DEVICE_PARTITION_TYPES_EXT               0x4055
+#define CL_DEVICE_AFFINITY_DOMAINS_EXT              0x4056
+#define CL_DEVICE_REFERENCE_COUNT_EXT               0x4057
+#define CL_DEVICE_PARTITION_STYLE_EXT               0x4058
+
+ /* error codes */
+#define CL_DEVICE_PARTITION_FAILED_EXT              -1057
+#define CL_INVALID_PARTITION_COUNT_EXT              -1058
+#define CL_INVALID_PARTITION_NAME_EXT               -1059
+
+ /* CL_AFFINITY_DOMAINs */
+#define CL_AFFINITY_DOMAIN_L1_CACHE_EXT             0x1
+#define CL_AFFINITY_DOMAIN_L2_CACHE_EXT             0x2
+#define CL_AFFINITY_DOMAIN_L3_CACHE_EXT             0x3
+#define CL_AFFINITY_DOMAIN_L4_CACHE_EXT             0x4
+#define CL_AFFINITY_DOMAIN_NUMA_EXT                 0x10
+#define CL_AFFINITY_DOMAIN_NEXT_FISSIONABLE_EXT     0x100
+
+ /* cl_device_partition_property_ext list terminators */
+#define CL_PROPERTIES_LIST_END_EXT                  ((cl_device_partition_property_ext) 0)
+#define CL_PARTITION_BY_COUNTS_LIST_END_EXT         ((cl_device_partition_property_ext) 0)
+#define CL_PARTITION_BY_NAMES_LIST_END_EXT          ((cl_device_partition_property_ext) 0 - 1)
 
 
 #endif /* CL_VERSION_1_1 */

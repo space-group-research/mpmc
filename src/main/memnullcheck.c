@@ -3,7 +3,7 @@
 #include <mc.h>
 
 // include for gcc stack trace
-#ifdef __GNUC__ 
+#ifdef __GNUC__
 #include <execinfo.h>
 #define STDERR 2
 #endif
@@ -28,56 +28,57 @@
 // int *ptr = malloc( sizeof(int) * 100 );
 // memnullcheck( ptr, sizeof(int)*100, __LINE__-1, __FILE__);
 
-int memnullcheck ( void * ptr, int size, int line, char *file ) {
+int memnullcheck(void *ptr, int size, int line, char *file)
+{
 
-	if ( ptr != NULL ) return 0;
+    if (ptr != NULL) return 0;
 
-	if ( ptr == NULL ) {
-		//if the size is zero, then this is an expected result
-		if ( size == 0 ) return 0;
+    if (ptr == NULL)
+    {
+        //if the size is zero, then this is an expected result
+        if (size == 0) return 0;
 
-		fprintf(stderr,"ERROR: Failed to allocate %d bytes.\n", size);
-		fprintf(stderr,"       Check %s:%d\n", file, line );
+        fprintf(stderr, "ERROR: Failed to allocate %d bytes.\n", size);
+        fprintf(stderr, "       Check %s:%d\n", file, line);
 #ifdef __GNUC__
-		// Print a stack trace
-		// In gcc, must compile with -rdynamic option in order to see the function names
-		fprintf(stderr,"STACK_TRACE:\n" );
-		void *array[20];
-		size_t size;
-		size = backtrace(array, 20);
-		backtrace_symbols_fd(array, size, STDERR );
-		
-#endif
-		//fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
-		//fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
+        // Print a stack trace
+        // In gcc, must compile with -rdynamic option in order to see the function names
+        fprintf(stderr,"STACK_TRACE:\n" );
+        void *array[20];
+        size_t size;
+        size = backtrace(array, 20);
+        backtrace_symbols_fd(array, size, STDERR );
 
-		die(-1);
-	}
-	return 0;
+#endif
+        //fprintf(stderr,"ERROR: memnullcheck parent == %d.\n", parent);
+        //fprintf(stderr,"ERROR: the parent flag should help you identify the failed (m,re,c)alloc call.\n");
+
+        die(-1);
+    }
+    return 0;
 }
 
-int filecheck ( void * ptr, char * filename, int mode ) {
-	char linebuf[MAXLINE]; 
+int filecheck(void *ptr, char *filename, int mode)
+{
+    char linebuf[MAXLINE];
 
-	if ( ptr != NULL ) return 0;
-	if ( ptr == NULL ) {
-		switch ( mode ) {
-			case READ:
-				sprintf(linebuf,"ERROR: Failed to open file %s for read\n", filename);
-				break;
-			case WRITE:
-				sprintf(linebuf,"ERROR: Failed to open file %s for write\n", filename);
-				break;
-			case APPEND:
-				sprintf(linebuf,"ERROR: Failed to open file %s for append\n", filename);
-				break;
-			default:
-				sprintf(linebuf,"ERROR: Failed to open file %s\n", filename);
-		}
-		error(linebuf);
-		die(-1);
-	}
+    if (ptr != NULL) return 0;
+    if (ptr == NULL)
+    {
+        switch (mode)
+        {
+            case READ: sprintf(linebuf, "ERROR: Failed to open file %s for read\n", filename);
+                break;
+            case WRITE: sprintf(linebuf, "ERROR: Failed to open file %s for write\n", filename);
+                break;
+            case APPEND: sprintf(linebuf, "ERROR: Failed to open file %s for append\n", filename);
+                break;
+            default: sprintf(linebuf, "ERROR: Failed to open file %s\n", filename);
+        }
+        error(linebuf);
+        die(-1);
+    }
 
-	return 0;
+    return 0;
 }
 

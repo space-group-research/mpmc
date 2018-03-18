@@ -41,7 +41,7 @@ double pbc_volume(pbc_t *pbc) {
 
 	volume =  pbc->basis[0][0]*(pbc->basis[1][1]*pbc->basis[2][2] - pbc->basis[1][2]*pbc->basis[2][1]);
 	volume += pbc->basis[0][1]*(pbc->basis[1][2]*pbc->basis[2][0] - pbc->basis[1][0]*pbc->basis[2][2]);
-	volume += pbc->basis[0][2]*(pbc->basis[1][0]*pbc->basis[2][1] - pbc->basis[2][1]*pbc->basis[2][0]);
+	volume += pbc->basis[0][2]*(pbc->basis[1][0]*pbc->basis[2][1] - pbc->basis[1][1]*pbc->basis[2][0]);
 
 	return(volume);
 }

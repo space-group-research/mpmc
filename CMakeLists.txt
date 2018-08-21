@@ -8,10 +8,7 @@ option(QM_ROTATION "Enable Quantum Mechanics Rigid Rotator calculations (require
 option(VDW "Enable Coupled-Dipole Van der Waals (requires LAPACK)" OFF)
 
 execute_process(COMMAND bash "-c" "git rev-list HEAD| wc -l |sed 's: ::g'" VERBATIM OUTPUT_VARIABLE REV)
-
-set(Version ${REV})
-
-add_definitions(-DVERSION=${Version})
+add_definitions(-DVERSION=${REV})
 
 configure_file (
 "${PROJECT_SOURCE_DIR}/src/include/cmake_config.h.in"

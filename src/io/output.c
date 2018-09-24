@@ -84,6 +84,11 @@ int open_files(system_t *system) {
 			"#step,#energy,#coulombic,#rd,#polar,#vdw,#kinetic,#kin_temp,#N,#spin_ratio,#volume,#core_temp\n");
 	}
 
+  if(system->xyz_output) {
+    system->file_pointers.fp_xyz = fopen(system->xyz_output, "w");
+    filecheck(system->file_pointers.fp_xyz, system->xyz_output, WRITE);
+  }
+
 	// if we're just calculating energy or replaying a trajectory, we need no other output files
 	if ( system->ensemble == ENSEMBLE_REPLAY || system->ensemble == ENSEMBLE_TE ) return 0;
 
@@ -251,7 +256,9 @@ int write_molecules_wrapper(system_t * system, char * filename) {
 	for ( j=0; j<size; j++ ) {
 		MPI_Barrier(MPI_COMM_WORLD);
 		if ( j == rank )
+    {
 			rval = write_molecules(system,fp);
+    }
 	}
 
 	//free the file pointer
@@ -275,6 +282,38 @@ int write_molecules_wrapper(system_t * system, char * filename) {
 #endif
 
 	return rval;
+}
+
+/* write out the final system state as an xyz file */
+void write_molecules_xyz(system_t *system, FILE * fp)
+{
+	molecule_t *molecule_ptr;
+	atom_t *atom_ptr;
+  int i, j;
+
+	/* write xyz */
+  fprintf(fp, "%d\n\n", countNatoms(system));
+	for(molecule_ptr = system->molecules, i = 1, j = 1; molecule_ptr; molecule_ptr = molecule_ptr->next, j++) {
+		for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++) {
+			fprintf(fp, " %-4.45s", atom_ptr->atomtype);
+			/* Regular (PDB compliant) Coordinate Output */
+			if(system->wrapall)
+      {
+				fprintf(fp, "%10.3f", atom_ptr->wrapped_pos[0]);
+				fprintf(fp, "%10.3f", atom_ptr->wrapped_pos[1]);
+				fprintf(fp, "%10.3f", atom_ptr->wrapped_pos[2]);
+			}
+      else
+      {
+				fprintf(fp, "%10.3f", atom_ptr->pos[0]);
+				fprintf(fp, "%10.3f", atom_ptr->pos[1]);
+				fprintf(fp, "%10.3f", atom_ptr->pos[2]);
+			}
+			fprintf(fp, "\n");
+		}
+	}
+	fflush(fp);
+  return;
 }
 
 /* write out the final system state as a PQR file */
@@ -463,7 +502,7 @@ int write_molecules(system_t *system, FILE * fp) {
 	fprintf(fp, "END\n");
 	fflush(fp);
 
-	return(0);
+	return(0); // absolutely useless
 
 }
 

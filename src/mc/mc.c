@@ -470,6 +470,10 @@ int mc(system_t *system) {
 						write_observables(system->file_pointers.fp_energy, system, observables_mpi, temperature_mpi[j]);
 					if(system->file_pointers.fp_energy_csv) 
 						write_observables_csv(system->file_pointers.fp_energy_csv, system, observables_mpi, temperature_mpi[j]);
+          if(system->file_pointers.fp_xyz)
+          {
+            write_molecules_xyz(system, system->file_pointers.fp_xyz); //L
+          }
 					/* collect the averages */
 					/* if parallel tempering, we will collect obserables from the coldest bath. this can't be done for
 					 * nodestats though, since nodestats are averaged over each corrtime, rather than based on a single 

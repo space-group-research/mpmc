@@ -63,6 +63,7 @@ void rebuild_arrays (system_t *); //builds atom and molecule arrays for the curr
 
 /* io */
 void write_observables_csv(FILE *, system_t *, observables_t *, double);
+void write_molecules_xyz(system_t *, FILE *); //L
 void update_sorbate_info(system_t *);
 int safe_atof(char *, double *);
 int safe_atoi ( char * a, int * i );

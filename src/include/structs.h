@@ -288,6 +288,7 @@ typedef struct _param_global {
 typedef struct _file_pointers {
 	FILE *fp_energy;
 	FILE *fp_energy_csv;
+  FILE *fp_xyz;
 	FILE *fp_field;
 	FILE *fp_histogram;
 	FILE *fp_frozen;
@@ -457,7 +458,7 @@ typedef struct _system {
 	// i/o options
 	int wrapall;
 	char *job_name; // (CRC)
-	char *pqr_input, *pqr_output, *pqr_restart, *traj_input, *traj_output, *energy_output, *energy_output_csv, *surf_output;
+	char *pqr_input, *pqr_output, *pqr_restart, *traj_input, *traj_output, *energy_output, *energy_output_csv, *surf_output, *xyz_output;
 	int read_pqr_box_on; //read box basis from pqr
 	int long_output; // prints extended (%11.6f) coordinates
 	int surf_print_level; // sets the amount of output (1-6) that correspond to the nested loops in surface.c

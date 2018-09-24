@@ -987,6 +987,13 @@ int do_command (system_t * system, char ** token ) {
 			strcpy(system->energy_output_csv,token[1]);
 		} else return 1;
 	}
+	else if (!strcasecmp(token[0], "xyz_output")) {
+		if(!system->xyz_output) {
+			system->xyz_output = calloc(MAXLINE,sizeof(char));
+			memnullcheck(system->xyz_output,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+			strcpy(system->xyz_output,token[1]);
+		} else return 1;
+	}
 	else if (!strcasecmp(token[0], "pop_histogram_output")) {
 		if(!system->histogram_output) {
 			system->histogram_output = calloc(MAXLINE,sizeof(char));

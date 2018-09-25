@@ -10,14 +10,10 @@ University of South Florida
 #include <mc.h>
 
 int pimc(system_t *system) {
-
-	return(0);
-
+    return (0);
 }
 
-
 #ifdef XXX
-
 
 /********************************************************************************/
 /*										*/
@@ -49,14 +45,18 @@ int pimc(system_t *system) {
 /* University of South Florida							*/
 /********************************************************************************/
 
-
 /* set the nucleus */
 
-#define	COORDS_OUTPUT_FILENAME		"output.coords"		/* xmov formatted output of coordinates */
-#define ENERGY_OUTPUT_FILENAME		"output.energy"		/* energy output for plotting */
-#define XMOV_SET_FILENAME		"output.set"		/* for xmov viewing */
-#define XMOV_PROTON_TOP_FILENAME	"proton.top"		/* for xmov viewing */
-#define XMOV_ELECTRON_TOP_FILENAME	"electron.top"		/* for xmov viewing */
+#define COORDS_OUTPUT_FILENAME \
+    "output.coords" /* xmov formatted output of coordinates */
+#define ENERGY_OUTPUT_FILENAME \
+    "output.energy" /* energy output for plotting */
+#define XMOV_SET_FILENAME \
+    "output.set" /* for xmov viewing */
+#define XMOV_PROTON_TOP_FILENAME \
+    "proton.top" /* for xmov viewing */
+#define XMOV_ELECTRON_TOP_FILENAME \
+    "electron.top" /* for xmov viewing */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,34 +68,34 @@ int pimc(system_t *system) {
 #include <time.h>
 
 /* conversions */
-#define KPSA                    1.202717                                /* number of amu's in 1 KPSA mass unit */
-#define H_OVER_K                47.9923862                              /* Planck's constant divided by boltzmann's constant (K ps) */
-#define H_OVER_K_SQUARED        2303.26913                              /* above constant, squared */
-#define HBAR_OVER_K             7.63822547                              /* Planck's bar divided by boltzmann's constant (K ps) */
-#define HBAR_OVER_K_SQUARED     58.3424884                              /* the above constant, squared */
-#define BOLTZMANNS_CONSTANT	1.38650e-23				/* Boltzmann's constant */
-#define K_TO_EV			8.65385313e-5				/* Conversion factor for K -> eV */
+#define KPSA 1.202717                   /* number of amu's in 1 KPSA mass unit */
+#define H_OVER_K 47.9923862             /* Planck's constant divided by boltzmann's constant (K ps) */
+#define H_OVER_K_SQUARED 2303.26913     /* above constant, squared */
+#define HBAR_OVER_K 7.63822547          /* Planck's bar divided by boltzmann's constant (K ps) */
+#define HBAR_OVER_K_SQUARED 58.3424884  /* the above constant, squared */
+#define BOLTZMANNS_CONSTANT 1.38650e-23 /* Boltzmann's constant */
+#define K_TO_EV 8.65385313e-5           /* Conversion factor for K -> eV */
 
 /* physical constants */
-#define BOHR_RADIUS		0.529177210818				/* Bohr radius in angstroms */
-#define	ELECTRON_CHARGE		408.781604283				/* in reduced units of sqrt(K*A) */
-#define ELECTRON_MASS		6.597860309e-4				/* electron mass in KPSA (0.00054857961673 g/mol) */
-#define PROTON_MASS		1.211466984				/* proton mass in KPSA (1.007275181 g/mol) */
+#define BOHR_RADIUS 0.529177210818    /* Bohr radius in angstroms */
+#define ELECTRON_CHARGE 408.781604283 /* in reduced units of sqrt(K*A) */
+#define ELECTRON_MASS 6.597860309e-4  /* electron mass in KPSA (0.00054857961673 g/mol) */
+#define PROTON_MASS 1.211466984       /* proton mass in KPSA (1.007275181 g/mol) */
 
 /* pseudo-potential switching distance */
-#define SWITCHING		0.5*BOHR_RADIUS
+#define SWITCHING 0.5 * BOHR_RADIUS
 
 /* data structure for a quantum particle */
 struct particle_t {
-	double mass;			/* particle mass */
-	int trotter;			/* number of beads in the ring polymer */
-	struct bead_t *bead_list;	/* circular linked list of beads */
+    double mass;              /* particle mass */
+    int trotter;              /* number of beads in the ring polymer */
+    struct bead_t *bead_list; /* circular linked list of beads */
 };
 
 /* data structure for the Trotter beads on the cyclic polymer */
 struct bead_t {
-	double x, y, z;			/* coordinates */
-	struct bead_t *next;		/* ptr to the next bead */
+    double x, y, z;      /* coordinates */
+    struct bead_t *next; /* ptr to the next bead */
 };
 
 /* global copy of the particle state for saving/restoring across functions */
@@ -103,505 +103,521 @@ struct particle_t *saved_particle_array;
 
 /* initialize the pseudo RNG */
 void seed_random_number(void) {
-
-	srand48(time(NULL));
-
+    srand48(time(NULL));
 }
 
 /* returns a double from 0.0 to 1.0 */
 double get_random_number() {
-
-	return(drand48());
-
+    return (drand48());
 }
 
 /* takes system parameters as input, returns an array of initialized particles */
 struct particle_t *initialize_system(int trotter) {
+    int i;
+    struct particle_t *particle_array = NULL; /* particle array pointer */
+    struct bead_t *current_bead_ptr;          /* current working bead pointer */
+    double random_theta, random_phi;          /* random angles */
+    char linebuf[MAXLINE];
 
-	int i;
-	struct particle_t *particle_array = NULL;	/* particle array pointer */
-	struct bead_t *current_bead_ptr;		/* current working bead pointer */
-	double random_theta, random_phi;		/* random angles */
-	char linebuf[MAXLINE];
+    /* allocate the particle array */
+    particle_array = calloc(sizeof(struct particle_t), 1); /* a single particle */
+    if (!particle_array) {
+        error(
+            "initialize_system: couldn't allocate particle array\n");
+        return (NULL);
+    }
+    particle_array[0].mass = ELECTRON_MASS; /* set the particle mass */
+    particle_array[0].trotter = trotter;    /* set the trotter number for the ring */
 
-	/* allocate the particle array */
-	particle_array = calloc(sizeof(struct particle_t), 1);		/* a single particle */
-	if(!particle_array) {
-		error("initialize_system: couldn't allocate particle array\n");
-		return(NULL);
-	}
-	particle_array[0].mass = ELECTRON_MASS;					/* set the particle mass */
-	particle_array[0].trotter = trotter;					/* set the trotter number for the ring */
+    /* allocate the beads */
+    particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1); /* start with the first one */
+    current_bead_ptr = particle_array[0].bead_list;
+    if (!current_bead_ptr) {
+        error(
+            "initialize_system: couldn't allocate first bead element\n");
+        return (NULL);
+    }
+    current_bead_ptr->x = BOHR_RADIUS;
+    current_bead_ptr->y = 0.0;
+    current_bead_ptr->z = 0.0;
+    for (i = 0; i < (trotter - 1); i++) { /* allocate the rest of the beads */
+        current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
+        current_bead_ptr = current_bead_ptr->next;
+        if (!current_bead_ptr) {
+            sprintf(linebuf,
+                    "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+            error(linebuf);
+            return (NULL);
+        }
+        current_bead_ptr->x = BOHR_RADIUS;
+        current_bead_ptr->y = 0.0;
+        current_bead_ptr->z = 0.0;
+    }
+    current_bead_ptr->next = particle_array[0].bead_list; /* connect the circle */
+    /* done setting up the particles */
 
-	/* allocate the beads */
-	particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1);	/* start with the first one */
-	current_bead_ptr = particle_array[0].bead_list;
-	if(!current_bead_ptr) {
-		error("initialize_system: couldn't allocate first bead element\n");
-		return(NULL);
-	}
-	current_bead_ptr->x = BOHR_RADIUS;
-	current_bead_ptr->y = 0.0;
-	current_bead_ptr->z = 0.0;
-	for(i = 0; i < (trotter - 1); i++) {				/* allocate the rest of the beads */
-		current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
-		current_bead_ptr = current_bead_ptr->next;
-		if(!current_bead_ptr) {
-			sprintf(linebuf, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
-			error(linebuf);
-			return(NULL);
-		}
-		current_bead_ptr->x = BOHR_RADIUS;
-		current_bead_ptr->y = 0.0;
-		current_bead_ptr->z = 0.0;
+    /* setup the space for saving/restoring the system state */
+    saved_particle_array = calloc(sizeof(struct particle_t), 1);
+    if (!saved_particle_array) {
+        error(
+            "initialize_system: couldn't allocate saved particle array\n");
+        return (NULL);
+    }
+    saved_particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1);
+    current_bead_ptr = saved_particle_array[0].bead_list;
+    if (!current_bead_ptr) {
+        error(
+            "initialize_system: couldn't allocate first saved bead element\n");
+        return (NULL);
+    }
+    for (i = 0; i < (trotter - 1); i++) {
+        current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
+        current_bead_ptr = current_bead_ptr->next;
+        if (!current_bead_ptr) {
+            sprintf(linebuf,
+                    "initialize_system: couldn't allocate bead number %d\n", (i + 1));
+            error(linebuf);
+            return (NULL);
+        }
+    }
+    current_bead_ptr->next = saved_particle_array[0].bead_list;
 
-	}
-	current_bead_ptr->next = particle_array[0].bead_list;		/* connect the circle */
-	/* done setting up the particles */
+    /* seed the RNG */
+    seed_random_number();
 
-	/* setup the space for saving/restoring the system state */
-	saved_particle_array = calloc(sizeof(struct particle_t), 1);
-	if(!saved_particle_array) {
-		error( "initialize_system: couldn't allocate saved particle array\n");
-		return(NULL);
-	}
-	saved_particle_array[0].bead_list = calloc(sizeof(struct bead_t), 1);
-	current_bead_ptr = saved_particle_array[0].bead_list;
-	if(!current_bead_ptr) {
-		error("initialize_system: couldn't allocate first saved bead element\n");
-		return(NULL);
-	}
-	for(i = 0; i < (trotter - 1); i++) {
-		current_bead_ptr->next = calloc(sizeof(struct bead_t), 1);
-		current_bead_ptr = current_bead_ptr->next;
-		if(!current_bead_ptr) {
-			sprintf(linebuf, "initialize_system: couldn't allocate bead number %d\n", (i + 1));
-			error(linebuf);
-			return(NULL);
-		}
-	}
-	current_bead_ptr->next = saved_particle_array[0].bead_list;
-
-	/* seed the RNG */
-	seed_random_number();
-
-	return(particle_array);
+    return (particle_array);
 }
 
 /* calculate the coulombic energy due to the proton at the origin, include a pseudo-potential */
 double get_external_potential(struct particle_t *particle_array, double Z, double switching) {
+    int i;
+    double r, external_energy;
+    struct bead_t *cur_ptr;
 
-	int i;
-	double r, external_energy;
-	struct bead_t *cur_ptr;
+    cur_ptr = particle_array[0].bead_list;
+    for (i = 0, external_energy = 0.0; i < particle_array[0].trotter; i++) {
+        r = sqrt(cur_ptr->x * cur_ptr->x + cur_ptr->y * cur_ptr->y + cur_ptr->z * cur_ptr->z);
+        if (r < switching) /* impose the pseudo-potential */
+            external_energy += -(Z * ELECTRON_CHARGE * ELECTRON_CHARGE * ((r * r / (2.0 * switching * switching)) - 3.0 / 2.0)) / switching;
+        else
+            external_energy += -Z * ELECTRON_CHARGE * ELECTRON_CHARGE / r;
+        cur_ptr = cur_ptr->next;
+    }
+    external_energy /= ((double)particle_array[0].trotter);
 
-	cur_ptr = particle_array[0].bead_list;
-	for(i = 0, external_energy = 0.0; i < particle_array[0].trotter; i++) {
-		r = sqrt(cur_ptr->x*cur_ptr->x + cur_ptr->y*cur_ptr->y + cur_ptr->z*cur_ptr->z);
-		if(r < switching)	/* impose the pseudo-potential */
-			external_energy += -(Z*ELECTRON_CHARGE*ELECTRON_CHARGE*((r*r/(2.0*switching*switching)) - 3.0/2.0))/switching;
-		else
-			external_energy += -Z*ELECTRON_CHARGE*ELECTRON_CHARGE/r;
-		cur_ptr = cur_ptr->next;
-	}
-	external_energy /= ((double)particle_array[0].trotter);
-
-	return(external_energy);
-
+    return (external_energy);
 }
 
 /* calculate the path integral harmonic energy for the ring polymer */
 double get_internal_potential(struct particle_t *particle_array, double temperature) {
+    int i;
+    struct bead_t *cur_ptr, *nxt_ptr;
+    double internal_energy;
+    double dx, dy, dz, displacement_squared;
 
-	int i;
-	struct bead_t *cur_ptr, *nxt_ptr;
-	double internal_energy;
-	double dx, dy, dz, displacement_squared;
+    /* get the ring polymer energy */
+    cur_ptr = particle_array[0].bead_list;
+    nxt_ptr = cur_ptr->next;
+    for (i = 0, internal_energy = 0.0; i < particle_array[0].trotter; i++) {
+        dx = cur_ptr->x - nxt_ptr->x;
+        dy = cur_ptr->y - nxt_ptr->y;
+        dz = cur_ptr->z - nxt_ptr->z;
+        displacement_squared = dx * dx + dy * dy + dz * dz;
+        internal_energy += displacement_squared;
+        cur_ptr = cur_ptr->next;
+        nxt_ptr = cur_ptr->next;
+    }
+    internal_energy *= (((double)particle_array[0].trotter) * particle_array[0].mass * temperature * temperature) / (2.0 * HBAR_OVER_K_SQUARED);
 
-	/* get the ring polymer energy */
-	cur_ptr = particle_array[0].bead_list;
-	nxt_ptr = cur_ptr->next;
-	for(i = 0, internal_energy = 0.0; i < particle_array[0].trotter; i++) {
-		dx = cur_ptr->x - nxt_ptr->x;
-		dy = cur_ptr->y - nxt_ptr->y;
-		dz = cur_ptr->z - nxt_ptr->z;
-		displacement_squared = dx*dx + dy*dy + dz*dz;
-		internal_energy += displacement_squared;
-		cur_ptr = cur_ptr->next;
-		nxt_ptr = cur_ptr->next;
-	}
-	internal_energy *= (((double)particle_array[0].trotter)*particle_array[0].mass*temperature*temperature)/(2.0*HBAR_OVER_K_SQUARED);
-
-	return(internal_energy);
-
+    return (internal_energy);
 }
 
 /* get the total energy for the system */
 double get_energy(struct particle_t *particle_array, double Z, double temperature) {
+    double energy;
 
-	double energy;
+    energy = get_external_potential(particle_array, Z, SWITCHING);
+    energy += get_internal_potential(particle_array, temperature);
 
-	energy = get_external_potential(particle_array, Z, SWITCHING);
-	energy += get_internal_potential(particle_array, temperature);
-
-	return(energy);
+    return (energy);
 }
 
 /* make a random trial move */
 void make_move(struct particle_t *particle_array, double scale) {
+    int i;
+    struct bead_t *cur_ptr;
 
-	int i;
-	struct bead_t *cur_ptr;
+    /* move each bead by a random amount */
+    cur_ptr = particle_array[0].bead_list;
+    for (i = 0; i < particle_array[0].trotter; i++) {
+        cur_ptr->x += scale * (0.5 - get_random_number());
+        cur_ptr->y += scale * (0.5 - get_random_number());
+        cur_ptr->z += scale * (0.5 - get_random_number());
 
-	/* move each bead by a random amount */
-	cur_ptr = particle_array[0].bead_list;
-	for(i = 0; i < particle_array[0].trotter; i++) {
-
-		cur_ptr->x += scale*(0.5 - get_random_number());
-		cur_ptr->y += scale*(0.5 - get_random_number());
-		cur_ptr->z += scale*(0.5 - get_random_number());
-
-		cur_ptr = cur_ptr->next;
-	}
-
-
+        cur_ptr = cur_ptr->next;
+    }
 }
 
 /* MC accept routine, stores the accepted coordinates */
 void mc_accept(struct particle_t *particle_array) {
+    int i;
+    struct bead_t *saved_ptr, *current_ptr;
 
-	int i;
-	struct bead_t *saved_ptr, *current_ptr;
+    /* save the accepted configuration */
+    saved_particle_array[0].trotter = particle_array[0].trotter;
+    saved_particle_array[0].mass = particle_array[0].mass;
 
-
-	/* save the accepted configuration */
-	saved_particle_array[0].trotter = particle_array[0].trotter;
-	saved_particle_array[0].mass = particle_array[0].mass;
-
-	current_ptr = particle_array[0].bead_list;
-	saved_ptr = saved_particle_array[0].bead_list;
-	for(i = 0; i < particle_array[0].trotter; i++) {
-		saved_ptr->x = current_ptr->x;
-		saved_ptr->y = current_ptr->y;
-		saved_ptr->z = current_ptr->z;
-		current_ptr = current_ptr->next;
-		saved_ptr = saved_ptr->next;
-	}
-
+    current_ptr = particle_array[0].bead_list;
+    saved_ptr = saved_particle_array[0].bead_list;
+    for (i = 0; i < particle_array[0].trotter; i++) {
+        saved_ptr->x = current_ptr->x;
+        saved_ptr->y = current_ptr->y;
+        saved_ptr->z = current_ptr->z;
+        current_ptr = current_ptr->next;
+        saved_ptr = saved_ptr->next;
+    }
 }
 
 /* MC reject routine, restore the last accepted coordinates */
 void mc_reject(struct particle_t *particle_array) {
+    int i;
+    struct bead_t *saved_ptr, *current_ptr;
 
-	int i;
-	struct bead_t *saved_ptr, *current_ptr;
+    /* restore the last accepted configuration */
+    particle_array[0].trotter = saved_particle_array[0].trotter;
+    particle_array[0].mass = saved_particle_array[0].mass;
 
-	/* restore the last accepted configuration */
-	particle_array[0].trotter = saved_particle_array[0].trotter;
-	particle_array[0].mass = saved_particle_array[0].mass;
-
-	current_ptr = particle_array[0].bead_list;
-	saved_ptr = saved_particle_array[0].bead_list;
-	for(i = 0; i < saved_particle_array[0].trotter; i++) {
-		current_ptr->x = saved_ptr->x;
-		current_ptr->y = saved_ptr->y;
-		current_ptr->z = saved_ptr->z;
-		current_ptr = current_ptr->next;
-		saved_ptr = saved_ptr->next;
-	}
-
+    current_ptr = particle_array[0].bead_list;
+    saved_ptr = saved_particle_array[0].bead_list;
+    for (i = 0; i < saved_particle_array[0].trotter; i++) {
+        current_ptr->x = saved_ptr->x;
+        current_ptr->y = saved_ptr->y;
+        current_ptr->z = saved_ptr->z;
+        current_ptr = current_ptr->next;
+        saved_ptr = saved_ptr->next;
+    }
 }
 
 /* write the system coordinates to a file */
 void write_coords(struct particle_t *particle_array, FILE *fp_coords) {
+    int i;
+    struct bead_t *cur_ptr;
 
-	int i;
-	struct bead_t *cur_ptr;
+    /* print the proton coords */
+    fprintf(fp_coords,
+            "0.0 0.0 0.0\n");
 
-	/* print the proton coords */
-	fprintf(fp_coords, "0.0 0.0 0.0\n");
-
-	/* print the electron's beads */
-	cur_ptr = particle_array[0].bead_list;
-	for(i = 0; i < particle_array[0].trotter; i++) {
-		fprintf(fp_coords, "%lg %lg %lg\n", cur_ptr->x, cur_ptr->y, cur_ptr->z);	/* output coords */
-		cur_ptr = cur_ptr->next;
-	}
-	/* print artificial periodic boundary */
-	fprintf(fp_coords, "%lg 0.0 0.0 0.0 %lg 0.0 0.0 0.0 %lg\n", 4*BOHR_RADIUS, 4*BOHR_RADIUS, 4*BOHR_RADIUS);
-
+    /* print the electron's beads */
+    cur_ptr = particle_array[0].bead_list;
+    for (i = 0; i < particle_array[0].trotter; i++) {
+        fprintf(fp_coords,
+                "%lg %lg %lg\n", cur_ptr->x, cur_ptr->y, cur_ptr->z); /* output coords */
+        cur_ptr = cur_ptr->next;
+    }
+    /* print artificial periodic boundary */
+    fprintf(fp_coords,
+            "%lg 0.0 0.0 0.0 %lg 0.0 0.0 0.0 %lg\n", 4 * BOHR_RADIUS, 4 * BOHR_RADIUS, 4 * BOHR_RADIUS);
 }
 
 /* write the system energy to a file */
 void write_energy(double energy, FILE *fp_energy) {
-
-	fprintf(fp_energy, "%lg\n", energy);
+    fprintf(fp_energy,
+            "%lg\n", energy);
 }
-
 
 /* perform the path integral monte carlo calculation - the meat 'n potatos */
 int do_pimc(struct particle_t *particle_array, double Z, double temperature, double scale, int num_steps, int corr_time) {
+    int i, j;                                       /* MC step counter */
+    double initial_energy;                          /* energy before making MC move */
+    double final_energy;                            /* energy after making MC move */
+    double delta_energy;                            /* energy change due to the MC move */
+    double boltzmann;                               /* boltzmann factor */
+    double accepted_energy;                         /* accepted energy to be averaged */
+    double accepted_energy_squared;                 /* accepted energy squared */
+    double radius;                                  /* bead radius from the proton */
+    double accepted_radius;                         /* accepted value for averaging */
+    double average_radius;                          /* simulation average radius */
+    double average_energy = 0;                      /* average accepted energy */
+    double average_energy_squared = 0;              /* average square of the accepted energy */
+    double average_boltzmann = 0;                   /* average boltzmann factor */
+    double average_factor = 0;                      /* numerical factor used for the running averages */
+    int accepts = 0, rejects = 0;                   /* keep track of acceptance rate */
+    FILE *fp_coords, *fp_energy;                    /* file pointers for output */
+    FILE *fp_set, *fp_proton_top, *fp_electron_top; /* used for xmov movie output */
+    struct bead_t *cur_ptr;                         /* used for radius calculation */
 
-	int i, j;						/* MC step counter */
-	double initial_energy;					/* energy before making MC move */
-	double final_energy;					/* energy after making MC move */
-	double delta_energy;					/* energy change due to the MC move */
-	double boltzmann;					/* boltzmann factor */
-	double accepted_energy;					/* accepted energy to be averaged */
-	double accepted_energy_squared;				/* accepted energy squared */
-	double radius;						/* bead radius from the proton */
-	double accepted_radius;					/* accepted value for averaging */
-	double average_radius;					/* simulation average radius */
-	double average_energy = 0;				/* average accepted energy */
-	double average_energy_squared = 0;			/* average square of the accepted energy */
-	double average_boltzmann = 0;				/* average boltzmann factor */
-	double average_factor = 0;				/* numerical factor used for the running averages */
-	int accepts = 0, rejects = 0;				/* keep track of acceptance rate */
-	FILE *fp_coords, *fp_energy;				/* file pointers for output */
-	FILE *fp_set, *fp_proton_top, *fp_electron_top;		/* used for xmov movie output */
-	struct bead_t *cur_ptr;					/* used for radius calculation */
+    if (!particle_array || (num_steps <= 0)) {
+        error(
+            "do_pimc: invalid input parameters passed\n");
+        return (-1);
+    }
 
-	if(!particle_array || (num_steps <= 0)) {
-		error( "do_pimc: invalid input parameters passed\n");
-		return(-1);
-	}
+    /* set the temperature */
+    if (temperature < 0.0) {
+        error(
+            "do_pimc: invalid temperature specified\n");
+        return (-1);
+    }
 
-	/* set the temperature */
-	if(temperature < 0.0) {
-		error("do_pimc: invalid temperature specified\n");
-		return(-1);
-	}
+    /* open the output files for writing */
+    fp_coords = fopen(COORDS_OUTPUT_FILENAME,
+                      "w");
+    filecheck(fp_coords, COORDS_OUTPUT_FILENAME, WRITE);
+    fp_energy = fopen(ENERGY_OUTPUT_FILENAME,
+                      "w");
+    filecheck(fp_energy, ENERGY_OUTPUT_FILENAME, WRITE);
 
-	/* open the output files for writing */
-	fp_coords = fopen(COORDS_OUTPUT_FILENAME, "w");
-	filecheck(fp_coords,COORDS_OUTPUT_FILENAME,WRITE);
-	fp_energy = fopen(ENERGY_OUTPUT_FILENAME, "w");
-	filecheck(fp_energy,ENERGY_OUTPUT_FILENAME,WRITE);
+    /* write xmov header to coords file */
+    fprintf(fp_coords,
+            "# %d 1 0.001\n", (particle_array[0].trotter + 1));
+    /* output the xmov set and top files */
+    fp_set = fopen(XMOV_SET_FILENAME,
+                   "w");
+    fprintf(fp_set,
+            "~mol_def[\\mol_parm_file{proton.top}\\mol_therm_opt{none}\\nmol{1}\\mol_index{1}]\n");
+    fprintf(fp_set,
+            "~mol_def[\\mol_parm_file{electron.top}\\mol_therm_opt{none}\\nmol{%d}\\mol_index{2}]\n", particle_array[0].trotter);
+    fp_proton_top = fopen(XMOV_PROTON_TOP_FILENAME,
+                          "w");
+    fprintf(fp_proton_top,
+            "~mol_name_def[\\mol_name{proton}\\natom{1}\\nbond{0}\\nbondx{0}]\n");
+    fprintf(fp_proton_top,
+            "~atom_def[\\atom_typ{P}\\atom_ind{1}\\mass{1.0}\\charge{0.0}\\alpha{0.000}]\n");
+    fp_electron_top = fopen(XMOV_ELECTRON_TOP_FILENAME,
+                            "w");
+    fprintf(fp_electron_top,
+            "~mol_name_def[\\mol_name{electron}\\natom{1}\\nbond{0}\\nbondx{0}]\n");
+    fprintf(fp_electron_top,
+            "~atom_def[\\atom_typ{E}\\atom_ind{1}\\mass{0.0001}\\charge{0.0}\\alpha{0.000}]\n");
+    fclose(fp_set);
+    fclose(fp_proton_top);
+    fclose(fp_electron_top);
 
-	/* write xmov header to coords file */
-	fprintf(fp_coords, "# %d 1 0.001\n", (particle_array[0].trotter + 1));
-	/* output the xmov set and top files */
-	fp_set = fopen(XMOV_SET_FILENAME, "w");
-	fprintf(fp_set, "~mol_def[\\mol_parm_file{proton.top}\\mol_therm_opt{none}\\nmol{1}\\mol_index{1}]\n");
-	fprintf(fp_set, "~mol_def[\\mol_parm_file{electron.top}\\mol_therm_opt{none}\\nmol{%d}\\mol_index{2}]\n", particle_array[0].trotter);
-	fp_proton_top = fopen(XMOV_PROTON_TOP_FILENAME, "w");
-	fprintf(fp_proton_top, "~mol_name_def[\\mol_name{proton}\\natom{1}\\nbond{0}\\nbondx{0}]\n");
-	fprintf(fp_proton_top, "~atom_def[\\atom_typ{P}\\atom_ind{1}\\mass{1.0}\\charge{0.0}\\alpha{0.000}]\n");
-	fp_electron_top = fopen(XMOV_ELECTRON_TOP_FILENAME, "w");
-	fprintf(fp_electron_top, "~mol_name_def[\\mol_name{electron}\\natom{1}\\nbond{0}\\nbondx{0}]\n");
-	fprintf(fp_electron_top, "~atom_def[\\atom_typ{E}\\atom_ind{1}\\mass{0.0001}\\charge{0.0}\\alpha{0.000}]\n");
-	fclose(fp_set); fclose(fp_proton_top); fclose(fp_electron_top);
+    /* get the first energy and automatically accept it */
+    initial_energy = get_energy(particle_array, Z, temperature);
+    mc_accept(particle_array);
+    accepted_energy = get_external_potential(particle_array, Z, SWITCHING);
+    accepted_energy_squared = accepted_energy * accepted_energy;
 
-	/* get the first energy and automatically accept it */
-	initial_energy = get_energy(particle_array, Z, temperature);
-	mc_accept(particle_array);
-	accepted_energy = get_external_potential(particle_array, Z, SWITCHING);
-	accepted_energy_squared = accepted_energy*accepted_energy;
+    /* get the initial radius */
+    cur_ptr = particle_array[0].bead_list;
+    for (j = 0, accepted_radius = 0.0; j < particle_array[0].trotter; j++) {
+        radius = sqrt(cur_ptr->x * cur_ptr->x + cur_ptr->y * cur_ptr->y + cur_ptr->z * cur_ptr->z);
+        accepted_radius += radius;
+        cur_ptr = cur_ptr->next;
+    }
+    accepted_radius /= ((double)particle_array[0].trotter);
 
-	/* get the initial radius */
-	cur_ptr = particle_array[0].bead_list;
-	for(j = 0, accepted_radius = 0.0; j < particle_array[0].trotter; j++) {
-		radius = sqrt(cur_ptr->x*cur_ptr->x + cur_ptr->y*cur_ptr->y + cur_ptr->z*cur_ptr->z);
-		accepted_radius += radius;
-		cur_ptr = cur_ptr->next;
-	}
-	accepted_radius /= ((double)particle_array[0].trotter);
+    /* this is the main loop */
+    for (i = 0; i < num_steps; i++) {
+        /* make a trial move */
+        make_move(particle_array, scale);
 
-	/* this is the main loop */
-	for(i = 0; i < num_steps; i++) {
+        /* get the post-move energy, energy change and boltzmann factor */
+        final_energy = get_energy(particle_array, Z, temperature);
+        delta_energy = final_energy - initial_energy;
+        boltzmann = exp(-delta_energy / temperature);
 
-		/* make a trial move */
-		make_move(particle_array, scale);
+        /* perform the metropolis evaluation */
+        if (get_random_number() < boltzmann) { /****** ACCEPT ******/
 
-		/* get the post-move energy, energy change and boltzmann factor */
-		final_energy = get_energy(particle_array, Z, temperature);
-		delta_energy = final_energy - initial_energy;
-		boltzmann = exp(-delta_energy/temperature);
+            mc_accept(particle_array);
+            ++accepts;
+            initial_energy = final_energy; /* save for the next MC step */
+            accepted_energy = get_external_potential(particle_array, Z, SWITCHING);
+            accepted_energy_squared = accepted_energy * accepted_energy;
 
-		/* perform the metropolis evaluation */
-		if(get_random_number() < boltzmann) {	/****** ACCEPT ******/
+            /* get the average bead radius */
+            cur_ptr = particle_array[0].bead_list;
+            for (j = 0, accepted_radius = 0.0; j < particle_array[0].trotter; j++) {
+                radius = sqrt(cur_ptr->x * cur_ptr->x + cur_ptr->y * cur_ptr->y + cur_ptr->z * cur_ptr->z);
+                accepted_radius += radius;
+                cur_ptr = cur_ptr->next;
+            }
+            accepted_radius /= ((double)particle_array[0].trotter);
 
-			mc_accept(particle_array);
-			++accepts;
-			initial_energy = final_energy;	/* save for the next MC step */
-			accepted_energy = get_external_potential(particle_array, Z, SWITCHING);
-			accepted_energy_squared = accepted_energy*accepted_energy;
+        } else { /****** REJECT ******/
 
-			/* get the average bead radius */
-			cur_ptr = particle_array[0].bead_list;
-			for(j = 0, accepted_radius = 0.0; j < particle_array[0].trotter; j++) {
-				radius = sqrt(cur_ptr->x*cur_ptr->x + cur_ptr->y*cur_ptr->y + cur_ptr->z*cur_ptr->z);
-				accepted_radius += radius;
-				cur_ptr = cur_ptr->next;
-			}
-			accepted_radius /= ((double)particle_array[0].trotter);
+            mc_reject(particle_array);
+            ++rejects;
+        }
 
+        if (!(i % corr_time)) {
+            /* write out the coordinates */
+            write_coords(particle_array, fp_coords);
+            /* write out the total energy */
+            write_energy(accepted_energy * K_TO_EV, fp_energy);
+        }
 
-		} else {	/****** REJECT ******/
+        /* keep a running average of the energy */
+        average_factor = ((double)i) / ((double)(i + 1));
+        average_energy = average_energy * average_factor + (accepted_energy / ((double)(i + 1)));
+        average_energy_squared = average_energy_squared * average_factor + (accepted_energy_squared / ((double)(i + 1)));
+        average_boltzmann = average_boltzmann * average_factor + (boltzmann / ((double)(i + 1)));
+        average_radius = average_radius * average_factor + (accepted_radius / ((double)(i + 1)));
+    }
 
-			mc_reject(particle_array);
-			++rejects;
-		}
+    /* output useful stats to stdout */
+    printf(
+        "\n\n*********************************************************\n");
+    printf(
+        "********** temperature = %.2f (K)\n", temperature);
+    printf(
+        "********** acceptance rate = %.3f\n", ((double)accepts) / ((double)i));
+    printf(
+        "********** average boltzmann factor = %.5f\n", average_boltzmann);
+    printf(
+        "********** average energy = %.3f (eV)\n", average_energy * K_TO_EV);
+    printf(
+        "********** average electron radius = %.3f (A)\n", average_radius);
+    printf(
+        "********** energy sigma = %.3f (eV)\n", K_TO_EV * sqrt(average_energy_squared - average_energy * average_energy));
+    printf(
+        "*********************************************************\n\n");
 
-		if(!(i % corr_time)) {
-			/* write out the coordinates */
-			write_coords(particle_array, fp_coords);
-			/* write out the total energy */
-			write_energy(accepted_energy*K_TO_EV, fp_energy);
-		}
+    /* gracefully close our file pointer streams */
+    fclose(fp_coords);
+    fclose(fp_energy);
 
-		/* keep a running average of the energy */
-		average_factor = ((double)i)/((double)(i + 1));
-		average_energy = average_energy*average_factor + (accepted_energy / ((double)(i + 1)));
-		average_energy_squared = average_energy_squared*average_factor + (accepted_energy_squared / ((double)(i + 1)));
-		average_boltzmann = average_boltzmann*average_factor + (boltzmann / ((double)(i + 1)));
-		average_radius = average_radius*average_factor + (accepted_radius / ((double)(i + 1)));
-
-	}
-
-	/* output useful stats to stdout */
-	printf("\n\n*********************************************************\n");
-	printf("********** temperature = %.2f (K)\n", temperature);
-	printf("********** acceptance rate = %.3f\n", ((double)accepts)/((double)i));
-	printf("********** average boltzmann factor = %.5f\n", average_boltzmann);
-	printf("********** average energy = %.3f (eV)\n", average_energy*K_TO_EV);
-	printf("********** average electron radius = %.3f (A)\n", average_radius);
-	printf("********** energy sigma = %.3f (eV)\n", K_TO_EV*sqrt(average_energy_squared - average_energy*average_energy));
-	printf("*********************************************************\n\n");
-
-	/* gracefully close our file pointer streams */
-	fclose(fp_coords);
-	fclose(fp_energy);
-
-	return(0);
-
+    return (0);
 }
 
 /* cleans up the particle array */
 void free_particle(struct particle_t *particle_array) {
+    int i;
+    struct bead_t *current_bead_ptr, **free_array;
 
-	int i;
-	struct bead_t *current_bead_ptr, **free_array;
+    free_array = calloc(sizeof(struct bead_t *), particle_array[0].trotter);
+    memnullcheck(free_array, sizeof(struct bead_t *) * particle_array[0].trotter, 53);
+    current_bead_ptr = particle_array[0].bead_list;
 
-	free_array = calloc(sizeof(struct bead_t *), particle_array[0].trotter);
-	memnullcheck(free_array,sizeof(struct bead_t *)*particle_array[0].trotter,53);
-	current_bead_ptr = particle_array[0].bead_list;
+    for (i = 0; i < particle_array[0].trotter; i++) {
+        free_array[i] = current_bead_ptr;
+        current_bead_ptr = current_bead_ptr->next;
+    }
 
-	for(i = 0; i < particle_array[0].trotter; i++) {
-		free_array[i] = current_bead_ptr;
-		current_bead_ptr = current_bead_ptr->next;
-	}
+    for (i = 0; i < particle_array[0].trotter; i++)
+        free(free_array[i]);
 
-	for(i = 0; i < particle_array[0].trotter; i++)
-		free(free_array[i]);
-
-	free(particle_array);
-	free(free_array);
-
+    free(particle_array);
+    free(free_array);
 }
 
 /* provide usage information for the user */
 void usage(char *progname) {
+    char linebuf[MAXLINE];
 
-	char linebuf[MAXLINE];
-
-	sprintf(linebuf, "usage: %s <Z> <trot> <temp> <scale> <steps> <corr>\n", progname);
-	error(linebuf);
-	error("\t<Z>\t\t\t = atomic number\n");
-	error("\t<trot>\t\t\t = Trotter number of beads\n");
-	error("\t<temp>\t\t\t = temperature of the system (K)\n");
-	error("\t<scale>\t\t\t = bead move scaling parameter\n");
-	error("\t<steps>\t\t\t = number of MC steps to perform\n");
-	error("\t<corr>\t\t\t = interval of configuration sampling\n\n");
-	die(1);
+    sprintf(linebuf,
+            "usage: %s <Z> <trot> <temp> <scale> <steps> <corr>\n", progname);
+    error(linebuf);
+    error(
+        "\t<Z>\t\t\t = atomic number\n");
+    error(
+        "\t<trot>\t\t\t = Trotter number of beads\n");
+    error(
+        "\t<temp>\t\t\t = temperature of the system (K)\n");
+    error(
+        "\t<scale>\t\t\t = bead move scaling parameter\n");
+    error(
+        "\t<steps>\t\t\t = number of MC steps to perform\n");
+    error(
+        "\t<corr>\t\t\t = interval of configuration sampling\n\n");
+    die(1);
 }
 
 int main(int argc, char **argv) {
+    int i;                             /* counter */
+    int num_steps, corr_time;          /* number of MC steps to do and correlation time */
+    int trotter;                       /* Trotter number of beads */
+    double temperature;                /* temperature of the system (K) */
+    double scale;                      /* amount to scale the bead moves by */
+    struct particle_t *particle_array; /* particle array, currently just a single particle */
+    double Z;                          /* atomic number */
+    char linebuf[MAXLINE];
 
-	int i;					/* counter */
-	int num_steps, corr_time;		/* number of MC steps to do and correlation time */
-	int trotter;				/* Trotter number of beads */
-	double temperature;			/* temperature of the system (K) */
-	double scale;				/* amount to scale the bead moves by */
-	struct particle_t *particle_array;	/* particle array, currently just a single particle */
-	double Z;				/* atomic number */
-	char linebuf[MAXLINE];
+    /* read cmd line args */
+    if (argc != 7)
+        usage(argv[0]);
 
-	/* read cmd line args */
-	if(argc != 7)
-		usage(argv[0]);
+    printf(
+        "%s: input invokation = ", argv[0]);
+    for (i = 0; i < argc; i++)
+        printf(
+            "%s ", argv[i]);
+    putchar('\n');
 
-	printf("%s: input invokation = ", argv[0]);
-	for(i = 0; i < argc; i++)
-		printf("%s ", argv[i]);
-	putchar('\n');
+    /* get the atomic number */
+    Z = atof(argv[1]);
+    if (Z < 0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid Z specified\n", argv[0]);
+        error(linebuf);
+        usage(argv[0]);
+    }
 
-	/* get the atomic number */
-	Z = atof(argv[1]);
-	if(Z < 0) {
-		sprintf(linebuf, "%s: ERROR: invalid Z specified\n", argv[0]);
-		error(linebuf);
-		usage(argv[0]);
-	}
+    /* get the Trotter number */
+    trotter = atoi(argv[2]);
+    if (trotter < 0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid Trotter number specified\n", argv[0]);
+        error(linebuf);
+        usage(argv[0]);
+    }
 
-	/* get the Trotter number */
-	trotter = atoi(argv[2]);
-	if(trotter < 0) {
-		sprintf(linebuf, "%s: ERROR: invalid Trotter number specified\n", argv[0]);
-		error(linebuf);
-		usage(argv[0]);
-	}
+    /* get the temperature */
+    temperature = atof(argv[3]);
+    if (temperature < 0.0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid temperature specified\n", argv[0]);
+        error(linebuf);
+        usage(argv[0]);
+    }
 
-	/* get the temperature */
-	temperature = atof(argv[3]);
-	if(temperature < 0.0) {
-		sprintf(linebuf, "%s: ERROR: invalid temperature specified\n", argv[0]);
-		error(linebuf);
-		usage(argv[0]);
-	}
+    /* get the amount to scale the beads by */
+    scale = atof(argv[4]);
+    if (scale <= 0.0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid bead scaling specified\n", argv[0]);
+        error(linebuf);
+        die(1);
+    }
 
-	/* get the amount to scale the beads by */
-	scale = atof(argv[4]);
-	if(scale <= 0.0) {
-		sprintf(linebuf, "%s: ERROR: invalid bead scaling specified\n", argv[0]);
-		error(linebuf);
-		die(1);
-	}
+    /* get the number of MC steps to perform */
+    num_steps = atoi(argv[5]);
+    if (num_steps <= 0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid number of MC steps specified\n", argv[0]);
+        error(linebuf);
+        die(1);
+    }
 
-	/* get the number of MC steps to perform */
-	num_steps = atoi(argv[5]);
-	if(num_steps <= 0) {
-		sprintf(linebuf, "%s: ERROR: invalid number of MC steps specified\n", argv[0]);
-		error(linebuf);
-		die(1);
-	}
+    /* get the correlation interval for sampling */
+    corr_time = atoi(argv[6]);
+    if (corr_time <= 0) {
+        sprintf(linebuf,
+                "%s: ERROR: invalid correlation time specified\n", argv[0]);
+        error(linebuf);
+        die(1);
+    }
 
-	/* get the correlation interval for sampling */
-	corr_time = atoi(argv[6]);
-	if(corr_time <= 0) {
-		sprintf(linebuf, "%s: ERROR: invalid correlation time specified\n", argv[0]);
-		error(linebuf);
-		die(1);
-	}
+    particle_array = initialize_system(trotter);
+    if (!particle_array) {
+        sprintf(linebuf,
+                "%s: ERROR: couldn't initialize the system\n", argv[0]);
+        error(linebuf);
+        die(1);
+    }
 
-	particle_array = initialize_system(trotter);
-	if(!particle_array) {
-		sprintf(linebuf, "%s: ERROR: couldn't initialize the system\n", argv[0]);
-		error(linebuf);
-		die(1);
-	}
+    /* start the path integral monte carlo */
+    if (do_pimc(particle_array, Z, temperature, scale, num_steps, corr_time) < 0) {
+        sprintf(linebuf,
+                "%s: ERROR: path integral MC loop died\n", argv[0]);
+        error(linebuf);
+        die(1);
+    }
 
-	/* start the path integral monte carlo */
-	if(do_pimc(particle_array, Z, temperature, scale, num_steps, corr_time) < 0) {
-		sprintf(linebuf, "%s: ERROR: path integral MC loop died\n", argv[0]);
-		error(linebuf);
-		die(1);
-	}
-
-	free_particle(particle_array);
-	die(0);
-
+    free_particle(particle_array);
+    die(0);
 }
 
 #endif /* XXX */
-

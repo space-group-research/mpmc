@@ -35,12 +35,13 @@
 #ifndef DSFMT_H
 #define DSFMT_H
 #if defined(__cplusplus)
-extern "C" {
+extern
+    "C" {
 #endif
 
 #include <stdio.h>
 #include <assert.h>
-#define DSFMT_MEXP 19937 
+#define DSFMT_MEXP 19937
 
 /*-----------------
   BASIC DEFINITIONS
@@ -59,76 +60,79 @@ extern "C" {
 #define DSFMT_N64 (DSFMT_N * 2)
 
 #if !defined(DSFMT_BIG_ENDIAN)
-#  if defined(__BYTE_ORDER) && defined(__BIG_ENDIAN)
-#    if __BYTE_ORDER == __BIG_ENDIAN
-#      define DSFMT_BIG_ENDIAN 1
-#    endif
-#  elif defined(_BYTE_ORDER) && defined(_BIG_ENDIAN)
-#    if _BYTE_ORDER == _BIG_ENDIAN
-#      define DSFMT_BIG_ENDIAN 1
-#    endif
-#  elif defined(__BYTE_ORDER__) && defined(__BIG_ENDIAN__)
-#    if __BYTE_ORDER__ == __BIG_ENDIAN__
-#      define DSFMT_BIG_ENDIAN 1
-#    endif
-#  elif defined(BYTE_ORDER) && defined(BIG_ENDIAN)
-#    if BYTE_ORDER == BIG_ENDIAN
-#      define DSFMT_BIG_ENDIAN 1
-#    endif
-#  elif defined(__BIG_ENDIAN) || defined(_BIG_ENDIAN) \
-    || defined(__BIG_ENDIAN__) || defined(BIG_ENDIAN)
-#      define DSFMT_BIG_ENDIAN 1
-#  endif
+#if defined(__BYTE_ORDER) && defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define DSFMT_BIG_ENDIAN 1
+#endif
+#elif defined(_BYTE_ORDER) && defined(_BIG_ENDIAN)
+#if _BYTE_ORDER == _BIG_ENDIAN
+#define DSFMT_BIG_ENDIAN 1
+#endif
+#elif defined(__BYTE_ORDER__) && defined(__BIG_ENDIAN__)
+#if __BYTE_ORDER__ == __BIG_ENDIAN__
+#define DSFMT_BIG_ENDIAN 1
+#endif
+#elif defined(BYTE_ORDER) && defined(BIG_ENDIAN)
+#if BYTE_ORDER == BIG_ENDIAN
+#define DSFMT_BIG_ENDIAN 1
+#endif
+#elif defined(__BIG_ENDIAN) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__) || defined(BIG_ENDIAN)
+#define DSFMT_BIG_ENDIAN 1
+#endif
 #endif
 
 #if defined(DSFMT_BIG_ENDIAN) && defined(__amd64)
-#  undef DSFMT_BIG_ENDIAN
+#undef DSFMT_BIG_ENDIAN
 #endif
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-#  include <inttypes.h>
+#include <inttypes.h>
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
-#  if !defined(DSFMT_UINT32_DEFINED) && !defined(SFMT_UINT32_DEFINED)
+#if !defined(DSFMT_UINT32_DEFINED) && !defined(SFMT_UINT32_DEFINED)
 typedef unsigned int uint32_t;
 typedef unsigned __int64 uint64_t;
-#    define UINT64_C(v) (v ## ui64)
-#    define DSFMT_UINT32_DEFINED
-#    if !defined(inline)
-#      define inline __inline
-#    endif
-#  endif
+#define UINT64_C(v) (v##ui64)
+#define DSFMT_UINT32_DEFINED
+#if !defined(inline)
+#define inline __inline
+#endif
+#endif
 #else
-#  include <inttypes.h>
-#  if !defined(inline)
-#    if defined(__GNUC__)
-#      define inline __inline__
-#    else
-#      define inline
-#    endif
-#  endif
+#include <inttypes.h>
+#if !defined(inline)
+#if defined(__GNUC__)
+#define inline __inline__
+#else
+#define inline
+#endif
+#endif
 #endif
 
 #ifndef PRIu64
-#  if defined(_MSC_VER) || defined(__BORLANDC__)
-#    define PRIu64 "I64u"
-#    define PRIx64 "I64x"
-#  else
-#    define PRIu64 "llu"
-#    define PRIx64 "llx"
-#  endif
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#define PRIu64 \
+    "I64u"
+#define PRIx64 \
+    "I64x"
+#else
+#define PRIu64 \
+    "llu"
+#define PRIx64 \
+    "llx"
+#endif
 #endif
 
 #ifndef UINT64_C
-#  define UINT64_C(v) (v ## ULL)
+#define UINT64_C(v) (v##ULL)
 #endif
 
 /*------------------------------------------
   128-bit SIMD like data type for standard C
   ------------------------------------------*/
 #if defined(HAVE_ALTIVEC)
-#  if !defined(__APPLE__)
-#    include <altivec.h>
-#  endif
+#if !defined(__APPLE__)
+#include <altivec.h>
+#endif
 /** 128-bit data structure */
 union W128_T {
     vector unsigned int s;
@@ -138,7 +142,7 @@ union W128_T {
 };
 
 #elif defined(HAVE_SSE2)
-#  include <emmintrin.h>
+#include <emmintrin.h>
 
 /** 128-bit data structure */
 union W128_T {
@@ -148,7 +152,7 @@ union W128_T {
     uint32_t u32[4];
     double d[2];
 };
-#else  /* standard C */
+#else /* standard C */
 /** 128-bit data structure */
 union W128_T {
     uint64_t u[2];
@@ -179,19 +183,19 @@ void dsfmt_fill_array_open_open(dsfmt_t *dsfmt, double array[], int size);
 void dsfmt_fill_array_close1_open2(dsfmt_t *dsfmt, double array[], int size);
 void dsfmt_chk_init_gen_rand(dsfmt_t *dsfmt, uint32_t seed, int mexp);
 void dsfmt_chk_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
-			     int key_length, int mexp);
+                             int key_length, int mexp);
 const char *dsfmt_get_idstring(void);
 int dsfmt_get_min_array_size(void);
 
 #if defined(__GNUC__)
-#  define DSFMT_PRE_INLINE inline static
-#  define DSFMT_PST_INLINE __attribute__((always_inline))
+#define DSFMT_PRE_INLINE inline static
+#define DSFMT_PST_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER) && _MSC_VER >= 1200
-#  define DSFMT_PRE_INLINE __forceinline static
-#  define DSFMT_PST_INLINE
+#define DSFMT_PRE_INLINE __forceinline static
+#define DSFMT_PST_INLINE
 #else
-#  define DSFMT_PRE_INLINE inline static
-#  define DSFMT_PST_INLINE
+#define DSFMT_PRE_INLINE inline static
+#define DSFMT_PST_INLINE
 #endif
 DSFMT_PRE_INLINE uint32_t dsfmt_genrand_uint32(dsfmt_t *dsfmt) DSFMT_PST_INLINE;
 DSFMT_PRE_INLINE double dsfmt_genrand_close1_open2(dsfmt_t *dsfmt)
@@ -217,11 +221,11 @@ DSFMT_PRE_INLINE void dsfmt_gv_fill_array_close1_open2(double array[], int size)
     DSFMT_PST_INLINE;
 DSFMT_PRE_INLINE void dsfmt_gv_init_gen_rand(uint32_t seed) DSFMT_PST_INLINE;
 DSFMT_PRE_INLINE void dsfmt_gv_init_by_array(uint32_t init_key[],
-					     int key_length) DSFMT_PST_INLINE;
+                                             int key_length) DSFMT_PST_INLINE;
 DSFMT_PRE_INLINE void dsfmt_init_gen_rand(dsfmt_t *dsfmt, uint32_t seed)
     DSFMT_PST_INLINE;
 DSFMT_PRE_INLINE void dsfmt_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
-					  int key_length) DSFMT_PST_INLINE;
+                                          int key_length) DSFMT_PST_INLINE;
 
 /**
  * This function generates and returns unsigned 32-bit integer.
@@ -236,8 +240,8 @@ inline static uint32_t dsfmt_genrand_uint32(dsfmt_t *dsfmt) {
     uint64_t *psfmt64 = &dsfmt->status[0].u[0];
 
     if (dsfmt->idx >= DSFMT_N64) {
-	dsfmt_gen_rand_all(dsfmt);
-	dsfmt->idx = 0;
+        dsfmt_gen_rand_all(dsfmt);
+        dsfmt->idx = 0;
     }
     r = psfmt64[dsfmt->idx++] & 0xffffffffU;
     return r;
@@ -257,8 +261,8 @@ inline static double dsfmt_genrand_close1_open2(dsfmt_t *dsfmt) {
     double *psfmt64 = &dsfmt->status[0].d[0];
 
     if (dsfmt->idx >= DSFMT_N64) {
-	dsfmt_gen_rand_all(dsfmt);
-	dsfmt->idx = 0;
+        dsfmt_gen_rand_all(dsfmt);
+        dsfmt->idx = 0;
     }
     r = psfmt64[dsfmt->idx++];
     return r;
@@ -343,13 +347,13 @@ inline static double dsfmt_gv_genrand_open_close(void) {
 inline static double dsfmt_genrand_open_open(dsfmt_t *dsfmt) {
     double *dsfmt64 = &dsfmt->status[0].d[0];
     union {
-	double d;
-	uint64_t u;
+        double d;
+        uint64_t u;
     } r;
 
     if (dsfmt->idx >= DSFMT_N64) {
-	dsfmt_gen_rand_all(dsfmt);
-	dsfmt->idx = 0;
+        dsfmt_gen_rand_all(dsfmt);
+        dsfmt->idx = 0;
     }
     r.d = dsfmt64[dsfmt->idx++];
     r.u |= 1;
@@ -458,7 +462,7 @@ inline static void dsfmt_gv_init_gen_rand(uint32_t seed) {
  * @param key_length the length of init_key.
  */
 inline static void dsfmt_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
-				       int key_length) {
+                                       int key_length) {
     dsfmt_chk_init_by_array(dsfmt, init_key, key_length, DSFMT_MEXP);
 }
 

@@ -11,10 +11,10 @@ and http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_re
 */
 
 struct quaternion {
-  double x;
-  double y;
-  double z;
-  double w;
+    double x;
+    double y;
+    double z;
+    double w;
 };
 
 void quaternion_construct_xyzw(struct quaternion *Quaternion, double x, double y, double z, double w);

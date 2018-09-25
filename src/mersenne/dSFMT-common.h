@@ -24,10 +24,10 @@
 #include "dSFMT.h"
 
 #if defined(HAVE_SSE2)
-#  include <emmintrin.h>
+#include <emmintrin.h>
 union X128I_T {
     uint64_t u[2];
-    __m128i  i128;
+    __m128i i128;
 };
 union X128D_T {
     double d[2];
@@ -38,8 +38,8 @@ static const union X128I_T sse2_param_mask = {{DSFMT_MSK1, DSFMT_MSK2}};
 #endif
 
 #if defined(HAVE_ALTIVEC)
-inline static void do_recursion(w128_t *r, w128_t *a, w128_t * b,
-				w128_t *lung) {
+inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b,
+                                w128_t *lung) {
     const vector unsigned char sl1 = ALTI_SL1;
     const vector unsigned char sl1_perm = ALTI_SL1_PERM;
     const vector unsigned int sl1_msk = ALTI_SL1_MSK;
@@ -98,8 +98,8 @@ inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b, w128_t *u) {
  * @param b a 128-bit part of the internal state array
  * @param lung a 128-bit part of the internal state array (I/O)
  */
-inline static void do_recursion(w128_t *r, w128_t *a, w128_t * b,
-				w128_t *lung) {
+inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b,
+                                w128_t *lung) {
     uint64_t t0, t1, L0, L1;
 
     t0 = a->u[0];

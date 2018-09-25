@@ -19,7 +19,8 @@
 #include <mc.h>
 
 #if defined(__cplusplus)
-extern "C" {
+extern
+    "C" {
 #endif
 
 /** dsfmt internal state vector */
@@ -33,13 +34,13 @@ static const int dsfmt_mexp = DSFMT_MEXP;
 inline static uint32_t ini_func1(uint32_t x);
 inline static uint32_t ini_func2(uint32_t x);
 inline static void gen_rand_array_c1o2(dsfmt_t *dsfmt, w128_t *array,
-				       int size);
+                                       int size);
 inline static void gen_rand_array_c0o1(dsfmt_t *dsfmt, w128_t *array,
-				       int size);
+                                       int size);
 inline static void gen_rand_array_o0c1(dsfmt_t *dsfmt, w128_t *array,
-				       int size);
+                                       int size);
 inline static void gen_rand_array_o0o1(dsfmt_t *dsfmt, w128_t *array,
-				       int size);
+                                       int size);
 inline static int idxof(int i);
 static void initial_mask(dsfmt_t *dsfmt);
 static void period_certification(dsfmt_t *dsfmt);
@@ -143,32 +144,32 @@ inline static void convert_o0o1(w128_t *w) {
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
 inline static void gen_rand_array_c1o2(dsfmt_t *dsfmt, w128_t *array,
-				       int size) {
+                                       int size) {
     int i, j;
     w128_t lung;
 
     lung = dsfmt->status[DSFMT_N];
     do_recursion(&array[0], &dsfmt->status[0], &dsfmt->status[DSFMT_POS1],
-		 &lung);
+                 &lung);
     for (i = 1; i < DSFMT_N - DSFMT_POS1; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1], &lung);
     }
     for (; i < DSFMT_N; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     for (; i < size - DSFMT_N; i++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     for (j = 0; j < 2 * DSFMT_N - size; j++) {
-	dsfmt->status[j] = array[j + size - DSFMT_N];
+        dsfmt->status[j] = array[j + size - DSFMT_N];
     }
     for (; i < size; i++, j++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	dsfmt->status[j] = array[i];
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        dsfmt->status[j] = array[i];
     }
     dsfmt->status[DSFMT_N] = lung;
 }
@@ -181,37 +182,37 @@ inline static void gen_rand_array_c1o2(dsfmt_t *dsfmt, w128_t *array,
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
 inline static void gen_rand_array_c0o1(dsfmt_t *dsfmt, w128_t *array,
-				       int size) {
+                                       int size) {
     int i, j;
     w128_t lung;
 
     lung = dsfmt->status[DSFMT_N];
     do_recursion(&array[0], &dsfmt->status[0], &dsfmt->status[DSFMT_POS1],
-		 &lung);
+                 &lung);
     for (i = 1; i < DSFMT_N - DSFMT_POS1; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1], &lung);
     }
     for (; i < DSFMT_N; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     for (; i < size - DSFMT_N; i++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	convert_c0o1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        convert_c0o1(&array[i - DSFMT_N]);
     }
     for (j = 0; j < 2 * DSFMT_N - size; j++) {
-	dsfmt->status[j] = array[j + size - DSFMT_N];
+        dsfmt->status[j] = array[j + size - DSFMT_N];
     }
     for (; i < size; i++, j++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	dsfmt->status[j] = array[i];
-	convert_c0o1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        dsfmt->status[j] = array[i];
+        convert_c0o1(&array[i - DSFMT_N]);
     }
     for (i = size - DSFMT_N; i < size; i++) {
-	convert_c0o1(&array[i]);
+        convert_c0o1(&array[i]);
     }
     dsfmt->status[DSFMT_N] = lung;
 }
@@ -224,37 +225,37 @@ inline static void gen_rand_array_c0o1(dsfmt_t *dsfmt, w128_t *array,
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
 inline static void gen_rand_array_o0o1(dsfmt_t *dsfmt, w128_t *array,
-				       int size) {
+                                       int size) {
     int i, j;
     w128_t lung;
 
     lung = dsfmt->status[DSFMT_N];
     do_recursion(&array[0], &dsfmt->status[0], &dsfmt->status[DSFMT_POS1],
-		 &lung);
+                 &lung);
     for (i = 1; i < DSFMT_N - DSFMT_POS1; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1], &lung);
     }
     for (; i < DSFMT_N; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     for (; i < size - DSFMT_N; i++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	convert_o0o1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        convert_o0o1(&array[i - DSFMT_N]);
     }
     for (j = 0; j < 2 * DSFMT_N - size; j++) {
-	dsfmt->status[j] = array[j + size - DSFMT_N];
+        dsfmt->status[j] = array[j + size - DSFMT_N];
     }
     for (; i < size; i++, j++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	dsfmt->status[j] = array[i];
-	convert_o0o1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        dsfmt->status[j] = array[i];
+        convert_o0o1(&array[i - DSFMT_N]);
     }
     for (i = size - DSFMT_N; i < size; i++) {
-	convert_o0o1(&array[i]);
+        convert_o0o1(&array[i]);
     }
     dsfmt->status[DSFMT_N] = lung;
 }
@@ -267,37 +268,37 @@ inline static void gen_rand_array_o0o1(dsfmt_t *dsfmt, w128_t *array,
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
 inline static void gen_rand_array_o0c1(dsfmt_t *dsfmt, w128_t *array,
-				       int size) {
+                                       int size) {
     int i, j;
     w128_t lung;
 
     lung = dsfmt->status[DSFMT_N];
     do_recursion(&array[0], &dsfmt->status[0], &dsfmt->status[DSFMT_POS1],
-		 &lung);
+                 &lung);
     for (i = 1; i < DSFMT_N - DSFMT_POS1; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1], &lung);
     }
     for (; i < DSFMT_N; i++) {
-	do_recursion(&array[i], &dsfmt->status[i],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&array[i], &dsfmt->status[i],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     for (; i < size - DSFMT_N; i++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	convert_o0c1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        convert_o0c1(&array[i - DSFMT_N]);
     }
     for (j = 0; j < 2 * DSFMT_N - size; j++) {
-	dsfmt->status[j] = array[j + size - DSFMT_N];
+        dsfmt->status[j] = array[j + size - DSFMT_N];
     }
     for (; i < size; i++, j++) {
-	do_recursion(&array[i], &array[i - DSFMT_N],
-		     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
-	dsfmt->status[j] = array[i];
-	convert_o0c1(&array[i - DSFMT_N]);
+        do_recursion(&array[i], &array[i - DSFMT_N],
+                     &array[i + DSFMT_POS1 - DSFMT_N], &lung);
+        dsfmt->status[j] = array[i];
+        convert_o0c1(&array[i - DSFMT_N]);
     }
     for (i = size - DSFMT_N; i < size; i++) {
-	convert_o0c1(&array[i]);
+        convert_o0c1(&array[i]);
     }
     dsfmt->status[DSFMT_N] = lung;
 }
@@ -362,21 +363,21 @@ static void period_certification(dsfmt_t *dsfmt) {
     inner &= 1;
     /* check OK */
     if (inner == 1) {
-	return;
+        return;
     }
-    /* check NG, and modification */
+/* check NG, and modification */
 #if (DSFMT_PCV2 & 1) == 1
     dsfmt->status[DSFMT_N].u[1] ^= 1;
 #else
     for (i = 1; i >= 0; i--) {
-	work = 1;
-	for (j = 0; j < 64; j++) {
-	    if ((work & pcv[i]) != 0) {
-		dsfmt->status[DSFMT_N].u[i] ^= work;
-		return;
-	    }
-	    work = work << 1;
-	}
+        work = 1;
+        for (j = 0; j < 64; j++) {
+            if ((work & pcv[i]) != 0) {
+                dsfmt->status[DSFMT_N].u[i] ^= work;
+                return;
+            }
+            work = work << 1;
+        }
     }
 #endif
     return;
@@ -414,14 +415,14 @@ void dsfmt_gen_rand_all(dsfmt_t *dsfmt) {
 
     lung = dsfmt->status[DSFMT_N];
     do_recursion(&dsfmt->status[0], &dsfmt->status[0],
-		 &dsfmt->status[DSFMT_POS1], &lung);
+                 &dsfmt->status[DSFMT_POS1], &lung);
     for (i = 1; i < DSFMT_N - DSFMT_POS1; i++) {
-	do_recursion(&dsfmt->status[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1], &lung);
+        do_recursion(&dsfmt->status[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1], &lung);
     }
     for (; i < DSFMT_N; i++) {
-	do_recursion(&dsfmt->status[i], &dsfmt->status[i],
-		     &dsfmt->status[i + DSFMT_POS1 - DSFMT_N], &lung);
+        do_recursion(&dsfmt->status[i], &dsfmt->status[i],
+                     &dsfmt->status[i + DSFMT_POS1 - DSFMT_N], &lung);
     }
     dsfmt->status[DSFMT_N] = lung;
 }
@@ -515,7 +516,7 @@ void dsfmt_fill_array_open_open(dsfmt_t *dsfmt, double array[], int size) {
 }
 
 #if defined(__INTEL_COMPILER)
-#  pragma warning(disable:981)
+#pragma warning(disable : 981)
 #endif
 /**
  * This function initializes the internal state array with a 32-bit
@@ -530,14 +531,14 @@ void dsfmt_chk_init_gen_rand(dsfmt_t *dsfmt, uint32_t seed, int mexp) {
 
     /* make sure caller program is compiled with the same MEXP */
     if (mexp != dsfmt_mexp) {
-	fprintf(stderr, "DSFMT_MEXP doesn't match with dSFMT.c\n");
-	die(1);
+        fprintf(stderr,
+                "DSFMT_MEXP doesn't match with dSFMT.c\n");
+        die(1);
     }
     psfmt = &dsfmt->status[0].u32[0];
     psfmt[idxof(0)] = seed;
     for (i = 1; i < (DSFMT_N + 1) * 4; i++) {
-        psfmt[idxof(i)] = 1812433253UL
-	    * (psfmt[idxof(i - 1)] ^ (psfmt[idxof(i - 1)] >> 30)) + i;
+        psfmt[idxof(i)] = 1812433253UL * (psfmt[idxof(i - 1)] ^ (psfmt[idxof(i - 1)] >> 30)) + i;
     }
     initial_mask(dsfmt);
     period_certification(dsfmt);
@@ -553,80 +554,74 @@ void dsfmt_chk_init_gen_rand(dsfmt_t *dsfmt, uint32_t seed, int mexp) {
  * @param mexp caller's mersenne expornent
  */
 void dsfmt_chk_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
-			     int key_length, int mexp) {
+                             int key_length, int mexp) {
     int i, j, count;
     uint32_t r;
     uint32_t *psfmt32;
     int lag;
     int mid;
-    int size = (DSFMT_N + 1) * 4;	/* pulmonary */
+    int size = (DSFMT_N + 1) * 4; /* pulmonary */
 
     /* make sure caller program is compiled with the same MEXP */
     if (mexp != dsfmt_mexp) {
-	fprintf(stderr, "DSFMT_MEXP doesn't match with dSFMT.c\n");
-	die(1);
+        fprintf(stderr,
+                "DSFMT_MEXP doesn't match with dSFMT.c\n");
+        die(1);
     }
     if (size >= 623) {
-	lag = 11;
+        lag = 11;
     } else if (size >= 68) {
-	lag = 7;
+        lag = 7;
     } else if (size >= 39) {
-	lag = 5;
+        lag = 5;
     } else {
-	lag = 3;
+        lag = 3;
     }
     mid = (size - lag) / 2;
 
     psfmt32 = &dsfmt->status[0].u32[0];
     memset(dsfmt->status, 0x8b, sizeof(dsfmt->status));
     if (key_length + 1 > size) {
-	count = key_length + 1;
+        count = key_length + 1;
     } else {
-	count = size;
+        count = size;
     }
-    r = ini_func1(psfmt32[idxof(0)] ^ psfmt32[idxof(mid % size)]
-		  ^ psfmt32[idxof((size - 1) % size)]);
+    r = ini_func1(psfmt32[idxof(0)] ^ psfmt32[idxof(mid % size)] ^ psfmt32[idxof((size - 1) % size)]);
     psfmt32[idxof(mid % size)] += r;
     r += key_length;
     psfmt32[idxof((mid + lag) % size)] += r;
     psfmt32[idxof(0)] = r;
     count--;
     for (i = 1, j = 0; (j < count) && (j < key_length); j++) {
-	r = ini_func1(psfmt32[idxof(i)]
-		      ^ psfmt32[idxof((i + mid) % size)]
-		      ^ psfmt32[idxof((i + size - 1) % size)]);
-	psfmt32[idxof((i + mid) % size)] += r;
-	r += init_key[j] + i;
-	psfmt32[idxof((i + mid + lag) % size)] += r;
-	psfmt32[idxof(i)] = r;
-	i = (i + 1) % size;
+        r = ini_func1(psfmt32[idxof(i)] ^ psfmt32[idxof((i + mid) % size)] ^ psfmt32[idxof((i + size - 1) % size)]);
+        psfmt32[idxof((i + mid) % size)] += r;
+        r += init_key[j] + i;
+        psfmt32[idxof((i + mid + lag) % size)] += r;
+        psfmt32[idxof(i)] = r;
+        i = (i + 1) % size;
     }
     for (; j < count; j++) {
-	r = ini_func1(psfmt32[idxof(i)]
-		      ^ psfmt32[idxof((i + mid) % size)]
-		      ^ psfmt32[idxof((i + size - 1) % size)]);
-	psfmt32[idxof((i + mid) % size)] += r;
-	r += i;
-	psfmt32[idxof((i + mid + lag) % size)] += r;
-	psfmt32[idxof(i)] = r;
-	i = (i + 1) % size;
+        r = ini_func1(psfmt32[idxof(i)] ^ psfmt32[idxof((i + mid) % size)] ^ psfmt32[idxof((i + size - 1) % size)]);
+        psfmt32[idxof((i + mid) % size)] += r;
+        r += i;
+        psfmt32[idxof((i + mid + lag) % size)] += r;
+        psfmt32[idxof(i)] = r;
+        i = (i + 1) % size;
     }
     for (j = 0; j < size; j++) {
-	r = ini_func2(psfmt32[idxof(i)]
-		      + psfmt32[idxof((i + mid) % size)]
-		      + psfmt32[idxof((i + size - 1) % size)]);
-	psfmt32[idxof((i + mid) % size)] ^= r;
-	r -= i;
-	psfmt32[idxof((i + mid + lag) % size)] ^= r;
-	psfmt32[idxof(i)] = r;
-	i = (i + 1) % size;
+        r = ini_func2(psfmt32[idxof(i)] + psfmt32[idxof((i + mid) % size)] + psfmt32[idxof((i + size - 1) % size)]);
+        psfmt32[idxof((i + mid) % size)] ^= r;
+        r -= i;
+        psfmt32[idxof((i + mid + lag) % size)] ^= r;
+        psfmt32[idxof(i)] = r;
+        i = (i + 1) % size;
     }
     initial_mask(dsfmt);
     period_certification(dsfmt);
     dsfmt->idx = DSFMT_N64;
 }
 #if defined(__INTEL_COMPILER)
-#  pragma warning(default:981)
+#pragma warning(default : 981)
 #endif
 
 #if defined(__cplusplus)

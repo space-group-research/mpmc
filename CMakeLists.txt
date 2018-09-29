@@ -64,7 +64,6 @@ src/mersenne/dSFMT.c
 src/mersenne/dSFMT-common.h
 src/mersenne/dSFMT-params.h
 src/main/quaternion.c
-src/main/CArng.c
 src/main/memnullcheck.c
 src/main/main.c
 src/main/cleanup.c

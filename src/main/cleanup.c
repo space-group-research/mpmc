@@ -337,7 +337,7 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 #endif /* MPI */
             break;
 
-#ifdef __linux__
+#ifndef __WIN32__
         case SIGUSR1:
             output(
                 "CLEANUP: ************ SIGUSR1 received, exiting *************\n");
@@ -351,7 +351,7 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 #endif /* MPI */
             break;
 
-#ifdef __linux__
+#ifndef __WIN32__
         case SIGUSR2:
             output(
                 "CLEANUP: ************ SIGUSR2 received, exiting *************\n");

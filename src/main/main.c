@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 #endif /* MPI */
 
     if (!rank) {
-#ifdef __linux__
+#ifndef __WIN32__
         sprintf(linebuf,
                 "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2017 GNU Public License\n", VERSION);
         output(linebuf);

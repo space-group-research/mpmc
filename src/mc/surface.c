@@ -455,7 +455,7 @@ atom_t *find_atom_by_id(system_t *system, int target_id) {
 // are each multiplied by the value returned, the length of the resultant vector
 // will be longer (or shorter, if dr is < 0) than the original by dr. If the
 // magnitude of the original vector is 0, the function returns 0.
-inline double find_scale_factor(double x, double y, double z, double dr) {
+double find_scale_factor(double x, double y, double z, double dr) {
     // Equation was determined by setting
     // sqrt( (sx)^2 + (sy)^2 + (sz)^2 )  =  sqrt( x^2 + y^2 + z^2 ) + dr
     // and solving for s.

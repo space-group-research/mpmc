@@ -15,14 +15,21 @@ configure_file (
 "${PROJECT_BINARY_DIR}/src/include/cmake_config.h"
 )
 
-set(CMAKE_BUILD_TYPE Release)
+message("COMPILING FOR ${CMAKE_BUILD_TYPE}")
 
-if(CMAKE_COMPILER_IS_GNUCC)
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
-	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+
+#use MATCHES here to use these flags for both regular Clang and AppleClang
+if ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  #nothing to do here
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++" )
+  #elseif ("${CMAKE_COMPILER_ID}" STREQUAL "Intel")
 endif()
 
-SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++" )
 
 set(LIB m)
 

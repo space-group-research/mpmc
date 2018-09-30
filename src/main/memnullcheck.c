@@ -3,7 +3,7 @@
 #include <mc.h>
 
 // include for gcc stack trace
-#ifdef __linux__
+#ifndef __WIN32__
 #include <execinfo.h>
 #define STDERR 2
 #endif

@@ -69,6 +69,8 @@ int main(int argc, char **argv) {
     char nodename[MAXLINE];
     char cpu[MAXLINE];
     struct stat info;
+    char * get_nodename_err;
+    char * get_cpu_err;
 
     // These system calls were causing a fork() that does not play nice with some
     // MPI implementations (causing some processes to never end... )
@@ -79,7 +81,7 @@ int main(int argc, char **argv) {
         host = popen(
             "hostname",
             "r");
-        fgets(nodename, MAXLINE, host);
+       get_nodename_err = fgets(nodename, MAXLINE, host);
         sprintf(linebuf,
                 "MAIN: Job running on node -> %s", nodename);
         output(linebuf);
@@ -89,7 +91,7 @@ int main(int argc, char **argv) {
             "/proc/cpuinfo",
             "r");
         while (!feof(procfile)) {
-            fgets(cpu, MAXLINE, procfile);
+            get_cpu_err = fgets(cpu, MAXLINE, procfile);
             if (strncasecmp(cpu,
                             "model name", 10) == 0) {
                 sprintf(linebuf,
@@ -106,7 +108,7 @@ int main(int argc, char **argv) {
         host = popen(
             "hostname",
             "r");
-        fgets(nodename, MAXLINE, host);
+        get_nodename_err = fgets(nodename, MAXLINE, host);
         sprintf(linebuf,
                 "MAIN: Job running on node -> %s", nodename);
         output(linebuf);
@@ -115,7 +117,7 @@ int main(int argc, char **argv) {
         procfile = popen(
             "sysctl -n machdep.cpu.brand_string",
             "r");
-        fgets(cpu, MAXLINE, procfile);
+        get_cpu_err = fgets(cpu, MAXLINE, procfile);
         sprintf(linebuf,
                 "MAIN: CPU -> %s", cpu);
         output(linebuf);

@@ -31,8 +31,7 @@ or
 ```
 mkdir build
 cd build
-cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF ../
-make
+cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../make
 ```
 
 Make sure to add MPMC to your path after compiling.

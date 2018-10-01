@@ -257,7 +257,11 @@ int mc(system_t *system) {
     rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
 
     /* be a bit forgiving of the initial state */
+#ifdef __linux__
     if (!finite(initial_energy))
+#elif __APPLE__
+    if (!isfinite(initial_energy))
+#endif
         initial_energy = system->observables->energy = MAXVALUE;
 
     /* if root, open necessary output files */
@@ -313,7 +317,11 @@ int mc(system_t *system) {
             rot_partfunc = system->checkpoint->molecule_backup->rot_partfunc;
 
         /* treat a bad contact as a reject */
-        if (!finite(final_energy)) {
+#ifdef __linux__
+    if (!finite(final_energy)){
+#elif __APPLE__
+    if (!isfinite(final_energy)){
+#endif
             system->observables->energy = MAXVALUE;
             system->nodestats->boltzmann_factor = 0;
         } else

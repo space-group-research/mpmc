@@ -115,10 +115,6 @@ ocl_t *setup_ocl();
 /* main */
 void die(int);
 void usage(char *);
-double get_rand();
-void seed_rng(system_t *, int);
-void kill_rng();
-//double rule30_rng(long int);
 #ifdef QM_ROTATION
 void free_rotational(system_t *);
 #endif /* QM_ROTATION */
@@ -285,6 +281,8 @@ double n2_comp_back(double, double);
 double n2_fugacity_PR(double, double);
 double n2_fugacity_zhou(double, double);
 double co2_fugacity(double, double);
+
+double get_rand();
 
 //useful math calls
 double dddotprod(double *, double *);

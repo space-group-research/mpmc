@@ -1,5 +1,8 @@
-#include <mersenne.hpp>
 #include <random>
+extern
+    "C" {
+#include <mc.h>
+}
  
 static std::random_device rd; // random device engine, usually based on /dev/random on UNIX-like systems
 // initialize Mersennes' twister using rd to generate the seed

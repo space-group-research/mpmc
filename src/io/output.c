@@ -517,7 +517,7 @@ int write_molecules(system_t *system, FILE *fp) {
                     for (l = 0; l < 2; l++) {
                         for (m = 0; m < 2; m++) {
                             for (n = 0; n < 2; n++) {
-                                diff = fabs(i - l) + fabs(j - m) + fabs(k - n);
+                                diff = abs(i - l) + abs(j - m) + abs(k - n);
                                 if (diff == 1)
                                     fprintf(fp,
                                             "CONECT %4d %4d\n", box_labels[i][j][k], box_labels[l][m][n]);

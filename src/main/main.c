@@ -53,9 +53,11 @@ int main(int argc, char **argv) {
 #endif /* MPI */
 
     if (!rank) {
+#ifndef __WIN32__
         sprintf(linebuf,
                 "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2017 GNU Public License\n", VERSION);
         output(linebuf);
+#endif
         sprintf(linebuf,
                 "MAIN: processes started on %d cores @ %d-%d-%d %d:%d:%d\n", size, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         output(linebuf);
@@ -141,8 +143,10 @@ int main(int argc, char **argv) {
     /* install the signal handler to catch SIGTERM cleanly */
     terminate_handler(-1, system);
     signal(SIGTERM, ((void *)(terminate_handler)));
+#ifdef __linux__
     signal(SIGUSR1, ((void *)(terminate_handler)));
     signal(SIGUSR2, ((void *)(terminate_handler)));
+#endif
     output(
         "MAIN: signal handler installed\n");
 

@@ -337,11 +337,13 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 #endif /* MPI */
             break;
 
+#ifndef __WIN32__
         case SIGUSR1:
             output(
                 "CLEANUP: ************ SIGUSR1 received, exiting *************\n");
             close_files(sys_ptr);
             cleanup(system);
+#endif
 #ifdef MPI
             if (!rank) close_files(sys_ptr);
 #else
@@ -349,11 +351,13 @@ void terminate_handler(int sigtype, system_t *sys_ptr) {
 #endif /* MPI */
             break;
 
+#ifndef __WIN32__
         case SIGUSR2:
             output(
                 "CLEANUP: ************ SIGUSR2 received, exiting *************\n");
             close_files(sys_ptr);
             cleanup(system);
+#endif
 #ifdef MPI
             if (!rank) close_files(sys_ptr);
 #else

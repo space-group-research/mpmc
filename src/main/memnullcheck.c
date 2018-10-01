@@ -3,7 +3,7 @@
 #include <mc.h>
 
 // include for gcc stack trace
-#ifdef __GNUC__
+#ifndef __WIN32__
 #include <execinfo.h>
 #define STDERR 2
 #endif
@@ -39,7 +39,7 @@ int memnullcheck(void *ptr, int size, int line, char *file) {
                 "ERROR: Failed to allocate %d bytes.\n", size);
         fprintf(stderr,
                 "       Check %s:%d\n", file, line);
-#ifdef __GNUC__
+#ifndef __WIN32__
         // Print a stack trace
         // In gcc, must compile with -rdynamic option in order to see the function names
         fprintf(stderr,

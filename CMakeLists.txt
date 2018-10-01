@@ -15,7 +15,7 @@ configure_file (
 "${PROJECT_BINARY_DIR}/src/include/cmake_config.h"
 )
 
-message("COMPILING FOR ${CMAKE_BUILD_TYPE}")
+message("Compiling For ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
@@ -27,7 +27,7 @@ if ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_ID}" MATC
   #nothing to do here
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++" )
-  #elseif ("${CMAKE_COMPILER_ID}" STREQUAL "Intel")
+#elseif ("${CMAKE_COMPILER_ID}" STREQUAL "Intel") #just in case
 endif()
 
 

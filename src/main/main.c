@@ -182,9 +182,6 @@ int main(int argc, char **argv) {
         allocate_histogram_grid(system);
     }
 
-    /* seed the rng if neccessary */
-    if (system->ensemble != ENSEMBLE_TE && system->ensemble != ENSEMBLE_REPLAY)
-        seed_rng(system, rank);
 
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);

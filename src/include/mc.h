@@ -15,6 +15,7 @@ extern int rank, size;
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <mersenne.hpp>
 
 #include <cmake_config.h>
 #include <defines.h>

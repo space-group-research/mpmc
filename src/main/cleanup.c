@@ -315,8 +315,6 @@ void cleanup(system_t *system) {
 
     free(system->job_name);  // (CRC)
 
-    kill_rng();
-
     free(system);
 }
 

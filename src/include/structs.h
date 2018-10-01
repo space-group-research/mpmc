@@ -2,7 +2,6 @@
 #define STRUCTS_H
 
 #include "defines.h"
-#include "dSFMT.h"
 
 #ifdef OPENCL
 #include "CL/cl.h"

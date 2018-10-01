@@ -1,5 +1,6 @@
 project(mpmc)
 cmake_minimum_required(VERSION 2.8)
+set (CMAKE_CXX_STANDARD 11)
 
 option(MPI "Use MPI to parallelize the calculations (requires MPI)" OFF)
 option(CUDA "Use CUDA to offload polarization calculations to a GPU (requires CUDA)" OFF)
@@ -19,7 +20,7 @@ message("Compiling For ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 
 #use MATCHES here to use these flags for both regular Clang and AppleClang
@@ -33,7 +34,7 @@ endif()
 
 set(LIB m)
 
-set(INCLUDE src/include src/mersenne ${PROJECT_BINARY_DIR}/src/include)
+set(INCLUDE src/include ${PROJECT_BINARY_DIR}/src/include)
 
 set(SRC
 src/mc/mc_moves.c
@@ -48,6 +49,7 @@ src/mc/surf_fit.c
 src/mc/fugacity.cpp
 src/mc/cavity.c
 src/mc/checkpoint.c
+src/mersenne/mersenne.cpp
 src/histogram/histogram.c
 src/energy/lj_buffered_14_7.c
 src/energy/bessel.c
@@ -65,11 +67,6 @@ src/energy/coulombic.c
 src/energy/sg.c
 src/energy/lj.c
 src/energy/axilrod_teller.cpp
-src/mersenne/mt.c
-src/mersenne/dSFMT.h
-src/mersenne/dSFMT.c
-src/mersenne/dSFMT-common.h
-src/mersenne/dSFMT-params.h
 src/main/quaternion.c
 src/main/memnullcheck.c
 src/main/main.c

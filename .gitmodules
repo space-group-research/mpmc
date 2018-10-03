@@ -1,0 +1,3 @@
+[submodule "mpmc_testing"]
+	path = mpmc_testing
+	url = git@github.com:LucianoLaratelli/mpmc_testing.git

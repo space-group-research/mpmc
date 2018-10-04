@@ -92,78 +92,79 @@ src/polarization/thole_iterative.c
 )
 
 if(MPI)
-	message("-- MPI Enabled")
-	find_package(MPI REQUIRED)
-	if(NOT MPI_C_FOUND)
-		message(FATAL_ERROR "-- MPI not found! Exiting ...")
-	endif()
-	set(INCLUDE ${INCLUDE} ${MPI_C_INCLUDE_PATH})
-	set(LIB ${LIB} ${MPI_C_LIBRARIES})
+    message("-- MPI Enabled")
+    find_package(MPI REQUIRED)
+    if(NOT MPI_C_FOUND)
+        message(FATAL_ERROR "-- MPI not found! Exiting ...")
+    endif()
+    set(INCLUDE ${INCLUDE} ${MPI_C_INCLUDE_PATH})
+    set(LIB ${LIB} ${MPI_C_LIBRARIES})
 else()
-	message("-- MPI Disabled")
+    message("-- MPI Disabled")
 endif()
 
 if(CUDA)
-	message("-- CUDA Enabled")
-	find_package(CUDA REQUIRED)
-	set(SRC ${SRC} src/polarization_gpu/polar_cuda.cu)
+    message("-- CUDA Enabled")
+    find_package(CUDA REQUIRED)
+    set(SRC ${SRC} src/polarization_gpu/polar_cuda_pcg.cu)
 else()
-	message("-- CUDA Disabled")
+    message("-- CUDA Disabled")
 endif()
 
 if(OPENCL)
-	message("-- OpenCl Enabled")
-	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-	find_package(OpenCL REQUIRED)
-	if(NOT OPENCL_FOUND)
-		message(FATAL_ERROR "--OpenCl not found! Exiting ...")
-	endif()
-	set(SRC ${SRC}
-		src/polarization_gpu/polar_ocl.c
-		src/io/setup_ocl.c)
-	set(INCLUDE ${INCLUDE} ${OpenCL_INCLUDE_DIRS})
-	set(LIB ${LIB} ${OpenCL_LIBRARIES})
+    message("-- OpenCl Enabled")
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+    find_package(OpenCL REQUIRED)
+    if(NOT OPENCL_FOUND)
+        message(FATAL_ERROR "--OpenCl not found! Exiting ...")
+    endif()
+    set(SRC ${SRC}
+        src/polarization_gpu/polar_ocl.c
+        src/io/setup_ocl.c)
+    set(INCLUDE ${INCLUDE} ${OpenCL_INCLUDE_DIRS})
+    set(LIB ${LIB} ${OpenCL_LIBRARIES})
 else()
-	message("-- OpenCl Disabled")
+    message("-- OpenCl Disabled")
 endif()
 
 if(QM_ROTATION)
-	message("-- QM Rotation Enabled")
-	set(SRC ${SRC}
-		src/quantum_rotation/rotational_basis.c
-		src/quantum_rotation/rotational_eigenspectrum.c
-		src/quantum_rotation/rotational_integrate.c
-		src/quantum_rotation/rotational_potential.c)
-	set(LIB ${LIB} lapack)
+    message("-- QM Rotation Enabled")
+    set(SRC ${SRC}
+        src/quantum_rotation/rotational_basis.c
+        src/quantum_rotation/rotational_eigenspectrum.c
+        src/quantum_rotation/rotational_integrate.c
+        src/quantum_rotation/rotational_potential.c)
+    set(LIB ${LIB} lapack)
 else()
-	message("-- QM Rotation Disabled")
+    message("-- QM Rotation Disabled")
 endif()
 
 if(VDW)
-	message("-- CDVDW Enabled")
-	if(NOT QM_ROTATION)
-		set(LIB ${LIB} lapack)
-	endif()
+    message("-- CDVDW Enabled")
+    if(NOT QM_ROTATION)
+        set(LIB ${LIB} lapack)
+    endif()
 else()
-	message("-- CDVDW Disabled")
+    message("-- CDVDW Disabled")
 endif()
 
 include_directories(${INCLUDE})
 if(CUDA)
-	cuda_add_executable(${PROJECT_NAME} ${SRC})
+    cuda_add_executable(${PROJECT_NAME} ${SRC})
+    cuda_add_cublas_to_target(${PROJECT_NAME})
 else()
-	add_executable(${PROJECT_NAME} ${SRC})
+    add_executable(${PROJECT_NAME} ${SRC})
 endif()
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(MPI)
-	if(MPI_C_COMPILE_FLAGS)
-	  set_target_properties(${PROJECT_NAME} PROPERTIES
-		COMPILE_FLAGS "${MPI_C_COMPILE_FLAGS}")
-	endif()
+    if(MPI_C_COMPILE_FLAGS)
+      set_target_properties(${PROJECT_NAME} PROPERTIES
+        COMPILE_FLAGS "${MPI_C_COMPILE_FLAGS}")
+    endif()
 
-	if(MPI_C_LINK_FLAGS)
-	  set_target_properties(${PROJECT_NAME} PROPERTIES
-		LINK_FLAGS "${MPI_C_LINK_FLAGS}")
-	endif()
+    if(MPI_C_LINK_FLAGS)
+      set_target_properties(${PROJECT_NAME} PROPERTIES
+        LINK_FLAGS "${MPI_C_LINK_FLAGS}")
+    endif()
 endif()

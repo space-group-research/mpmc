@@ -135,7 +135,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <stdint.h>
 #include <structs.h>
 
 void thole_field(system_t*);
@@ -198,6 +198,12 @@ static const char * cublasGetErrorEnum(cublasStatus_t error)
 
         case CUBLAS_STATUS_INTERNAL_ERROR:
             return "CUBLAS_STATUS_INTERNAL_ERROR";
+
+        case CUBLAS_STATUS_NOT_SUPPORTED:
+            return "CUBLAS_STATUS_NOT_SUPPORTED";
+
+        case CUBLAS_STATUS_LICENSE_ERROR:
+            return "CUBLAS_STATUS_LICENSE_ERROR";
     }
 
     return "<unknown>";
@@ -358,6 +364,8 @@ float polar_cuda(system_t *system)
         cublasErrorHandler(cublasSdot(handle,3*N,z,1,r,1,&beta),__LINE__);
         cublasErrorHandler(cublasSdot(handle,3*N,z_prev,1,r_prev,1,&result),__LINE__);
         beta /= result;
+
+        printf("%f %f\n",alpha,beta);
 
         // P = Z + beta*P
         cublasErrorHandler(cublasScopy(handle,3*N,z,1,tmp,1),__LINE__);

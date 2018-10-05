@@ -255,7 +255,7 @@ float polar_cuda(system_t *system)
     }
     else
     {
-        printf("POLAR_CUDA: Found %s with id %d and %d cuda cores\n", prop.name, prop.pciBusID, getSPcores(prop));
+        printf("POLAR_CUDA: Found %s with id %d, %d MB and %d cuda cores\n", prop.name, prop.pciBusID, (int)prop.totalGlobalMem/1000000, getSPcores(prop));
     }
 
     cublasErrorHandler(cublasCreate(&handle),__LINE__); // initialize CUBLAS context

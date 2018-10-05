@@ -6,11 +6,10 @@ University of South Florida
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
-#include <structs.h>
+
+#define MAXFVALUE	1.0e14f
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -59,7 +58,19 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols, i
         }
         else
         {
-            if (ids[i]==ids[j]) continue;
+            if (ids[i]==ids[j]) 
+            {
+                A[9*N*j+3*i] = 0.0;
+                A[9*N*j+3*i+1] = 0.0;
+                A[9*N*j+3*i+2] = 0.0;
+                A[9*N*j+3*i+3*N] = 0.0;
+                A[9*N*j+3*i+3*N+1] = 0.0;
+                A[9*N*j+3*i+3*N+2] = 0.0;
+                A[9*N*j+3*i+6*N] = 0.0;
+                A[9*N*j+3*i+6*N+1] = 0.0;
+                A[9*N*j+3*i+6*N+2] = 0.0;
+                continue;
+            }
 
             // START MINIMUM IMAGE
             // get the particle displacement
@@ -121,6 +132,11 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols, i
 }
 
 extern "C" {
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <structs.h>
 
 void thole_field(system_t*);
 

@@ -1,6 +1,6 @@
 /*
 
-copyright your boi Adam @2018
+@2018, Adam Hogan
 @2010, Jonathan Belof
 University of South Florida
 
@@ -249,7 +249,7 @@ float polar_cuda(system_t *system)
     }
     else
     {
-        printf("POLAR_CUDA: We found a %s over here with id %d and %d cuda cores\n", prop.name, prop.pciBusID, getSPcores(prop));
+        printf("POLAR_CUDA: Found %s with id %d and %d cuda cores\n", prop.name, prop.pciBusID, getSPcores(prop));
     }
 
     cublasErrorHandler(cublasCreate(&handle),__LINE__); // initialize CUBLAS context

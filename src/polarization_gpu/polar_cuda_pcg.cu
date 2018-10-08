@@ -239,7 +239,10 @@ float polar_cuda(system_t *system)
     }
     else
     {
-        printf("POLAR_CUDA: Found %s with pci bus id %d, %d MB and %d cuda cores\n", prop.name, prop.pciBusID, (int)prop.totalGlobalMem/1000000, getSPcores(prop));
+        if (system->step==0)
+        {
+            printf("POLAR_CUDA: Found %s with pci bus id %d, %d MB and %d cuda cores\n", prop.name, prop.pciBusID, (int)prop.totalGlobalMem/1000000, getSPcores(prop));
+        }
     }
 
     cublasErrorHandler(cublasCreate(&handle),__LINE__); // initialize CUBLAS context
@@ -260,8 +263,6 @@ float polar_cuda(system_t *system)
     cudaErrorHandler(cudaMalloc((void**)&r_prev, 3*N*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&z_prev, 3*N*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&pos, N*sizeof(float4)),__LINE__);
-    cudaErrorHandler(cudaMalloc((void**)&basis, 9*sizeof(float)),__LINE__);
-    cudaErrorHandler(cudaMalloc((void**)&recip_basis, 9*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&pols, N*sizeof(float)),__LINE__);
 
     // copy over the basis matrix
@@ -386,11 +387,9 @@ float polar_cuda(system_t *system)
     cudaFree(r_prev);
     cudaFree(z_prev);
     cudaFree(pos);
-    cudaFree(basis);
-    cudaFree(recip_basis);
     cudaFree(pols);
     cublasDestroy(handle);
-
+    cudaErrorHandler(cudaGetLastError(),__LINE__);
     return potential;
 }
 

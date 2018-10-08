@@ -21,7 +21,7 @@ __global__ void precondition_z(int N, float *A, float *r, float *z)
     return;
 }
 
-__global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols, int *ids)
+__global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols)
 {
     int i = blockIdx.x;
 
@@ -58,20 +58,6 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols, i
         }
         else
         {
-            if (ids[i]==ids[j]) 
-            {
-                A[9*N*j+3*i] = 0.0;
-                A[9*N*j+3*i+1] = 0.0;
-                A[9*N*j+3*i+2] = 0.0;
-                A[9*N*j+3*i+3*N] = 0.0;
-                A[9*N*j+3*i+3*N+1] = 0.0;
-                A[9*N*j+3*i+3*N+2] = 0.0;
-                A[9*N*j+3*i+6*N] = 0.0;
-                A[9*N*j+3*i+6*N+1] = 0.0;
-                A[9*N*j+3*i+6*N+2] = 0.0;
-                continue;
-            }
-
             // START MINIMUM IMAGE
             // get the particle displacement
             dr.x = pos[i].x - pos[j].x;
@@ -235,11 +221,9 @@ float polar_cuda(system_t *system)
     int N = system->natoms;
     float *host_x, *host_b, *host_basis, *host_recip_basis, *host_pols; // host vectors
     float4 *host_pos;
-    int *host_ids;
     float *A; // GPU matrix
     float *x, *r, *z, *p, *tmp, *r_prev, *z_prev, *pols; // GPU vectors
     float4 *pos;
-    int *ids;
     const float one = 1.0; // these are for some CUBLAS calls
     const float zero = 0.0;
     const float neg_one = -1.0;
@@ -255,7 +239,7 @@ float polar_cuda(system_t *system)
     }
     else
     {
-        printf("POLAR_CUDA: Found %s with id %d, %d MB and %d cuda cores\n", prop.name, prop.pciBusID, (int)prop.totalGlobalMem/1000000, getSPcores(prop));
+        printf("POLAR_CUDA: Found %s with pci bus id %d, %d MB and %d cuda cores\n", prop.name, prop.pciBusID, (int)prop.totalGlobalMem/1000000, getSPcores(prop));
     }
 
     cublasErrorHandler(cublasCreate(&handle),__LINE__); // initialize CUBLAS context
@@ -266,7 +250,6 @@ float polar_cuda(system_t *system)
     host_recip_basis = (float*)calloc(9, sizeof(float));
     host_pos = (float4*)calloc(N, sizeof(float4));
     host_pols = (float*)calloc(N, sizeof(float));
-    host_ids = (int*)calloc(N, sizeof(int));
 
     cudaErrorHandler(cudaMalloc((void**)&x, 3*N*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&A, 3*N*3*N*sizeof(float)),__LINE__);
@@ -280,15 +263,14 @@ float polar_cuda(system_t *system)
     cudaErrorHandler(cudaMalloc((void**)&basis, 9*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&recip_basis, 9*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&pols, N*sizeof(float)),__LINE__);
-    cudaErrorHandler(cudaMalloc((void**)&ids, N*sizeof(int)),__LINE__);
 
     // copy over the basis matrix
     for(i = 0; i<3; i++)
     {
         for(j = 0; j<3; j++)
         {
-            host_basis[i*3+j] = (float)system->pbc->basis[i][j];
-            host_recip_basis[i*3+j] = (float)system->pbc->reciprocal_basis[i][j];
+            host_basis[i*3+j] = (float)system->pbc->basis[j][i];
+            host_recip_basis[i*3+j] = (float)system->pbc->reciprocal_basis[j][i];
         }
     }
 
@@ -305,7 +287,6 @@ float polar_cuda(system_t *system)
             host_pos[i].y = (float)atom_ptr->pos[1];
             host_pos[i].z = (float)atom_ptr->pos[2];
             host_pols[i] = (float)atom_ptr->polarizability;
-            host_ids[i] = molecule_ptr->id;
             for (j=0; j<3; j++)
             {
                 host_b[3*i+j] = (float)(atom_ptr->ef_static[j]+atom_ptr->ef_static_self[j]);
@@ -318,10 +299,9 @@ float polar_cuda(system_t *system)
     cudaErrorHandler(cudaMemcpy(r, host_b, 3*N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
     cudaErrorHandler(cudaMemcpy(x, host_x, 3*N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
     cudaErrorHandler(cudaMemcpy(pols, host_pols, N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
-    cudaErrorHandler(cudaMemcpy(ids, host_ids, N*sizeof(int), cudaMemcpyHostToDevice),__LINE__);
 
     // make A matrix on GPU
-    build_a<<<N,1>>>(N, A, system->polar_damp, pos, pols, ids);
+    build_a<<<N,1>>>(N, A, system->polar_damp, pos, pols);
     cudaErrorHandler(cudaGetLastError(),__LINE__-1);
 
     // R = B - A*X0
@@ -365,54 +345,29 @@ float polar_cuda(system_t *system)
         cublasErrorHandler(cublasSdot(handle,3*N,z_prev,1,r_prev,1,&result),__LINE__);
         beta /= result;
 
-        printf("%f %f\n",alpha,beta);
-
         // P = Z + beta*P
         cublasErrorHandler(cublasScopy(handle,3*N,z,1,tmp,1),__LINE__);
         cublasErrorHandler(cublasSaxpy(handle,3*N,&beta,p,1,tmp,1),__LINE__);
         cublasErrorHandler(cublasScopy(handle,3*N,tmp,1,p,1),__LINE__);
+
+        cudaErrorHandler(cudaMemcpy(host_x, x, 3*N*sizeof(float), cudaMemcpyDeviceToHost),__LINE__);
     }
 
     cudaErrorHandler(cudaMemcpy(host_x, x, 3*N*sizeof(float), cudaMemcpyDeviceToHost),__LINE__);
 
-    // debug
-    
-    /*float *test_A;
-    int *test_vec;
-    test_A = (float*)calloc(3*N*3*N, sizeof(float));
-    test_vec = (int*)calloc(N, sizeof(int));
-    cudaErrorHandler(cudaMemcpy(test_A, A, 3*N*3*N*sizeof(float), cudaMemcpyDeviceToHost),__LINE__);
-    cudaErrorHandler(cudaMemcpy(test_vec, ids, N*sizeof(int), cudaMemcpyDeviceToHost),__LINE__);
-
-    for (i=0;i<N;i++)
-    {
-        printf("%d ",host_ids[i]);
-    }
-    printf("\n");*/
-
-    /*for (i=0;i<3*N;i++)
-    {
-        for (j=0;j<3*N;j++)
-        {
-            printf("%f ",test_A[3*N*i+j]);
-        }
-        printf("\n");
-    }*/
-    
-    // end debug
-
+    potential = 0.0;
     for(molecule_ptr = system->molecules, i = 0; molecule_ptr; molecule_ptr = molecule_ptr->next)
     {
         for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++)
         {
 
-            atom_ptr->mu[0] = (double)host_x[3*i];
-            atom_ptr->mu[1] = (double)host_x[3*i+1];
-            atom_ptr->mu[2] = (double)host_x[3*i+2];
+            atom_ptr->mu[0] = (float)host_x[3*i];
+            atom_ptr->mu[1] = (float)host_x[3*i+1];
+            atom_ptr->mu[2] = (float)host_x[3*i+2];
 
-            potential += atom_ptr->mu[0]*atom_ptr->ef_static[0];
-            potential += atom_ptr->mu[1]*atom_ptr->ef_static[1];
-            potential += atom_ptr->mu[2]*atom_ptr->ef_static[2];
+            potential += atom_ptr->mu[0]*(atom_ptr->ef_static[0]+atom_ptr->ef_static_self[0]);
+            potential += atom_ptr->mu[1]*(atom_ptr->ef_static[1]+atom_ptr->ef_static_self[1]);
+            potential += atom_ptr->mu[2]*(atom_ptr->ef_static[2]+atom_ptr->ef_static_self[2]);
         }
     }
 
@@ -424,7 +379,6 @@ float polar_cuda(system_t *system)
     free(host_recip_basis);
     free(host_pos);
     free(host_pols);
-    free(host_ids);
     cudaFree(x);
     cudaFree(A);
     cudaFree(r);
@@ -437,7 +391,6 @@ float polar_cuda(system_t *system)
     cudaFree(basis);
     cudaFree(recip_basis);
     cudaFree(pols);
-    cudaFree(ids);
     cublasDestroy(handle);
 
     return potential;

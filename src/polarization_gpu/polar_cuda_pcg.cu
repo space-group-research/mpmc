@@ -349,8 +349,6 @@ float polar_cuda(system_t *system)
         cublasErrorHandler(cublasScopy(handle,3*N,z,1,tmp,1),__LINE__);
         cublasErrorHandler(cublasSaxpy(handle,3*N,&beta,p,1,tmp,1),__LINE__);
         cublasErrorHandler(cublasScopy(handle,3*N,tmp,1,p,1),__LINE__);
-
-        cudaErrorHandler(cudaMemcpy(host_x, x, 3*N*sizeof(float), cudaMemcpyDeviceToHost),__LINE__);
     }
 
     cudaErrorHandler(cudaMemcpy(host_x, x, 3*N*sizeof(float), cudaMemcpyDeviceToHost),__LINE__);
@@ -361,9 +359,9 @@ float polar_cuda(system_t *system)
         for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next, i++)
         {
 
-            atom_ptr->mu[0] = (float)host_x[3*i];
-            atom_ptr->mu[1] = (float)host_x[3*i+1];
-            atom_ptr->mu[2] = (float)host_x[3*i+2];
+            atom_ptr->mu[0] = (double)host_x[3*i];
+            atom_ptr->mu[1] = (double)host_x[3*i+1];
+            atom_ptr->mu[2] = (double)host_x[3*i+2];
 
             potential += atom_ptr->mu[0]*(atom_ptr->ef_static[0]+atom_ptr->ef_static_self[0]);
             potential += atom_ptr->mu[1]*(atom_ptr->ef_static[1]+atom_ptr->ef_static_self[1]);

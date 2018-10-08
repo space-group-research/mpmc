@@ -5,3 +5,4 @@ build
 build/*
 .idea/
 cmake-build-debug/
+.dropbox.attr

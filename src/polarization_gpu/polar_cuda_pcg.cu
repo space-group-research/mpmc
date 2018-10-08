@@ -211,8 +211,9 @@ void cublasErrorHandler(cublasStatus_t error, int line)
     }
 }
 
-float polar_cuda(system_t *system)
+void* polar_cuda(void *ptr)
 {
+    system_t *system = (system_t*)ptr;
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     int i,j,iterations;
@@ -235,7 +236,7 @@ float polar_cuda(system_t *system)
     if(error != cudaSuccess)
     {
         cudaErrorHandler(error,__LINE__);
-        return(-1);
+        return NULL;
     }
     else
     {
@@ -324,8 +325,6 @@ float polar_cuda(system_t *system)
         cublasErrorHandler(cublasSdot(handle,3*N,p,1,tmp,1,&result),__LINE__);
         alpha /= result;
 
-        //printf("%f %f\n",alpha,result);
-
         // X = X + alpha*P
         cublasErrorHandler(cublasSaxpy(handle,3*N,&alpha,p,1,x,1),__LINE__);
 
@@ -378,19 +377,20 @@ float polar_cuda(system_t *system)
     free(host_recip_basis);
     free(host_pos);
     free(host_pols);
-    cudaFree(x);
-    cudaFree(A);
-    cudaFree(r);
-    cudaFree(z);
-    cudaFree(p);
-    cudaFree(tmp);
-    cudaFree(r_prev);
-    cudaFree(z_prev);
-    cudaFree(pos);
-    cudaFree(pols);
-    cublasDestroy(handle);
-    cudaErrorHandler(cudaGetLastError(),__LINE__);
-    return potential;
+    cudaErrorHandler(cudaFree(x),__LINE__);
+    cudaErrorHandler(cudaFree(A),__LINE__);
+    cudaErrorHandler(cudaFree(r),__LINE__);
+    cudaErrorHandler(cudaFree(z),__LINE__);
+    cudaErrorHandler(cudaFree(p),__LINE__);
+    cudaErrorHandler(cudaFree(tmp),__LINE__);
+    cudaErrorHandler(cudaFree(r_prev),__LINE__);
+    cudaErrorHandler(cudaFree(z_prev),__LINE__);
+    cudaErrorHandler(cudaFree(pos),__LINE__);
+    cudaErrorHandler(cudaFree(pols),__LINE__);
+    cublasErrorHandler(cublasDestroy(handle),__LINE__);
+
+    system->observables->polarization_energy = (double)potential;
+    return NULL;
 }
 
 }

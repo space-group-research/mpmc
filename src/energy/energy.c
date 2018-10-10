@@ -120,9 +120,11 @@ double energy(system_t *system) {
             else
             {
                 polar_energy = polar(system);
+                system->observables->polarization_energy = polar_energy;
             }
 #else
             polar_energy = polar(system);
+            system->observables->polarization_energy = polar_energy;
 #endif /* CUDA */
         }
 

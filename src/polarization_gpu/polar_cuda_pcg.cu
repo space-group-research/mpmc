@@ -9,7 +9,9 @@ University of South Florida
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 
-#define MAXFVALUE	1.0e14f
+#define MAXFVALUE	1.0e13f
+
+#define THREADS 32
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -21,34 +23,38 @@ __global__ void precondition_z(int N, float *A, float *r, float *z)
     return;
 }
 
-__global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols)
+__global__ void build_a(int N, float *A, const float damp, float3 *pos, float *pols)
 {
-    int i = blockIdx.x;
+    int i = blockIdx.x,j;
 
     if (i>=N) return;
 
     float r, r2, r3, r5;
-    float damp2, damp3, expr, damping_term1, damping_term2;
-    float4 dr, dri, img;
+    float expr, damping_term1, damping_term2;
+    float3 dr, dri, img;
 
-    int j;
-    for(j=0;j<N;j++)
+    const float one_over_pol_i = 1.0/pols[i];
+    const float3 pos_i = pos[i];
+    const float3 recip_basis_0 = make_float3(recip_basis[0],recip_basis[1],recip_basis[2]);
+    const float3 recip_basis_1 = make_float3(recip_basis[3],recip_basis[4],recip_basis[5]);
+    const float3 recip_basis_2 = make_float3(recip_basis[6],recip_basis[7],recip_basis[8]);
+    const float3 basis_0 = make_float3(basis[0],basis[1],basis[2]);
+    const float3 basis_1 = make_float3(basis[3],basis[4],basis[5]);
+    const float3 basis_2 = make_float3(basis[6],basis[7],basis[8]);
+
+    const float damp2 = damp*damp;
+    const float damp3 = damp2*damp;
+
+    const int N_per_thread = int(N-0.5)/THREADS+1;
+    const int threadid = threadIdx.x;
+    const int threadid_plus_one = threadIdx.x+1;
+    for(j=threadid*N_per_thread;j<threadid_plus_one*N_per_thread&&j<N;j++)
     {
         if (i==j)
         {
-            // diagonal bit
-            if (pols[i]!=0.0)
-            {
-                A[9*N*j+3*i] = 1.0/pols[i];
-                A[9*N*j+3*i+3*N+1] = 1.0/pols[i];
-                A[9*N*j+3*i+6*N+2] = 1.0/pols[i];
-            }
-            else
-            {
-                A[9*N*j+3*i] = MAXFVALUE;
-                A[9*N*j+3*i+3*N+1] = MAXFVALUE;
-                A[9*N*j+3*i+6*N+2] = MAXFVALUE;
-            }
+            A[9*N*j+3*i] = one_over_pol_i;
+            A[9*N*j+3*i+3*N+1] = one_over_pol_i;
+            A[9*N*j+3*i+6*N+2] = one_over_pol_i;
             A[9*N*j+3*i+1] = 0.0;
             A[9*N*j+3*i+2] = 0.0;
             A[9*N*j+3*i+3*N] = 0.0;
@@ -60,22 +66,22 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols)
         {
             // START MINIMUM IMAGE
             // get the particle displacement
-            dr.x = pos[i].x - pos[j].x;
-            dr.y = pos[i].y - pos[j].y;
-            dr.z = pos[i].z - pos[j].z;
+            dr.x = pos_i.x - pos[j].x;
+            dr.y = pos_i.y - pos[j].y;
+            dr.z = pos_i.z - pos[j].z;
 
             // matrix multiply with the inverse basis and round
-            img.x = recip_basis[0]*dr.x + recip_basis[1]*dr.y + recip_basis[2]*dr.z;
-            img.y = recip_basis[3]*dr.x + recip_basis[4]*dr.y + recip_basis[5]*dr.z;
-            img.z = recip_basis[6]*dr.x + recip_basis[7]*dr.y + recip_basis[8]*dr.z;
+            img.x = recip_basis_0.x*dr.x + recip_basis_0.y*dr.y + recip_basis_0.z*dr.z;
+            img.y = recip_basis_1.x*dr.x + recip_basis_1.y*dr.y + recip_basis_1.z*dr.z;
+            img.z = recip_basis_2.x*dr.x + recip_basis_2.y*dr.y + recip_basis_2.z*dr.z;
             img.x = rintf(img.x);
             img.y = rintf(img.y);
             img.z = rintf(img.z);
 
             // matrix multiply to project back into our basis
-            dri.x = basis[0]*img.x + basis[1]*img.y + basis[2]*img.z;
-            dri.y = basis[3]*img.x + basis[4]*img.y + basis[5]*img.z;
-            dri.z = basis[6]*img.x + basis[7]*img.y + basis[8]*img.z;
+            dri.x = basis_0.x*img.x + basis_0.y*img.y + basis_0.z*img.z;
+            dri.y = basis_1.x*img.x + basis_1.y*img.y + basis_1.z*img.z;
+            dri.z = basis_2.x*img.x + basis_2.y*img.y + basis_2.z*img.z;
 
             // now correct the displacement
             dri.x = dr.x - dri.x;
@@ -92,8 +98,6 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols)
             // END MINIMUM IMAGE
 
             // damping terms
-            damp2 = damp*damp;
-            damp3 = damp2*damp;
             expr =  __expf(-damp*r);
             damping_term1 = 1.0f - expr*(0.5f*damp2*r2 + damp*r + 1.0f);
             damping_term2 = 1.0f - expr*(damp3*r*r2/6.0f + 0.5f*damp2*r2 + damp*r + 1.0f);
@@ -104,13 +108,16 @@ __global__ void build_a(int N, float *A, float damp, float4 *pos, float *pols)
 
             // exploit symmetry
             A[9*N*j+3*i] = dri.x*dri.x*damping_term2 + damping_term1;
-            A[9*N*j+3*i+1] = dri.x*dri.y*damping_term2;
-            A[9*N*j+3*i+2] = dri.x*dri.z*damping_term2;
-            A[9*N*j+3*i+3*N] = A[9*N*j+3*i+1];
+            const float tmp1 = dri.x*dri.y*damping_term2;
+            A[9*N*j+3*i+1] = tmp1;
+            const float tmp2 = dri.x*dri.z*damping_term2;
+            A[9*N*j+3*i+2] = tmp2;
+            A[9*N*j+3*i+3*N] = tmp1;
             A[9*N*j+3*i+3*N+1] = dri.y*dri.y*damping_term2 + damping_term1;
-            A[9*N*j+3*i+3*N+2] = dri.y*dri.z*damping_term2;
-            A[9*N*j+3*i+6*N] = A[9*N*j+3*i+2];
-            A[9*N*j+3*i+6*N+1] = A[9*N*j+3*i+3*N+2];
+            const float tmp3 = dri.y*dri.z*damping_term2;
+            A[9*N*j+3*i+3*N+2] = tmp3;
+            A[9*N*j+3*i+6*N] = tmp2;
+            A[9*N*j+3*i+6*N+1] = tmp3;
             A[9*N*j+3*i+6*N+2] = dri.z*dri.z*damping_term2 + damping_term1;
         }
     }
@@ -221,10 +228,10 @@ void* polar_cuda(void *ptr)
     float alpha, beta, result;
     int N = system->natoms;
     float *host_x, *host_b, *host_basis, *host_recip_basis, *host_pols; // host vectors
-    float4 *host_pos;
+    float3 *host_pos;
     float *A; // GPU matrix
     float *x, *r, *z, *p, *tmp, *r_prev, *z_prev, *pols; // GPU vectors
-    float4 *pos;
+    float3 *pos;
     const float one = 1.0; // these are for some CUBLAS calls
     const float zero = 0.0;
     const float neg_one = -1.0;
@@ -252,7 +259,7 @@ void* polar_cuda(void *ptr)
     host_x = (float*)calloc(3*N, sizeof(float));
     host_basis = (float*)calloc(9, sizeof(float));
     host_recip_basis = (float*)calloc(9, sizeof(float));
-    host_pos = (float4*)calloc(N, sizeof(float4));
+    host_pos = (float3*)calloc(N, sizeof(float3));
     host_pols = (float*)calloc(N, sizeof(float));
 
     cudaErrorHandler(cudaMalloc((void**)&x, 3*N*sizeof(float)),__LINE__);
@@ -263,7 +270,7 @@ void* polar_cuda(void *ptr)
     cudaErrorHandler(cudaMalloc((void**)&tmp, 3*N*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&r_prev, 3*N*sizeof(float)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&z_prev, 3*N*sizeof(float)),__LINE__);
-    cudaErrorHandler(cudaMalloc((void**)&pos, N*sizeof(float4)),__LINE__);
+    cudaErrorHandler(cudaMalloc((void**)&pos, N*sizeof(float3)),__LINE__);
     cudaErrorHandler(cudaMalloc((void**)&pols, N*sizeof(float)),__LINE__);
 
     // copy over the basis matrix
@@ -288,7 +295,7 @@ void* polar_cuda(void *ptr)
             host_pos[i].x = (float)atom_ptr->pos[0];
             host_pos[i].y = (float)atom_ptr->pos[1];
             host_pos[i].z = (float)atom_ptr->pos[2];
-            host_pols[i] = (float)atom_ptr->polarizability;
+            host_pols[i] = (atom_ptr->polarizability==0.0) ? 1.0f/MAXFVALUE : (float)atom_ptr->polarizability;
             for (j=0; j<3; j++)
             {
                 host_b[3*i+j] = (float)(atom_ptr->ef_static[j]+atom_ptr->ef_static_self[j]);
@@ -297,13 +304,13 @@ void* polar_cuda(void *ptr)
         }
     }
 
-    cudaErrorHandler(cudaMemcpy(pos, host_pos, N*sizeof(float4), cudaMemcpyHostToDevice),__LINE__); // copy over pos (to pos), b (to r), x (to x) and pols (to pols)
+    cudaErrorHandler(cudaMemcpy(pos, host_pos, N*sizeof(float3), cudaMemcpyHostToDevice),__LINE__); // copy over pos (to pos), b (to r), x (to x) and pols (to pols)
     cudaErrorHandler(cudaMemcpy(r, host_b, 3*N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
     cudaErrorHandler(cudaMemcpy(x, host_x, 3*N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
     cudaErrorHandler(cudaMemcpy(pols, host_pols, N*sizeof(float), cudaMemcpyHostToDevice),__LINE__);
 
     // make A matrix on GPU
-    build_a<<<N,1>>>(N, A, system->polar_damp, pos, pols);
+    build_a<<<N,THREADS>>>(N, A, system->polar_damp, pos, pols);
     cudaErrorHandler(cudaGetLastError(),__LINE__-1);
 
     // R = B - A*X0

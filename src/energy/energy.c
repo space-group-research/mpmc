@@ -178,7 +178,7 @@ double energy(system_t *system) {
         }
 
 #ifdef CUDA
-        if (system->cuda)
+        if (!(system->sg || system->rd_only)&&system->polarization&&system->cuda)
         {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;

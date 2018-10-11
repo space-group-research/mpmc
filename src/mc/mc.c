@@ -254,7 +254,6 @@ int mc(system_t *system) {
     /* solve for the rotational energy levels */
     if (system->quantum_rotation) quantum_system_rotational_energies(system);
 #endif /* QM_ROTATION */
-    rot_partfunc = system->checkpoint->molecule_altered->rot_partfunc;
 
     /* be a bit forgiving of the initial state */
     if (!isfinite(initial_energy))

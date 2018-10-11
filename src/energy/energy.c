@@ -8,6 +8,9 @@ University of South Florida
 */
 
 #include <mc.h>
+#ifdef CUDA
+#include<pthread.h>
+#endif
 
 /* count the number of molecules currently in the system excluding frozen, adiabatic, etc.*/
 void countN(system_t *system) {
@@ -97,6 +100,34 @@ double energy(system_t *system) {
         potential_energy += cavity_absolute_check(system);
 
     if (potential_energy == 0) {  // only run energy check if bad contact not found.
+        /* get the polarization potential */
+        /* moved this to the front so that we can start the cuda thread up before starting the other energy calculations */
+#ifdef CUDA
+        pthread_t cuda_worker;
+#endif
+        if (!(system->sg || system->rd_only)&&system->polarization) {
+
+#ifdef CUDA
+            if (system->cuda)
+            {
+                int rc = pthread_create(&cuda_worker, NULL, polar_cuda, (void *) system);
+                if (rc)
+                {
+                    printf("ERROR; return code from pthread_create() is %d\n", rc);
+                    exit(-1);
+                }
+            }
+            else
+            {
+                polar_energy = polar(system);
+                system->observables->polarization_energy = polar_energy;
+            }
+#else
+            polar_energy = polar(system);
+            system->observables->polarization_energy = polar_energy;
+#endif /* CUDA */
+        }
+
         /* get the repulsion/dispersion potential */
         if (system->rd_anharmonic)
             rd_energy = anharmonic(system);
@@ -131,39 +162,6 @@ double energy(system_t *system) {
                 coulombic_energy = coulombic(system);
             system->observables->coulombic_energy = coulombic_energy;
 
-            /* get the polarization potential */
-            if (system->polarization) {
-#ifdef POLARTIMING
-                /* get timing of polarization energy function for cuda comparison */
-                gettimeofday(&old_time, NULL);
-#endif
-
-#ifdef CUDA
-                if (system->cuda)
-                    polar_energy = (double)polar_cuda(system);
-                else
-                    polar_energy = polar(system);
-#else
-                polar_energy = polar(system);
-#endif /* CUDA */
-
-#ifdef POLARTIMING
-                gettimeofday(&new_time, NULL);
-                timing = timing * (double)count / ((double)count + 1.0) + (double)((new_time.tv_sec - old_time.tv_sec) * 1e6 + (new_time.tv_usec - old_time.tv_usec)) * 1.0 / ((double)count + 1.0);
-                count++;
-                if (system->corrtime) {
-                    if (count % system->corrtime == 0) sprintf(linebuf,
-                                                               "OUTPUT: Polarization energy function took %lf us\n", timing);
-                    output(linebuf);
-                } else {
-                    sprintf(linebuf,
-                            "OUTPUT: Polarization energy function took %lf us\n", timing);
-                    output(linebuf);
-                }
-#endif
-
-                system->observables->polarization_energy = polar_energy;
-            }
             if (system->polarvdw) {
 #ifdef CUDA
                 if (system->cuda) {
@@ -178,11 +176,20 @@ double energy(system_t *system) {
                 system->observables->vdw_energy = vdw_energy;
             }
         }
+
+#ifdef CUDA
+        if (!(system->sg || system->rd_only)&&system->polarization&&system->cuda)
+        {
+            pthread_join(cuda_worker, NULL);
+            polar_energy = system->observables->polarization_energy;
+        }
+#endif
     }  // end if cavity_autoreject_absolute did not find bad match. (if potential==0)
     else {
         // increment the counter for rejected moves. this is reported at the end of the simulation.
         system->count_autorejects++;
     }
+
     /* sum the total potential energy */
     potential_energy += rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
 
@@ -253,7 +260,10 @@ double energy_no_observables(system_t *system) {
 #ifdef CUDA
 
             if (system->cuda)
-                polar_energy = (double)polar_cuda(system);
+            {
+                polar_cuda(system);
+                polar_energy = system->observables->polarization_energy;
+            }
             else
                 polar_energy = polar(system);
 

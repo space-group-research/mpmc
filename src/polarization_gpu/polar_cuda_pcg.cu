@@ -11,7 +11,7 @@ University of South Florida
 
 #define MAXFVALUE	1.0e13f
 
-#define THREADS 32
+#define THREADS 64
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];

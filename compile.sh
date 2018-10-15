@@ -10,6 +10,9 @@ if [ $? == 0 ]; then
   module purge
   module load compilers/gcc/5.1.0
   module load compilers/intel/2015_cluster_xe
+  if [ "$1" = "cuda" ]; then
+    module load apps/cuda/8.0
+  fi
   export CC=icc
   export CXX=icpc
 fi

@@ -20,8 +20,13 @@ fi
 echo $HOSTNAME | grep "bridges.psc.edu"
 
 if [ $? == 0 ]; then
-  export CC=icc
-  export CXX=icpc
+  module purge
+  module load gcc/5.3.0
+  if [ "$1" = "cuda" ]; then
+    module load cuda/8.0
+  fi
+  export CC=gcc
+  export CXX=g++
 fi
 
 echo $HOSTNAME | grep ".sdsc.edu"

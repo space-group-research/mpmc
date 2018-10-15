@@ -27,12 +27,15 @@ fi
 echo $HOSTNAME | grep ".sdsc.edu"
 
 if [ $? == 0 ]; then
+  module purge
+  module purge
   module load cmake/3.9.1
   module load gnu/4.9.2
-  module load intel/2015.2.164
-
-  export CC=icc
-  export CXX=icpc
+  if [ "$1" = "cuda" ]; then
+    module load cuda/8.0
+  fi
+  export CC=gcc
+  export CXX=g++
 fi
 
 if [ "$1" = "debug" ]; then
@@ -45,4 +48,4 @@ else
   cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
 fi
 
-make
+make -j4

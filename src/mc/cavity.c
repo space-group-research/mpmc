@@ -50,7 +50,7 @@ void cavity_volume(system_t *system) {
     /* throw random darts and count the number of hits */
     for (throw = 0, hits = 0; throw < num_darts; throw ++) {
         /* generate a random grid position */
-        for (p = 0; p < 3; p++) grid_vec[p] = -0.5 + get_rand();
+        for (p = 0; p < 3; p++) grid_vec[p] = -0.5 + get_rand(system);
 
         /* zero the coordinate vector */
         for (p = 0; p < 3; p++) pos_vec[p] = 0;

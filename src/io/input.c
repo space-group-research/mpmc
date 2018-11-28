@@ -117,17 +117,8 @@ int do_command(system_t *system, char **token) {
     else if (!strcasecmp(token[0],
                          "preset_seeds")) {
         {
-            if (safe_atou(token[1], &(system->preset_seeds[0]))) return 1;
-        }
-        {
-            if (safe_atou(token[2], &(system->preset_seeds[1]))) return 1;
-        }
-        {
-            if (safe_atou(token[3], &(system->preset_seeds[2]))) return 1;
-        }
-        {
-            if (safe_atou(token[4], &(system->preset_seeds[3]))) return 1;
-        }
+            if (safe_atou(token[1], &(system->preset_seeds))) return 1;
+        }  
         system->preset_seeds_on = 1;
     }
 

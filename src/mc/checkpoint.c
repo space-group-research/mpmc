@@ -46,26 +46,26 @@ void checkpoint(system_t *system) {
     switch (system->ensemble) {
         case ENSEMBLE_UVT:
 
-            if (get_rand() < system->insert_probability) { /* do a particle insertion/deletion move */
+            if (get_rand(system) < system->insert_probability) { /* do a particle insertion/deletion move */
 
-                if (get_rand() < 0.5) { /* INSERT */
+                if (get_rand(system) < 0.5) { /* INSERT */
                     system->checkpoint->movetype = MOVETYPE_INSERT;
                 } else { /* REMOVE */
                     system->checkpoint->movetype = MOVETYPE_REMOVE;
                 }
 
             } else if (system->quantum_rotation) {
-                if (get_rand() < system->spinflip_probability) /* SPINFLIP */
+                if (get_rand(system) < system->spinflip_probability) /* SPINFLIP */
                     system->checkpoint->movetype = MOVETYPE_SPINFLIP;
                 else {
-                    if (num_molecules_adiabatic && (get_rand() < 0.5))     /* DISPLACE */
+                    if (num_molecules_adiabatic && (get_rand(system) < 0.5))     /* DISPLACE */
                         system->checkpoint->movetype = MOVETYPE_ADIABATIC; /* for the adiabatic mole fraction */
                     else
                         system->checkpoint->movetype = MOVETYPE_DISPLACE;
                 }
 
             } else {                                                   /* DISPLACE */
-                if (num_molecules_adiabatic && (get_rand() < 0.5))     /* DISPLACE */
+                if (num_molecules_adiabatic && (get_rand(system) < 0.5))     /* DISPLACE */
                     system->checkpoint->movetype = MOVETYPE_ADIABATIC; /* for the adiabatic mole fraction */
                 else
                     system->checkpoint->movetype = MOVETYPE_DISPLACE;
@@ -75,7 +75,7 @@ void checkpoint(system_t *system) {
         case ENSEMBLE_NVT:
         case ENSEMBLE_NVE:
 
-            if (system->quantum_rotation && (get_rand() < system->spinflip_probability))
+            if (system->quantum_rotation && (get_rand(system) < system->spinflip_probability))
                 system->checkpoint->movetype = MOVETYPE_SPINFLIP;
             else
                 system->checkpoint->movetype = MOVETYPE_DISPLACE;
@@ -84,12 +84,12 @@ void checkpoint(system_t *system) {
         case ENSEMBLE_NPT:
 
             if (system->volume_probability == 0.0) {  //if volume probability isn't set, then do volume moves with prob = 1/nmolecules
-                if (get_rand() < 1.0 / system->observables->N)
+                if (get_rand(system) < 1.0 / system->observables->N)
                     system->checkpoint->movetype = MOVETYPE_VOLUME;
                 else
                     system->checkpoint->movetype = MOVETYPE_DISPLACE;
             } else {  //if volume probability IS set
-                if (get_rand() < system->volume_probability)
+                if (get_rand(system) < system->volume_probability)
                     system->checkpoint->movetype = MOVETYPE_VOLUME;
                 else
                     system->checkpoint->movetype = MOVETYPE_DISPLACE;
@@ -107,14 +107,14 @@ void checkpoint(system_t *system) {
     if (system->checkpoint->movetype == MOVETYPE_ADIABATIC) {
         --num_molecules_adiabatic;
         num_molecules_adiabatic_double = (double)num_molecules_adiabatic;
-        altered = num_molecules_adiabatic - (int)rint(num_molecules_adiabatic_double * get_rand());
+        altered = num_molecules_adiabatic - (int)rint(num_molecules_adiabatic_double * get_rand(system));
         system->checkpoint->molecule_altered = ptr_array_adiabatic[altered];
 
     } else {
         if (system->num_insertion_molecules && system->checkpoint->movetype == MOVETYPE_INSERT) {
             // If the move is an insertion and a molecule insertion list
             // has been set up, then select a molecule from said list:
-            alt = (int)floor(get_rand() * (double)system->num_insertion_molecules);
+            alt = (int)floor(get_rand(system) * (double)system->num_insertion_molecules);
             system->checkpoint->molecule_altered = system->insertion_molecules_array[alt];
             //needed to calculate boltzmann factor
             system->sorbateInsert = alt;
@@ -123,7 +123,7 @@ void checkpoint(system_t *system) {
         else {
             // Otherwise, perform the original MPMC treatment:
             --num_molecules_exchange;
-            altered = (int)floor(get_rand() * system->observables->N);
+            altered = (int)floor(get_rand(system) * system->observables->N);
             system->checkpoint->molecule_altered = ptr_array_exchange[altered];
 
             // if multi sorbate, we need to record the type of sorbate removed
@@ -147,7 +147,7 @@ void checkpoint(system_t *system) {
 
     /* never completely empty the list */
     if (!num_molecules_exchange && system->checkpoint->movetype == MOVETYPE_REMOVE) {
-        if (system->quantum_rotation && (get_rand() < system->spinflip_probability))
+        if (system->quantum_rotation && (get_rand(system) < system->spinflip_probability))
             system->checkpoint->movetype = MOVETYPE_SPINFLIP;
         else
             system->checkpoint->movetype = MOVETYPE_DISPLACE;

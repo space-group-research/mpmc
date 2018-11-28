@@ -1,4 +1,4 @@
-// .-._                                                   _,-,
+// .-a_                                                   _,-,
 //  `._`-._                                           _,-'_,'
 //     `._ `-._                                   _,-' _,'
 //        `._  `-._        __.-----.__        _,-'  _,'
@@ -69,7 +69,7 @@ void temper_system(system_t *system, double current_energy) {
             if (system->ptemp->index[j] == i) bath2core[i] = j;
 
     //choose the lucky bath. it's not really lucky.. this is just the first bath that we consider for swapping
-    if (!rank) lucky = floor(get_rand() * size);
+    if (!rank) lucky = floor(get_rand(system) * size);
     MPI_Bcast(&lucky, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     //we will use this array to designate whether a particular core is a master or slave
@@ -106,7 +106,7 @@ void temper_system(system_t *system, double current_energy) {
         //calculate boltzmann factor exp(dE*dB)
         boltzmann_factor = exp((current_energy - slave_energy) *
                                (1.0 / system->ptemp->templist[rank] - 1.0 / system->ptemp->templist[partner_list[rank]]));
-        if (get_rand() < boltzmann_factor)
+        if (get_rand(system) < boltzmann_factor)
             accept_move = 1;
         else
             accept_move = 0;
@@ -177,7 +177,7 @@ void volume_change(system_t *system) {
         //if ensemble replay, then we're just trying to calculate the pressure via dV change
         new_volume = system->pbc->volume + system->calc_pressure_dv;
     else {
-        log_new_volume = log(system->pbc->volume) + (get_rand() - 0.5) * system->volume_change_factor;
+        log_new_volume = log(system->pbc->volume) + (get_rand(system) - 0.5) * system->volume_change_factor;
         new_volume = exp(log_new_volume);
     }
 
@@ -375,16 +375,16 @@ molecule_t *copy_molecule(system_t *system, molecule_t *src) {
 }
 
 /* perform a general random translation */
-void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
+void translate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale) {
     atom_t *atom_ptr;
     double trans_x, trans_y, trans_z;
 
-    trans_x = scale * get_rand() * pbc->cutoff;
-    trans_y = scale * get_rand() * pbc->cutoff;
-    trans_z = scale * get_rand() * pbc->cutoff;
-    if (get_rand() < 0.5) trans_x *= -1.0;
-    if (get_rand() < 0.5) trans_y *= -1.0;
-    if (get_rand() < 0.5) trans_z *= -1.0;
+    trans_x = scale * get_rand(system) * pbc->cutoff;
+    trans_y = scale * get_rand(system) * pbc->cutoff;
+    trans_z = scale * get_rand(system) * pbc->cutoff;
+    if (get_rand(system) < 0.5) trans_x *= -1.0;
+    if (get_rand(system) < 0.5) trans_y *= -1.0;
+    if (get_rand(system) < 0.5) trans_z *= -1.0;
 
     molecule->com[0] += trans_x;
     molecule->com[1] += trans_y;
@@ -399,7 +399,7 @@ void translate(molecule_t *molecule, pbc_t *pbc, double scale) {
 
 /* perform a general random rotation */
 /* now with quaternions AH */
-void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
+void rotate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale) {
     atom_t *atom_ptr;
     double x, y, z, angle;
     double com[3];
@@ -409,10 +409,10 @@ void rotate(molecule_t *molecule, pbc_t *pbc, double scale) {
     struct quaternion position_vector, rnd_rotation, rnd_rotation_conjugate, answer;
 
     /* create a random axis and random angle to rotate around */
-    x = get_rand() - 0.5;
-    y = get_rand() - 0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
-    z = get_rand() - 0.5;
-    angle = get_rand() * 360 * scale; /* random angle, can be affected by scale */
+    x = get_rand(system) - 0.5;
+    y = get_rand(system) - 0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
+    z = get_rand(system) - 0.5;
+    angle = get_rand(system) * 360 * scale; /* random angle, can be affected by scale */
 
     quaternion_construct_axis_angle_degree(&rnd_rotation, x, y, z, angle); /* make a random quaternion */
     quaternion_conjugate(&rnd_rotation, &rnd_rotation_conjugate);          /* needed to transform coordinates */
@@ -473,8 +473,8 @@ void displace_1D(system_t *system, molecule_t *molecule, double scale) {
     atom_t *atom_ptr;
     double trans;
 
-    trans = scale * get_rand();
-    if (get_rand() < 0.5) trans *= -1.0;
+    trans = scale * get_rand(system);
+    if (get_rand(system) < 0.5) trans *= -1.0;
     for (atom_ptr = molecule->atoms; atom_ptr; atom_ptr = atom_ptr->next)
         atom_ptr->pos[0] += trans;
 
@@ -482,19 +482,19 @@ void displace_1D(system_t *system, molecule_t *molecule, double scale) {
 }
 
 /* perform a random translation/rotation of a molecule */
-void displace(molecule_t *molecule, pbc_t *pbc, double trans_scale, double rot_scale) {
-    translate(molecule, pbc, trans_scale);
-    rotate(molecule, pbc, rot_scale);
+void displace(system_t *system, molecule_t *molecule, pbc_t *pbc, double trans_scale, double rot_scale) {
+    translate(system, molecule, pbc, trans_scale);
+    rotate(system, molecule, pbc, rot_scale);
 }
 
 /* perform a perturbation to a gaussian width */
-void displace_gwp(molecule_t *molecule, double scale) {
+void displace_gwp(system_t *system, molecule_t *molecule, double scale) {
     atom_t *atom_ptr;
     double perturb;
 
     for (atom_ptr = molecule->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
         if (atom_ptr->gwp_spin) {
-            perturb = scale * (get_rand() - 0.5);
+            perturb = scale * (get_rand(system) - 0.5);
             atom_ptr->gwp_alpha += perturb;
             /* make sure the width remains positive */
             atom_ptr->gwp_alpha = fabs(atom_ptr->gwp_alpha);
@@ -511,8 +511,8 @@ void spectre_displace(system_t *system, molecule_t *molecule, double trans_scale
 
     /* randomly translate */
     for (p = 0; p < 3; p++) {
-        trans[p] = trans_scale * get_rand() * max_target;
-        if (get_rand() < 0.5)
+        trans[p] = trans_scale * get_rand(system) * max_target;
+        if (get_rand(system) < 0.5)
             trans[p] *= -1.0;
     }
 
@@ -523,8 +523,8 @@ void spectre_displace(system_t *system, molecule_t *molecule, double trans_scale
 
         /* charge reassignment */
         do {
-            delta_charge = get_rand();
-            if (get_rand() < 0.5) delta_charge *= -1.0;
+            delta_charge = get_rand(system);
+            if (get_rand(system) < 0.5) delta_charge *= -1.0;
         } while (fabs(atom_ptr->charge + delta_charge) > max_charge);
         atom_ptr->charge += delta_charge;
     }
@@ -600,7 +600,7 @@ void make_move(system_t *system) {
                     }     /* end j */
                 }         /* end i */
                 /* insert randomly at one of the free cavity points */
-                random_index = (system->cavities_open - 1) - (int)rint(((double)(system->cavities_open - 1)) * get_rand());
+                random_index = (system->cavities_open - 1) - (int)rint(((double)(system->cavities_open - 1)) * get_rand(system));
                 for (p = 0; p < 3; p++)
                     com[p] = cavities_array[random_index].pos[p];
                 /* free the insertion array */
@@ -610,7 +610,7 @@ void make_move(system_t *system) {
             else {
                 /* insert the molecule to a random location within the unit cell */
                 for (p = 0; p < 3; p++)
-                    rand[p] = 0.5 - get_rand();
+                    rand[p] = 0.5 - get_rand(system);
                 for (p = 0; p < 3; p++)
                     for (q = 0, com[p] = 0; q < 3; q++)
                         com[p] += system->pbc->basis[q][p] * rand[q];
@@ -627,7 +627,7 @@ void make_move(system_t *system) {
             for (p = 0; p < 3; p++)
                 system->checkpoint->molecule_backup->com[p] = com[p];
             /* give it a random orientation */
-            rotate(system->checkpoint->molecule_backup, system->pbc, 1.0);
+            rotate(system, system->checkpoint->molecule_backup, system->pbc, 1.0);
 
             // insert into the list
             if (system->num_insertion_molecules) {
@@ -673,7 +673,7 @@ void make_move(system_t *system) {
         case MOVETYPE_REMOVE: /* remove a randomly chosen molecule */
 
             if (system->cavity_bias) {
-                if (get_rand() < pow((1.0 - system->avg_observables->cavity_bias_probability),
+                if (get_rand(system) < pow((1.0 - system->avg_observables->cavity_bias_probability),
                                      ((double)system->cavity_grid_size * system->cavity_grid_size * system->cavity_grid_size)))
                     system->checkpoint->biased_move = 0;
                 else
@@ -705,22 +705,22 @@ void make_move(system_t *system) {
                                  system->spectre_max_charge, system->spectre_max_target);
             else if (system->gwp) {
                 if (system->checkpoint->molecule_altered->atoms->gwp_spin) {
-                    displace(system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_factor);
-                    displace_gwp(system->checkpoint->molecule_altered, system->gwp_probability);
+                    displace(system, system->checkpoint->molecule_altered, system->pbc, system->gwp_probability, system->rot_factor);
+                    displace_gwp(system, system->checkpoint->molecule_altered, system->gwp_probability);
                 } else
-                    displace(system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
+                    displace(system, system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
             } else
-                displace(system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
+                displace(system, system->checkpoint->molecule_altered, system->pbc, system->move_factor, system->rot_factor);
 
             break;
         case MOVETYPE_ADIABATIC:
             /* change coords of 'altered' */
-            displace(system->checkpoint->molecule_altered, system->pbc, system->adiabatic_probability, 1.0);
+            displace(system, system->checkpoint->molecule_altered, system->pbc, system->adiabatic_probability, 1.0);
 
             break;
         case MOVETYPE_SPINFLIP:
 
-            if (get_rand() < 0.5)
+            if (get_rand(system) < 0.5)
                 system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_PARA;
             else
                 system->checkpoint->molecule_altered->nuclear_spin = NUCLEAR_SPIN_ORTHO;

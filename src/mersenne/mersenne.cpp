@@ -8,8 +8,8 @@ static std::mt19937 rng;
 
 double get_rand(system_t *system)
 {
-  if (!system->initialized){
-    system->initialized = 1;
+  if (!system->rng_initialized){
+    system->rng_initialized = 1;
     if (system->preset_seeds_on){
       rng.seed(system->preset_seeds);
     }

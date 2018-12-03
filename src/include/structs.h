@@ -356,7 +356,7 @@ typedef struct _system {
     //for manual specification of random seeds
     int preset_seeds_on;
     uint32_t preset_seeds;
-    int initialized;
+    int rng_initialized;
 
     // is this a restart of a parallel job?
     int parallel_restarts;

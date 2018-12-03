@@ -35,7 +35,7 @@ void qshift_do(
     }
 
     // use surf_scale_r and get_rand to adjust position of H2Q
-    q->drH2Q = scale_r * (0.5 - get_rand());
+    q->drH2Q = scale_r * (0.5 - get_rand(system));
     xH2Qnew = xH2Qold - q->drH2Q;
 
     // set qH2Q to conserve quadrupole

@@ -140,11 +140,11 @@ void register_accept(system_t *);
 void register_reject(system_t *);
 int mc(system_t *);
 molecule_t *copy_molecule(system_t *, molecule_t *);
-void translate(molecule_t *, pbc_t *, double);
-void rotate(molecule_t *, pbc_t *, double);
-void displace(molecule_t *, pbc_t *, double, double);
+void translate(system_t *system, molecule_t *, pbc_t *, double);
+void rotate(system_t *system, molecule_t *, pbc_t *, double);
+void displace(system_t *system, molecule_t *, pbc_t *, double, double);
 void displace_1D(system_t *, molecule_t *, double);
-void displace_gwp(molecule_t *, double);
+void displace_gwp(system_t *system, molecule_t *, double);
 void spectre_displace(system_t *, molecule_t *, double, double, double);
 void spectre_charge_renormalize(system_t *);
 void make_move(system_t *);
@@ -282,7 +282,7 @@ double n2_fugacity_PR(double, double);
 double n2_fugacity_zhou(double, double);
 double co2_fugacity(double, double);
 
-double get_rand();
+double get_rand(system_t *system);
 
 //useful math calls
 double dddotprod(double *, double *);

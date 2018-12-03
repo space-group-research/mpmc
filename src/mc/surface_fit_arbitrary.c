@@ -610,7 +610,7 @@ int surface_fit_arbitrary(system_t *system) {
         if (system->surf_descent)
             condition = current_error < last_error;
         else
-            condition = get_rand() < exp(-(current_error - last_error) / temperature);
+            condition = get_rand(system) < exp(-(current_error - last_error) / temperature);
 
         //  DO MC at this 'temperature'
         if (condition) {

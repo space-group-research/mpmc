@@ -1293,8 +1293,8 @@ int check_system(system_t *system) {
         "INPUT: Using Tang-Toennies damping for dispersion interactions with disp_expansion.\n");
     if (system->schmidt_mixing) output(
         "INPUT: Using the Schmidt mixing rule for exponential repulsions with disp_expansion.\n");
-    if (system->gilbert_smith_mixing) output(
-        "INPUT: Using the Gilbert Smith mixing rule for exponential repulsions with disp_expansion.\n");
+    if (system->force_mixing) output(
+        "INPUT: Using the force matching mixing rule for exponential repulsions with disp_expansion.\n");
     if (system->bohm_ahlrichs_mixing) output(
         "INPUT: Using the Bohm Ahlrichs mixing rule for exponential repulsions with disp_expansion.\n");
     if (system->wilson_popelier_mixing) output(

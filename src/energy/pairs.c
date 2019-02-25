@@ -147,7 +147,7 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
             if (system->schmidt_mixing) {
                 pair_ptr->sigma = 0.5 * (atom_i->sigma + atom_j->sigma);
                 pair_ptr->epsilon = (atom_i->epsilon + atom_j->epsilon) * atom_i->epsilon * atom_j->epsilon / (atom_i->epsilon * atom_i->epsilon + atom_j->epsilon * atom_j->epsilon);
-            } else if (system->gilbert_smith_mixing) {
+            } else if (system->force_mixing) {
                 double c = 315.7750382111558307123944638;  // don't confuse this for C, which is #defined as the speed of light
                 double Aii = c * exp(atom_i->epsilon * atom_i->sigma);
                 double Ajj = c * exp(atom_j->epsilon * atom_j->sigma);

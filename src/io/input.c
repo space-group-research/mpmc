@@ -1034,13 +1034,13 @@ int do_command(system_t *system, char **token) {
     }
 
     else if (!strcasecmp(token[0],
-                         "gilbert_smith_mixing")) {
+                         "force_mixing")) {
         if (!strcasecmp(token[1],
                         "on"))
-            system->gilbert_smith_mixing = 1;
+            system->force_mixing = 1;
         else if (!strcasecmp(token[1],
                              "off"))
-            system->gilbert_smith_mixing = 0;
+            system->force_mixing = 0;
         else
             return 1;
     }

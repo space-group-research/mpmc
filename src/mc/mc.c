@@ -319,7 +319,7 @@ int mc(system_t *system) {
             boltzmann_factor(system, initial_energy, final_energy, rot_partfunc);
 
         /* Metropolis function */
-        if ((get_rand() < system->nodestats->boltzmann_factor) && (system->iter_success == 0)) {
+        if ((get_rand(system) < system->nodestats->boltzmann_factor) && (system->iter_success == 0)) {
             /////////// ACCEPT
 
             current_energy = final_energy;

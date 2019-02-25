@@ -87,8 +87,8 @@ int determine_rotational_eigensymmetry(molecule_t *molecule, int level, int l_ma
     /* scan a few random points, pick the one with the largest square of the real part */
     for (i = 0, max_sqmod = 0; i < QUANTUM_ROTATION_SYMMETRY_POINTS; i++) {
         /* get random theta and phi */
-        theta = get_rand() * M_PI;
-        phi = get_rand() * 2.0 * M_PI;
+        theta = get_rand(system) * M_PI;
+        phi = get_rand(system) * 2.0 * M_PI;
 
         /* project the eigenvector into the basis */
         wavefunction[i].real = 0;

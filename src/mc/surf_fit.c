@@ -221,7 +221,7 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
 
     //how much to adjust q by, if neccessary
     if (system->surf_scale_q_on) {
-        delta_q = scale_q * (0.5 - get_rand());
+        delta_q = scale_q * (0.5 - get_rand(system));
         //determine how many charged sites are present
         for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
             if (!strncasecmp(param_ptr->atomtype,
@@ -237,16 +237,16 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
     // randomly perturb the parameters
     if (system->surf_scale_alpha_on) {
         if (params->alpha > 0.0)
-            params->alpha += scale_alpha * (0.5 - get_rand());
+            params->alpha += scale_alpha * (0.5 - get_rand(system));
         if (params->alpha < 0.0) params->alpha = params->last_alpha;
     }
 
     for (param_ptr = params->type_params; param_ptr; param_ptr = param_ptr->next) {
         if (param_ptr->epsilon > 0.0) {
             if (system->polarvdw)
-                param_ptr->epsilon += param_ptr->epsilon * (scale_epsilon * (0.5 - get_rand()));
+                param_ptr->epsilon += param_ptr->epsilon * (scale_epsilon * (0.5 - get_rand(system)));
             else
-                param_ptr->epsilon += scale_epsilon * (0.5 - get_rand());
+                param_ptr->epsilon += scale_epsilon * (0.5 - get_rand(system));
             if (param_ptr->epsilon < 0.0) param_ptr->epsilon = param_ptr->last_epsilon;
         }
 
@@ -255,13 +255,13 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
                                                    "H2E", 3) &&
             strncasecmp(param_ptr->atomtype,
                         "H2Q", 3)) {
-            param_ptr->dr = scale_r * (0.5 - get_rand());
+            param_ptr->dr = scale_r * (0.5 - get_rand(system));
         } else
             param_ptr->dr = 0;
 
         if (system->surf_scale_pol_on) {
             if (param_ptr->pol > 0.0)
-                param_ptr->pol += scale_pol * (0.5 - get_rand());
+                param_ptr->pol += scale_pol * (0.5 - get_rand(system));
             if (param_ptr->pol < 0.0)
                 param_ptr->pol = param_ptr->last_pol;
         }
@@ -269,25 +269,25 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
         //if polarvdw is on, also adjust omega
         if (system->polarvdw || system->disp_expansion_mbvdw) {
             if (param_ptr->omega > 0.0)
-                param_ptr->omega += scale_omega * (0.5 - get_rand());
+                param_ptr->omega += scale_omega * (0.5 - get_rand(system));
             if (param_ptr->omega < 0.0) param_ptr->omega = param_ptr->last_omega;
             if (system->cdvdw_exp_repulsion) {
                 if (param_ptr->sigma > 0.0)  //scale_sigma given as percentage when exp_rep is on
-                    param_ptr->sigma += param_ptr->sigma * (scale_sigma * (0.5 - get_rand()));
+                    param_ptr->sigma += param_ptr->sigma * (scale_sigma * (0.5 - get_rand(system)));
                 if (param_ptr->sigma < 0.0) param_ptr->sigma = param_ptr->last_sigma;
             }
         }
         //otherwise adjust sigma
         else {
             if (param_ptr->sigma > 0.0)
-                param_ptr->sigma += scale_sigma * (0.5 - get_rand());
+                param_ptr->sigma += scale_sigma * (0.5 - get_rand(system));
             if (param_ptr->sigma < 0.0) param_ptr->sigma = param_ptr->last_sigma;
         }
 
         //need to adjust sigma in this case, too
         if (system->disp_expansion_mbvdw) {
             if (param_ptr->sigma > 0.0)
-                param_ptr->sigma += scale_sigma * (0.5 - get_rand());
+                param_ptr->sigma += scale_sigma * (0.5 - get_rand(system));
             if (param_ptr->sigma < 0.0) param_ptr->sigma = param_ptr->last_sigma;
         }
 
@@ -312,7 +312,7 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
             if (!strncasecmp(param_ptr->atomtype,
                              "H2Q", 3)) {
                 if (param_ptr->charge != 0) param_ptr->charge += delta_q;
-                param_ptr->dr += scale_r * (0.5 - get_rand());
+                param_ptr->dr += scale_r * (0.5 - get_rand(system));
             }
             if (!strncasecmp(param_ptr->atomtype,
                              "H2E", 3)) {
@@ -322,19 +322,19 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
 
         if (system->surf_scale_c6_on) {
             if (param_ptr->c6 > 0.0)
-                param_ptr->c6 += scale_c6 * (0.5 - get_rand());
+                param_ptr->c6 += scale_c6 * (0.5 - get_rand(system));
             if (param_ptr->c6 < 0.0) param_ptr->c6 = param_ptr->last_c6;
         }
 
         if (system->surf_scale_c8_on) {
             if (param_ptr->c8 > 0.0)
-                param_ptr->c8 += scale_c8 * (0.5 - get_rand());
+                param_ptr->c8 += scale_c8 * (0.5 - get_rand(system));
             if (param_ptr->c8 < 0.0) param_ptr->c8 = param_ptr->last_c8;
         }
 
         if (system->surf_scale_c10_on) {
             if (param_ptr->c10 > 0.0)
-                param_ptr->c10 += scale_c10 * (0.5 - get_rand());
+                param_ptr->c10 += scale_c10 * (0.5 - get_rand(system));
             if (param_ptr->c10 < 0.0) param_ptr->c10 = param_ptr->last_c10;
         }
     }

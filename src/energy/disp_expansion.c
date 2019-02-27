@@ -77,6 +77,10 @@ double disp_expansion(system_t *system) {
                             pair_ptr->rd_energy = -tt_damping(6, pair_ptr->epsilon * r) * c6 / r6 - tt_damping(8, pair_ptr->epsilon * r) * c8 / r8 - tt_damping(10, pair_ptr->epsilon * r) * c10 / r10 + repulsion;
                         else
                             pair_ptr->rd_energy = -c6 / r6 - c8 / r8 - c10 / r10 + repulsion;
+
+                        if (system->cavity_autoreject_repulsion!=0.0)
+                            if (repulsion > system->cavity_autoreject_repulsion)
+                                pair_ptr->rd_energy = MAXVALUE;
                     }
                 }
                 potential += pair_ptr->rd_energy + pair_ptr->lrc;

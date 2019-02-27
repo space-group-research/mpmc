@@ -1,6 +1,72 @@
 #include <mc.h>
 
-//Copyright 2013-2015 Adam Hogan
+//Copyright 2013-2019 Adam Hogan
+
+double de_fx(double r, double b, double sigma, double c6, double c8, double c10, int damp)
+{
+    double energy = 0.0, repulsion = 0.0;
+
+    double r2 = r*r;
+    double r4 = r2*r2;
+    double r6 = r4*r2;
+    double r8 = r6*r2;
+    double r10 = r8*r2;
+
+    if (b != 0.0 && sigma != 0.0)
+        repulsion = 315.7750382111558307123944638 * exp(-b * (r - sigma));
+
+    if (damp)
+        energy = -tt_damping(6, b * r) * c6 / r6 - tt_damping(8, b * r) * c8 / r8 - tt_damping(10, b * r) * c10 / r10 + repulsion;
+    else
+        energy = -c6 / r6 - c8 / r8 - c10 / r10 + repulsion;
+
+    return energy;
+}
+
+double disp_expansion_fh_corr(system_t *system, molecule_t *molecule_ptr, pair_t *pair_ptr, int order)
+{
+    double reduced_mass;
+    double dE, d2E, d3E, d4E;  //energy derivatives
+    double corr;
+    double ir = 1.0 / pair_ptr->rimg;
+    double ir2 = ir * ir;
+    double ir3 = ir2 * ir;
+
+    if ((order != 2) && (order != 4)) return NAN;  //must be order 2 or 4
+
+    reduced_mass = AMU2KG * molecule_ptr->mass * pair_ptr->molecule->mass /
+                   (molecule_ptr->mass + pair_ptr->molecule->mass);
+
+    // I don't really feel like doing the analytical derivatives for this because there will be a million terms in the damping function
+    double h = 0.001; // this seems to work fine and have atleast an order of magnitude on both sides
+    double pm1 = de_fx(pair_ptr->rimg-h,pair_ptr->epsilon,pair_ptr->sigma,pair_ptr->c6,pair_ptr->c8,pair_ptr->c10,system->damp_dispersion); // back one
+    double p0 = de_fx(pair_ptr->rimg,pair_ptr->epsilon,pair_ptr->sigma,pair_ptr->c6,pair_ptr->c8,pair_ptr->c10,system->damp_dispersion); // center
+    double pp1 = de_fx(pair_ptr->rimg+h,pair_ptr->epsilon,pair_ptr->sigma,pair_ptr->c6,pair_ptr->c8,pair_ptr->c10,system->damp_dispersion); // forward one
+
+    dE = (-0.5*pm1+0.5*pp1)/h;
+    d2E = (pm1-2.0*p0+pp1)/(h*h);
+
+    //2nd order correction
+    corr = M2A2 *
+        (HBAR2 / (24.0 * KB * system->temperature * reduced_mass)) *
+        (d2E + 2.0 * dE / pair_ptr->rimg);
+
+    if (order >= 4) {
+
+        double pm2 = de_fx(pair_ptr->rimg-2.0*h,pair_ptr->epsilon,pair_ptr->sigma,pair_ptr->c6,pair_ptr->c8,pair_ptr->c10,system->damp_dispersion); // back two
+        double pp2 = de_fx(pair_ptr->rimg+2.0*h,pair_ptr->epsilon,pair_ptr->sigma,pair_ptr->c6,pair_ptr->c8,pair_ptr->c10,system->damp_dispersion); // forward two
+
+        d3E = (-0.5*pm2+pm1-pp1+0.5*pp2)/(h*h*h);
+        d4E = (pm2-4.0*pm1+6.0*p0-4.0*pp1+pp2)/(h*h*h*h);
+
+        //4th order corection
+        corr += M2A4 *
+            (HBAR4 / (1152.0 * KB2 * system->temperature * system->temperature * reduced_mass * reduced_mass)) *
+            (15.0 * dE * ir3 + 4.0 * d3E * ir + d4E);
+    }
+
+    return corr;
+}
 
 double disp_expansion_lrc(const system_t *system, pair_t *pair_ptr, const double cutoff) /* ignoring the exponential repulsion bit because it decays exponentially */
 {
@@ -77,6 +143,9 @@ double disp_expansion(system_t *system) {
                             pair_ptr->rd_energy = -tt_damping(6, pair_ptr->epsilon * r) * c6 / r6 - tt_damping(8, pair_ptr->epsilon * r) * c8 / r8 - tt_damping(10, pair_ptr->epsilon * r) * c10 / r10 + repulsion;
                         else
                             pair_ptr->rd_energy = -c6 / r6 - c8 / r8 - c10 / r10 + repulsion;
+
+                        if (system->feynman_hibbs)
+                            pair_ptr->rd_energy += disp_expansion_fh_corr(system, molecule_ptr, pair_ptr, system->feynman_hibbs_order);
 
                         if (system->cavity_autoreject_repulsion!=0.0)
                             if (repulsion > system->cavity_autoreject_repulsion)

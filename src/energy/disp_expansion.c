@@ -235,10 +235,11 @@ double factorial(int n) {
 }
 
 double tt_damping(int n, double br) {
-    double sum = 0.0;
+    double sum = 1.0, running_br = br;
     int i;
-    for (i = 0; i <= n; i++) {
-        sum += pow(br, i) / factorial(i);
+    for (i = 1; i <= n; i++) {
+        sum += running_br / factorial(i);
+        running_br *= br;
     }
 
     const double result = 1.0 - exp(-br) * sum;

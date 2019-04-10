@@ -401,20 +401,20 @@ void translate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale)
 /* now with quaternions AH */
 void rotate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale) {
     atom_t *atom_ptr;
-    double x, y, z, angle;
+    double u1, u2, u3;
     double com[3];
     int i, ii, n;
     double *new_coord_array;
 
     struct quaternion position_vector, rnd_rotation, rnd_rotation_conjugate, answer;
 
-    /* create a random axis and random angle to rotate around */
-    x = get_rand(system) - 0.5;
-    y = get_rand(system) - 0.5; /* construct_axis_angle_degree will ensure this axis is a unit vector for us */
-    z = get_rand(system) - 0.5;
-    angle = get_rand(system) * 360 * scale; /* random angle, can be affected by scale */
+    // create a random rotation
+    // http://planning.cs.uiuc.edu/node198.html
+    u1 = get_rand(system);
+    u2 = get_rand(system);
+    u3 = get_rand(system);
 
-    quaternion_construct_axis_angle_degree(&rnd_rotation, x, y, z, angle); /* make a random quaternion */
+    quaternion_construct_xyzw(&rnd_rotation, sqrt(1-u1)*sin(2*M_PI*u2), sqrt(1-u1)*cos(2*M_PI*u2), sqrt(u1)*sin(2*M_PI*u3), sqrt(u1)*cos(2*M_PI*u3)); /* make a random quaternion */
     quaternion_conjugate(&rnd_rotation, &rnd_rotation_conjugate);          /* needed to transform coordinates */
 
     /* count the number of atoms in a molecule, and allocate new coords array */

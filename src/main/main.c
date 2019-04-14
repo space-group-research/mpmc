@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     if (!rank) {
 #ifndef __WIN32__
         sprintf(linebuf,
-                "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2017 GNU Public License\n", VERSION);
+                "MPMC (Massively Parallel Monte Carlo) r%d - 2012-2019 GNU Public License\n", VERSION);
         output(linebuf);
 #endif
         sprintf(linebuf,

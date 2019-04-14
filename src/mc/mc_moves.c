@@ -414,7 +414,9 @@ void rotate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale) {
     u2 = get_rand(system);
     u3 = get_rand(system);
 
-    quaternion_construct_xyzw(&rnd_rotation, sqrt(1-u1)*sin(2*M_PI*u2), sqrt(1-u1)*cos(2*M_PI*u2), sqrt(u1)*sin(2*M_PI*u3), sqrt(u1)*cos(2*M_PI*u3)); /* make a random quaternion */
+    // simple linear interpolation for adjusting the scale
+    quaternion_construct_xyzw(&rnd_rotation, scale*sqrt(1-u1)*sin(2*M_PI*u2), scale*sqrt(1-u1)*cos(2*M_PI*u2), scale*sqrt(u1)*sin(2*M_PI*u3), 1-scale+scale*sqrt(u1)*cos(2*M_PI*u3)); /* make a random quaternion */
+    quaternion_normalize(&rnd_rotation);
     quaternion_conjugate(&rnd_rotation, &rnd_rotation_conjugate);          /* needed to transform coordinates */
 
     /* count the number of atoms in a molecule, and allocate new coords array */

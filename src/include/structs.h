@@ -362,6 +362,8 @@ typedef struct _system {
     int parallel_restarts;
 
     //surface fitting options
+    int surf_fit_multi_configs;
+    char * multi_fit_input;
     int surf_fit_arbitrary_configs;
     int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on, surf_scale_pol_on;
     int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on, surf_scale_c6_on, surf_scale_c8_on, surf_scale_c10_on;

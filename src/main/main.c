@@ -12,6 +12,7 @@ int rank, size;
 #include <mpi.h>
 #endif
 #include "surface_fit_arbitrary.h"
+#include "surface_multi_fit.h"
 
 //kill MPI before quitting, when neccessary
 void die(int code) {
@@ -252,7 +253,13 @@ int main(int argc, char **argv) {
 
     else if (system->ensemble == ENSEMBLE_SURF_FIT) { /* surface fitting */
 
-        if (system->surf_fit_arbitrary_configs) {
+        if (system->surf_fit_multi_configs) {
+            if( surface_multi_fit( system ) < 0 ) {
+                error("MAIN: surface fitting module (for multiple configurations) failed on error, exiting\n");
+                die(1);
+            }
+        }
+        else if( system->surf_fit_arbitrary_configs ) {
             if (surface_fit_arbitrary(system) < 0) {
                 error(
                     "MAIN: surface fitting module (for arbitrary configurations) failed on error, exiting\n");

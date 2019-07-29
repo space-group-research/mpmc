@@ -24,11 +24,11 @@ configure_file (
 
 message("Compiling For ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Wall")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -ggdb -Wall")
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ggdb -Wall")
 
 
 
@@ -48,6 +48,7 @@ set(INCLUDE src/include ${PROJECT_BINARY_DIR}/src/include)
 set(SRC
 src/mc/mc_moves.c
 src/mc/surface_fit_arbitrary.c
+src/mc/surface_multi_fit.c
 src/mc/qshift.c
 src/mc/single_point.c
 src/mc/mc.c

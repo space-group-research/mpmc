@@ -76,10 +76,15 @@ void ensemble_surf_fit_options(system_t *system) {
     // Record number of curves for convenient reference
     int nCurves = system->fit_input_list.data.count;
 
-    if (!nCurves) {
+    if (!nCurves && !system->surf_fit_multi_configs) {
         error(
             "INPUT: There were no fit_input files specified in the main input file.\n");
         die(-1);
+    }
+
+    if (system->surf_fit_multi_configs) {
+        sprintf(linebuf,"INPUT: Multi fit input is %s\n",system->multi_fit_input);
+        output(linebuf);
     }
 
     return;

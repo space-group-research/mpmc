@@ -152,6 +152,18 @@ int do_command(system_t *system, char **token) {
     // surf options
     ////////////////////////
 
+    else if (!strcasecmp(token[0],
+                         "surf_multi_fit")) {
+        if (!strcasecmp(token[1],
+                        "on")) {
+            system->surf_fit_multi_configs = 1;
+        } else if (!strcasecmp(token[1],
+                               "off")) {
+            system->surf_fit_multi_configs = 0;
+        } else
+            return 1;
+    }
+
     // Option for fitting against arbitrary configurations, VS the default behavior of fitting
     // against a small set of orientations, while only varying their separation distance.
     else if (!strcasecmp(token[0],
@@ -319,7 +331,15 @@ int do_command(system_t *system, char **token) {
             strcpy(system->surf_output, token[1]);
         } else
             return 1;
-    } else if (!strcasecmp(token[0],
+    }
+    else if (!strcasecmp(token[0], "multi_fit_input")) {
+        if(!system->multi_fit_input) {
+            system->multi_fit_input = calloc(MAXLINE,sizeof(char));
+            memnullcheck(system->multi_fit_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+            strcpy(system->multi_fit_input,token[1]);
+        } else return 1;
+    }
+    else if (!strcasecmp(token[0],
                            "surf_global_axis")) {
         if (!strcasecmp(token[1],
                         "on")) {
@@ -1586,6 +1606,7 @@ void setdefaults(system_t *system) {
     system->fit_input_list.data.count = 0;
 
     // Initialize surface fitting parameters
+    system->surf_fit_multi_configs = 0;
     system->surf_fit_arbitrary_configs = 0;  // default is to use a small set of orientations, varying their separation
     system->fit_schedule = 0;
     system->fit_start_temp = 0;

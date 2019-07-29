@@ -13,7 +13,7 @@ double de_fx(double r, double b, double sigma, double c6, double c8, double c10,
     double r10 = r8*r2;
 
     if (b != 0.0 && sigma != 0.0)
-        repulsion = 315.7750382111558307123944638 * exp(-b * (r - sigma));
+        repulsion = 596.725194095 * 1.0/b * exp(-b * (r - sigma));
 
     if (damp)
         energy = -tt_damping(6, b * r) * c6 / r6 - tt_damping(8, b * r) * c8 / r8 - tt_damping(10, b * r) * c10 / r10 + repulsion;
@@ -136,8 +136,10 @@ double disp_expansion(system_t *system) {
 
                         double repulsion = 0.0;
 
+                        // F0 = 0.001 Eh/bohr aka a.u.
+                        // .001/3.166811429E-6*1.8897161646321 = 596.725194095
                         if (pair_ptr->epsilon != 0.0 && pair_ptr->sigma != 0.0)
-                            repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon * (r - pair_ptr->sigma));  // K = 10^-3 H ~= 316 K
+                            repulsion = 596.725194095 * 1.0/pair_ptr->epsilon * exp(-pair_ptr->epsilon * (r - pair_ptr->sigma));
 
                         if (system->damp_dispersion)
                             pair_ptr->rd_energy = -tt_damping(6, pair_ptr->epsilon * r) * c6 / r6 - tt_damping(8, pair_ptr->epsilon * r) * c8 / r8 - tt_damping(10, pair_ptr->epsilon * r) * c10 / r10 + repulsion;
@@ -205,7 +207,7 @@ double disp_expansion_nopbc(system_t *system) {
                         double repulsion = 0.0;
 
                         if (pair_ptr->epsilon != 0.0 && pair_ptr->sigma != 0.0)
-                            repulsion = 315.7750382111558307123944638 * exp(-pair_ptr->epsilon * (r - pair_ptr->sigma));  // K = 10^-3 H ~= 316 K
+                            repulsion = 596.725194095 * 1.0/pair_ptr->epsilon * exp(-pair_ptr->epsilon * (r - pair_ptr->sigma));
 
                         if (system->damp_dispersion)
                             pair_ptr->rd_energy = -tt_damping(6, pair_ptr->epsilon * r) * c6 / r6 - tt_damping(8, pair_ptr->epsilon * r) * c8 / r8 - tt_damping(10, pair_ptr->epsilon * r) * c10 / r10 + repulsion;

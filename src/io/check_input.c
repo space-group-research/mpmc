@@ -1291,14 +1291,6 @@ int check_system(system_t *system) {
         "INPUT: Extrapolating the C10 coefficient from the C6 and C8 coefficients with disp_expansion.\n");
     if (system->damp_dispersion) output(
         "INPUT: Using Tang-Toennies damping for dispersion interactions with disp_expansion.\n");
-    if (system->schmidt_mixing) output(
-        "INPUT: Using the Schmidt mixing rule for exponential repulsions with disp_expansion.\n");
-    if (system->force_mixing) output(
-        "INPUT: Using the force matching mixing rule for exponential repulsions with disp_expansion.\n");
-    if (system->bohm_ahlrichs_mixing) output(
-        "INPUT: Using the Bohm Ahlrichs mixing rule for exponential repulsions with disp_expansion.\n");
-    if (system->wilson_popelier_mixing) output(
-        "INPUT: Using the Wilson Popelier mixing rule for exponential repulsions with disp_expansion.\n");
     if (system->feynman_hibbs) feynman_hibbs_options(system);
     if (system->simulated_annealing) simulated_annealing_options(system);
     if (system->calc_hist) hist_options(system);

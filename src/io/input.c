@@ -941,7 +941,8 @@ int do_command(system_t *system, char **token) {
     }
 
     else if (!strcasecmp(token[0],
-                         "disp_expansion")) {
+                         "disp_expansion") ||
+            !strcasecmp(token[0],"phahst")) {
         if (!strcasecmp(token[1],
                         "on"))
             system->disp_expansion = 1;
@@ -1008,54 +1009,6 @@ int do_command(system_t *system, char **token) {
         else if (!strcasecmp(token[1],
                              "off"))
             system->midzuno_kihara_approx = 0;
-        else
-            return 1;
-    }
-
-    else if (!strcasecmp(token[0],
-                         "schmidt_mixing")) {
-        if (!strcasecmp(token[1],
-                        "on"))
-            system->schmidt_mixing = 1;
-        else if (!strcasecmp(token[1],
-                             "off"))
-            system->schmidt_mixing = 0;
-        else
-            return 1;
-    }
-
-    else if (!strcasecmp(token[0],
-                         "force_mixing")) {
-        if (!strcasecmp(token[1],
-                        "on"))
-            system->force_mixing = 1;
-        else if (!strcasecmp(token[1],
-                             "off"))
-            system->force_mixing = 0;
-        else
-            return 1;
-    }
-
-    else if (!strcasecmp(token[0],
-                         "bohm_ahlrichs_mixing")) {
-        if (!strcasecmp(token[1],
-                        "on"))
-            system->bohm_ahlrichs_mixing = 1;
-        else if (!strcasecmp(token[1],
-                             "off"))
-            system->bohm_ahlrichs_mixing = 0;
-        else
-            return 1;
-    }
-
-    else if (!strcasecmp(token[0],
-                         "wilson_popelier_mixing")) {
-        if (!strcasecmp(token[1],
-                        "on"))
-            system->wilson_popelier_mixing = 1;
-        else if (!strcasecmp(token[1],
-                             "off"))
-            system->wilson_popelier_mixing = 0;
         else
             return 1;
     }
@@ -1662,6 +1615,9 @@ void setdefaults(system_t *system) {
     memnullcheck(system->job_name, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
     sprintf(system->job_name,
             "untitled");
+
+    // set damp dispersion on for phahst models by default
+    system->damp_dispersion = 1;
 
     return;
 }

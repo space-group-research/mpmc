@@ -48,7 +48,7 @@ void load_initial_multi_params(system_t* system, multiParamData_t* params) {
     for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
         for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
             if (i>=nAtoms) {
-                error("SURFACE MULTI FIT: Error loading initial parameters %s:%s\n",__FILE__,__LINE__);
+                error("SURFACE MULTI FIT: Error loading initial parameters %s:%s\n");
                 die(1);
             }
             params->atomtype[i] = calloc(MAXLINE,sizeof(char));
@@ -293,7 +293,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             else
             {
                 insert_in_this_molecule = NULL;
-                error("SURFACE MULTI FIT: Can't currently handle >3 separate molecules %s:%s\n",__FILE__,__LINE__);
+                error("SURFACE MULTI FIT: Can't currently handle >3 separate molecules %s:%s\n");
                 die(-1);
             }
             if (insert_in_this_molecule->atoms == NULL)

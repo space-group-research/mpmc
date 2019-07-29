@@ -1,13 +1,11 @@
 #include <surface_multi_fit.h>
 
-// I feel like there should be comments in here
-
 // Copyright Adam Hogan 2016-2019 - GNU GPL v3
 
 void load_initial_multi_params(system_t* system, multiParamData_t* params) {
     // The initial PQR input file should have one atom per atom type with the initial parameters
-    // Also probably a huge unit cell?
     int nAtoms = 0, i = 0;
+
     // Count the number of atoms
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
@@ -50,7 +48,7 @@ void load_initial_multi_params(system_t* system, multiParamData_t* params) {
     for(molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
         for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
             if (i>=nAtoms) {
-                error("SURFACE MULTI FIT: how did you do this???\n");
+                error("SURFACE MULTI FIT: Error loading initial parameters %s:%s\n",__FILE__,__LINE__);
                 die(1);
             }
             params->atomtype[i] = calloc(MAXLINE,sizeof(char));
@@ -152,15 +150,13 @@ typedef struct {
 */
 
 void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParamData_t* params) {
-    // Oh fuck my life
-    // jesus fucking christ
     /*
     config input format, any number of following with newlines separating:
     line 0: comment technically, preferably labeled "Configuration #"
     line 1: single double with no whitespace, the ab initio energy
     line 2-N+2: any number of atoms, which consist of a string, int, double, double, double, double
         where the first string is the atomtype, first int is the molecule #, followed by the x, y and z positions and finally the charge
-    Note: only 2 molecules allowed for now
+    Note: only 2 or 3 molecules allowed for now
     */
     char *filename = system->multi_fit_input;
     FILE *fp = fopen(filename,"r");
@@ -275,7 +271,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             {
                 //error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
                 //die(-1);
-                new_atom->charge = 0;
+                new_atom->charge = 0; // actually just set the charge to zero instead of dieing
             }
             else
                 new_atom->charge = atof(token)*E2REDUCED;
@@ -297,7 +293,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             else
             {
                 insert_in_this_molecule = NULL;
-                error("SURFACE MULTI FIT: Oh shit 4 molecules? That's a lot of molecules bro, chill out\n");
+                error("SURFACE MULTI FIT: Can't currently handle >3 separate molecules %s:%s\n",__FILE__,__LINE__);
                 die(-1);
             }
             if (insert_in_this_molecule->atoms == NULL)
@@ -376,6 +372,7 @@ void perturb_multi_params(system_t* system,multiParamData_t* params) {
     double scale_c8 = ((system->surf_scale_c8_on) ? system->surf_scale_c8 : 0.0 );
     double scale_c10 = ((system->surf_scale_c10_on) ? system->surf_scale_c10 : 0.0 );
 
+    // TODO: this needs to be setup in the input file
     const char * do_not_fit[] = {
         "He",
         "Ne",
@@ -565,8 +562,7 @@ double calc_multi_error(system_t* system, multiConfigData_t* configs) {
         ab_initio_energy = min(ab_initio_energy,max_energy);
 
         double error = model_energy-ab_initio_energy;
-        if (error>9000.0)
-            error = 0.0;
+        // TODO: this needs to be an option (l1 vs l2)
         //total_error += sqrt(error_scale*error_scale+error*error)-error_scale;
         total_error += error*error;
     }

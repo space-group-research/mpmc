@@ -8,7 +8,7 @@ Optimized for the study of nanoscale interfaces, MPMC supports simulation of Cou
 
 #### Libraries
 
-Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use either [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW or QM Rotation requires [LAPACK](http://www.netlib.org/lapack/).
+Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use [OpenMPI](https://www.open-mpi.org/), [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW or QM Rotation requires [LAPACK](http://www.netlib.org/lapack/).
 
 #### Supported Platforms
 MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primarily tested on Linux and support is not guaranteed on other platforms.

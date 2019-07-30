@@ -1596,7 +1596,6 @@ void setdefaults(system_t *system) {
 
     /* default polarization parameters */
     system->polar_gamma = 1.0;
-    system->polar_max_iter = 10;  //should have done this years ago -- I blame Keith - L
 
     /* default rd LRC flag */
     system->rd_lrc = 1;

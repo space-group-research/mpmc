@@ -432,6 +432,12 @@ void polarization_options(system_t *system) {
             die(-1);
         }
 
+        if ((system->polar_precision == 0.0) && (system->polar_max_iter == 0)) {
+            error(
+                "INPUT: must specify either polar_precision or polar_max_iter\n");
+            die(-1);
+        }
+
         if (system->polar_precision < 0.0) {
             error(
                 "INPUT: invalid polarization iterative precision specified\n");

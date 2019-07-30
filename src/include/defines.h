@@ -55,7 +55,7 @@
 #define LITER2A3 1.0e27             /* convert Liters to Ang^3 */
 #define GASCONSTANT 0.8205746
 
-#define MAX_ITERATION_COUNT 128
+#define MAX_ITERATION_COUNT 32
 
 #define EWALD_ALPHA 0.5
 #define EWALD_KMAX 7

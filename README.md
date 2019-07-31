@@ -11,6 +11,7 @@ Optimized for the study of nanoscale interfaces, MPMC supports simulation of Cou
 Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use [OpenMPI](https://www.open-mpi.org/), [CUDA](https://developer.nvidia.com/cuda-zone) or [OpenCL](https://www.khronos.org/opencl/). Configuring with Coupled-Dipole VDW or QM Rotation requires [LAPACK](http://www.netlib.org/lapack/).
 
 #### Supported Platforms
+
 MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primarily tested on Linux and support is not guaranteed on other platforms.
 
 #### Downloading MPMC
@@ -23,53 +24,16 @@ git clone https://github.com/mpmccode/mpmc
 
 #### Compiling MPMC
 
-Once MPMC has been downloaded it may be compiled with the following commands.
+Once MPMC has been downloaded it may be compiled with the following command.
 
 ```
 bash compile.sh
 ```
 
-or
+#### Documentation Link
 
-```
-mkdir build
-cd build
-cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
-make
-```
+http://mpmccode.github.io/mpmc/
 
-Make sure to add MPMC to your path after compiling.
-
-#### Updating MPMC
-
-MPMC can be updated with the following command.
-
-```
-git pull
-```
-#### MPMC Test Suite
-
-An end-to-end test suite for MPMC is currently under development.
-If cloning MPMC anew, use the following to include the tests:
-```
-git clone https://github.com/mpmccode/mpmc --recurse-submodules
-```
-To clone the submodule into an existing MPMC installation, use this instead:
-```
-cd ${local_mpmc_dir}
-git submodule init
-git submodule update
-```
-To run the tests, make sure you have Python 3 installed, compile MPMC normally, and then run:
-```
-cd mpmc_testing
-python run_tests.py
-```
-More information about the test suite can be found in its [repository](https://github.com/LucianoLaratelli/mpmc_testing).
-
-#### Wiki Link
-
-https://github.com/mpmccode/mpmc/wiki
 
 ## Selected Publications
 

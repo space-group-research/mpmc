@@ -6,9 +6,9 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial &#8212; MPMC 1.1.306 documentation</title>
+    <title>Tutorials &#8212; MPMC 1.1.306 documentation</title>
     
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="MPMC 1.1.306 documentation" href="index.html" />
-    <link rel="next" title="Input Files" href="input_files.html" />
+    <link rel="next" title="Input File Specifications" href="input_files.html" />
     <link rel="prev" title="Introduction" href="introduction.html" /> 
   </head>
   <body role="document">
@@ -34,7 +34,7 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="input_files.html" title="Input Files"
+          <a href="input_files.html" title="Input File Specifications"
              accesskey="N">next</a></li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"
@@ -48,25 +48,44 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="bulk-h2-bssp-simulation-nvt">
-<h2>Bulk H<sub>2</sub> BSSP Simulation (NVT)<a class="headerlink" href="#bulk-h2-bssp-simulation-nvt" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="bulk-bssp-h2-simulation-nvt">
+<h2>Bulk BSSP H<sub>2</sub> Simulation (NVT)<a class="headerlink" href="#bulk-bssp-h2-simulation-nvt" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="h2-bssp-mof5-simulation-uvt">
-<h2>H<sub>2</sub> BSSP + MOF5 Simulation (uVT)<a class="headerlink" href="#h2-bssp-mof5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bssp-h2-mof5-simulation-uvt">
+<h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT)<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="phahst-h2-mof5-simulation-uvt">
+<h2>PHAHST H<sub>2</sub> + MOF5 Simulation (uVT)<a class="headerlink" href="#phahst-h2-mof5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+<p>To be published ...</p>
 </div>
 <div class="section" id="simulated-annealing">
 <h2>Simulated Annealing<a class="headerlink" href="#simulated-annealing" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="replay">
-<h2>Replay<a class="headerlink" href="#replay" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="replaying-a-trajectory">
+<h2>Replaying a Trajectory<a class="headerlink" href="#replaying-a-trajectory" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="single-point-energy-and-quantum-rotation">
-<h2>Single Point Energy and Quantum Rotation<a class="headerlink" href="#single-point-energy-and-quantum-rotation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="single-point-energy-and-quantum-rotation-calculations">
+<h2>Single Point Energy and Quantum Rotation Calculations<a class="headerlink" href="#single-point-energy-and-quantum-rotation-calculations" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-fit">
 <h2>Potential Energy Surface Fitting (surf_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="potential-energy-surface-fitting-surf-fit-and-surf-multi-fit">
+<h2>Potential Energy Surface Fitting (surf_fit and surf_multi_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit-and-surf-multi-fit" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="multisorbate-uvt">
+<h2>Multisorbate uVT<a class="headerlink" href="#multisorbate-uvt" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="coupled-dipole-van-der-waals">
+<h2>Coupled-Dipole Van der Waals<a class="headerlink" href="#coupled-dipole-van-der-waals" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
+<h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with Nvidia CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="parameterizing-a-mom">
+<h2>Parameterizing a MOM<a class="headerlink" href="#parameterizing-a-mom" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -78,13 +97,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#bulk-h2-bssp-simulation-nvt">Bulk H<sub>2</sub> BSSP Simulation (NVT)</a></li>
-<li><a class="reference internal" href="#h2-bssp-mof5-simulation-uvt">H<sub>2</sub> BSSP + MOF5 Simulation (uVT)</a></li>
+<li><a class="reference internal" href="#">Tutorials</a><ul>
+<li><a class="reference internal" href="#bulk-bssp-h2-simulation-nvt">Bulk BSSP H<sub>2</sub> Simulation (NVT)</a></li>
+<li><a class="reference internal" href="#bssp-h2-mof5-simulation-uvt">BSSP H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
+<li><a class="reference internal" href="#phahst-h2-mof5-simulation-uvt">PHAHST H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
 <li><a class="reference internal" href="#simulated-annealing">Simulated Annealing</a></li>
-<li><a class="reference internal" href="#replay">Replay</a></li>
-<li><a class="reference internal" href="#single-point-energy-and-quantum-rotation">Single Point Energy and Quantum Rotation</a></li>
+<li><a class="reference internal" href="#replaying-a-trajectory">Replaying a Trajectory</a></li>
+<li><a class="reference internal" href="#single-point-energy-and-quantum-rotation-calculations">Single Point Energy and Quantum Rotation Calculations</a></li>
 <li><a class="reference internal" href="#potential-energy-surface-fitting-surf-fit">Potential Energy Surface Fitting (surf_fit)</a></li>
+<li><a class="reference internal" href="#potential-energy-surface-fitting-surf-fit-and-surf-multi-fit">Potential Energy Surface Fitting (surf_fit and surf_multi_fit)</a></li>
+<li><a class="reference internal" href="#multisorbate-uvt">Multisorbate uVT</a></li>
+<li><a class="reference internal" href="#coupled-dipole-van-der-waals">Coupled-Dipole Van der Waals</a></li>
+<li><a class="reference internal" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with Nvidia CUDA</a></li>
+<li><a class="reference internal" href="#parameterizing-a-mom">Parameterizing a MOM</a></li>
 </ul>
 </li>
 </ul>
@@ -94,7 +119,7 @@
                         title="previous chapter">Introduction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="input_files.html"
-                        title="next chapter">Input Files</a></p>
+                        title="next chapter">Input File Specifications</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -113,7 +138,7 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="input_files.html" title="Input Files"
+          <a href="input_files.html" title="Input File Specifications"
              >next</a></li>
         <li class="right" >
           <a href="introduction.html" title="Introduction"

@@ -8,7 +8,7 @@
     
     <title>Welcome to MPMC’s documentation! &#8212; MPMC 1.1.306 documentation</title>
     
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -54,21 +54,32 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#downloading-mpmc">Downloading MPMC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#building-mpmc">Building MPMC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#running-mpmc">Running MPMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#mpmc-testing-suite">MPMC Testing Suite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#license">License</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#bulk-h2-bssp-simulation-nvt">Bulk H<sub>2</sub> BSSP Simulation (NVT)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#h2-bssp-mof5-simulation-uvt">H<sub>2</sub> BSSP + MOF5 Simulation (uVT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#bulk-bssp-h2-simulation-nvt">Bulk BSSP H<sub>2</sub> Simulation (NVT)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#bssp-h2-mof5-simulation-uvt">BSSP H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#phahst-h2-mof5-simulation-uvt">PHAHST H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#simulated-annealing">Simulated Annealing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#replay">Replay</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#single-point-energy-and-quantum-rotation">Single Point Energy and Quantum Rotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#replaying-a-trajectory">Replaying a Trajectory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#single-point-energy-and-quantum-rotation-calculations">Single Point Energy and Quantum Rotation Calculations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#potential-energy-surface-fitting-surf-fit">Potential Energy Surface Fitting (surf_fit)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#potential-energy-surface-fitting-surf-fit-and-surf-multi-fit">Potential Energy Surface Fitting (surf_fit and surf_multi_fit)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#multisorbate-uvt">Multisorbate uVT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#coupled-dipole-van-der-waals">Coupled-Dipole Van der Waals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with Nvidia CUDA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#parameterizing-a-mom">Parameterizing a MOM</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input Files</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input File Specifications</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="input_files.html#mpmc-input-script">MPMC Input Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="input_files.html#geometry-file">Geometry File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_files.html#surface-fitting-files">Surface Fitting Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="input_files.html#surf-multi-fit-files">Surf_multi_fit Files</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a><ul>
@@ -78,19 +89,29 @@
 <li class="toctree-l3"><a class="reference internal" href="commands.html#nve-options">NVE Options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands.html#uvt-options">uVT Options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands.html#replay-options">Replay Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#miscellaneous-options">Miscellaneous Options</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#input-output-commands">Input / Output Commands</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#potential-commands">Potential Commands</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands.html#mixing-rules">Mixing Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#lennard-jones-mixing-rules">Lennard-Jones Mixing Rules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands.html#ewald-wolf-options">Ewald/Wolf Options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands.html#polarization-options">Polarization Options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands.html#phahst-options">PHAHST Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#coupled-dipole-van-der-waals-options">Coupled-Dipole Van der Waals Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#id1">Miscellaneous Options</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="commands.html#annealing-tempering-commands">Annealing / Tempering Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#annealing-tempering-commands">Annealing / Tempering Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#parallel-tempering-options">Parallel Tempering Options</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#quantum-rotation-commands">Quantum Rotation Commands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands.html#surface-fitting-commands">Surface Fitting Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#surface-fitting-commands">Surface Fitting Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#surface-scan-options">Surface Scan Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands.html#virial-coefficient-options">Virial Coefficient Options</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#external-tools">External Tools</a></li>
 </ul>
 </li>
@@ -98,30 +119,31 @@
 <li class="toctree-l2"><a class="reference internal" href="models.html#hydrogen">Hydrogen</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#phast">PHAST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#phahst">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#coupled-dipole-van-der-waals">Coupled-Dipole Van der Waals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#carbon-dioxide">Carbon Dioxide</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#id1">PHAST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#id2">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id3">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#nitrogen">Nitrogen</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id3">PHAST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id4">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id4">PHAST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id5">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id6">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#hydrocarbons">Hydrocarbons</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id5">PHAST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id6">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id7">PHAST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id8">PHAHST</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#water">Water</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="models.html#tip3p">TIP3P</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#water">Water</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#noble-gases">Noble Gases</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id14">PHAST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#id15">PHAHST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id9">PHAST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#id10">PHAHST</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#metal-organic-frameworks">Metal-Organic Frameworks</a><ul>

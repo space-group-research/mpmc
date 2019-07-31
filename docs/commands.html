@@ -8,7 +8,7 @@
     
     <title>Commands &#8212; MPMC 1.1.306 documentation</title>
     
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,7 +27,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="MPMC 1.1.306 documentation" href="index.html" />
     <link rel="next" title="Models" href="models.html" />
-    <link rel="prev" title="Input Files" href="input_files.html" /> 
+    <link rel="prev" title="Input File Specifications" href="input_files.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,7 +37,7 @@
           <a href="models.html" title="Models"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="input_files.html" title="Input Files"
+          <a href="input_files.html" title="Input File Specifications"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">MPMC 1.1.306 documentation</a> &#187;</li> 
       </ul>
@@ -85,49 +85,815 @@
 </table>
 <div class="section" id="monte-carlo-options">
 <h3>Monte Carlo Options<a class="headerlink" href="#monte-carlo-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>move_factor [double]</td>
+<td>Scale factor for translational moves in a fraction of the simulation box. <strong>(default = 1.0)</strong></td>
+</tr>
+<tr class="row-odd"><td>rot_factor [double]</td>
+<td>Scale factor for rotational moves in a fraction of a complete rotation. <strong>(default = 1.0)</strong></td>
+</tr>
+<tr class="row-even"><td>insert_probability [double]</td>
+<td>In a uVT simulation, the probability to randomly choose an insert or delete move. <strong>(default = 0.0)</strong></td>
+</tr>
+<tr class="row-odd"><td>volume_probability [double]</td>
+<td>In a NPT simulation, the probability to randomly choose a volume change move. <strong>(default = 0.0)</strong></td>
+</tr>
+<tr class="row-even"><td>volume_change_factor [double]</td>
+<td>In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. <strong>(default = 0.25)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="ensembles-and-ensemble-specific-commands">
 <h3>Ensembles and Ensemble Specific Commands<a class="headerlink" href="#ensembles-and-ensemble-specific-commands" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ensemble [ENSEMBLE]</td>
+<td>Chooses the ensemble to simulate in. ENSEMBLE may be one of &#8216;npt&#8217;, &#8216;nve&#8217;, &#8216;nvt&#8217;, &#8216;uvt&#8217;, &#8216;surf&#8217;, &#8216;surf_fit&#8217;, &#8216;total_energy&#8217; or &#8216;replay&#8217;.</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">ENSEMBLE</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>npt</td>
+<td>Monte Carlo simulation in the isobaric-isothermal ensemble</td>
+</tr>
+<tr class="row-odd"><td>nve</td>
+<td>Monte Carlo simulation in the micro-canonical ensemble</td>
+</tr>
+<tr class="row-even"><td>nvt</td>
+<td>Monte Carlo simulation in the canonical ensemble</td>
+</tr>
+<tr class="row-odd"><td>uvt</td>
+<td>Monte Carlo simulation in the grand canonical ensemble</td>
+</tr>
+<tr class="row-even"><td>surf</td>
+<td>Potential energy surface scan for some specified orientation</td>
+</tr>
+<tr class="row-odd"><td>surf_fit</td>
+<td>Perform surface fitting via simulated annealing over parameter space</td>
+</tr>
+<tr class="row-even"><td>total_energy</td>
+<td>Calculate the single-point energy for a given system</td>
+</tr>
+<tr class="row-odd"><td>replay</td>
+<td>Recalculate observables over a set of configurations read from an input trajectory</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="nve-options">
 <h3>NVE Options<a class="headerlink" href="#nve-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>total_energy</td>
+<td>Sets total energy for NVE Monte Carlo.</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="uvt-options">
 <h3>uVT Options<a class="headerlink" href="#uvt-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pressure [double]</td>
+<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via fugacity function or assuming ideal gas limit (P==f)</td>
+</tr>
+<tr class="row-odd"><td>h2_fugacity [on|off]</td>
+<td>Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>co2_fugacity [on|off]</td>
+<td>Used for converting pressure to fugacity of CO2 uVT simulations. (Peng-Robinson) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>ch4_fugacity [on|off]</td>
+<td>Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>n2_fugacity [on|off]</td>
+<td>Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>user_fugacities [double] ([double]) ([double]) (...)</td>
+<td>Specifies the fugacities for species in insert_input. Accepts up to eight arguments.</td>
+</tr>
+<tr class="row-even"><td>cavity_bias [on|off]</td>
+<td>Use cavity bias for insertions in uvt Monte Carlo. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>cavity_grid [int]</td>
+<td>Number of grid points in each dimension used in cavity_bias</td>
+</tr>
+<tr class="row-even"><td>cavity_radius [double]</td>
+<td>Radius of sphere used to determine if a cavity grid point is unoccupied</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="replay-options">
 <h3>Replay Options<a class="headerlink" href="#replay-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>calc_pressure [on|off]</td>
+<td>Perform Frenkel pressure calculation over the uvt/nvt input trajectory. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>calc_pressure_dv [double]</td>
+<td>Size of volume moves to perform in the pressure calculation.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="miscellaneous-options">
+<h3>Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>free_volume [double]</td>
+<td>Used for statistics calculations in MOF sorption simulations.</td>
+</tr>
+<tr class="row-odd"><td>independent_particle [on|off]</td>
+<td>Treats each atom as an independent particle. Assigns unique molecule_id to each atom. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section" id="input-output-commands">
 <h2>Input / Output Commands<a class="headerlink" href="#input-output-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pqr_input [filename]</td>
+<td>Specifies input pqr file.</td>
+</tr>
+<tr class="row-odd"><td>pqr_output [filename]</td>
+<td>Specifies filename for writing final output pqr file(s). Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>pqr_restart [filename]</td>
+<td>Specifies filename for writing restart pqr file(s). Clobbers existing file(s).</td>
+</tr>
+<tr class="row-odd"><td>traj_input [filename]</td>
+<td>Specifies input trajectory file for &#8216;ensemble replay&#8217;.</td>
+</tr>
+<tr class="row-even"><td>traj_output [filename]</td>
+<td>Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s).</td>
+</tr>
+<tr class="row-odd"><td>energy_output [filename]</td>
+<td>Specifies filename for writing observables log. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>energy_output_csv [filename]</td>
+<td>Specifies filename for writing observables log in csv format. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-odd"><td>xyz_output [filename]</td>
+<td>Specifies filename for writing trajectory in xyz format. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>pop_histogram [on|off]</td>
+<td>Turns on population histogram. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>pop_histogram_output [filename]</td>
+<td>Specifies filename for writing popular histogram. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>virial_output [filename]</td>
+<td>Specifies filename for writing virial data. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-odd"><td>dipole_output [filename]</td>
+<td>Specifies filename for writing induced dipole data. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>field_output [filename]</td>
+<td>Specifies filename for writing total electrostatic field for each molecule. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-odd"><td>frozen_output [filename]</td>
+<td>Specifies filename for writing frozen atoms in dx format. Clobbers existing file(s).</td>
+</tr>
+<tr class="row-even"><td>insert_input [filename]</td>
+<td>Specifies filename for reading molecules for performing insertions in uVT simulations.</td>
+</tr>
+<tr class="row-odd"><td>parallel_restarts [on|off]</td>
+<td>Forces each MPMC thread to restart from its own pqr_restart file. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>long_output [on|off]</td>
+<td>Prints additional sigfigs for atom xyz info in output pqr&#8217;s. <strong>(default = off, unless box has a dimension &gt;= 100 Å)</strong></td>
+</tr>
+<tr class="row-odd"><td>read_pqr_box [on|off]</td>
+<td>Reads simulation box dimensions from pqr input file. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>wrapall [on|off]</td>
+<td>Wraps atoms back into the simulation box on output. <strong>(default = on)</strong></td>
+</tr>
+<tr class="row-odd"><td>basis1 [double] [double] [double]</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+</tr>
+<tr class="row-even"><td>basis2 [double] [double] [double]</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+</tr>
+<tr class="row-odd"><td>basis3 [double] [double] [double]</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+</tr>
+<tr class="row-even"><td>[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]</td>
+<td>Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma)</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="potential-commands">
 <h2>Potential Commands<a class="headerlink" href="#potential-commands" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mixing-rules">
-<h3>Mixing Rules<a class="headerlink" href="#mixing-rules" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cavity_autoreject [on|off]</td>
+<td>DOUBLE CHECK THIS</td>
+</tr>
+<tr class="row-odd"><td>cavity_autoreject_absolute [on|off]</td>
+<td>Automatically rejects any monte carlo move which would put two sites (not on the same molecule) that are too close. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>cavity_autoreject_scale [double]</td>
+<td>Sets threshold (distance in Angstroms) for triggering cavity_autoreject_absolute.</td>
+</tr>
+<tr class="row-odd"><td>cavity_autoreject_repulsion [double]</td>
+<td>Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only works in combination with disp_expansion. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>feynman_hibbs [on|off]</td>
+<td>Turns on Feynman-Hibbs quantum corrections. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>feynman_hibbs_order [2|4]</td>
+<td>Specifies highest-order Feynman-Hibbs terms to use.</td>
+</tr>
+<tr class="row-even"><td>pbc_cutoff [double]</td>
+<td>Override the default cutoff distance for interactions. (Half the shortest simulation box dimension.)</td>
+</tr>
+<tr class="row-odd"><td>scale_charge [double]</td>
+<td>Scales the charges on all frozen atoms.</td>
+</tr>
+<tr class="row-even"><td>rd_lrc [on|off]</td>
+<td>Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. <strong>(default = on)</strong></td>
+</tr>
+<tr class="row-odd"><td>rd_only [on|off]</td>
+<td>Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="lennard-jones-mixing-rules">
+<h3>Lennard-Jones Mixing Rules<a class="headerlink" href="#lennard-jones-mixing-rules" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>waldmanhagler [on|off]</td>
+<td>Use Waldman-Hagler mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>halgren_mixing [on|off]</td>
+<td>Use Halgren mixing rules for Lennard-Jones RD rather than the default (Lorentz-Berthelot). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>c6_mixing [on|off]</td>
+<td>Use the known C6 mixing rule to calculate the Lennard-Jones epsilon. The Lennard-Jones sigma is calculated using arithmetic mean. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="ewald-wolf-options">
 <h3>Ewald/Wolf Options<a class="headerlink" href="#ewald-wolf-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>wolf [on|off]</td>
+<td>Calculates permanent electrostatics via wolf method. If off permanent electrostatics are handled via the Ewald summation method. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_ewald_full [on|off]</td>
+<td>Full ewald polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_ewald [on|off]</td>
+<td>Partial ewald polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_ewald_alpha [int]</td>
+<td>Sets alpha/damping parameter for polar ewald calculation.</td>
+</tr>
+<tr class="row-even"><td>polar_wolf_full [on|off]</td>
+<td>Full wolf polarization (induced and static) for periodic systems. (used in conjunction to polarization/polarvdw). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_wolf [on|off]</td>
+<td>Partial wolf polarization (static-only) for periodic systems. (used in conjunction to polarization/polarvdw). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>[polar_wolf_damp|polar_wolf_alpha] [int]</td>
+<td>Sets alpha/damping parameter for polar wolf calculation.</td>
+</tr>
+<tr class="row-odd"><td>polar_wolf_lookup [on|off]</td>
+<td>Uses a lookup table for calculation of erfc&#8217;s in wolf calculation. Grid size probably needs to be tweaked in the source. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>ewald_alpha [double]</td>
+<td>Overrides default alpha for ewald and wolf permanent electrostatics and polar_ewald. <strong>(default = 3.5/pbc_cutoff)</strong></td>
+</tr>
+<tr class="row-odd"><td>ewald_kmax [int]</td>
+<td>Sets the maximum k-vectors to include in ewald sums for permanent electrostatics and polarization. <strong>(default = 7)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="polarization-options">
 <h3>Polarization Options<a class="headerlink" href="#polarization-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>polarization [on|off]</td>
+<td>Turns on Thole-Applequist polarization. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_damp_type [off|none|linear|exponential]</td>
+<td>Type of polarization damping. off=none</td>
+</tr>
+<tr class="row-even"><td>polar_damp [double]</td>
+<td>Polarization exponential damping constant (to help avoid polarization catastrophe).</td>
+</tr>
+<tr class="row-odd"><td>polar_ewald [on|off]</td>
+<td>Calculate induced polarization via ewald summation. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polarizability_tensor [on|off]</td>
+<td>Prints the molecular polarizability tensor for the system. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_zodid [on|off]</td>
+<td>Calculates polarization energy via zeroth-order iteration. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_iterative [on|off]</td>
+<td>Full iterative method for calculation polarization energy. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_palmo [on|off]</td>
+<td>Iterative polar correction due to Kim Palmo. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_gs [on|off]</td>
+<td>Gauss-Seidel smoothing for iterative polarization. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_gs_ranked [on|off]</td>
+<td>Ranked Gauss-Seidel smoothing for iterative polarization. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_sor [on|off]</td>
+<td>(Linear??) polarization overrelaxation. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>polar_esor [on|off]</td>
+<td>Exponential polarization overrelaxation. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_gamma [double]</td>
+<td>Polarization overrelaxation constant.</td>
+</tr>
+<tr class="row-odd"><td>polar_precision [double]</td>
+<td>Terminate polarization iterative solver when all dipole fluctuations are within this tolerance.</td>
+</tr>
+<tr class="row-even"><td>polar_max_iter [int]</td>
+<td>Terminate polarization iterative solver after a fixed number of iterations.</td>
+</tr>
+<tr class="row-odd"><td>polar_self [on|off]</td>
+<td>Include molecular self-induction. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>polar_rrms [on|off]</td>
+<td>Calculate root-mean-square fluctuation in dipoles elements during iterative solution. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="phahst-options">
 <h3>PHAHST Options<a class="headerlink" href="#phahst-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>[phahst|disp_expansion] [on|off]</td>
+<td>Activates a RD potential similar to the Tang-Toennies potential. E_rd = -C6/r^6-C8/r^8-C10/r^10+596.725194095/epsilon*exp(-epsilon*(r-sigma)). <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>damp_dispersion [on|off]</td>
+<td>Damps the PHAHST dispersion interaction according to Tang and Toennies&#8217;s incomplete gamma functions. <strong>(default = on)</strong></td>
+</tr>
+<tr class="row-even"><td>extrapolate_disp_coeffs [on|off]</td>
+<td>Extrapolates C10 from C6 and C8. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="coupled-dipole-van-der-waals-options">
+<h3>Coupled-Dipole Van der Waals Options<a class="headerlink" href="#coupled-dipole-van-der-waals-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>[cdvdw|polarvdw] [on|off|evects|comp]</td>
+<td>Turns on coupled-dipole method van der Waals. Evects prints eigenvectors and comp prints a comparision to a two-body decomposition. Also activates polarization. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>vdw_fh_2be [on|off]</td>
+<td>Uses two-body expansion for calculation of Feynman Hibbs in coupled-dipole vdW calculations. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>cdvdw_9th_repulsion [on|off]</td>
+<td>Use 9th power mixing rule (rep_ij = (rep_ii^(1/9)+rep_jj^(1/9))^9) for repulsion interactions (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>cdvdw_sig_rep [on|off]</td>
+<td>Calculate repulsion using 3/2*hbar*w_i*w_j*alpha_i*alpha_j/(w_i+w_j)*sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>cdvdw_exp_rep [on|off]</td>
+<td>Uses exponential repulsion sigma*exp(-r/2epsilon), using some mixing rule I found somewhere &#8211; see source code. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id1">
+<h3>Miscellaneous Options<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>None of these are guaranteed to work.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>sg [on|off]</td>
+<td>Silvera-Goldman potential. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>dreiding [on|off]</td>
+<td>Dreiding potential. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>spectre [on|off]</td>
+<td>??? <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>spectre_max_charge [double]</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>spectre_max_target [double]</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>rd_anharmonic [on|off]</td>
+<td>??? Turns on 1D bonded RD potential or something? <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>rd_anharmonic_k [double]</td>
+<td>Harmonic term (order 2).</td>
+</tr>
+<tr class="row-odd"><td>rd_anharmonic_g [double]</td>
+<td>Anharmonic term (order 4).</td>
+</tr>
+<tr class="row-even"><td>feynman_kleinert [on|off]</td>
+<td>??? Iterative Feynman-Kleinert correction for anharmonic bond potential. <strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section" id="annealing-tempering-commands">
 <h2>Annealing / Tempering Commands<a class="headerlink" href="#annealing-tempering-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>simulated_annealing [on|off]</td>
+<td>Turns on simulated annealing for MC simulations. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>simulated_annealing_schedule [double]</td>
+<td>(Exponential) decay constant for the temperature in a simulated annealing MC simulation.</td>
+</tr>
+<tr class="row-even"><td>simulated_annealing_target [double]</td>
+<td>Target temperature in a simulated annealing MC simulation.</td>
+</tr>
+<tr class="row-odd"><td>simulated_annealing_linear [on|off]</td>
+<td>Sets a linear ramp throughout the entire simulation instead of exponential decay.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="parallel-tempering-options">
+<h3>Parallel Tempering Options<a class="headerlink" href="#parallel-tempering-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>parallel_tempering [on|off]</td>
+<td>Turns on parallel tempering for Monte Carlo simulations. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>ptemp_freq [int]</td>
+<td>How often to perform bath swaps when performing Monte Carlo with parallel tempering. <strong>(default = 20)</strong></td>
+</tr>
+<tr class="row-even"><td>max_temperature [double]</td>
+<td>Sets the temperature for the hottest bath in a MC simulation with parallel tempering.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="quantum-rotation-commands">
 <h2>Quantum Rotation Commands<a class="headerlink" href="#quantum-rotation-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>quantum_rotation [on|off]</td>
+<td>Enables quantum rotational eigenspectrum calculation. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>quantum_rotation_hindered [on|off]</td>
+<td>Calculates the rotational energy levels using the hindered potential sin^2θ. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>quantum_rotation_hindered_barrier [double]</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>quantum_rotation_B [double]</td>
+<td>Sets the rotational constant. For H2, it is 85.35060622 Kelvin.</td>
+</tr>
+<tr class="row-even"><td>quantum_rotation_level_max [int]</td>
+<td>Number of rotational energy levels to solve for (Equal to (l_max + 1)2). <strong>(default = 36)</strong></td>
+</tr>
+<tr class="row-odd"><td>quantum_rotation_l_max [int]</td>
+<td>Number of rotational energy levels to solve for (Equal to (l_max + 1)2). <strong>(default = 36)</strong></td>
+</tr>
+<tr class="row-even"><td>quantum_rotation_sum [int]</td>
+<td>Number of rotational energy levels to sum over. <strong>(default = 10)</strong></td>
+</tr>
+<tr class="row-odd"><td>quantum_vibration [on|off]</td>
+<td><strong>(default = off)</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="surface-fitting-commands">
 <h2>Surface Fitting Commands<a class="headerlink" href="#surface-fitting-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>fit_start_temp [double]</td>
+<td>Intial temperature for parameter annealing during surface fitting. <strong>(default = 50000)</strong></td>
+</tr>
+<tr class="row-odd"><td>fit_schedule [double]</td>
+<td>Temperature (exponential) decay constant for parameter annealing during surface fitting. <strong>(default = 0.999)</strong></td>
+</tr>
+<tr class="row-even"><td>fit_max_energy [double]</td>
+<td>Maximum energy values to be considered during surin two weeksface fitting. <strong>(default = 2000)</strong></td>
+</tr>
+<tr class="row-odd"><td>fit_input [file]</td>
+<td>Specifies fit input file. Call multiple times to specify multiple fit geometries.</td>
+</tr>
+<tr class="row-even"><td>surf_descent [on|off]</td>
+<td>Only accept parameter moves that lower the square error (rather than a Monte Carlo approach).</td>
+</tr>
+<tr class="row-odd"><td>surf_weight_constant [double]</td>
+<td>Exponential weighting factor used in surface fitting to prioritize fitting at lower potential energies. <strong>(default = 0.5)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_scale_q [double]</td>
+<td>Magnitude of charge fluctuations during surface fitting <strong>(default = 0)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_scale_r [double]</td>
+<td>Magnitude of position fluctuations of non-H2E/H2Q sites (when that site exists in multiples/doesn&#8217;t apply to CoM site) <strong>(default = 0.001)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_scale_epsilon [double]</td>
+<td>Magnitude of epsilon fluctations to sites with non-zero epsilon. <strong>(default = 1.0)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_scale_sigma [double]</td>
+<td>Magntiude of sigma fluctuations to sites with non-zero sigma. <strong>(default = 0.1)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_scale_omega [double]</td>
+<td>Magnitude of omega fluctuations to sites with non-zero omega. <strong>(default = 0.001)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_scale_pol [double]</td>
+<td>Magnitude of alpha (polarizabilities) fluctuations to sites with non-zero alpha. <strong>(default = 0)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_qshift [on|off]</td>
+<td>Adjusts position of H2Q sites while adjusting charges of H2Q and H2G to remain charge neutral and conserve quadrupole. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_global_axis [on|off]</td>
+<td>Use quaternions to rotate the molecules about the cartesian axes during surface fitting (as opposed to the local axes which is the default) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_scale_pol [double]</td>
+<td>Magnitude of polarizability fluctuations to sites with non-zero polarizability. <strong>(default = 0)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_scale_c6 [double]</td>
+<td>Magnitude of C6 fluctuations to sites with non-zero C6. <strong>(default = 0)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_scale_c8 [double]</td>
+<td>Magnitude of C8 fluctuations to sites with non-zero C8. <strong>(default = 0)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_scale_c10 [double]</td>
+<td>Magnitude of C10 fluctuations to sites with non-zero C10. <strong>(default = 0)</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="surface-scan-options">
+<h3>Surface Scan Options<a class="headerlink" href="#surface-scan-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>surf_decomp [on|off]</td>
+<td>Decompose the total energy into it&#8217;s components (i.e. electrostatic, polarization, Lennard-Jones, CPM-vdW) <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_min [double]</td>
+<td>Minimum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. <strong>(default = 0.25)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_max [double]</td>
+<td>Maximum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. <strong>(default = 25.0)</strong></td>
+</tr>
+<tr class="row-odd"><td>surf_inc [double]</td>
+<td>Increment for center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. <strong>(default = 0.25)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_ang [double]</td>
+<td>Angular increment (in rads) for generation of the isotropic potential energy surface.</td>
+</tr>
+<tr class="row-odd"><td>surf_preserve [on|off]</td>
+<td>Preserve orientation while calculating surface curves. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_preserve_rotation [double] [double] [double] [double] [double] [double]</td>
+<td>Perform rotation to molecules prior to calculating surface curves. (a1, b1, c1, a2, b2, c2)</td>
+</tr>
+<tr class="row-odd"><td>surf_print_level [1-6]</td>
+<td>Verbosity of surface trajectory data written to surf_output. <strong>(default = 3)</strong></td>
+</tr>
+<tr class="row-even"><td>surf_output</td>
+<td>Output file for surface curves.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="virial-coefficient-options">
+<h3>Virial Coefficient Options<a class="headerlink" href="#virial-coefficient-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>surf_virial [on|off]</td>
+<td>Perform calculation of second virial coefficient. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>virial_tmin [double]</td>
+<td>Use with surf_virial. Minimum temperature considered. <strong>(default = 10)</strong></td>
+</tr>
+<tr class="row-even"><td>virial_tmax [double]</td>
+<td>Use with surf_virial. Maximum temperature. <strong>(default = 1000)</strong></td>
+</tr>
+<tr class="row-odd"><td>virial_dt [double]</td>
+<td>Use with surf_virial. Temperature increment. <strong>(default = 10)</strong></td>
+</tr>
+<tr class="row-even"><td>virial_npts [int]</td>
+<td>Use with surf_virial. Number of points to consider in virial calculation for each spherical shell. <strong>(default = 25)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="external-tools">
 <h2>External Tools<a class="headerlink" href="#external-tools" title="Permalink to this headline">¶</a></h2>
+<p>traj_pqr2pdb
+Designed a workaround for viewing long_output PQR trajectories in VMD! This is
+useful for ultra-dense systems, or if you&#8217;re just precision obsessed like me :D.
+The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory,
+which you can then read into VMD. You&#8217;ll do so like this:</p>
+<p>[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd</p>
+<p>More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision.</p>
+<p>Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</p>
 </div>
 </div>
 
@@ -146,19 +912,29 @@
 <li><a class="reference internal" href="#nve-options">NVE Options</a></li>
 <li><a class="reference internal" href="#uvt-options">uVT Options</a></li>
 <li><a class="reference internal" href="#replay-options">Replay Options</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">Miscellaneous Options</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#input-output-commands">Input / Output Commands</a></li>
 <li><a class="reference internal" href="#potential-commands">Potential Commands</a><ul>
-<li><a class="reference internal" href="#mixing-rules">Mixing Rules</a></li>
+<li><a class="reference internal" href="#lennard-jones-mixing-rules">Lennard-Jones Mixing Rules</a></li>
 <li><a class="reference internal" href="#ewald-wolf-options">Ewald/Wolf Options</a></li>
 <li><a class="reference internal" href="#polarization-options">Polarization Options</a></li>
 <li><a class="reference internal" href="#phahst-options">PHAHST Options</a></li>
+<li><a class="reference internal" href="#coupled-dipole-van-der-waals-options">Coupled-Dipole Van der Waals Options</a></li>
+<li><a class="reference internal" href="#id1">Miscellaneous Options</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#annealing-tempering-commands">Annealing / Tempering Commands</a></li>
+<li><a class="reference internal" href="#annealing-tempering-commands">Annealing / Tempering Commands</a><ul>
+<li><a class="reference internal" href="#parallel-tempering-options">Parallel Tempering Options</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#quantum-rotation-commands">Quantum Rotation Commands</a></li>
-<li><a class="reference internal" href="#surface-fitting-commands">Surface Fitting Commands</a></li>
+<li><a class="reference internal" href="#surface-fitting-commands">Surface Fitting Commands</a><ul>
+<li><a class="reference internal" href="#surface-scan-options">Surface Scan Options</a></li>
+<li><a class="reference internal" href="#virial-coefficient-options">Virial Coefficient Options</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#external-tools">External Tools</a></li>
 </ul>
 </li>
@@ -166,7 +942,7 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="input_files.html"
-                        title="previous chapter">Input Files</a></p>
+                        title="previous chapter">Input File Specifications</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="models.html"
                         title="next chapter">Models</a></p>
@@ -191,7 +967,7 @@
           <a href="models.html" title="Models"
              >next</a></li>
         <li class="right" >
-          <a href="input_files.html" title="Input Files"
+          <a href="input_files.html" title="Input File Specifications"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">MPMC 1.1.306 documentation</a> &#187;</li> 
       </ul>

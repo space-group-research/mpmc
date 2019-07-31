@@ -1532,8 +1532,7 @@ int do_command(system_t *system, char **token) {
     }
     // .car file way (a,b,c, alpha, beta, gamma)
     // so if both carbasis and basis1/2/3 are in the input file, the last one will overwrite.
-    else if (!strcasecmp(token[0],
-                         "carbasis")) {
+    else if (!strcasecmp(token[0],"carbasis") || !strcasecmp(token[0],"abcbasis")) {
         car2basis(system,
                   atof(token[1]), atof(token[2]), atof(token[3]),
                   atof(token[4]), atof(token[5]), atof(token[6]));

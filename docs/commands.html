@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Commands &#8212; MPMC 1.1.306 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.1.306',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="MPMC 1.1.306 documentation" href="index.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Input Files" href="input_files.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="models.html" title="Models"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="input_files.html" title="Input Files"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MPMC 1.1.306 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="commands">
+<h1>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="main-commands">
+<h2>Main Commands<a class="headerlink" href="#main-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cuda [on|off]</td>
+<td>Turns on/off nVIDIA CUDA <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>preset_seeds [int] [int] [int] [int]</td>
+<td>Initialize the random number generator using the specified seed values</td>
+</tr>
+<tr class="row-even"><td>numsteps [int]</td>
+<td>Total number of steps (moves) for Monte Carlo simulations</td>
+</tr>
+<tr class="row-odd"><td>corrtime [int]</td>
+<td>Sets the correlation time in steps. Each corrtime averages and trajectory outputs are produced</td>
+</tr>
+<tr class="row-even"><td>temperature [double]</td>
+<td>Sets the (initial) temperature</td>
+</tr>
+<tr class="row-odd"><td>pressure [double]</td>
+<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f)</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="monte-carlo-options">
+<h3>Monte Carlo Options<a class="headerlink" href="#monte-carlo-options" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="ensembles-and-ensemble-specific-commands">
+<h3>Ensembles and Ensemble Specific Commands<a class="headerlink" href="#ensembles-and-ensemble-specific-commands" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="nve-options">
+<h3>NVE Options<a class="headerlink" href="#nve-options" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="uvt-options">
+<h3>uVT Options<a class="headerlink" href="#uvt-options" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="replay-options">
+<h3>Replay Options<a class="headerlink" href="#replay-options" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="input-output-commands">
+<h2>Input / Output Commands<a class="headerlink" href="#input-output-commands" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="potential-commands">
+<h2>Potential Commands<a class="headerlink" href="#potential-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mixing-rules">
+<h3>Mixing Rules<a class="headerlink" href="#mixing-rules" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="ewald-wolf-options">
+<h3>Ewald/Wolf Options<a class="headerlink" href="#ewald-wolf-options" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="polarization-options">
+<h3>Polarization Options<a class="headerlink" href="#polarization-options" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="phahst-options">
+<h3>PHAHST Options<a class="headerlink" href="#phahst-options" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="annealing-tempering-commands">
+<h2>Annealing / Tempering Commands<a class="headerlink" href="#annealing-tempering-commands" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="quantum-rotation-commands">
+<h2>Quantum Rotation Commands<a class="headerlink" href="#quantum-rotation-commands" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="surface-fitting-commands">
+<h2>Surface Fitting Commands<a class="headerlink" href="#surface-fitting-commands" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="external-tools">
+<h2>External Tools<a class="headerlink" href="#external-tools" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Commands</a><ul>
+<li><a class="reference internal" href="#main-commands">Main Commands</a><ul>
+<li><a class="reference internal" href="#monte-carlo-options">Monte Carlo Options</a></li>
+<li><a class="reference internal" href="#ensembles-and-ensemble-specific-commands">Ensembles and Ensemble Specific Commands</a></li>
+<li><a class="reference internal" href="#nve-options">NVE Options</a></li>
+<li><a class="reference internal" href="#uvt-options">uVT Options</a></li>
+<li><a class="reference internal" href="#replay-options">Replay Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#input-output-commands">Input / Output Commands</a></li>
+<li><a class="reference internal" href="#potential-commands">Potential Commands</a><ul>
+<li><a class="reference internal" href="#mixing-rules">Mixing Rules</a></li>
+<li><a class="reference internal" href="#ewald-wolf-options">Ewald/Wolf Options</a></li>
+<li><a class="reference internal" href="#polarization-options">Polarization Options</a></li>
+<li><a class="reference internal" href="#phahst-options">PHAHST Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#annealing-tempering-commands">Annealing / Tempering Commands</a></li>
+<li><a class="reference internal" href="#quantum-rotation-commands">Quantum Rotation Commands</a></li>
+<li><a class="reference internal" href="#surface-fitting-commands">Surface Fitting Commands</a></li>
+<li><a class="reference internal" href="#external-tools">External Tools</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="input_files.html"
+                        title="previous chapter">Input Files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="next chapter">Models</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="models.html" title="Models"
+             >next</a></li>
+        <li class="right" >
+          <a href="input_files.html" title="Input Files"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MPMC 1.1.306 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, The MPMC Project.
+      Last updated on Jul 31, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+    </div>
+  </body>
+</html>

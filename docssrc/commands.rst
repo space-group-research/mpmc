@@ -1,6 +1,10 @@
 Commands
 ********
 
+.. |br| raw:: html
+
+   <br />
+
 Main Commands
 =============
 
@@ -8,12 +12,13 @@ Main Commands
     :header: "Command","Description"
     :widths: 20,40
 
-    "cuda [on|off]", "Turns on/off nVIDIA CUDA **(default = off)**"
-    "preset_seeds [int] [int] [int] [int]", "Initialize the random number generator using the specified seed values"
-    "numsteps [int]", "Total number of steps (moves) for Monte Carlo simulations"
-    "corrtime [int]", "Sets the correlation time in steps. Each corrtime averages and trajectory outputs are produced"
-    "temperature [double]", "Sets the (initial) temperature"
-    "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f)"
+    "job_name [string]", "Base job name for output files. **(required)**"
+    "preset_seeds [int] [int] [int] [int]", "Initialize the random number generator using the specified seed values. **(default = randomized on startup)**"
+    "numsteps [int]", "Total number of steps (moves) for Monte Carlo simulations. **(required for Monte Carlo)**"
+    "corrtime [int]", "Sets the correlation time in steps. Every corrtime steps averages and trajectory outputs are produced. **(required for Monte Carlo)**"
+    "temperature [double]", "Sets the (initial) temperature. **(required for Monte Carlo)**"
+    "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
+    "cuda [on|off]", "Turns on/off nVIDIA CUDA. **(default = off)**"
 
 Monte Carlo Options
 -------------------
@@ -22,8 +27,8 @@ Monte Carlo Options
     :header: "Command","Description"
     :widths: 20,40
 
-    "move_factor [double]", "Scale factor for translational moves in a fraction of the simulation box. **(default = 1.0)**"
-    "rot_factor [double]", "Scale factor for rotational moves in a fraction of a complete rotation. **(default = 1.0)**"
+    "move_factor [double]", "Scale factor for translational moves in a fraction of the simulation box (1.0 = full box length). **(default = 1.0)**"
+    "rot_factor [double]", "Scale factor for rotational moves in a fraction of a complete rotation (1.0 = full 360 degrees). **(default = 1.0)**"
     "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insert or delete move. **(default = 0.0)**"
     "volume_probability [double]", "In a NPT simulation, the probability to randomly choose a volume change move. **(default = 0.0)**"
     "volume_change_factor [double]", "In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. **(default = 0.25)**"
@@ -36,7 +41,7 @@ Ensembles and Ensemble Specific Commands
     :header: "Command","Description"
     :widths: 20,40
 
-    "ensemble [ENSEMBLE]", "Chooses the ensemble to simulate in. ENSEMBLE may be one of 'npt', 'nve', 'nvt', 'uvt', 'surf', 'surf_fit', 'total_energy' or 'replay'."
+    "ensemble [ENSEMBLE]", "Chooses the ensemble to simulate in. ENSEMBLE may be one of 'npt', 'nve', 'nvt', 'uvt', 'surf', 'surf_fit', 'total_energy' or 'replay'. **(required)**"
 
 \
 
@@ -44,14 +49,14 @@ Ensembles and Ensemble Specific Commands
     :header: "ENSEMBLE","Description"
     :widths: 20,40
 
-    "npt", "Monte Carlo simulation in the isobaric-isothermal ensemble"
-    "nve", "Monte Carlo simulation in the micro-canonical ensemble"
-    "nvt", "Monte Carlo simulation in the canonical ensemble"
-    "uvt", "Monte Carlo simulation in the grand canonical ensemble"
-    "surf", "Potential energy surface scan for some specified orientation"
-    "surf_fit", "Perform surface fitting via simulated annealing over parameter space"
-    "total_energy", "Calculate the single-point energy for a given system"
-    "replay", "Recalculate observables over a set of configurations read from an input trajectory"
+    "npt", "Monte Carlo simulation in the isobaric-isothermal ensemble."
+    "nve", "Monte Carlo simulation in the micro-canonical ensemble."
+    "nvt", "Monte Carlo simulation in the canonical ensemble."
+    "uvt", "Monte Carlo simulation in the grand canonical ensemble."
+    "surf", "Potential energy surface scan for some specified orientation."
+    "surf_fit", "Perform surface fitting via simulated annealing over parameter space."
+    "total_energy", "Calculate the single-point energy for a given system."
+    "replay", "Recalculate observables over a set of configurations read from an input trajectory."
 
 NVE Options
 -----------
@@ -60,7 +65,7 @@ NVE Options
     :header: "Command","Description"
     :widths: 20,40
 
-    "total_energy", "Sets total energy for NVE Monte Carlo."
+    "total_energy", "Sets total energy for NVE Monte Carlo. **(required for NVE Monte Carlo)**"
 
 uVT Options
 -----------
@@ -69,15 +74,27 @@ uVT Options
     :header: "Command","Description"
     :widths: 20,40
 
-    "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via fugacity function or assuming ideal gas limit (P==f)"
+    "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
     "h2_fugacity [on|off]", "Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) **(default = off)**"
     "co2_fugacity [on|off]", "Used for converting pressure to fugacity of CO2 uVT simulations. (Peng-Robinson) **(default = off)**"
     "ch4_fugacity [on|off]", "Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) **(default = off)**"
     "n2_fugacity [on|off]", "Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) **(default = off)**"
     "user_fugacities [double] ([double]) ([double]) (...)", "Specifies the fugacities for species in insert_input. Accepts up to eight arguments."
-    "cavity_bias [on|off]", "Use cavity bias for insertions in uvt Monte Carlo. **(default = off)**"
-    "cavity_grid [int]", "Number of grid points in each dimension used in cavity_bias"
-    "cavity_radius [double]", "Radius of sphere used to determine if a cavity grid point is unoccupied"
+    "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insert or delete move. **(default = 0.0)**"
+    "cavity_bias [on|off]", "Use cavity bias for insertions in uVT Monte Carlo. **(default = off)**"
+    "cavity_grid [int]", "Number of grid points in each dimension used in cavity_bias."
+    "cavity_radius [double]", "Radius of sphere used to determine if a cavity grid point is unoccupied."
+
+NPT Options
+-----------
+
+.. csv-table::
+    :header: "Command","Description"
+    :widths: 20,40
+
+    "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
+    "volume_probability [double]", "In a NPT simulation, the probability to randomly choose a volume change move. **(default = 0.0)**"
+    "volume_change_factor [double]", "In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. **(default = 0.25)**"
 
 Replay Options
 --------------
@@ -106,16 +123,16 @@ Input / Output Commands
     :header: "Command","Description"
     :widths: 20,40
 
-    "pqr_input [filename]", "Specifies input pqr file."
-    "pqr_output [filename]", "Specifies filename for writing final output pqr file(s). Clobbers existing file(s)."
-    "pqr_restart [filename]", "Specifies filename for writing restart pqr file(s). Clobbers existing file(s)."
+    "pqr_input [filename]", "Specifies input pqr file. **(default based on job_name)**"
+    "pqr_output [filename]", "Specifies filename for writing final output pqr file(s). Clobbers existing file(s). **(default based on job_name)**"
+    "pqr_restart [filename]", "Specifies filename for writing restart pqr file(s). Clobbers existing file(s). **(default based on job_name)**"
     "traj_input [filename]", "Specifies input trajectory file for 'ensemble replay'."
-    "traj_output [filename]", "Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s)."
-    "energy_output [filename]", "Specifies filename for writing observables log. Clobbers existing file(s)."
+    "traj_output [filename]", "Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s). **(default based on job_name)**"
+    "energy_output [filename]", "Specifies filename for writing observables log. Clobbers existing file(s). **(default based on job_name)**"
     "energy_output_csv [filename]", "Specifies filename for writing observables log in csv format. Clobbers existing file(s)."
     "xyz_output [filename]", "Specifies filename for writing trajectory in xyz format. Clobbers existing file(s)."
     "pop_histogram [on|off]", "Turns on population histogram. **(default = off)**"
-    "pop_histogram_output [filename]", "Specifies filename for writing popular histogram. Clobbers existing file(s)."
+    "pop_histogram_output [filename]", "Specifies filename for writing popular histogram. Clobbers existing file(s). **(default = histogram.dx)**"
     "virial_output [filename]", "Specifies filename for writing virial data. Clobbers existing file(s)."
     "dipole_output [filename]", "Specifies filename for writing induced dipole data. Clobbers existing file(s)."
     "field_output [filename]", "Specifies filename for writing total electrostatic field for each molecule. Clobbers existing file(s)."
@@ -125,10 +142,10 @@ Input / Output Commands
     "long_output [on|off]", "Prints additional sigfigs for atom xyz info in output pqr's. **(default = off, unless box has a dimension >= 100 Å)**"
     "read_pqr_box [on|off]", "Reads simulation box dimensions from pqr input file. **(default = off)**"
     "wrapall [on|off]", "Wraps atoms back into the simulation box on output. **(default = on)**"
-    "basis1 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components"
-    "basis2 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components"
-    "basis3 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components"
-    "[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]", "Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma)"
+    "basis1 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
+    "basis2 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
+    "basis3 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
+    "[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]", "Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma)."
 
 Potential Commands
 ==================
@@ -137,13 +154,12 @@ Potential Commands
     :header: "Command","Description"
     :widths: 20,40
 
-    "cavity_autoreject [on|off]", "DOUBLE CHECK THIS"
     "cavity_autoreject_absolute [on|off]", "Automatically rejects any monte carlo move which would put two sites (not on the same molecule) that are too close. **(default = off)**"
     "cavity_autoreject_scale [double]", "Sets threshold (distance in Angstroms) for triggering cavity_autoreject_absolute."
-    "cavity_autoreject_repulsion [double]", "Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only works in combination with disp_expansion. **(default = off)**"
+    "cavity_autoreject_repulsion [double]", "Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only implemented in combination with disp_expansion."
     "feynman_hibbs [on|off]", "Turns on Feynman-Hibbs quantum corrections. **(default = off)**"
     "feynman_hibbs_order [2|4]", "Specifies highest-order Feynman-Hibbs terms to use."
-    "pbc_cutoff [double]", "Override the default cutoff distance for interactions. (Half the shortest simulation box dimension.)"
+    "pbc_cutoff [double]", "Override the default cutoff distance for interactions. **(default = half the shortest simulation box dimension)**"
     "scale_charge [double]", "Scales the charges on all frozen atoms."
     "rd_lrc [on|off]", "Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. **(default = on)**"
     "rd_only [on|off]", "Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) **(default = off)**"
@@ -185,8 +201,8 @@ Polarization Options
     :widths: 20,40
 
     "polarization [on|off]", "Turns on Thole-Applequist polarization. **(default = off)**"
-    "polar_damp_type [off|none|linear|exponential]", "Type of polarization damping. off=none"
-    "polar_damp [double]", "Polarization exponential damping constant (to help avoid polarization catastrophe)."
+    "polar_damp_type [off|none|linear|exponential]", "Type of polarization damping. (off=none)"
+    "polar_damp [double]", "Polarization exponential damping constant (to help avoid polarization catastrophe). **(required if polar_damp_type != off)**"
     "polar_ewald [on|off]", "Calculate induced polarization via ewald summation. **(default = off)**"
     "polarizability_tensor [on|off]", "Prints the molecular polarizability tensor for the system. **(default = off)**"
     "polar_zodid [on|off]", "Calculates polarization energy via zeroth-order iteration. **(default = off)**"
@@ -197,8 +213,8 @@ Polarization Options
     "polar_sor [on|off]", "(Linear??) polarization overrelaxation. **(default = off)**"
     "polar_esor [on|off]", "Exponential polarization overrelaxation. **(default = off)**"
     "polar_gamma [double]", "Polarization overrelaxation constant."
-    "polar_precision [double]", "Terminate polarization iterative solver when all dipole fluctuations are within this tolerance."
-    "polar_max_iter [int]", "Terminate polarization iterative solver after a fixed number of iterations."
+    "polar_precision [double]", "Terminate polarization iterative solver when all dipole fluctuations are within this tolerance. **(either polar_precision or polar_max_iter required if polarization = on)**"
+    "polar_max_iter [int]", "Terminate polarization iterative solver after a fixed number of iterations. **(either polar_precision or polar_max_iter required if polarization = on)**"
     "polar_self [on|off]", "Include molecular self-induction. **(default = off)**"
     "polar_rrms [on|off]", "Calculate root-mean-square fluctuation in dipoles elements during iterative solution. **(default = off)**"
 
@@ -209,7 +225,7 @@ PHAHST Options
     :header: "Command","Description"
     :widths: 20,40
 
-    "[phahst|disp_expansion] [on|off]", "Activates a RD potential similar to the Tang-Toennies potential. E_rd = -C6/r^6-C8/r^8-C10/r^10+596.725194095/epsilon*exp(-epsilon*(r-sigma)). **(default = off)**"
+    "[phahst|disp_expansion] [on|off]", "Activates a RD potential similar to the Tang-Toennies potential. :math:`E_{rd} = -\frac{C6}{r^6}-\frac{C8}{r^8}-\frac{C10}{r^{10}}+596.725194095/ \epsilon * \mathrm{exp}(- \epsilon * ( r - \sigma))`. **(default = off)**"
     "damp_dispersion [on|off]", "Damps the PHAHST dispersion interaction according to Tang and Toennies's incomplete gamma functions. **(default = on)**"
     "extrapolate_disp_coeffs [on|off]", "Extrapolates C10 from C6 and C8. **(default = off)**"
 
@@ -222,9 +238,9 @@ Coupled-Dipole Van der Waals Options
 
     "[cdvdw|polarvdw] [on|off|evects|comp]", "Turns on coupled-dipole method van der Waals. Evects prints eigenvectors and comp prints a comparision to a two-body decomposition. Also activates polarization. **(default = off)**"
     "vdw_fh_2be [on|off] ", "Uses two-body expansion for calculation of Feynman Hibbs in coupled-dipole vdW calculations. **(default = off)**"
-    "cdvdw_9th_repulsion [on|off]", "Use 9th power mixing rule (rep_ij = (rep_ii^(1/9)+rep_jj^(1/9))^9) for repulsion interactions (used in conjunction with coupled-dipole vdW) **(default = off)**"
-    "cdvdw_sig_rep [on|off]", "Calculate repulsion using 3/2*hbar*w_i*w_j*alpha_i*alpha_j/(w_i+w_j)*sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) **(default = off)**"
-    "cdvdw_exp_rep [on|off]", "Uses exponential repulsion sigma*exp(-r/2epsilon), using some mixing rule I found somewhere -- see source code. **(default = off)**"
+    "cdvdw_9th_repulsion [on|off]", "Use 9th power mixing rule :math:`rep_{ij} = (rep_{ii}^{1/9}+rep_{jj}^{1/9})^9` for repulsion interactions (used in conjunction with coupled-dipole vdW) **(default = off)**"
+    "cdvdw_sig_rep [on|off]", "Calculate repulsion using :math:`\frac{3}{2} \hbar w_i w_j \alpha_i \alpha_j / ( w_i + w_j ) * sig6` with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) **(default = off)**"
+    "cdvdw_exp_rep [on|off]", "Uses exponential repulsion :math:`\sigma * \mathrm{exp}(-\frac{r}{2 \epsilon})`, using some mixing rule I found somewhere -- see source code. **(default = off)**"
 
 Miscellaneous Options
 ---------------------
@@ -255,7 +271,7 @@ Annealing / Tempering Commands
     "simulated_annealing [on|off]", "Turns on simulated annealing for MC simulations. **(default = off)**"
     "simulated_annealing_schedule [double]", "(Exponential) decay constant for the temperature in a simulated annealing MC simulation."
     "simulated_annealing_target [double]", "Target temperature in a simulated annealing MC simulation."
-    "simulated_annealing_linear [on|off]", "Sets a linear ramp throughout the entire simulation instead of exponential decay."
+    "simulated_annealing_linear [on|off]", "Sets a linear ramp throughout the entire simulation instead of exponential decay. **(default = off)**"
 
 Parallel Tempering Options
 --------------------------
@@ -344,14 +360,12 @@ Virial Coefficient Options
 External Tools
 ==============
 
-traj_pqr2pdb
-Designed a workaround for viewing long_output PQR trajectories in VMD! This is
-useful for ultra-dense systems, or if you're just precision obsessed like me :D.
-The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory,
-which you can then read into VMD. You'll do so like this:
 
-[user@machine]$ ./traj_pqr2pdb.sh INPUT.pqr > OUTPUT.pdb [user@machine]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd
+.. csv-table::
+    :header: "Tool","Description"
+    :widths: 20,40
 
-More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision.
-
-Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.
+    "traj_pqr2pdb", "Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you're just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You'll do so like this: |br| |br|\
+    [user@machine]$ ./traj_pqr2pdb.sh INPUT.pqr > OUTPUT.pdb [user@machine]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd |br| |br|\
+    More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. |br| |br|\
+    Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be."

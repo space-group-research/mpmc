@@ -1,13 +1,15 @@
 Models
 ******
 
+These models are in code boxes to allow easy copying and pasting into a MPMC pqr. Please cite the appropriate journal article(s) when using these models.
+
 Hydrogen
 ========
 
 PHAST
 -----
 
-BSS
+BSS `https://pubs.acs.org/doi/abs/10.1021/ct800155q <https://pubs.acs.org/doi/abs/10.1021/ct800155q>`_
 
 .. code-block:: none
 
@@ -17,7 +19,7 @@ BSS
     ATOM      4 H2N  H2  M    1      0.329   0.000   0.000  0.00000  0.00000  0.00000  4.06590  2.34060  0.00000  0.00000
     ATOM      5 H2N  H2  M    1     -0.329  -0.000   0.000  0.00000  0.00000  0.00000  4.06590  2.34060  0.00000  0.00000
 
-BSSP
+BSSP `https://pubs.acs.org/doi/abs/10.1021/ct800155q <https://pubs.acs.org/doi/abs/10.1021/ct800155q>`_
 
 .. code-block:: none
 
@@ -27,7 +29,7 @@ BSSP
     ATOM      4 H2N  H2  M    1      0.363   0.000   0.000  0.00000  0.00000  0.00000  2.16726  2.37031  0.00000  0.00000
     ATOM      5 H2N  H2  M    1     -0.363  -0.000   0.000  0.00000  0.00000  0.00000  2.16726  2.37031  0.00000  0.00000
 
-POLAR_ADJQ
+POLAR_ADJQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitation.org/doi/10.1063/1.4717705>`_
 
 .. code-block:: none
 
@@ -37,7 +39,7 @@ POLAR_ADJQ
     ATOM      4 H2NP H2  M    1      0.409   0.000   0.000  0.00000  0.00000  0.00000 12.30059  1.87697  0.00000  0.00000
     ATOM      5 H2NP H2  M    1     -0.409   0.000   0.000  0.00000  0.00000  0.00000 12.30059  1.87697  0.00000  0.00000
 
-POLAR_FIXQ
+POLAR_FIXQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitation.org/doi/10.1063/1.4717705>`_
 
 .. code-block:: none
 
@@ -55,7 +57,7 @@ To be published ...
 Coupled-Dipole Van der Waals
 ----------------------------
 
-VDW_ADJQ
+VDW_ADJQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitation.org/doi/10.1063/1.4717705>`_
 
 .. code-block:: none
 
@@ -65,7 +67,7 @@ VDW_ADJQ
     ATOM      4 H2NP H2  M    1      0.168   0.000   0.000  0.00000  0.00000  0.00000  3322000  1.00000  0.00000  0.00000
     ATOM      5 H2NP H2  M    1     -0.168   0.000   0.000  0.00000  0.00000  0.00000  3322000  1.00000  0.00000  0.00000
 
-VDW_FIXQ
+VDW_FIXQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitation.org/doi/10.1063/1.4717705>`_
 
 .. code-block:: none
 
@@ -99,7 +101,7 @@ Carbon Dioxide
 PHAST
 -----
 
-PHAST
+PHAST `https://pubs.acs.org/doi/10.1021/ct400549q <https://pubs.acs.org/doi/10.1021/ct400549q>`_
 
 .. code-block:: none
 
@@ -109,7 +111,7 @@ PHAST
     ATOM      4 CON  CO2 M    1      1.091   0.000   0.000  0.00000  0.00000  0.00000 76.76607  2.94473  0.00000  0.00000
     ATOM      5 CON  CO2 M    1     -1.091   0.000   0.000  0.00000  0.00000  0.00000 76.76607  2.94473  0.00000  0.00000
 
-PHAST*
+PHAST* `https://pubs.acs.org/doi/10.1021/ct400549q <https://pubs.acs.org/doi/10.1021/ct400549q>`_
 
 .. code-block:: none
 
@@ -119,7 +121,7 @@ PHAST*
     ATOM      4 CON  CO2 M    1      1.208   0.000   0.000  0.00000  0.00000  0.00000 46.47457  2.99429  0.00000  0.00000
     ATOM      5 CON  CO2 M    1     -1.208   0.000   0.000  0.00000  0.00000  0.00000 46.47457  2.99429  0.00000  0.00000
 
-PHASTq
+PHASTq `https://pubs.acs.org/doi/10.1021/ct400549q <https://pubs.acs.org/doi/10.1021/ct400549q>`_
 
 .. code-block:: none
 
@@ -129,7 +131,7 @@ PHASTq
     ATOM      4 COX  CO2 M    1      1.178   0.000   0.000  0.00000  0.00000  0.00000 85.81721  2.73448  0.00000  0.00000
     ATOM      5 COX  CO2 M    1     -1.178   0.000   0.000  0.00000  0.00000  0.00000 85.81721  2.73448  0.00000  0.00000
 
-PHASTq*
+PHASTq* `https://pubs.acs.org/doi/10.1021/ct400549q <https://pubs.acs.org/doi/10.1021/ct400549q>`_
 
 .. code-block:: none
 
@@ -161,7 +163,7 @@ Nitrogen
 PHAST
 -----
 
-PHAST-LB
+PHAST-LB `https://pubs.acs.org/doi/abs/10.1021/ct400526a <https://pubs.acs.org/doi/abs/10.1021/ct400526a>`_
 
 .. code-block:: none
 
@@ -171,7 +173,7 @@ PHAST-LB
     ATOM      4 N2F  N2  M    1      0.788258    0.000000    0.000000   0.00000  0.00000  0.00000 15.53200  3.07293  0.00000  0.00000
     ATOM      5 N2F  N2  M    1     -0.788258    0.000000    0.000000   0.00000  0.00000  0.00000 15.53200  3.07293  0.00000  0.00000
 
-PHAST-WH
+PHAST-WH `https://pubs.acs.org/doi/abs/10.1021/ct400526a <https://pubs.acs.org/doi/abs/10.1021/ct400526a>`_
 
 .. code-block:: none
 
@@ -181,7 +183,7 @@ PHAST-WH
     ATOM      4 N2F  N2  M    1      0.783514    0.000000    0.000000   0.00000  0.00000  0.00000 15.30942  3.07774  0.00000  0.00000
     ATOM      5 N2F  N2  M    1     -0.783514    0.000000    0.000000   0.00000  0.00000  0.00000 15.30942  3.07774  0.00000  0.00000
 
-PHAST*-LB
+PHAST*-LB `https://pubs.acs.org/doi/abs/10.1021/ct400526a <https://pubs.acs.org/doi/abs/10.1021/ct400526a>`_
 
 .. code-block:: none
 
@@ -191,7 +193,7 @@ PHAST*-LB
     ATOM      4 N2F  N2  M    1      0.790811    0.000000    0.000000   0.00000  0.00000  0.00000 14.55166  3.08409  0.00000  0.00000
     ATOM      5 N2F  N2  M    1     -0.790811    0.000000    0.000000   0.00000  0.00000  0.00000 14.55166  3.08409  0.00000  0.00000
 
-PHAST*-WH
+PHAST*-WH `https://pubs.acs.org/doi/abs/10.1021/ct400526a <https://pubs.acs.org/doi/abs/10.1021/ct400526a>`_
 
 .. code-block:: none
 

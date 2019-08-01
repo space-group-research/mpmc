@@ -55,6 +55,15 @@ MPMC accepts only one argument on the command line, the location of the MPMC inp
 
     mpmc mpmc.inp
 
+Updating MPMC
+=============
+
+MPMC can be updated with the following command:
+
+.. code-block:: none
+
+    git pull
+
 MPMC Testing Suite
 ==================
 

@@ -63,23 +63,26 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>cuda [on|off]</td>
-<td>Turns on/off nVIDIA CUDA <strong>(default = off)</strong></td>
+<tr class="row-even"><td>job_name [string]</td>
+<td>Base job name for output files. <strong>(required)</strong></td>
 </tr>
 <tr class="row-odd"><td>preset_seeds [int] [int] [int] [int]</td>
-<td>Initialize the random number generator using the specified seed values</td>
+<td>Initialize the random number generator using the specified seed values. <strong>(default = randomized on startup)</strong></td>
 </tr>
 <tr class="row-even"><td>numsteps [int]</td>
-<td>Total number of steps (moves) for Monte Carlo simulations</td>
+<td>Total number of steps (moves) for Monte Carlo simulations. <strong>(required for Monte Carlo)</strong></td>
 </tr>
 <tr class="row-odd"><td>corrtime [int]</td>
-<td>Sets the correlation time in steps. Each corrtime averages and trajectory outputs are produced</td>
+<td>Sets the correlation time in steps. Every corrtime steps averages and trajectory outputs are produced. <strong>(required for Monte Carlo)</strong></td>
 </tr>
 <tr class="row-even"><td>temperature [double]</td>
-<td>Sets the (initial) temperature</td>
+<td>Sets the (initial) temperature. <strong>(required for Monte Carlo)</strong></td>
 </tr>
 <tr class="row-odd"><td>pressure [double]</td>
-<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f)</td>
+<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></td>
+</tr>
+<tr class="row-even"><td>cuda [on|off]</td>
+<td>Turns on/off nVIDIA CUDA. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -97,10 +100,10 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>move_factor [double]</td>
-<td>Scale factor for translational moves in a fraction of the simulation box. <strong>(default = 1.0)</strong></td>
+<td>Scale factor for translational moves in a fraction of the simulation box (1.0 = full box length). <strong>(default = 1.0)</strong></td>
 </tr>
 <tr class="row-odd"><td>rot_factor [double]</td>
-<td>Scale factor for rotational moves in a fraction of a complete rotation. <strong>(default = 1.0)</strong></td>
+<td>Scale factor for rotational moves in a fraction of a complete rotation (1.0 = full 360 degrees). <strong>(default = 1.0)</strong></td>
 </tr>
 <tr class="row-even"><td>insert_probability [double]</td>
 <td>In a uVT simulation, the probability to randomly choose an insert or delete move. <strong>(default = 0.0)</strong></td>
@@ -128,7 +131,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>ensemble [ENSEMBLE]</td>
-<td>Chooses the ensemble to simulate in. ENSEMBLE may be one of &#8216;npt&#8217;, &#8216;nve&#8217;, &#8216;nvt&#8217;, &#8216;uvt&#8217;, &#8216;surf&#8217;, &#8216;surf_fit&#8217;, &#8216;total_energy&#8217; or &#8216;replay&#8217;.</td>
+<td>Chooses the ensemble to simulate in. ENSEMBLE may be one of &#8216;npt&#8217;, &#8216;nve&#8217;, &#8216;nvt&#8217;, &#8216;uvt&#8217;, &#8216;surf&#8217;, &#8216;surf_fit&#8217;, &#8216;total_energy&#8217; or &#8216;replay&#8217;. <strong>(required)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -145,28 +148,28 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>npt</td>
-<td>Monte Carlo simulation in the isobaric-isothermal ensemble</td>
+<td>Monte Carlo simulation in the isobaric-isothermal ensemble.</td>
 </tr>
 <tr class="row-odd"><td>nve</td>
-<td>Monte Carlo simulation in the micro-canonical ensemble</td>
+<td>Monte Carlo simulation in the micro-canonical ensemble.</td>
 </tr>
 <tr class="row-even"><td>nvt</td>
-<td>Monte Carlo simulation in the canonical ensemble</td>
+<td>Monte Carlo simulation in the canonical ensemble.</td>
 </tr>
 <tr class="row-odd"><td>uvt</td>
-<td>Monte Carlo simulation in the grand canonical ensemble</td>
+<td>Monte Carlo simulation in the grand canonical ensemble.</td>
 </tr>
 <tr class="row-even"><td>surf</td>
-<td>Potential energy surface scan for some specified orientation</td>
+<td>Potential energy surface scan for some specified orientation.</td>
 </tr>
 <tr class="row-odd"><td>surf_fit</td>
-<td>Perform surface fitting via simulated annealing over parameter space</td>
+<td>Perform surface fitting via simulated annealing over parameter space.</td>
 </tr>
 <tr class="row-even"><td>total_energy</td>
-<td>Calculate the single-point energy for a given system</td>
+<td>Calculate the single-point energy for a given system.</td>
 </tr>
 <tr class="row-odd"><td>replay</td>
-<td>Recalculate observables over a set of configurations read from an input trajectory</td>
+<td>Recalculate observables over a set of configurations read from an input trajectory.</td>
 </tr>
 </tbody>
 </table>
@@ -185,7 +188,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>total_energy</td>
-<td>Sets total energy for NVE Monte Carlo.</td>
+<td>Sets total energy for NVE Monte Carlo. <strong>(required for NVE Monte Carlo)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -204,7 +207,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>pressure [double]</td>
-<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via fugacity function or assuming ideal gas limit (P==f)</td>
+<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></td>
 </tr>
 <tr class="row-odd"><td>h2_fugacity [on|off]</td>
 <td>Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) <strong>(default = off)</strong></td>
@@ -221,14 +224,42 @@
 <tr class="row-odd"><td>user_fugacities [double] ([double]) ([double]) (...)</td>
 <td>Specifies the fugacities for species in insert_input. Accepts up to eight arguments.</td>
 </tr>
-<tr class="row-even"><td>cavity_bias [on|off]</td>
-<td>Use cavity bias for insertions in uvt Monte Carlo. <strong>(default = off)</strong></td>
+<tr class="row-even"><td>insert_probability [double]</td>
+<td>In a uVT simulation, the probability to randomly choose an insert or delete move. <strong>(default = 0.0)</strong></td>
 </tr>
-<tr class="row-odd"><td>cavity_grid [int]</td>
-<td>Number of grid points in each dimension used in cavity_bias</td>
+<tr class="row-odd"><td>cavity_bias [on|off]</td>
+<td>Use cavity bias for insertions in uVT Monte Carlo. <strong>(default = off)</strong></td>
 </tr>
-<tr class="row-even"><td>cavity_radius [double]</td>
-<td>Radius of sphere used to determine if a cavity grid point is unoccupied</td>
+<tr class="row-even"><td>cavity_grid [int]</td>
+<td>Number of grid points in each dimension used in cavity_bias.</td>
+</tr>
+<tr class="row-odd"><td>cavity_radius [double]</td>
+<td>Radius of sphere used to determine if a cavity grid point is unoccupied.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="npt-options">
+<h3>NPT Options<a class="headerlink" href="#npt-options" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pressure [double]</td>
+<td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></td>
+</tr>
+<tr class="row-odd"><td>volume_probability [double]</td>
+<td>In a NPT simulation, the probability to randomly choose a volume change move. <strong>(default = 0.0)</strong></td>
+</tr>
+<tr class="row-even"><td>volume_change_factor [double]</td>
+<td>In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. <strong>(default = 0.25)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -292,22 +323,22 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>pqr_input [filename]</td>
-<td>Specifies input pqr file.</td>
+<td>Specifies input pqr file. <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-odd"><td>pqr_output [filename]</td>
-<td>Specifies filename for writing final output pqr file(s). Clobbers existing file(s).</td>
+<td>Specifies filename for writing final output pqr file(s). Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-even"><td>pqr_restart [filename]</td>
-<td>Specifies filename for writing restart pqr file(s). Clobbers existing file(s).</td>
+<td>Specifies filename for writing restart pqr file(s). Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-odd"><td>traj_input [filename]</td>
 <td>Specifies input trajectory file for &#8216;ensemble replay&#8217;.</td>
 </tr>
 <tr class="row-even"><td>traj_output [filename]</td>
-<td>Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s).</td>
+<td>Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-odd"><td>energy_output [filename]</td>
-<td>Specifies filename for writing observables log. Clobbers existing file(s).</td>
+<td>Specifies filename for writing observables log. Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-even"><td>energy_output_csv [filename]</td>
 <td>Specifies filename for writing observables log in csv format. Clobbers existing file(s).</td>
@@ -319,7 +350,7 @@
 <td>Turns on population histogram. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>pop_histogram_output [filename]</td>
-<td>Specifies filename for writing popular histogram. Clobbers existing file(s).</td>
+<td>Specifies filename for writing popular histogram. Clobbers existing file(s). <strong>(default = histogram.dx)</strong></td>
 </tr>
 <tr class="row-even"><td>virial_output [filename]</td>
 <td>Specifies filename for writing virial data. Clobbers existing file(s).</td>
@@ -349,16 +380,16 @@
 <td>Wraps atoms back into the simulation box on output. <strong>(default = on)</strong></td>
 </tr>
 <tr class="row-odd"><td>basis1 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
 </tr>
 <tr class="row-even"><td>basis2 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
 </tr>
 <tr class="row-odd"><td>basis3 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components</td>
+<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
 </tr>
 <tr class="row-even"><td>[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]</td>
-<td>Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma)</td>
+<td>Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma).</td>
 </tr>
 </tbody>
 </table>
@@ -376,34 +407,31 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>cavity_autoreject [on|off]</td>
-<td>DOUBLE CHECK THIS</td>
-</tr>
-<tr class="row-odd"><td>cavity_autoreject_absolute [on|off]</td>
+<tr class="row-even"><td>cavity_autoreject_absolute [on|off]</td>
 <td>Automatically rejects any monte carlo move which would put two sites (not on the same molecule) that are too close. <strong>(default = off)</strong></td>
 </tr>
-<tr class="row-even"><td>cavity_autoreject_scale [double]</td>
+<tr class="row-odd"><td>cavity_autoreject_scale [double]</td>
 <td>Sets threshold (distance in Angstroms) for triggering cavity_autoreject_absolute.</td>
 </tr>
-<tr class="row-odd"><td>cavity_autoreject_repulsion [double]</td>
-<td>Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only works in combination with disp_expansion. <strong>(default = off)</strong></td>
+<tr class="row-even"><td>cavity_autoreject_repulsion [double]</td>
+<td>Automatically rejects any monte carlo move where the repulsive energy is greater than the value input. Currently only implemented in combination with disp_expansion.</td>
 </tr>
-<tr class="row-even"><td>feynman_hibbs [on|off]</td>
+<tr class="row-odd"><td>feynman_hibbs [on|off]</td>
 <td>Turns on Feynman-Hibbs quantum corrections. <strong>(default = off)</strong></td>
 </tr>
-<tr class="row-odd"><td>feynman_hibbs_order [2|4]</td>
+<tr class="row-even"><td>feynman_hibbs_order [2|4]</td>
 <td>Specifies highest-order Feynman-Hibbs terms to use.</td>
 </tr>
-<tr class="row-even"><td>pbc_cutoff [double]</td>
-<td>Override the default cutoff distance for interactions. (Half the shortest simulation box dimension.)</td>
+<tr class="row-odd"><td>pbc_cutoff [double]</td>
+<td>Override the default cutoff distance for interactions. <strong>(default = half the shortest simulation box dimension)</strong></td>
 </tr>
-<tr class="row-odd"><td>scale_charge [double]</td>
+<tr class="row-even"><td>scale_charge [double]</td>
 <td>Scales the charges on all frozen atoms.</td>
 </tr>
-<tr class="row-even"><td>rd_lrc [on|off]</td>
+<tr class="row-odd"><td>rd_lrc [on|off]</td>
 <td>Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. <strong>(default = on)</strong></td>
 </tr>
-<tr class="row-odd"><td>rd_only [on|off]</td>
+<tr class="row-even"><td>rd_only [on|off]</td>
 <td>Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) <strong>(default = off)</strong></td>
 </tr>
 </tbody>
@@ -496,10 +524,10 @@
 <td>Turns on Thole-Applequist polarization. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>polar_damp_type [off|none|linear|exponential]</td>
-<td>Type of polarization damping. off=none</td>
+<td>Type of polarization damping. (off=none)</td>
 </tr>
 <tr class="row-even"><td>polar_damp [double]</td>
-<td>Polarization exponential damping constant (to help avoid polarization catastrophe).</td>
+<td>Polarization exponential damping constant (to help avoid polarization catastrophe). <strong>(required if polar_damp_type != off)</strong></td>
 </tr>
 <tr class="row-odd"><td>polar_ewald [on|off]</td>
 <td>Calculate induced polarization via ewald summation. <strong>(default = off)</strong></td>
@@ -532,10 +560,10 @@
 <td>Polarization overrelaxation constant.</td>
 </tr>
 <tr class="row-odd"><td>polar_precision [double]</td>
-<td>Terminate polarization iterative solver when all dipole fluctuations are within this tolerance.</td>
+<td>Terminate polarization iterative solver when all dipole fluctuations are within this tolerance. <strong>(either polar_precision or polar_max_iter required if polarization = on)</strong></td>
 </tr>
 <tr class="row-even"><td>polar_max_iter [int]</td>
-<td>Terminate polarization iterative solver after a fixed number of iterations.</td>
+<td>Terminate polarization iterative solver after a fixed number of iterations. <strong>(either polar_precision or polar_max_iter required if polarization = on)</strong></td>
 </tr>
 <tr class="row-odd"><td>polar_self [on|off]</td>
 <td>Include molecular self-induction. <strong>(default = off)</strong></td>
@@ -560,7 +588,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>[phahst|disp_expansion] [on|off]</td>
-<td>Activates a RD potential similar to the Tang-Toennies potential. E_rd = -C6/r^6-C8/r^8-C10/r^10+596.725194095/epsilon*exp(-epsilon*(r-sigma)). <strong>(default = off)</strong></td>
+<td>Activates a RD potential similar to the Tang-Toennies potential. <span class="math">\(E_{rd} = -\frac{C6}{r^6}-\frac{C8}{r^8}-\frac{C10}{r^{10}}+596.725194095/ \epsilon * \mathrm{exp}(- \epsilon * ( r - \sigma))\)</span>. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>damp_dispersion [on|off]</td>
 <td>Damps the PHAHST dispersion interaction according to Tang and Toennies&#8217;s incomplete gamma functions. <strong>(default = on)</strong></td>
@@ -591,13 +619,13 @@
 <td>Uses two-body expansion for calculation of Feynman Hibbs in coupled-dipole vdW calculations. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>cdvdw_9th_repulsion [on|off]</td>
-<td>Use 9th power mixing rule (rep_ij = (rep_ii^(1/9)+rep_jj^(1/9))^9) for repulsion interactions (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+<td>Use 9th power mixing rule <span class="math">\(rep_{ij} = (rep_{ii}^{1/9}+rep_{jj}^{1/9})^9\)</span> for repulsion interactions (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>cdvdw_sig_rep [on|off]</td>
-<td>Calculate repulsion using 3/2*hbar*w_i*w_j*alpha_i*alpha_j/(w_i+w_j)*sig6 with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+<td>Calculate repulsion using <span class="math">\(\frac{3}{2} \hbar w_i w_j \alpha_i \alpha_j / ( w_i + w_j ) * sig6\)</span> with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>cdvdw_exp_rep [on|off]</td>
-<td>Uses exponential repulsion sigma*exp(-r/2epsilon), using some mixing rule I found somewhere &#8211; see source code. <strong>(default = off)</strong></td>
+<td>Uses exponential repulsion <span class="math">\(\sigma * \mathrm{exp}(-\frac{r}{2 \epsilon})\)</span>, using some mixing rule I found somewhere &#8211; see source code. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -670,7 +698,7 @@
 <td>Target temperature in a simulated annealing MC simulation.</td>
 </tr>
 <tr class="row-odd"><td>simulated_annealing_linear [on|off]</td>
-<td>Sets a linear ramp throughout the entire simulation instead of exponential decay.</td>
+<td>Sets a linear ramp throughout the entire simulation instead of exponential decay. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -886,14 +914,22 @@
 </div>
 <div class="section" id="external-tools">
 <h2>External Tools<a class="headerlink" href="#external-tools" title="Permalink to this headline">¶</a></h2>
-<p>traj_pqr2pdb
-Designed a workaround for viewing long_output PQR trajectories in VMD! This is
-useful for ultra-dense systems, or if you&#8217;re just precision obsessed like me :D.
-The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory,
-which you can then read into VMD. You&#8217;ll do so like this:</p>
-<p>[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd</p>
-<p>More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision.</p>
-<p>Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tool</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>traj_pqr2pdb</td>
+<td>Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you&#8217;re just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You&#8217;ll do so like this: <br /> <br />[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd <br /> <br />More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. <br /> <br />Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -911,6 +947,7 @@ which you can then read into VMD. You&#8217;ll do so like this:</p>
 <li><a class="reference internal" href="#ensembles-and-ensemble-specific-commands">Ensembles and Ensemble Specific Commands</a></li>
 <li><a class="reference internal" href="#nve-options">NVE Options</a></li>
 <li><a class="reference internal" href="#uvt-options">uVT Options</a></li>
+<li><a class="reference internal" href="#npt-options">NPT Options</a></li>
 <li><a class="reference internal" href="#replay-options">Replay Options</a></li>
 <li><a class="reference internal" href="#miscellaneous-options">Miscellaneous Options</a></li>
 </ul>

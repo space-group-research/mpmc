@@ -164,6 +164,22 @@ int do_command(system_t *system, char **token) {
             return 1;
     }
 
+    else if (!strcasecmp(token[0], "surf_do_not_fit_list"))
+    {
+        if (system->surf_do_not_fit_list == NULL)
+        {
+            system->surf_do_not_fit_list = calloc(20,sizeof(char*));
+            memnullcheck(system->surf_do_not_fit_list,20*sizeof(char*),__LINE__-1, __FILE__);
+            for (i=0; i<20; i++)
+            {
+                system->surf_do_not_fit_list[i] = calloc(MAXLINE,sizeof(char));
+                memnullcheck(system->surf_do_not_fit_list,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+            }
+        }
+        for (i = 0; strlen(token[i + 1]) > 0; i++)
+            strcpy(system->surf_do_not_fit_list[i],token[i+1]);
+    }
+
     // Option for fitting against arbitrary configurations, VS the default behavior of fitting
     // against a small set of orientations, while only varying their separation distance.
     else if (!strcasecmp(token[0],
@@ -1609,6 +1625,7 @@ void setdefaults(system_t *system) {
     system->fit_schedule = 0;
     system->fit_start_temp = 0;
     system->fit_max_energy = 0;
+    system->surf_do_not_fit_list = NULL;
 
     // Initialize insertion parameters
     system->num_insertion_molecules = 0;
@@ -1661,9 +1678,9 @@ system_t *read_config(char *input_file) {
     filecheck(fp, input_file, READ);
 
     /* allocate space for tokens */
-    token = calloc(10, sizeof(char *));
-    memnullcheck(token, 10 * sizeof(char *), __LINE__ - 1, __FILE__);
-    for (i = 0; i < 10; i++) {
+    token = calloc(20, sizeof(char *));
+    memnullcheck(token, 20 * sizeof(char *), __LINE__ - 1, __FILE__);
+    for (i = 0; i < 20; i++) {
         token[i] = calloc(MAXLINE, sizeof(char));
         memnullcheck(token[i], MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
     }
@@ -1679,12 +1696,14 @@ system_t *read_config(char *input_file) {
     while (n) {
         linenum++;
         /* grab a line and parse it out */
-        for (i = 0; i < 10; i++)
+        for (i = 0; i < 20; i++)
             memset(token[i], 0, MAXLINE);  //clear a token
         sscanf(linebuffer,
-               "%s %s %s %s %s %s %s %s %s %s",
+               "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
                token[0], token[1], token[2], token[3], token[4],
-               token[5], token[6], token[7], token[8], token[9]);
+               token[5], token[6], token[7], token[8], token[9],
+               token[10], token[11], token[12], token[13], token[14],
+               token[15], token[16], token[17], token[18], token[19]);
 
         //parse and apply a command
         if (do_command(system, token) != 0) {
@@ -1704,7 +1723,7 @@ system_t *read_config(char *input_file) {
     /* close the config file */
     fclose(fp);
 
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 20; i++)
         free(token[i]);
     free(token);
 

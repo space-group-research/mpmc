@@ -372,28 +372,24 @@ void perturb_multi_params(system_t* system,multiParamData_t* params) {
     double scale_c8 = ((system->surf_scale_c8_on) ? system->surf_scale_c8 : 0.0 );
     double scale_c10 = ((system->surf_scale_c10_on) ? system->surf_scale_c10 : 0.0 );
 
-    // TODO: this needs to be setup in the input file
-    const char * do_not_fit[] = {
-        "He",
-        "Ne",
-        "Ar",
-        "Kr",
-        "Xe",
-        "Rn",
-        "CO2",
-        "O2C",
-        "H2DA",
-        "H2H",
-        "N2DA",
-        "N2N"
-    };
-    const int do_not_fit_length = sizeof(do_not_fit) / sizeof(do_not_fit[0]);
+    int do_not_fit_length;
+
+    if (system->surf_do_not_fit_list == NULL)
+    {
+        do_not_fit_length = 0;
+    }
+    else
+    {
+        for (i = 0; strlen(system->surf_do_not_fit_list[i]) > 0; i++)
+            ;
+        do_not_fit_length = i;
+    }
 
     for (i=0;i<params->nParams;i++) {
 
         int fit = 1;
         for (j=0;j<do_not_fit_length;j++) {
-            if (strcmp(params->atomtype[i],do_not_fit[j])==0)
+            if (strcasecmp(params->atomtype[i],system->surf_do_not_fit_list[j])==0)
                 fit = 0;
         }
 
@@ -548,7 +544,8 @@ double calc_multi_error(system_t* system, multiConfigData_t* configs) {
     double total_error = 0.0;
     int i;
     double max_energy = system->fit_max_energy;
-    static double error_scale = 500.0;
+    double kweight = ((system->surf_weight_constant_on) ? system->surf_weight_constant : WEIGHT_CONSTANT);
+    //const double error_scale = 500.0;
 
     for (i=0;i<configs->nConfigs;i++)
     {
@@ -560,11 +557,11 @@ double calc_multi_error(system_t* system, multiConfigData_t* configs) {
         model_energy = min(model_energy,max_energy);
         double ab_initio_energy = configs->abInitioEnergy[i];
         ab_initio_energy = min(ab_initio_energy,max_energy);
-
+        double weight = exp(kweight * (max_energy - ab_initio_energy) / max_energy);
         double error = model_energy-ab_initio_energy;
         // TODO: this needs to be an option (l1 vs l2)
-        //total_error += sqrt(error_scale*error_scale+error*error)-error_scale;
-        total_error += error*error;
+        //total_error += weight*(sqrt(error_scale*error_scale+error*error)-error_scale);
+        total_error += weight*error*error;
     }
 
     return total_error/configs->nConfigs;

@@ -373,6 +373,7 @@ typedef struct _system {
     double fit_start_temp, fit_max_energy, fit_schedule;
     int fit_boltzmann_weight;
     double fit_best_square_error;
+    char ** surf_do_not_fit_list;
 
     //surf options
     int surf_preserve, surf_decomp;

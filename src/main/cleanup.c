@@ -248,6 +248,13 @@ void cleanup(system_t *system) {
     if (system->surf_preserve_rotation_on) free(system->surf_preserve_rotation_on);
     if (system->cavity_bias) free_cavity_grid(system);
 
+    if (system->surf_do_not_fit_list!=NULL)
+    {
+        for (i=0; i<20; i++)
+            free(system->surf_do_not_fit_list[i]);
+        free(system->surf_do_not_fit_list);
+    }
+
     if (system->vdw_eiso_info) free_vdw_eiso(system->vdw_eiso_info);
 
     // free multi sorbate related stuff

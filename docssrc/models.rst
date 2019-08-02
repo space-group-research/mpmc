@@ -80,13 +80,13 @@ VDW_FIXQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitation
 Miscellaneous
 -------------
 
-Buch
+Buch `https://aip.scitation.org/doi/10.1063/1.466854 <https://aip.scitation.org/doi/10.1063/1.466854>`_
 
 .. code-block:: none
 
     ATOM      1 H2G  H2  M   1       0.000   0.000   0.000  2.01600  0.00000  0.00000 34.20000  2.96000  0.00000  0.00000
 
-Darkrim-Levesque
+Darkrim-Levesque `https://iopscience.iop.org/article/10.1088/0953-8984/14/40/318/meta <https://iopscience.iop.org/article/10.1088/0953-8984/14/40/318/meta>`_
 
 .. code-block:: none
 
@@ -149,7 +149,7 @@ To be published ...
 Miscellaneous
 -------------
 
-TraPPE
+TraPPE `https://aiche.onlinelibrary.wiley.com/doi/abs/10.1002/aic.690470719 <https://aiche.onlinelibrary.wiley.com/doi/abs/10.1002/aic.690470719>`_
 
 .. code-block:: none
 
@@ -211,13 +211,13 @@ To be published ...
 Miscellaneous
 -------------
 
-McQuarrie
+McQuarrie (Physical Chemistry: A Molecular Approach 1997 p. 663, from second virial coefficient data)
 
 .. code-block:: none
 
     ATOM      1 N2G  N2  M    1      0.000   0.000   0.000 28.01344  0.00000  0.00000 95.10000  3.70000  0.00000  0.00000
 
-TraPPE
+TraPPE `https://aiche.onlinelibrary.wiley.com/doi/abs/10.1002/aic.690470719 <https://aiche.onlinelibrary.wiley.com/doi/abs/10.1002/aic.690470719>`_
 
 .. code-block:: none
 
@@ -263,7 +263,7 @@ Water
 Miscellaneous
 -------------
 
-TIP3P
+TIP3P `https://aip.scitation.org/doi/10.1063/1.445869 <https://aip.scitation.org/doi/10.1063/1.445869>`_
 
 .. code-block:: none
 
@@ -276,6 +276,8 @@ Noble Gases
 
 PHAST
 -----
+
+PHAST noble gases are fit to reproduce CCSD(T) à la the molecular PHAST models.
 
 He
 

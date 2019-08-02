@@ -293,7 +293,7 @@ Quantum Rotation Commands
     :widths: 20,40
 
     "quantum_rotation [on|off]", "Enables quantum rotational eigenspectrum calculation. **(default = off)**"
-    "quantum_rotation_hindered [on|off]", "Calculates the rotational energy levels using the hindered potential sin^2θ. **(default = off)**"
+    "quantum_rotation_hindered [on|off]", "Calculates the rotational energy levels using the hindered potential :math:`\textrm{sin}^2 \theta`. **(default = off)**"
     "quantum_rotation_hindered_barrier [double]", ""
     "quantum_rotation_B [double]", "Sets the rotational constant. For H2, it is 85.35060622 Kelvin."
     "quantum_rotation_level_max [int]", "Number of rotational energy levels to solve for (Equal to (l_max + 1)2). **(default = 36)**"

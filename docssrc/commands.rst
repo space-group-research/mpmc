@@ -293,7 +293,7 @@ Quantum Rotation Commands
     :widths: 20,40
 
     "quantum_rotation [on|off]", "Enables quantum rotational eigenspectrum calculation. **(default = off)**"
-    "quantum_rotation_hindered [on|off]", "Calculates the rotational energy levels using the hindered potential sin^2θ. **(default = off)**"
+    "quantum_rotation_hindered [on|off]", "Calculates the rotational energy levels using the hindered potential :math:`\textrm{sin}^2 \theta`. **(default = off)**"
     "quantum_rotation_hindered_barrier [double]", ""
     "quantum_rotation_B [double]", "Sets the rotational constant. For H2, it is 85.35060622 Kelvin."
     "quantum_rotation_level_max [int]", "Number of rotational energy levels to solve for (Equal to (l_max + 1)2). **(default = 36)**"
@@ -326,6 +326,9 @@ Surface Fitting Commands
     "surf_scale_c6 [double]", "Magnitude of C6 fluctuations to sites with non-zero C6. **(default = 0)**"
     "surf_scale_c8 [double]", "Magnitude of C8 fluctuations to sites with non-zero C8. **(default = 0)**"
     "surf_scale_c10 [double]", "Magnitude of C10 fluctuations to sites with non-zero C10. **(default = 0)**"
+    "surf_multi_fit [on|off]", "Fit using a separate trajectory file (multi_fit_input) specifying *ab initio* energies and atomic positions. More flexible than the default algorithm but requires explicit preparation of atomic coordinates. **(default = off)**"
+    "multi_fit_input [string]", "Filename for surf_multi_fit."
+    "surf_do_not_first_list [string] ([string] ...)", "List of atom types to ignore during fitting. Currently only implemented with surf_multi_fit."
 
 Surface Scan Options
 --------------------

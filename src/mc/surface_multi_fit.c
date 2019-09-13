@@ -1,10 +1,11 @@
+#include <stdbool.h>
 #include <surface_multi_fit.h>
 
 // Copyright Adam Hogan 2016-2019 - GNU GPL v3
 
 void load_initial_multi_params(system_t* system, multiParamData_t* params) {
-    // The initial PQR input file should have one atom per atom type with the initial parameters
-    int nAtoms = 0, i = 0;
+    // The PQR input file should have one atom per atom type with the initial parameters
+    int nAtoms = 0, i = 0,j;
 
     // Count the number of atoms
     molecule_t *molecule_ptr;
@@ -70,6 +71,21 @@ void load_initial_multi_params(system_t* system, multiParamData_t* params) {
             params->last_polarizability[i] = params->polarizability[i];
             i++;
             params->nParams = i;
+        }
+    }
+
+    for (i=0;i<params->nParams;i++)
+    {
+        for (j=0;j<params->nParams;j++)
+        {
+            if (!(i==j))
+            {
+                if (strcasecmp(params->atomtype[i],params->atomtype[j])==0)
+                {
+                    printf("SURFACE MULTI FIT: Atomic parameter (%s) (in input pqr) duplicated.\n",params->atomtype[i]);
+                    die(-1);
+                }
+            }
         }
     }
 
@@ -173,14 +189,14 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
     return_value = fgets(line, sizeof(line), fp);
     if (!return_value)
     {
-        error( "SURFACE MULTI FIT: The multi-fit configuration file does not contain configurations.\n" );
+        error("SURFACE MULTI FIT: The multi-fit configuration file does not contain configurations.\n");
         die(-1);
     }
     printf("%s\n",s);
     token = strtok(line,s);
     if (strcmp("Configuration",token))
     {
-        error( "SURFACE MULTI FIT: The multi-fit configuration file does not contain configurations.\n" );
+        error("SURFACE MULTI FIT: The multi-fit configuration file does not contain configurations.\n");
         die(-1);
     }
 
@@ -211,7 +227,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
     configs->molecules = calloc(configs->nConfigs,sizeof(molecule_t*));
     memnullcheck(configs->molecules,configs->nConfigs*sizeof(molecule_t*), __LINE__-1, __FILE__);
 
-    int i=-1;
+    int i=-1,j,k;
     rewind(fp);
     while(fgets(line, sizeof(line), fp))
     {
@@ -235,17 +251,32 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             memnullcheck(new_atom,sizeof(atom_t), __LINE__-1, __FILE__);
             new_atom->next = NULL;
             strcpy(new_atom->atomtype,token);
+
+            // Check that each atom has a corresponding atom in the parameter file
+            bool name_exists = false;
+            for (j=0;j<params->nParams;j++) {
+                if(strcasecmp(params->atomtype[j],new_atom->atomtype)==0)
+                {
+                    name_exists = true;
+                }
+            }
+            if (!name_exists)
+            {
+                printf("SURFACE MULTI FIT: Atom in multi-fit configuration file (%s) is not specified in the atomic parameter file (input pqr).\n",new_atom->atomtype);
+                die(-1);
+            }
+
             token = strtok(NULL,s);
             if (token == NULL)
             {
-                error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
+                error("SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n");
                 die(-1);
             }
             int molecule_number = atoi(token);
             token = strtok(NULL,s);
             if (token == NULL)
             {
-                error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
+                error("SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n");
                 die(-1);
             }
             new_atom->pos[0] = atof(token);
@@ -253,7 +284,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             token = strtok(NULL,s);
             if (token == NULL)
             {
-                error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
+                error("SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n");
                 die(-1);
             }
             new_atom->pos[1] = atof(token);
@@ -261,7 +292,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             token = strtok(NULL,s);
             if (token == NULL)
             {
-                error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
+                error("SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n");
                 die(-1);
             }
             new_atom->pos[2] = atof(token);
@@ -269,7 +300,7 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             token = strtok(NULL,s);
             if (token == NULL)
             {
-                //error( "SURFACE MULTI FIT: The multi-fit configuration file is not in the correct format.\n" );
+                printf("SURFACE MULTI FIT: Charge not specified in multi-fit configuration file, defaulting to 0 charge.\n");
                 //die(-1);
                 new_atom->charge = 0; // actually just set the charge to zero instead of dieing
             }
@@ -309,6 +340,29 @@ void read_multi_configs(system_t* system, multiConfigData_t* configs, multiParam
             }
         }
     }
+
+    // Check that each atomic parameter has atleast one corresponding atom in the multi-fit config file
+    for (k=0;k<params->nParams;k++) {
+        bool name_exists = false;
+        for (j=0;j<configs->nConfigs;j++) {
+            molecule_t *molecule_ptr;
+            atom_t *atom_ptr;
+            for(molecule_ptr = configs->molecules[j]; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+                for(atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                    if(strcasecmp(params->atomtype[k],atom_ptr->atomtype)==0)
+                    {
+                        name_exists = true;
+                    }
+                }
+            }
+        }
+        if (!name_exists)
+        {
+            printf("SURFACE MULTI FIT: Atomic parameter (%s) (in input pqr) not found in multi-fit configuration file.\n",params->atomtype[k]);
+            die(-1);
+        }
+    }
+
 
     // Setup pairs
     apply_multi_params(params,configs);
@@ -446,6 +500,8 @@ void perturb_multi_params(system_t* system,multiParamData_t* params) {
             }
         }
     }
+
+
     return;
 }
 

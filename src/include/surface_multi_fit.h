@@ -3,8 +3,6 @@
 #include <string.h>
 #include <mc.h>
 
-// I feel like there should be comments in here
-
 typedef struct {
 	double *abInitioEnergy;
 	double *fitEnergy, *lastFitEnergy;

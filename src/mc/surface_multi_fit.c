@@ -425,6 +425,7 @@ void perturb_multi_params(system_t* system,multiParamData_t* params) {
     double scale_c6 = ((system->surf_scale_c6_on) ? system->surf_scale_c6 : 0.0 );
     double scale_c8 = ((system->surf_scale_c8_on) ? system->surf_scale_c8 : 0.0 );
     double scale_c10 = ((system->surf_scale_c10_on) ? system->surf_scale_c10 : 0.0 );
+    double scale_pol = ((system->surf_scale_pol_on) ? system->surf_scale_pol : 0.0 );
 
     int do_not_fit_length;
 
@@ -497,6 +498,12 @@ void perturb_multi_params(system_t* system,multiParamData_t* params) {
                 if ( params->c10[i] > 0.0 )
                     params->c10[i] += scale_c10*(0.5 - get_rand(system));
                 if( params->c10[i] < 0.0 ) params->c10[i] = params->last_c10[i];
+            }
+
+            if ( system->surf_scale_pol_on ) {
+                if ( params->polarizability[i] > 0.0 )
+                    params->polarizability[i] += scale_pol*(0.5 - get_rand(system));
+                if( params->polarizability[i] < 0.0 ) params->polarizability[i] = params->last_polarizability[i];
             }
         }
     }
@@ -666,10 +673,11 @@ void output_multi_params(double temperature, double current_error, multiParamDat
     //printf("Mean Unsigned Error = %f, Mean Signed Error = %f\n", calc_multi_mue(system,configs), calc_multi_mse(system,configs));
     int i,j;
     for (i=0;i<params->nParams;i++)    {
-        printf("\tatomtype %s eps = %f sig = %f omega = %f c6 = %f c8 = %f c10 = %f\n",
+        printf("\tatomtype %s eps = %f sig = %f pol = %f omega = %f c6 = %f c8 = %f c10 = %f\n",
         params->atomtype[i],
         params->epsilon[i],
         params->sigma[i],
+        params->polarizability[i],
         params->omega[i],
         params->c6[i],
         params->c8[i],

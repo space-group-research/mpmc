@@ -170,10 +170,21 @@ int wrapall(molecule_t *molecules, pbc_t *pbc) {
             }
 
         } else {
-            /* don't wrap frozen */
+            /* wrap all atoms of frozen molecules into the box */
             for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                for (i = 0; i < 3; i++) {
+                    for (j = 0, d[i] = 0; j < 3; j++) {
+                        d[i] += pbc->reciprocal_basis[j][i] * atom_ptr->pos[j];
+                    }
+                    d[i] = rint(d[i]);
+                }
+
                 for (i = 0; i < 3; i++)
-                    atom_ptr->wrapped_pos[i] = atom_ptr->pos[i];
+                    for (j = 0, dimg[i] = 0; j < 3; j++)
+                        dimg[i] += pbc->basis[j][i] * d[j];
+
+                for (i = 0; i < 3; i++)
+                    atom_ptr->wrapped_pos[i] = atom_ptr->pos[i] - dimg[i];
             }
         }
 

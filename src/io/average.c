@@ -162,7 +162,7 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t *sinfo) {
 
     ++counter;
     m = (double)counter;
-    sdom = 1.0 / sqrt(m - 1.0);
+    sdom = 2.0 / sqrt(m - 1.0);
     factor = (m - 1.0) / m;
 
     // for each sorbate
@@ -220,7 +220,7 @@ void update_root_averages(system_t *system, observables_t *observables, avg_obse
 
     ++counter;
     m = (double)counter;
-    sdom = 1.0 / sqrt(m - 1.0);
+    sdom = 2.0 / sqrt(m - 1.0);
     factor = (m - 1.0) / m;
 
     /* the physical observables */
@@ -379,7 +379,7 @@ void update_root_nodestats(system_t *system, avg_nodestats_t *avg_nodestats, avg
     double m, factor, sdom;
 
     m = (double)(++system->avg_nodestats->counter);
-    sdom = 1.0 / sqrt(floor((double)((system->step + 1.0) * size) / (double)(system->corrtime)) - 1.0);
+    sdom = 2.0 / sqrt(floor((double)((system->step + 1.0) * size) / (double)(system->corrtime)) - 1.0);
     factor = (m - 1.0) / m;
 
     avg_observables->boltzmann_factor = factor * avg_observables->boltzmann_factor + avg_nodestats->boltzmann_factor / m;

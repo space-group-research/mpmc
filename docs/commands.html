@@ -835,6 +835,15 @@
 <tr class="row-odd"><td>surf_scale_c10 [double]</td>
 <td>Magnitude of C10 fluctuations to sites with non-zero C10. <strong>(default = 0)</strong></td>
 </tr>
+<tr class="row-even"><td>surf_multi_fit [on|off]</td>
+<td>Fit using a separate trajectory file (multi_fit_input) specifying <em>ab initio</em> energies and atomic positions. More flexible than the default algorithm but requires explicit preparation of atomic coordinates. <strong>(default = off)</strong></td>
+</tr>
+<tr class="row-odd"><td>multi_fit_input [string]</td>
+<td>Filename for surf_multi_fit.</td>
+</tr>
+<tr class="row-even"><td>surf_do_not_first_list [string] ([string] ...)</td>
+<td>List of atom types to ignore during fitting. Currently only implemented with surf_multi_fit.</td>
+</tr>
 </tbody>
 </table>
 <div class="section" id="surface-scan-options">
@@ -1011,7 +1020,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on Aug 01, 2019.
+      Last updated on Feb 17, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
     </div>
   </body>

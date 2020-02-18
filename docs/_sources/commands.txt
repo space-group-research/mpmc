@@ -326,6 +326,9 @@ Surface Fitting Commands
     "surf_scale_c6 [double]", "Magnitude of C6 fluctuations to sites with non-zero C6. **(default = 0)**"
     "surf_scale_c8 [double]", "Magnitude of C8 fluctuations to sites with non-zero C8. **(default = 0)**"
     "surf_scale_c10 [double]", "Magnitude of C10 fluctuations to sites with non-zero C10. **(default = 0)**"
+    "surf_multi_fit [on|off]", "Fit using a separate trajectory file (multi_fit_input) specifying *ab initio* energies and atomic positions. More flexible than the default algorithm but requires explicit preparation of atomic coordinates. **(default = off)**"
+    "multi_fit_input [string]", "Filename for surf_multi_fit."
+    "surf_do_not_first_list [string] ([string] ...)", "List of atom types to ignore during fitting. Currently only implemented with surf_multi_fit."
 
 Surface Scan Options
 --------------------

@@ -8,7 +8,9 @@ Optimized for the study of nanoscale interfaces, MPMC supports simulation of Cou
 Citing MPMC
 ===========
 
-A paper showcasing MPMC is currently under review, previous developmental papers are available at Dr. Space's `group website <http://drbrian.space/publications.htm>`_.
+ | `MPMC and MCMD: Free High‐Performance Simulation Software for Atomistic Systems. <https://onlinelibrary.wiley.com/doi/full/10.1002/adts.201900113>`_
+ | Franz, D. M.; Belof, J. L.; McLaughlin, K.; Cioce, C. R.; Tudor, B.; Hogan, A.; Laratelli, L.; Mulcair, M.; Mostrom, M.; Navas, A.; Stern, A. C.; Forrest, K. A.; Pham, T.; Space, B.
+ | *Adv. Theory Simul.* **2019**, DOI: 10.1002/adts.201900113.
 
 Supported Systems
 =================

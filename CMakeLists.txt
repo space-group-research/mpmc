@@ -59,7 +59,6 @@ src/mc/surf_fit.c
 src/mc/fugacity.cpp
 src/mc/cavity.c
 src/mc/checkpoint.c
-src/mersenne/mersenne.cpp
 src/histogram/histogram.c
 src/energy/lj_buffered_14_7.c
 src/energy/bessel.c
@@ -82,6 +81,7 @@ src/main/memnullcheck.c
 src/main/main.c
 src/main/cleanup.c
 src/main/usefulmath.c
+src/main/rand.c
 src/io/dxwrite.c
 src/io/simulation_box.c
 src/io/average.c

@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             "r");
        get_nodename_err = fgets(nodename, MAXLINE, host);
         sprintf(linebuf,
-                "MAIN: Job running on node -> %s", nodename);
+                "MAIN: Job running on node -> %.400s", nodename);
         output(linebuf);
         pclose(host);
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
             if (strncasecmp(cpu,
                             "model name", 10) == 0) {
                 sprintf(linebuf,
-                        "MAIN: CPU -> %s", cpu);
+                        "MAIN: CPU -> %.400s", cpu);
                 output(linebuf);
                 break;
             }
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
             "r");
         get_nodename_err = fgets(nodename, MAXLINE, host);
         sprintf(linebuf,
-                "MAIN: Job running on node -> %s", nodename);
+                "MAIN: Job running on node -> %.400s", nodename);
         output(linebuf);
         pclose(host);
 
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
             "r");
         get_cpu_err = fgets(cpu, MAXLINE, procfile);
         sprintf(linebuf,
-                "MAIN: CPU -> %s", cpu);
+                "MAIN: CPU -> %.400s", cpu);
         output(linebuf);
         pclose(procfile);
     }
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
     /* get the config file arg */
     strcpy(input_file, argv[1]);
     sprintf(linebuf,
-            "MAIN: running parameters found in %s\n", input_file);
+            "MAIN: running parameters found in %.400s\n", input_file);
     output(linebuf);
 
     /* read the input files and setup the simulation */

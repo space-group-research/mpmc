@@ -1711,7 +1711,7 @@ system_t *read_config(char *input_file) {
                     "INPUT: invalid command on line %d.\n", linenum);
             error(errormsg);
             sprintf(errormsg,
-                    "> %s\n", linebuffer);
+                    "> %.508s\n", linebuffer);
             error(errormsg);
             return (NULL);
         }

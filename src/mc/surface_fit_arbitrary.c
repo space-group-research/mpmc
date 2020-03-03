@@ -464,7 +464,7 @@ int determine_mobility_code_from_atom_type(char *atomType) {
 
     // Default case...
     sprintf(linebuf,
-            "warning: I don't know whether atomType %s is MOVEABLE or FIXED. Defaulting to MOVEABLE.\n", atomType);
+            "warning: I don't know whether atomType %.100s is MOVEABLE or FIXED. Defaulting to MOVEABLE.\n", atomType);
     error(linebuf);
     return MOVEABLE;
 }

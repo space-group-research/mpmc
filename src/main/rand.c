@@ -85,8 +85,9 @@ void xoroshiro128pp_long_jump(struct xoroshiro128pp_state * state) {
 	uint64_t *s = state->s;
 	uint64_t s0 = 0;
 	uint64_t s1 = 0;
-	for(int i = 0; i < sizeof LONG_JUMP / sizeof *LONG_JUMP; i++)
-		for(int b = 0; b < 64; b++) {
+    int i, b;
+	for(i = 0; i < sizeof LONG_JUMP / sizeof *LONG_JUMP; i++)
+		for(b = 0; b < 64; b++) {
 			if (LONG_JUMP[i] & UINT64_C(1) << b) {
 				s0 ^= s[0];
 				s1 ^= s[1];
@@ -122,7 +123,8 @@ double get_rand(system_t *system)
         }
 
         /* Avoid generating the same random numbers if we're using MPI */
-        for (int i=0; i<rank; i++)
+        int i;
+        for (i=0; i<rank; i++)
             xoroshiro128pp_long_jump(&state);
     }
 

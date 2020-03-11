@@ -111,25 +111,22 @@ int do_command(system_t *system, char **token) {
         else if (!strcasecmp(token[1],
                              "replay"))
             system->ensemble = ENSEMBLE_REPLAY;
+        else
+            return 1;
     }
 
     // random seed options
     else if (!strcasecmp(token[0],
                          "preset_seeds")) {
-        {
-            if (safe_atou(token[1], &(system->preset_seeds))) return 1;
-        }  
+        if (safe_atou(token[1], &(system->preset_seeds))) return 1;
         system->preset_seeds_on = 1;
     }
 
     //deprecated seed option
     else if (!strcasecmp(token[0],
                          "seed")) {
-        error(
-            "INPUT: seed is deprecated\n");
-        error(
-            "INPUT: use \"preset_seeds <int> <int> <int> <int>\" to *manually* seed the rng.\n");
-        die(-1);
+        if (safe_atou(token[1], &(system->preset_seeds))) return 1;
+        system->preset_seeds_on = 1;
     }
 
     // Is this a restart of a parallel job?

@@ -83,7 +83,7 @@ void ensemble_surf_fit_options(system_t *system) {
     }
 
     if (system->surf_fit_multi_configs) {
-        sprintf(linebuf,"INPUT: Multi fit input is %s\n",system->multi_fit_input);
+        sprintf(linebuf, "INPUT: Multi fit input is %s\n", system->multi_fit_input);
         output(linebuf);
     }
 

@@ -304,4 +304,3 @@ double rule30_rng(unsigned long int seed) {
     return (random_result);
 }
 #endif /* WORDSIZE == 64 */
-

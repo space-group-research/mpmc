@@ -248,9 +248,8 @@ void cleanup(system_t *system) {
     if (system->surf_preserve_rotation_on) free(system->surf_preserve_rotation_on);
     if (system->cavity_bias) free_cavity_grid(system);
 
-    if (system->surf_do_not_fit_list!=NULL)
-    {
-        for (i=0; i<20; i++)
+    if (system->surf_do_not_fit_list != NULL) {
+        for (i = 0; i < 20; i++)
             free(system->surf_do_not_fit_list[i]);
         free(system->surf_do_not_fit_list);
     }

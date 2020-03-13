@@ -474,8 +474,7 @@ double fh_vdw_corr(system_t *system) {
                 corr_single = pow(METER2ANGSTROM, 2) * (HBAR * HBAR / (24.0 * KB * system->temperature * rm)) * (d2v + 2.0 * dv / pair_ptr->rimg);
                 //4th order correction
                 if (system->feynman_hibbs_order >= 4)
-                    corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) /
-                                                             (1152.0 * pow(KB * system->temperature * rm, 2))) *
+                    corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) / (1152.0 * pow(KB * system->temperature * rm, 2))) *
                                    (15.0 * dv / pow(pair_ptr->rimg, 3) + 4.0 * d3v / pair_ptr->rimg + d4v);
 
                 corr += corr_single;
@@ -533,8 +532,7 @@ double fh_vdw_corr_2be(system_t *system) {
                 corr_single = pow(METER2ANGSTROM, 2) * (HBAR * HBAR / (24.0 * KB * system->temperature * rm)) * (d2v + 2.0 * dv / pair_ptr->rimg);
                 //4th order correction
                 if (system->feynman_hibbs_order >= 4)
-                    corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) /
-                                                             (1152.0 * pow(KB * system->temperature * rm, 2))) *
+                    corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) / (1152.0 * pow(KB * system->temperature * rm, 2))) *
                                    (15.0 * dv / pow(pair_ptr->rimg, 3) + 4.0 * d3v / pair_ptr->rimg + d4v);
 
                 corr += corr_single;

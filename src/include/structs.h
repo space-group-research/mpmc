@@ -363,7 +363,7 @@ typedef struct _system {
 
     //surface fitting options
     int surf_fit_multi_configs;
-    char * multi_fit_input;
+    char *multi_fit_input;
     int surf_fit_arbitrary_configs;
     int surf_qshift_on, surf_scale_epsilon_on, surf_scale_r_on, surf_scale_omega_on, surf_scale_sigma_on, surf_scale_q_on, surf_scale_pol_on;
     int surf_weight_constant_on, surf_global_axis_on, surf_descent, surf_scale_alpha_on, surf_scale_c6_on, surf_scale_c8_on, surf_scale_c10_on;
@@ -373,7 +373,7 @@ typedef struct _system {
     double fit_start_temp, fit_max_energy, fit_schedule;
     int fit_boltzmann_weight;
     double fit_best_square_error;
-    char ** surf_do_not_fit_list;
+    char **surf_do_not_fit_list;
 
     //surf options
     int surf_preserve, surf_decomp;

@@ -312,7 +312,7 @@ int mc(system_t *system) {
             rot_partfunc = system->checkpoint->molecule_backup->rot_partfunc;
 
         /* treat a bad contact as a reject */
-    if (!isfinite(final_energy)){
+        if (!isfinite(final_energy)) {
             system->observables->energy = MAXVALUE;
             system->nodestats->boltzmann_factor = 0;
         } else

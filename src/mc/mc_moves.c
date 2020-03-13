@@ -415,9 +415,9 @@ void rotate(system_t *system, molecule_t *molecule, pbc_t *pbc, double scale) {
     u3 = get_rand(system);
 
     // simple linear interpolation for adjusting the scale
-    quaternion_construct_xyzw(&rnd_rotation, scale*sqrt(1-u1)*sin(2*M_PI*u2), scale*sqrt(1-u1)*cos(2*M_PI*u2), scale*sqrt(u1)*sin(2*M_PI*u3), 1-scale+scale*sqrt(u1)*cos(2*M_PI*u3)); /* make a random quaternion */
+    quaternion_construct_xyzw(&rnd_rotation, scale * sqrt(1 - u1) * sin(2 * M_PI * u2), scale * sqrt(1 - u1) * cos(2 * M_PI * u2), scale * sqrt(u1) * sin(2 * M_PI * u3), 1 - scale + scale * sqrt(u1) * cos(2 * M_PI * u3)); /* make a random quaternion */
     quaternion_normalize(&rnd_rotation);
-    quaternion_conjugate(&rnd_rotation, &rnd_rotation_conjugate);          /* needed to transform coordinates */
+    quaternion_conjugate(&rnd_rotation, &rnd_rotation_conjugate); /* needed to transform coordinates */
 
     /* count the number of atoms in a molecule, and allocate new coords array */
     for (atom_ptr = molecule->atoms, n = 0; atom_ptr; atom_ptr = atom_ptr->next)
@@ -676,7 +676,7 @@ void make_move(system_t *system) {
 
             if (system->cavity_bias) {
                 if (get_rand(system) < pow((1.0 - system->avg_observables->cavity_bias_probability),
-                                     ((double)system->cavity_grid_size * system->cavity_grid_size * system->cavity_grid_size)))
+                                           ((double)system->cavity_grid_size * system->cavity_grid_size * system->cavity_grid_size)))
                     system->checkpoint->biased_move = 0;
                 else
                     system->checkpoint->biased_move = 1;

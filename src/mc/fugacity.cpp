@@ -4,8 +4,7 @@
 
 using namespace std;
 
-extern
-    "C" {
+extern "C" {
 #include <mc.h>
 }
 

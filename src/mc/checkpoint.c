@@ -58,15 +58,15 @@ void checkpoint(system_t *system) {
                 if (get_rand(system) < system->spinflip_probability) /* SPINFLIP */
                     system->checkpoint->movetype = MOVETYPE_SPINFLIP;
                 else {
-                    if (num_molecules_adiabatic && (get_rand(system) < 0.5))     /* DISPLACE */
-                        system->checkpoint->movetype = MOVETYPE_ADIABATIC; /* for the adiabatic mole fraction */
+                    if (num_molecules_adiabatic && (get_rand(system) < 0.5)) /* DISPLACE */
+                        system->checkpoint->movetype = MOVETYPE_ADIABATIC;   /* for the adiabatic mole fraction */
                     else
                         system->checkpoint->movetype = MOVETYPE_DISPLACE;
                 }
 
-            } else {                                                   /* DISPLACE */
-                if (num_molecules_adiabatic && (get_rand(system) < 0.5))     /* DISPLACE */
-                    system->checkpoint->movetype = MOVETYPE_ADIABATIC; /* for the adiabatic mole fraction */
+            } else {                                                     /* DISPLACE */
+                if (num_molecules_adiabatic && (get_rand(system) < 0.5)) /* DISPLACE */
+                    system->checkpoint->movetype = MOVETYPE_ADIABATIC;   /* for the adiabatic mole fraction */
                 else
                     system->checkpoint->movetype = MOVETYPE_DISPLACE;
             }

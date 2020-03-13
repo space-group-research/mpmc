@@ -123,8 +123,7 @@ void update_sorbate_info(system_t *system) {
 
         system->sorbateInfo[i].percent_wt = 100.0 * sorbed_mass / (system->observables->total_mass);
         system->sorbateInfo[i].percent_wt_me = 100.0 * sorbed_mass / (system->observables->frozen_mass);
-        system->sorbateInfo[i].excess_ratio = 1000.0 * system->sorbateInfo[i].mass * (system->sorbateInfo[i].currN -
-                                                                                      system->sorbateInfo[i].mass * system->free_volume * pressure * ATM2REDUCED / system->temperature) /
+        system->sorbateInfo[i].excess_ratio = 1000.0 * system->sorbateInfo[i].mass * (system->sorbateInfo[i].currN - system->sorbateInfo[i].mass * system->free_volume * pressure * ATM2REDUCED / system->temperature) /
                                               system->observables->frozen_mass;
         system->sorbateInfo[i].density = sorbed_mass / (system->observables->volume * NA * A32CM3);
         system->sorbateInfo[i].pore_density = sorbed_mass / (system->free_volume * NA * A32CM3);

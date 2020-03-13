@@ -17,7 +17,7 @@ float chebev(float a, float b, float c[], int m, float x) {
     int j;
 
     if ((x - a) * (x - b) > 0.0) return (-1);
-    y2 = 2.0 *(y = (2.0 * x - a - b) / (b - a));
+    y2 = 2.0 * (y = (2.0 * x - a - b) / (b - a));
     for (j = m - 1; j >= 1; j--) {
         sv = d;
         d = y2 * d - dd + c[j];

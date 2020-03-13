@@ -161,20 +161,17 @@ int do_command(system_t *system, char **token) {
             return 1;
     }
 
-    else if (!strcasecmp(token[0], "surf_do_not_fit_list"))
-    {
-        if (system->surf_do_not_fit_list == NULL)
-        {
-            system->surf_do_not_fit_list = calloc(20,sizeof(char*));
-            memnullcheck(system->surf_do_not_fit_list,20*sizeof(char*),__LINE__-1, __FILE__);
-            for (i=0; i<20; i++)
-            {
-                system->surf_do_not_fit_list[i] = calloc(MAXLINE,sizeof(char));
-                memnullcheck(system->surf_do_not_fit_list,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
+    else if (!strcasecmp(token[0], "surf_do_not_fit_list")) {
+        if (system->surf_do_not_fit_list == NULL) {
+            system->surf_do_not_fit_list = calloc(20, sizeof(char *));
+            memnullcheck(system->surf_do_not_fit_list, 20 * sizeof(char *), __LINE__ - 1, __FILE__);
+            for (i = 0; i < 20; i++) {
+                system->surf_do_not_fit_list[i] = calloc(MAXLINE, sizeof(char));
+                memnullcheck(system->surf_do_not_fit_list, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
             }
         }
         for (i = 0; strlen(token[i + 1]) > 0; i++)
-            strcpy(system->surf_do_not_fit_list[i],token[i+1]);
+            strcpy(system->surf_do_not_fit_list[i], token[i + 1]);
     }
 
     // Option for fitting against arbitrary configurations, VS the default behavior of fitting
@@ -310,15 +307,14 @@ int do_command(system_t *system, char **token) {
             strcpy(system->surf_output, token[1]);
         } else
             return 1;
-    }
-    else if (!strcasecmp(token[0], "multi_fit_input")) {
-        if(!system->multi_fit_input) {
-            system->multi_fit_input = calloc(MAXLINE,sizeof(char));
-            memnullcheck(system->multi_fit_input,MAXLINE*sizeof(char),__LINE__-1, __FILE__);
-            strcpy(system->multi_fit_input,token[1]);
-        } else return 1;
-    }
-    else if (!strcasecmp(token[0],
+    } else if (!strcasecmp(token[0], "multi_fit_input")) {
+        if (!system->multi_fit_input) {
+            system->multi_fit_input = calloc(MAXLINE, sizeof(char));
+            memnullcheck(system->multi_fit_input, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+            strcpy(system->multi_fit_input, token[1]);
+        } else
+            return 1;
+    } else if (!strcasecmp(token[0],
                            "surf_global_axis")) {
         if (!strcasecmp(token[1],
                         "on")) {
@@ -937,7 +933,7 @@ int do_command(system_t *system, char **token) {
 
     else if (!strcasecmp(token[0],
                          "disp_expansion") ||
-            !strcasecmp(token[0],"phahst")) {
+             !strcasecmp(token[0], "phahst")) {
         if (!strcasecmp(token[1],
                         "on"))
             system->disp_expansion = 1;
@@ -1473,23 +1469,23 @@ int do_command(system_t *system, char **token) {
     // normal way
     else if (!strcasecmp(token[0],
                          "basis1")) {
-            if (safe_atof(token[1], &(system->pbc->basis[0][0]))) return 1;
-            if (safe_atof(token[2], &(system->pbc->basis[0][1]))) return 1;
-            if (safe_atof(token[3], &(system->pbc->basis[0][2]))) return 1;
+        if (safe_atof(token[1], &(system->pbc->basis[0][0]))) return 1;
+        if (safe_atof(token[2], &(system->pbc->basis[0][1]))) return 1;
+        if (safe_atof(token[3], &(system->pbc->basis[0][2]))) return 1;
     } else if (!strcasecmp(token[0],
                            "basis2")) {
-            if (safe_atof(token[1], &(system->pbc->basis[1][0]))) return 1;
-            if (safe_atof(token[2], &(system->pbc->basis[1][1]))) return 1;
-            if (safe_atof(token[3], &(system->pbc->basis[1][2]))) return 1;
+        if (safe_atof(token[1], &(system->pbc->basis[1][0]))) return 1;
+        if (safe_atof(token[2], &(system->pbc->basis[1][1]))) return 1;
+        if (safe_atof(token[3], &(system->pbc->basis[1][2]))) return 1;
     } else if (!strcasecmp(token[0],
                            "basis3")) {
-            if (safe_atof(token[1], &(system->pbc->basis[2][0]))) return 1;
-            if (safe_atof(token[2], &(system->pbc->basis[2][1]))) return 1;
-            if (safe_atof(token[3], &(system->pbc->basis[2][2]))) return 1;
+        if (safe_atof(token[1], &(system->pbc->basis[2][0]))) return 1;
+        if (safe_atof(token[2], &(system->pbc->basis[2][1]))) return 1;
+        if (safe_atof(token[3], &(system->pbc->basis[2][2]))) return 1;
     }
     // .car file way (a,b,c, alpha, beta, gamma)
     // so if both carbasis and basis1/2/3 are in the input file, the last one will overwrite.
-    else if (!strcasecmp(token[0],"carbasis") || !strcasecmp(token[0],"abcbasis")) {
+    else if (!strcasecmp(token[0], "carbasis") || !strcasecmp(token[0], "abcbasis")) {
         double a, b, c, alpha, beta, gamma;
         if (safe_atof(token[1], &a)) return 1;
         if (safe_atof(token[2], &b)) return 1;

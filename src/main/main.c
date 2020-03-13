@@ -70,8 +70,8 @@ int main(int argc, char **argv) {
     char nodename[MAXLINE];
     char cpu[MAXLINE];
     struct stat info;
-    char * get_nodename_err;
-    char * get_cpu_err;
+    char *get_nodename_err;
+    char *get_cpu_err;
 
     // These system calls were causing a fork() that does not play nice with some
     // MPI implementations (causing some processes to never end... )
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
         host = popen(
             "hostname",
             "r");
-       get_nodename_err = fgets(nodename, MAXLINE, host);
+        get_nodename_err = fgets(nodename, MAXLINE, host);
         sprintf(linebuf,
                 "MAIN: Job running on node -> %.400s", nodename);
         output(linebuf);
@@ -183,7 +183,6 @@ int main(int argc, char **argv) {
         allocate_histogram_grid(system);
     }
 
-
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
     sprintf(linebuf,
@@ -254,12 +253,11 @@ int main(int argc, char **argv) {
     else if (system->ensemble == ENSEMBLE_SURF_FIT) { /* surface fitting */
 
         if (system->surf_fit_multi_configs) {
-            if( surface_multi_fit( system ) < 0 ) {
+            if (surface_multi_fit(system) < 0) {
                 error("MAIN: surface fitting module (for multiple configurations) failed on error, exiting\n");
                 die(1);
             }
-        }
-        else if( system->surf_fit_arbitrary_configs ) {
+        } else if (system->surf_fit_arbitrary_configs) {
             if (surface_fit_arbitrary(system) < 0) {
                 error(
                     "MAIN: surface fitting module (for arbitrary configurations) failed on error, exiting\n");

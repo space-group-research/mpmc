@@ -140,7 +140,6 @@ void pair_exclusions(system_t *system, molecule_t *molecule_i, molecule_t *molec
             pair_ptr->sigma = pow(pow(atom_i->sigma, atom_i->epsilon) * pow(atom_j->sigma, atom_j->epsilon), 1.0 / ((atom_i->epsilon + atom_j->epsilon)));
             pair_ptr->epsilon = 0.5 * (atom_i->epsilon + atom_j->epsilon);
         } else if (system->disp_expansion) {
-
             // https://journals.aps.org/pra/pdf/10.1103/PhysRevA.5.1708
             pair_ptr->sigma = 0.5 * (atom_i->sigma + atom_j->sigma);
             pair_ptr->epsilon = 2.0 * atom_i->epsilon * atom_j->epsilon / (atom_i->epsilon + atom_j->epsilon);

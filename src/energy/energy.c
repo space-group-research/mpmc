@@ -9,7 +9,7 @@ University of South Florida
 
 #include <mc.h>
 #ifdef CUDA
-#include<pthread.h>
+#include <pthread.h>
 #endif
 
 /* count the number of molecules currently in the system excluding frozen, adiabatic, etc.*/
@@ -68,8 +68,8 @@ double energy(system_t *system) {
     // molecule_t *molecule_ptr;  (unused variable)
     double potential_energy, rd_energy, coulombic_energy, polar_energy, vdw_energy, three_body_energy;
     double kinetic_energy;
-// struct timeval old_time, new_time;  (unused variable)
-// char linebuf[MAXLINE];   (unused variable)
+    // struct timeval old_time, new_time;  (unused variable)
+    // char linebuf[MAXLINE];   (unused variable)
 
 #ifdef POLARTIMING
     static double timing = 0;
@@ -100,25 +100,20 @@ double energy(system_t *system) {
         potential_energy += cavity_absolute_check(system);
 
     if (potential_energy == 0) {  // only run energy check if bad contact not found.
-        /* get the polarization potential */
-        /* moved this to the front so that we can start the cuda thread up before starting the other energy calculations */
+                                  /* get the polarization potential */
+                                  /* moved this to the front so that we can start the cuda thread up before starting the other energy calculations */
 #ifdef CUDA
         pthread_t cuda_worker;
 #endif
-        if (!(system->sg || system->rd_only)&&system->polarization) {
-
+        if (!(system->sg || system->rd_only) && system->polarization) {
 #ifdef CUDA
-            if (system->cuda)
-            {
-                int rc = pthread_create(&cuda_worker, NULL, polar_cuda, (void *) system);
-                if (rc)
-                {
+            if (system->cuda) {
+                int rc = pthread_create(&cuda_worker, NULL, polar_cuda, (void *)system);
+                if (rc) {
                     printf("ERROR; return code from pthread_create() is %d\n", rc);
                     exit(-1);
                 }
-            }
-            else
-            {
+            } else {
                 polar_energy = polar(system);
                 system->observables->polarization_energy = polar_energy;
             }
@@ -178,8 +173,7 @@ double energy(system_t *system) {
         }
 
 #ifdef CUDA
-        if (!(system->sg || system->rd_only)&&system->polarization&&system->cuda)
-        {
+        if (!(system->sg || system->rd_only) && system->polarization && system->cuda) {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;
         }
@@ -259,12 +253,10 @@ double energy_no_observables(system_t *system) {
         if (system->polarization) {
 #ifdef CUDA
 
-            if (system->cuda)
-            {
+            if (system->cuda) {
                 polar_cuda(system);
                 polar_energy = system->observables->polarization_energy;
-            }
-            else
+            } else
                 polar_energy = polar(system);
 
 #else

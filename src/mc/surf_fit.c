@@ -251,8 +251,7 @@ void surf_perturb(system_t *system, double quadrupole, qshiftData_t *qshiftData,
         }
 
         //only compare first three characters, so we don't include H2E, H2EP, H2Q, H2QP, etc.
-        if ((param_ptr->ntypes > 1) && strncasecmp(param_ptr->atomtype,
-                                                   "H2E", 3) &&
+        if ((param_ptr->ntypes > 1) && strncasecmp(param_ptr->atomtype, "H2E", 3) &&
             strncasecmp(param_ptr->atomtype,
                         "H2Q", 3)) {
             param_ptr->dr = scale_r * (0.5 - get_rand(system));

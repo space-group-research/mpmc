@@ -1,5 +1,4 @@
-extern
-    "C" {
+extern "C" {
 #include <mc.h>
 }
 // TODO: Make everything C++
@@ -84,8 +83,8 @@ Vec& Vec::operator=(const Vec& right) {
 
 double axilrod_teller(system_t* system) {
     double potential = 0.0, c9, rij, rik, rjk, cos_part;
-    molecule_t* molecule1, *molecule2, *molecule3;
-    atom_t* atom1, *atom2, *atom3;
+    molecule_t *molecule1, *molecule2, *molecule3;
+    atom_t *atom1, *atom2, *atom3;
     pair_t temp;
     Vec ij, ik, jk, a, b;
 

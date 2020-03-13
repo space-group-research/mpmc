@@ -220,69 +220,47 @@ int do_command(system_t *system, char **token) {
     //allows us to specify the surf-fit scales in the input file
     else if (!strcasecmp(token[0],
                          "surf_weight_constant")) {
-        {
-            if (safe_atof(token[1], &(system->surf_weight_constant))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_weight_constant))) return 1;
         system->surf_weight_constant_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_q")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_q))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_q))) return 1;
         system->surf_scale_q_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_r")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_r))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_r))) return 1;
         system->surf_scale_r_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_epsilon")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_epsilon))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_epsilon))) return 1;
         system->surf_scale_epsilon_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_sigma")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_sigma))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_sigma))) return 1;
         system->surf_scale_sigma_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_omega")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_omega))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_omega))) return 1;
         system->surf_scale_omega_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_alpha")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_alpha))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_alpha))) return 1;
         system->surf_scale_alpha_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_pol")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_pol))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_pol))) return 1;
         system->surf_scale_pol_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_c6")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_c6))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_c6))) return 1;
         system->surf_scale_c6_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_c8")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_c8))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_c8))) return 1;
         system->surf_scale_c8_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_scale_c10")) {
-        {
-            if (safe_atof(token[1], &(system->surf_scale_c10))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_scale_c10))) return 1;
         system->surf_scale_c10_on = 1;
     } else if (!strcasecmp(token[0],
                            "surf_qshift")) {
@@ -318,24 +296,12 @@ int do_command(system_t *system, char **token) {
             return 1;
         }
         system->surf_preserve_rotation_on = malloc(6 * sizeof(double));
-        {
-            if (safe_atof(token[1], &(system->surf_preserve_rotation_on->alpha1))) return 1;
-        }
-        {
-            if (safe_atof(token[2], &(system->surf_preserve_rotation_on->beta1))) return 1;
-        }
-        {
-            if (safe_atof(token[3], &(system->surf_preserve_rotation_on->gamma1))) return 1;
-        }
-        {
-            if (safe_atof(token[4], &(system->surf_preserve_rotation_on->alpha2))) return 1;
-        }
-        {
-            if (safe_atof(token[5], &(system->surf_preserve_rotation_on->beta2))) return 1;
-        }
-        {
-            if (safe_atof(token[6], &(system->surf_preserve_rotation_on->gamma2))) return 1;
-        }
+        if (safe_atof(token[1], &(system->surf_preserve_rotation_on->alpha1))) return 1;
+        if (safe_atof(token[2], &(system->surf_preserve_rotation_on->beta1))) return 1;
+        if (safe_atof(token[3], &(system->surf_preserve_rotation_on->gamma1))) return 1;
+        if (safe_atof(token[4], &(system->surf_preserve_rotation_on->alpha2))) return 1;
+        if (safe_atof(token[5], &(system->surf_preserve_rotation_on->beta2))) return 1;
+        if (safe_atof(token[6], &(system->surf_preserve_rotation_on->gamma2))) return 1;
     } else if (!strcasecmp(token[0],
                            "surf_output")) {
         if (!system->surf_output) {
@@ -455,14 +421,10 @@ int do_command(system_t *system, char **token) {
             return 1;  //no match
     } else if (!strcasecmp(token[0],
                            "cavity_autoreject_scale")) {
-        {
-            if (safe_atof(token[1], &(system->cavity_autoreject_scale))) return 1;
-        }
+        if (safe_atof(token[1], &(system->cavity_autoreject_scale))) return 1;
     } else if (!strcasecmp(token[0],
                            "cavity_autoreject_repulsion")) {
-        {
-            if (safe_atof(token[1], &(system->cavity_autoreject_repulsion))) return 1;
-        }
+        if (safe_atof(token[1], &(system->cavity_autoreject_repulsion))) return 1;
     }
 
     //polar options
@@ -1511,44 +1473,31 @@ int do_command(system_t *system, char **token) {
     // normal way
     else if (!strcasecmp(token[0],
                          "basis1")) {
-        {
             if (safe_atof(token[1], &(system->pbc->basis[0][0]))) return 1;
-        }
-        {
             if (safe_atof(token[2], &(system->pbc->basis[0][1]))) return 1;
-        }
-        {
             if (safe_atof(token[3], &(system->pbc->basis[0][2]))) return 1;
-        }
     } else if (!strcasecmp(token[0],
                            "basis2")) {
-        {
             if (safe_atof(token[1], &(system->pbc->basis[1][0]))) return 1;
-        }
-        {
             if (safe_atof(token[2], &(system->pbc->basis[1][1]))) return 1;
-        }
-        {
             if (safe_atof(token[3], &(system->pbc->basis[1][2]))) return 1;
-        }
     } else if (!strcasecmp(token[0],
                            "basis3")) {
-        {
             if (safe_atof(token[1], &(system->pbc->basis[2][0]))) return 1;
-        }
-        {
             if (safe_atof(token[2], &(system->pbc->basis[2][1]))) return 1;
-        }
-        {
             if (safe_atof(token[3], &(system->pbc->basis[2][2]))) return 1;
-        }
     }
     // .car file way (a,b,c, alpha, beta, gamma)
     // so if both carbasis and basis1/2/3 are in the input file, the last one will overwrite.
     else if (!strcasecmp(token[0],"carbasis") || !strcasecmp(token[0],"abcbasis")) {
-        car2basis(system,
-                  atof(token[1]), atof(token[2]), atof(token[3]),
-                  atof(token[4]), atof(token[5]), atof(token[6]));
+        double a, b, c, alpha, beta, gamma;
+        if (safe_atof(token[1], &a)) return 1;
+        if (safe_atof(token[2], &b)) return 1;
+        if (safe_atof(token[3], &c)) return 1;
+        if (safe_atof(token[4], &alpha)) return 1;
+        if (safe_atof(token[5], &beta)) return 1;
+        if (safe_atof(token[6], &gamma)) return 1;
+        car2basis(system, a, b, c, alpha, beta, gamma);
     }
     // done with basis setting.
 

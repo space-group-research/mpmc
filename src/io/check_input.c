@@ -970,6 +970,7 @@ void io_files_options(system_t *system) {
                ".restart.pqr");
 #ifdef MPI
         {
+            //fflush(stdout);
             int j;
             char *filename = make_filename(system->pqr_restart, rank);
             for (j = 0; j < size; j++) {
@@ -986,8 +987,8 @@ void io_files_options(system_t *system) {
 #else
         sprintf(linebuf,
                 "INPUT: will be writing restart configuration to ./%s\n", system->pqr_restart);
-#endif
         output(linebuf);
+#endif
     } else if (!strcasecmp(system->pqr_restart,
                            "off")) {  // Optionally turn off restart configuration output
         error(

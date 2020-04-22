@@ -970,7 +970,7 @@ void io_files_options(system_t *system) {
                ".restart.pqr");
 #ifdef MPI
         {
-            //fflush(stdout);
+            fflush(stdout);
             int j;
             char *filename = make_filename(system->pqr_restart, rank);
             for (j = 0; j < size; j++) {

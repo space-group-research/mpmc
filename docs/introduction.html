@@ -1,35 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Introduction &#8212; MPMC 1.1.306 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.306',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="MPMC 1.1.306 documentation" href="index.html" />
     <link rel="next" title="Tutorials" href="tutorial.html" />
     <link rel="prev" title="Welcome to MPMC’s documentation!" href="index.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,7 +41,7 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by Jon Belof and is now maintained by a group of researchers (Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan, Douglas Franz and Brian Space) in the Department of Chemistry and SMMARTT Materials Research Center at the University of South Florida. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia&#8217;s CUDA).</p>
+<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by Jon Belof and is now maintained by a group of researchers (Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan, Douglas Franz and Brian Space) in the Department of Chemistry and SMMARTT Materials Research Center at the University of South Florida. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
 <p>Optimized for the study of nanoscale interfaces, MPMC supports simulation of Coulomb and Lennard-Jones systems, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.</p>
 <div class="section" id="citing-mpmc">
 <h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Permalink to this headline">¶</a></h2>
@@ -70,18 +61,18 @@
 <div class="section" id="downloading-mpmc">
 <h2>Downloading MPMC<a class="headerlink" href="#downloading-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC can be downloaded from the <a class="reference external" href="https://github.com/mpmccode/mpmc/releases">releases page on GitHub</a> or with the following command:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc
 </pre></div>
 </div>
 </div>
 <div class="section" id="building-mpmc">
 <h2>Building MPMC<a class="headerlink" href="#building-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>Once MPMC has been downloaded it may be quickly compiled with the following bash script:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>bash compile.sh
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>bash compile.sh
 </pre></div>
 </div>
 <p>Note that <a class="reference external" href="https://cmake.org/">CMake v2.8</a> is required for compilation. More complete control may be exercised by invoking CMake directly:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>mkdir build
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mkdir build
 cd build
 cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
 make
@@ -92,31 +83,31 @@ make
 <div class="section" id="running-mpmc">
 <h2>Running MPMC<a class="headerlink" href="#running-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC accepts only one argument on the command line, the location of the MPMC input script:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>mpmc mpmc.inp
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mpmc mpmc.inp
 </pre></div>
 </div>
 </div>
 <div class="section" id="updating-mpmc">
 <h2>Updating MPMC<a class="headerlink" href="#updating-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC can be updated with the following command:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>git pull
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git pull
 </pre></div>
 </div>
 </div>
 <div class="section" id="mpmc-testing-suite">
 <h2>MPMC Testing Suite<a class="headerlink" href="#mpmc-testing-suite" title="Permalink to this headline">¶</a></h2>
 <p>An end-to-end test suite for MPMC is currently under development. If cloning MPMC anew, use the following to include the tests:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc --recurse-submodules
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc --recurse-submodules
 </pre></div>
 </div>
 <p>To clone the submodule into an existing MPMC installation, use this instead:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>cd ${local_mpmc_dir}
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd ${local_mpmc_dir}
 git submodule init
 git submodule update
 </pre></div>
 </div>
 <p>To run the tests, make sure you have Python 3 installed, compile MPMC normally, and then run:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>cd mpmc_testing
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd mpmc_testing
 python run_tests.py
 </pre></div>
 </div>
@@ -134,7 +125,7 @@ python run_tests.py
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#citing-mpmc">Citing MPMC</a></li>
@@ -151,18 +142,20 @@ python run_tests.py
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to MPMC&#8217;s documentation!</a></p>
+                        title="previous chapter">Welcome to MPMC’s documentation!</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial.html"
                         title="next chapter">Tutorials</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -183,8 +176,8 @@ python run_tests.py
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on Feb 17, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+      Last updated on Mar 13, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

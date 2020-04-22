@@ -1,35 +1,26 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Commands &#8212; MPMC 1.1.306 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.306',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="MPMC 1.1.306 documentation" href="index.html" />
     <link rel="next" title="Models" href="models.html" />
     <link rel="prev" title="Input File Specifications" href="input_files.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -66,7 +57,7 @@
 <tr class="row-even"><td>job_name [string]</td>
 <td>Base job name for output files. <strong>(required)</strong></td>
 </tr>
-<tr class="row-odd"><td>preset_seeds [int] [int] [int] [int]</td>
+<tr class="row-odd"><td>seed [int]</td>
 <td>Initialize the random number generator using the specified seed values. <strong>(default = randomized on startup)</strong></td>
 </tr>
 <tr class="row-even"><td>numsteps [int]</td>
@@ -131,11 +122,10 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>ensemble [ENSEMBLE]</td>
-<td>Chooses the ensemble to simulate in. ENSEMBLE may be one of &#8216;npt&#8217;, &#8216;nve&#8217;, &#8216;nvt&#8217;, &#8216;uvt&#8217;, &#8216;surf&#8217;, &#8216;surf_fit&#8217;, &#8216;total_energy&#8217; or &#8216;replay&#8217;. <strong>(required)</strong></td>
+<td>Chooses the ensemble to simulate in. ENSEMBLE may be one of ‘npt’, ‘nve’, ‘nvt’, ‘uvt’, ‘surf’, ‘surf_fit’, ‘total_energy’ or ‘replay’. <strong>(required)</strong></td>
 </tr>
 </tbody>
 </table>
-<p></p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
 <col width="33%" />
@@ -221,7 +211,7 @@
 <tr class="row-even"><td>n2_fugacity [on|off]</td>
 <td>Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></td>
 </tr>
-<tr class="row-odd"><td>user_fugacities [double] ([double]) ([double]) (...)</td>
+<tr class="row-odd"><td>user_fugacities [double] ([double]) ([double]) (…)</td>
 <td>Specifies the fugacities for species in insert_input. Accepts up to eight arguments.</td>
 </tr>
 <tr class="row-even"><td>insert_probability [double]</td>
@@ -332,7 +322,7 @@
 <td>Specifies filename for writing restart pqr file(s). Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
 </tr>
 <tr class="row-odd"><td>traj_input [filename]</td>
-<td>Specifies input trajectory file for &#8216;ensemble replay&#8217;.</td>
+<td>Specifies input trajectory file for ‘ensemble replay’.</td>
 </tr>
 <tr class="row-even"><td>traj_output [filename]</td>
 <td>Specifies filename for writing trajectory pqr file(s). Clobbers existing file(s). <strong>(default based on job_name)</strong></td>
@@ -371,7 +361,7 @@
 <td>Forces each MPMC thread to restart from its own pqr_restart file. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>long_output [on|off]</td>
-<td>Prints additional sigfigs for atom xyz info in output pqr&#8217;s. <strong>(default = off, unless box has a dimension &gt;= 100 Å)</strong></td>
+<td>Prints additional sigfigs for atom xyz info in output pqr’s. <strong>(default = off, unless box has a dimension &gt;= 100 Å)</strong></td>
 </tr>
 <tr class="row-odd"><td>read_pqr_box [on|off]</td>
 <td>Reads simulation box dimensions from pqr input file. <strong>(default = off)</strong></td>
@@ -380,13 +370,13 @@
 <td>Wraps atoms back into the simulation box on output. <strong>(default = on)</strong></td>
 </tr>
 <tr class="row-odd"><td>basis1 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
+<td>Specifies the basis vector’s x-, y- and z- components.</td>
 </tr>
 <tr class="row-even"><td>basis2 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
+<td>Specifies the basis vector’s x-, y- and z- components.</td>
 </tr>
 <tr class="row-odd"><td>basis3 [double] [double] [double]</td>
-<td>Specifies the basis vector&#8217;s x-, y- and z- components.</td>
+<td>Specifies the basis vector’s x-, y- and z- components.</td>
 </tr>
 <tr class="row-even"><td>[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]</td>
 <td>Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma).</td>
@@ -496,7 +486,7 @@
 <td>Sets alpha/damping parameter for polar wolf calculation.</td>
 </tr>
 <tr class="row-odd"><td>polar_wolf_lookup [on|off]</td>
-<td>Uses a lookup table for calculation of erfc&#8217;s in wolf calculation. Grid size probably needs to be tweaked in the source. <strong>(default = off)</strong></td>
+<td>Uses a lookup table for calculation of erfc’s in wolf calculation. Grid size probably needs to be tweaked in the source. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>ewald_alpha [double]</td>
 <td>Overrides default alpha for ewald and wolf permanent electrostatics and polar_ewald. <strong>(default = 3.5/pbc_cutoff)</strong></td>
@@ -588,10 +578,10 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>[phahst|disp_expansion] [on|off]</td>
-<td>Activates a RD potential similar to the Tang-Toennies potential. <span class="math">\(E_{rd} = -\frac{C6}{r^6}-\frac{C8}{r^8}-\frac{C10}{r^{10}}+596.725194095/ \epsilon * \mathrm{exp}(- \epsilon * ( r - \sigma))\)</span>. <strong>(default = off)</strong></td>
+<td>Activates a RD potential similar to the Tang-Toennies potential. <span class="math notranslate nohighlight">\(E_{rd} = -\frac{C6}{r^6}-\frac{C8}{r^8}-\frac{C10}{r^{10}}+596.725194095/ \epsilon * \mathrm{exp}(- \epsilon * ( r - \sigma))\)</span>. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>damp_dispersion [on|off]</td>
-<td>Damps the PHAHST dispersion interaction according to Tang and Toennies&#8217;s incomplete gamma functions. <strong>(default = on)</strong></td>
+<td>Damps the PHAHST dispersion interaction according to Tang and Toennies’s incomplete gamma functions. <strong>(default = on)</strong></td>
 </tr>
 <tr class="row-even"><td>extrapolate_disp_coeffs [on|off]</td>
 <td>Extrapolates C10 from C6 and C8. <strong>(default = off)</strong></td>
@@ -619,13 +609,13 @@
 <td>Uses two-body expansion for calculation of Feynman Hibbs in coupled-dipole vdW calculations. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>cdvdw_9th_repulsion [on|off]</td>
-<td>Use 9th power mixing rule <span class="math">\(rep_{ij} = (rep_{ii}^{1/9}+rep_{jj}^{1/9})^9\)</span> for repulsion interactions (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+<td>Use 9th power mixing rule <span class="math notranslate nohighlight">\(rep_{ij} = (rep_{ii}^{1/9}+rep_{jj}^{1/9})^9\)</span> for repulsion interactions (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>cdvdw_sig_rep [on|off]</td>
-<td>Calculate repulsion using <span class="math">\(\frac{3}{2} \hbar w_i w_j \alpha_i \alpha_j / ( w_i + w_j ) * sig6\)</span> with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
+<td>Calculate repulsion using <span class="math notranslate nohighlight">\(\frac{3}{2} \hbar w_i w_j \alpha_i \alpha_j / ( w_i + w_j ) * sig6\)</span> with WH mixing for sigma) (used in conjunction with coupled-dipole vdW) <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>cdvdw_exp_rep [on|off]</td>
-<td>Uses exponential repulsion <span class="math">\(\sigma * \mathrm{exp}(-\frac{r}{2 \epsilon})\)</span>, using some mixing rule I found somewhere &#8211; see source code. <strong>(default = off)</strong></td>
+<td>Uses exponential repulsion <span class="math notranslate nohighlight">\(\sigma * \mathrm{exp}(-\frac{r}{2 \epsilon})\)</span>, using some mixing rule I found somewhere – see source code. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -654,10 +644,10 @@
 <td>??? <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>spectre_max_charge [double]</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>spectre_max_target [double]</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>rd_anharmonic [on|off]</td>
 <td>??? Turns on 1D bonded RD potential or something? <strong>(default = off)</strong></td>
@@ -745,10 +735,10 @@
 <td>Enables quantum rotational eigenspectrum calculation. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>quantum_rotation_hindered [on|off]</td>
-<td>Calculates the rotational energy levels using the hindered potential <span class="math">\(\textrm{sin}^2 \theta\)</span>. <strong>(default = off)</strong></td>
+<td>Calculates the rotational energy levels using the hindered potential <span class="math notranslate nohighlight">\(\textrm{sin}^2 \theta\)</span>. <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-even"><td>quantum_rotation_hindered_barrier [double]</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-odd"><td>quantum_rotation_B [double]</td>
 <td>Sets the rotational constant. For H2, it is 85.35060622 Kelvin.</td>
@@ -803,7 +793,7 @@
 <td>Magnitude of charge fluctuations during surface fitting <strong>(default = 0)</strong></td>
 </tr>
 <tr class="row-odd"><td>surf_scale_r [double]</td>
-<td>Magnitude of position fluctuations of non-H2E/H2Q sites (when that site exists in multiples/doesn&#8217;t apply to CoM site) <strong>(default = 0.001)</strong></td>
+<td>Magnitude of position fluctuations of non-H2E/H2Q sites (when that site exists in multiples/doesn’t apply to CoM site) <strong>(default = 0.001)</strong></td>
 </tr>
 <tr class="row-even"><td>surf_scale_epsilon [double]</td>
 <td>Magnitude of epsilon fluctations to sites with non-zero epsilon. <strong>(default = 1.0)</strong></td>
@@ -841,7 +831,7 @@
 <tr class="row-odd"><td>multi_fit_input [string]</td>
 <td>Filename for surf_multi_fit.</td>
 </tr>
-<tr class="row-even"><td>surf_do_not_first_list [string] ([string] ...)</td>
+<tr class="row-even"><td>surf_do_not_first_list [string] ([string] …)</td>
 <td>List of atom types to ignore during fitting. Currently only implemented with surf_multi_fit.</td>
 </tr>
 </tbody>
@@ -860,7 +850,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>surf_decomp [on|off]</td>
-<td>Decompose the total energy into it&#8217;s components (i.e. electrostatic, polarization, Lennard-Jones, CPM-vdW) <strong>(default = off)</strong></td>
+<td>Decompose the total energy into it’s components (i.e. electrostatic, polarization, Lennard-Jones, CPM-vdW) <strong>(default = off)</strong></td>
 </tr>
 <tr class="row-odd"><td>surf_min [double]</td>
 <td>Minimum center-of-mass to center-of-mass pair separation in the generation of the potential energy surface. <strong>(default = 0.25)</strong></td>
@@ -935,7 +925,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>traj_pqr2pdb</td>
-<td>Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you&#8217;re just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You&#8217;ll do so like this: <br /> <br />[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd <br /> <br />More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. <br /> <br />Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</td>
+<td>Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you’re just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You’ll do so like this: <br /> <br />[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd <br /> <br />More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. <br /> <br />Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</td>
 </tr>
 </tbody>
 </table>
@@ -948,7 +938,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Commands</a><ul>
 <li><a class="reference internal" href="#main-commands">Main Commands</a><ul>
@@ -994,12 +984,14 @@
                         title="next chapter">Models</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1020,8 +1012,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on Feb 17, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+      Last updated on Mar 13, 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

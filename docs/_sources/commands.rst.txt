@@ -18,9 +18,9 @@ Main Commands
     "corrtime [int]", "Sets the correlation time in steps. Every corrtime steps averages and trajectory outputs are produced. **(required for Monte Carlo)**"
     "temperature [double]", "Sets the (initial) temperature. **(required for Monte Carlo)**"
     "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
-    "cuda [on|off]", "Turns on/off nVIDIA CUDA for the calculation of the polarization equations. **(default = off)**"
+    "cuda [on|off]", "Turns on/off nVIDIA CUDA. **(default = off)**"
 
-General Monte Carlo Options
+Monte Carlo Options
 -------------------
 
 .. csv-table::
@@ -29,7 +29,9 @@ General Monte Carlo Options
 
     "move_factor [double]", "Scale factor for translational moves in a fraction of the simulation box (1.0 = full box length). **(default = 1.0)**"
     "rot_factor [double]", "Scale factor for rotational moves in a fraction of a complete rotation (1.0 = full 360 degrees). **(default = 1.0)**"
-
+    "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insert or delete move. **(default = 0.0)**"
+    "volume_probability [double]", "In a NPT simulation, the probability to randomly choose a volume change move. **(default = 0.0)**"
+    "volume_change_factor [double]", "In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. **(default = 0.25)**"
 
 
 Ensembles and Ensemble Specific Commands
@@ -41,7 +43,7 @@ Ensembles and Ensemble Specific Commands
 
     "ensemble [ENSEMBLE]", "Chooses the ensemble to simulate in. ENSEMBLE may be one of 'npt', 'nve', 'nvt', 'uvt', 'surf', 'surf_fit', 'total_energy' or 'replay'. **(required)**"
 
-\
+
 
 .. csv-table::
     :header: "ENSEMBLE","Description"
@@ -78,7 +80,7 @@ uVT Options
     "ch4_fugacity [on|off]", "Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) **(default = off)**"
     "n2_fugacity [on|off]", "Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) **(default = off)**"
     "user_fugacities [double] ([double]) ([double]) (...)", "Specifies the fugacities for species in insert_input. Accepts up to eight arguments."
-    "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insertion/deletion move over a translational/rotational move. **(default = 0.0)**"
+    "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insert or delete move. **(default = 0.0)**"
     "cavity_bias [on|off]", "Use cavity bias for insertions in uVT Monte Carlo. **(default = off)**"
     "cavity_grid [int]", "Number of grid points in each dimension used in cavity_bias."
     "cavity_radius [double]", "Radius of sphere used to determine if a cavity grid point is unoccupied."
@@ -91,7 +93,7 @@ NPT Options
     :widths: 20,40
 
     "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
-    "volume_probability [double]", "In a NPT simulation, the probability to randomly choose a volume change move over a translational/rotational move. **(default = 0.0)**"
+    "volume_probability [double]", "In a NPT simulation, the probability to randomly choose a volume change move. **(default = 0.0)**"
     "volume_change_factor [double]", "In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. **(default = 0.25)**"
 
 Replay Options

@@ -379,11 +379,6 @@ typedef struct _system {
     int surf_preserve, surf_decomp;
     double surf_min, surf_max, surf_inc, surf_ang;
     surf_preserve_rotation *surf_preserve_rotation_on;
-    int surf_virial;
-    char *virial_output;
-    double *virial_coef;
-    double virial_tmin, virial_tmax, virial_dt;
-    int virial_npts;
     int ee_local;
     double range_eps, range_sig, step_eps, step_sig;
 

@@ -1340,30 +1340,4 @@ int write_averages(system_t *system) {
     return (0);
 }
 
-void write_virial_output(system_t *system, double tmin, double tmax, double dt) {
-    double t;
-    int i;
-    FILE *fvirial = fopen(system->virial_output,
-                          "w");
-    filecheck(fvirial, system->virial_output, WRITE);
 
-    printf(
-        "### Start Virial Output ###\n");
-    printf(
-        "#Temperature #B_2\n");
-    fprintf(fvirial,
-            "#Temperature #B_2\n");
-
-    for (i = 0, t = tmin; t <= tmax; t += dt) {
-        printf(
-            "%8.3lf %15.10lf\n", t, system->virial_coef[i]);
-        fprintf(fvirial,
-                "%8.3lf %15.10lf\n", t, system->virial_coef[i++]);
-    }
-
-    printf(
-        "### End Virial Output ###\n");
-    fclose(fvirial);
-
-    return;
-}

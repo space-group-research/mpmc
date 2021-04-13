@@ -237,7 +237,6 @@ void cleanup(system_t *system) {
     free(system->pqr_output);
     free(system->energy_output);
     free(system->energy_output_csv);
-    free(system->virial_output);
 
     if (system->surf_output) free(system->surf_output);
     if (system->traj_output) free(system->traj_output);

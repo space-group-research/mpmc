@@ -119,7 +119,7 @@ void ensemble_surf_options(system_t *system) {
         output(linebuf);
     }
 
-    if (!system->surf_preserve && !system->surf_virial) {
+    if (!system->surf_preserve) {
         if (system->surf_ang <= 0.0) {
             error(
                 "INPUT: surf_ang is less than or equal to 0\n");
@@ -147,18 +147,6 @@ void ensemble_surf_options(system_t *system) {
 
         sprintf(linebuf,
                 "INPUT: surface print level is %d\n", system->surf_print_level);
-        output(linebuf);
-    }
-
-    // set default virial parameters if neccessary
-    if (system->surf_virial) {
-        if (!system->virial_tmin) system->virial_tmin = VIRIAL_TMIN;
-        if (!system->virial_tmax) system->virial_tmax = VIRIAL_TMAX;
-        if (!system->virial_dt) system->virial_dt = VIRIAL_DT;
-        if (!system->virial_npts) system->virial_npts = VIRIAL_NPTS;
-        sprintf(linebuf,
-                "INPUT: virial will be performed with tmin=%.3lf tmax=%.3lf dt=%.3lf npts=%d\n",
-                system->virial_tmin, system->virial_tmax, system->virial_dt, system->virial_npts);
         output(linebuf);
     }
 
@@ -1143,29 +1131,6 @@ void io_files_options(system_t *system) {
         sprintf(linebuf,
                 "INPUT: will be writing energy output to ./%s\n", system->energy_output);
         output(linebuf);
-    }
-
-    if (system->surf_virial) {  //if we are doing virial
-        if (!system->virial_output) {
-            system->virial_output = calloc(MAXLINE, sizeof(char));
-            memnullcheck(system->virial_output, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
-            strcpy(system->virial_output, system->job_name);
-            strcat(system->virial_output,
-                   ".virial.dat");
-            sprintf(linebuf,
-                    "INPUT: will be writing virial output to ./%s\n", system->virial_output);
-            output(linebuf);
-        } else if (!strcasecmp(system->virial_output,
-                               "off")) {  //optionally turn off virial printing
-            error(
-                "INPUT: virial file output disabled; writing to /dev/null\n");
-            sprintf(system->virial_output,
-                    "/dev/null");
-        } else {
-            sprintf(linebuf,
-                    "INPUT: will be writing virial output to ./%s\n", system->virial_output);
-            output(linebuf);
-        }
     }
 
     /* NEW: Trajectory file will default to on if not specified */

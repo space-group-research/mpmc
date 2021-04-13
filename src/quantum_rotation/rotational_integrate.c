@@ -15,7 +15,7 @@ double rotational_integrate(system_t *system, molecule_t *molecule, int type, in
     int t, p;
     double theta, phi, theta_weight, phi_weight;
     double Yi_real, Yj_real, Yi_img, Yj_img;
-    double potential, integrand, integral;
+    double potential, integrand = 0., integral;
     /* N = 16 */
     double roots[QUANTUM_ROTATION_GRID] = {-0.989400934991649932596,
                                            -0.944575023073232576078,

@@ -249,7 +249,7 @@ void quantum_system_rotational_energies(system_t *);
 void quantum_rotational_energies(system_t *, molecule_t *, int, int);
 void quantum_rotational_grid(system_t *, molecule_t *);
 complex_t **rotational_hamiltonian(system_t *, molecule_t *, int, int);
-int determine_rotational_eigensymmetry(molecule_t *, int, int);
+int determine_rotational_eigensymmetry(system_t *, molecule_t *, int, int);
 double rotational_basis(int, int, int, double, double);
 double rotational_potential(system_t *, molecule_t *, double, double);
 double hindered_potential(double);

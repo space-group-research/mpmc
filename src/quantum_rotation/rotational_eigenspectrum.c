@@ -21,10 +21,10 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 
     /* allocate our hamiltonian matrix */
     hamiltonian = calloc(dim, sizeof(complex_t *));
-    memnullcheck(hamiltonian, dim * sizeof(complex_t *), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(hamiltonian, dim * sizeof(complex_t *), __LINE__ - 1, __FILE__);
     for (i = 0; i < dim; i++) {
         hamiltonian[i] = calloc(dim, sizeof(complex_t));
-        memnullcheck(hamiltonian[i], dim * sizeof(complex_t), __LINE__ - 1, __FILE__ - 1);
+        memnullcheck(hamiltonian[i], dim * sizeof(complex_t), __LINE__ - 1, __FILE__);
     }
 
     /* construct the hamiltonian matrix, integrate to get each element */
@@ -75,13 +75,13 @@ complex_t **rotational_hamiltonian(system_t *system, molecule_t *molecule, int l
 }
 
 /* check the wavefunction for g or u symmetry */
-int determine_rotational_eigensymmetry(molecule_t *molecule, int level, int l_max) {
+int determine_rotational_eigensymmetry(system_t *system, molecule_t *molecule, int level, int l_max) {
     int symmetry;
     double theta, phi;
     int i, l, m, index;
     complex_t wavefunction[QUANTUM_ROTATION_SYMMETRY_POINTS];
     double sqmod[QUANTUM_ROTATION_SYMMETRY_POINTS];
-    double max_sqmod, max_theta, max_phi;
+    double max_sqmod, max_theta = 0., max_phi = 0.;
     complex_t max_wavefunction, inv_wavefunction;
 
     /* scan a few random points, pick the one with the largest square of the real part */
@@ -129,6 +129,12 @@ int determine_rotational_eigensymmetry(molecule_t *molecule, int level, int l_ma
     return (symmetry);
 }
 
+#ifdef ACML_NOUNDERSCORE
+extern void zhpevx(char*, char*, char*, int*, double*, int*, int*, int*, int*, double*, int*, double*, double*, int*, double*, double*, int*, int*, int*);
+#else
+extern void zhpevx_(char*, char*, char*, int*, double*, int*, int*, int*, int*, double*, int*, double*, double*, int*, double*, double*, int*, int*, int*);
+#endif
+
 /* get the rotational energy levels of a single rotor in an external potential */
 void quantum_rotational_energies(system_t *system, molecule_t *molecule, int level_max, int l_max) {
     complex_t **hamiltonian;
@@ -143,19 +149,19 @@ void quantum_rotational_energies(system_t *system, molecule_t *molecule, int lev
 
     /* setup the lapack arguments */
     hamiltonian_packed = calloc((int)(dim * (dim + 1.0) / 2.0), sizeof(complex_t));
-    memnullcheck(hamiltonian_packed, (int)(dim * (dim + 1.0) / 2.0) * sizeof(complex_t), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(hamiltonian_packed, (int)(dim * (dim + 1.0) / 2.0) * sizeof(complex_t), __LINE__ - 1, __FILE__);
     eigenvalues = calloc(dim, sizeof(double));
-    memnullcheck(eigenvalues, dim * sizeof(double), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(eigenvalues, dim * sizeof(double), __LINE__ - 1, __FILE__);
     z = calloc(dim * dim, sizeof(complex_t));
-    memnullcheck(z, dim * dim * sizeof(complex_t), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(z, dim * dim * sizeof(complex_t), __LINE__ - 1, __FILE__);
     work = calloc((2 * dim), sizeof(complex_t));
-    memnullcheck(work, 2 * dim * sizeof(complex_t), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(work, 2 * dim * sizeof(complex_t), __LINE__ - 1, __FILE__);
     rwork = calloc((7 * dim), sizeof(double));
-    memnullcheck(rwork, 7 * dim * sizeof(double), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(rwork, 7 * dim * sizeof(double), __LINE__ - 1, __FILE__);
     iwork = calloc((5 * dim), sizeof(int));
-    memnullcheck(iwork, 5 * dim * sizeof(int), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(iwork, 5 * dim * sizeof(int), __LINE__ - 1, __FILE__);
     ifail = calloc(dim, sizeof(int));
-    memnullcheck(ifail, dim * sizeof(int), __LINE__ - 1, __FILE__ - 1);
+    memnullcheck(ifail, dim * sizeof(int), __LINE__ - 1, __FILE__);
 
     jobz = 'V';
     range = 'A';
@@ -200,7 +206,7 @@ void quantum_rotational_energies(system_t *system, molecule_t *molecule, int lev
 
     /* get the symmetry of each eigenvector */
     for (i = 0; i < level_max; i++)
-        molecule->quantum_rotational_eigensymmetry[i] = determine_rotational_eigensymmetry(molecule, i, l_max);
+        molecule->quantum_rotational_eigensymmetry[i] = determine_rotational_eigensymmetry(system, molecule, i, l_max);
 
     /* free our arrays */
     for (i = 0; i < dim; i++) free(hamiltonian[i]);
@@ -219,7 +225,7 @@ void quantum_rotational_energies(system_t *system, molecule_t *molecule, int lev
 void quantum_rotational_grid(system_t *system, molecule_t *molecule) {
     int t, p;
     double theta, phi;
-    double potential;
+    //double potential;
     /* N = 16 */
     double roots[QUANTUM_ROTATION_GRID] = {-0.989400934991649932596,
                                            -0.944575023073232576078,
@@ -267,7 +273,7 @@ void quantum_rotational_grid(system_t *system, molecule_t *molecule) {
 
 /* find the rotational 1-body energies for each molecule in the system */
 void quantum_system_rotational_energies(system_t *system) {
-    int i, j;
+    int i;
     molecule_t *molecule_ptr;
 
     /* get the rotational eigenspectrum for each moveable molecule */

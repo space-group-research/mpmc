@@ -58,7 +58,7 @@
 <td>Base job name for output files. <strong>(required)</strong></td>
 </tr>
 <tr class="row-odd"><td>seed [int]</td>
-<td>Initialize the random number generator using the specified seed values. <strong>(default = randomized on startup)</strong></td>
+<td>Initialize the random number generator using the specified seed values. <strong>(default = randomized on startup based on current time)</strong></td>
 </tr>
 <tr class="row-even"><td>numsteps [int]</td>
 <td>Total number of steps (moves) for Monte Carlo simulations. <strong>(required for Monte Carlo)</strong></td>
@@ -73,12 +73,12 @@
 <td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></td>
 </tr>
 <tr class="row-even"><td>cuda [on|off]</td>
-<td>Turns on/off nVIDIA CUDA. <strong>(default = off)</strong></td>
+<td>Turns on/off nVIDIA CUDA for the calculation of the polarization equations. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
-<div class="section" id="monte-carlo-options">
-<h3>Monte Carlo Options<a class="headerlink" href="#monte-carlo-options" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="general-monte-carlo-options">
+<h3>General Monte Carlo Options<a class="headerlink" href="#general-monte-carlo-options" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
 <col width="33%" />
@@ -95,15 +95,6 @@
 </tr>
 <tr class="row-odd"><td>rot_factor [double]</td>
 <td>Scale factor for rotational moves in a fraction of a complete rotation (1.0 = full 360 degrees). <strong>(default = 1.0)</strong></td>
-</tr>
-<tr class="row-even"><td>insert_probability [double]</td>
-<td>In a uVT simulation, the probability to randomly choose an insert or delete move. <strong>(default = 0.0)</strong></td>
-</tr>
-<tr class="row-odd"><td>volume_probability [double]</td>
-<td>In a NPT simulation, the probability to randomly choose a volume change move. <strong>(default = 0.0)</strong></td>
-</tr>
-<tr class="row-even"><td>volume_change_factor [double]</td>
-<td>In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. <strong>(default = 0.25)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -126,6 +117,7 @@
 </tr>
 </tbody>
 </table>
+<p></p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
 <col width="33%" />
@@ -215,15 +207,18 @@
 <td>Specifies the fugacities for species in insert_input. Accepts up to eight arguments.</td>
 </tr>
 <tr class="row-even"><td>insert_probability [double]</td>
-<td>In a uVT simulation, the probability to randomly choose an insert or delete move. <strong>(default = 0.0)</strong></td>
+<td>In a uVT simulation, the probability to randomly choose an insertion/deletion move over a translational/rotational move. <strong>(default = 0.0)</strong></td>
 </tr>
-<tr class="row-odd"><td>cavity_bias [on|off]</td>
+<tr class="row-odd"><td>free_volume [double]</td>
+<td>Used for statistics calculations in MOF sorption simulations.</td>
+</tr>
+<tr class="row-even"><td>cavity_bias [on|off]</td>
 <td>Use cavity bias for insertions in uVT Monte Carlo. <strong>(default = off)</strong></td>
 </tr>
-<tr class="row-even"><td>cavity_grid [int]</td>
+<tr class="row-odd"><td>cavity_grid [int]</td>
 <td>Number of grid points in each dimension used in cavity_bias.</td>
 </tr>
-<tr class="row-odd"><td>cavity_radius [double]</td>
+<tr class="row-even"><td>cavity_radius [double]</td>
 <td>Radius of sphere used to determine if a cavity grid point is unoccupied.</td>
 </tr>
 </tbody>
@@ -246,7 +241,7 @@
 <td>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></td>
 </tr>
 <tr class="row-odd"><td>volume_probability [double]</td>
-<td>In a NPT simulation, the probability to randomly choose a volume change move. <strong>(default = 0.0)</strong></td>
+<td>In a NPT simulation, the probability to randomly choose a volume change move over a translational/rotational move. <strong>(default = 0.0)</strong></td>
 </tr>
 <tr class="row-even"><td>volume_change_factor [double]</td>
 <td>In a NPT simulation, the scale factor for the change of cell parameters in a fraction of the current cell parameters. <strong>(default = 0.25)</strong></td>
@@ -272,28 +267,6 @@
 </tr>
 <tr class="row-odd"><td>calc_pressure_dv [double]</td>
 <td>Size of volume moves to perform in the pressure calculation.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="miscellaneous-options">
-<h3>Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="colwidths-given docutils">
-<colgroup>
-<col width="33%" />
-<col width="67%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Command</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>free_volume [double]</td>
-<td>Used for statistics calculations in MOF sorption simulations.</td>
-</tr>
-<tr class="row-odd"><td>independent_particle [on|off]</td>
-<td>Treats each atom as an independent particle. Assigns unique molecule_id to each atom. <strong>(default = off)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -379,7 +352,7 @@
 <td>Specifies the basis vector’s x-, y- and z- components.</td>
 </tr>
 <tr class="row-even"><td>[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]</td>
-<td>Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma).</td>
+<td>Specifies the basis vectors of the unit-cell by a, b, c, alpha, beta, gamma.</td>
 </tr>
 </tbody>
 </table>
@@ -620,8 +593,8 @@
 </tbody>
 </table>
 </div>
-<div class="section" id="id1">
-<h3>Miscellaneous Options<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="miscellaneous-options">
+<h3>Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h3>
 <p>None of these are guaranteed to work.</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
@@ -942,13 +915,12 @@
   <ul>
 <li><a class="reference internal" href="#">Commands</a><ul>
 <li><a class="reference internal" href="#main-commands">Main Commands</a><ul>
-<li><a class="reference internal" href="#monte-carlo-options">Monte Carlo Options</a></li>
+<li><a class="reference internal" href="#general-monte-carlo-options">General Monte Carlo Options</a></li>
 <li><a class="reference internal" href="#ensembles-and-ensemble-specific-commands">Ensembles and Ensemble Specific Commands</a></li>
 <li><a class="reference internal" href="#nve-options">NVE Options</a></li>
 <li><a class="reference internal" href="#uvt-options">uVT Options</a></li>
 <li><a class="reference internal" href="#npt-options">NPT Options</a></li>
 <li><a class="reference internal" href="#replay-options">Replay Options</a></li>
-<li><a class="reference internal" href="#miscellaneous-options">Miscellaneous Options</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#input-output-commands">Input / Output Commands</a></li>
@@ -958,7 +930,7 @@
 <li><a class="reference internal" href="#polarization-options">Polarization Options</a></li>
 <li><a class="reference internal" href="#phahst-options">PHAHST Options</a></li>
 <li><a class="reference internal" href="#coupled-dipole-van-der-waals-options">Coupled-Dipole Van der Waals Options</a></li>
-<li><a class="reference internal" href="#id1">Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">Miscellaneous Options</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#annealing-tempering-commands">Annealing / Tempering Commands</a><ul>
@@ -1012,7 +984,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on Mar 13, 2020.
+      Last updated on Apr 13, 2021.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>

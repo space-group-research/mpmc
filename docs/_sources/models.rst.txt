@@ -52,7 +52,13 @@ POLAR_FIXQ `https://aip.scitation.org/doi/10.1063/1.4717705 <https://aip.scitati
 PHAHST
 ------
 
-To be published ...
+`https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837 <https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837>`_
+
+.. code-block:: none
+
+    ATOM      1 H2DA H2  M    1      0.000   0.000   0.000  0.00000 -0.846166  0.00000  3.627796  2.664506  0.00000  0.00000 0 0 0
+    ATOM      2 H2H  H2  M    1      0.371   0.000   0.000  1.00800  0.423083  0.34325  3.100603  1.859425  0.00000  0.00000 2.884735 38.97178 644.95683
+    ATOM      3 H2H  H2  M    1     -0.371   0.000   0.000  1.00800  0.423083  0.34325  3.100603  1.859425  0.00000  0.00000 2.884735 38.97178 644.95683
 
 Coupled-Dipole Van der Waals
 ----------------------------
@@ -206,7 +212,13 @@ PHAST*-WH `https://pubs.acs.org/doi/abs/10.1021/ct400526a <https://pubs.acs.org/
 PHAHST
 ------
 
-To be published ...
+`https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837 <https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837>`_
+
+.. code-block:: none
+
+    ATOM      1 N2DA N2  M    2      0.000000    0.000000    0.000000   0.00000  0.94194  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000
+    ATOM      2 N2N  N2  M    2      0.550700    0.000000    0.000000  14.00670 -0.47103  0.85092  3.85368  3.31513  0.00000  0.00000 17.80503 416.32350 11924.91300
+    ATOM      3 N2N  N2  M    2     -0.550700    0.000000    0.000000  14.00670 -0.47103  0.85092  3.85368  3.31513  0.00000  0.00000 17.80503 416.32350 11924.91300
 
 Miscellaneous
 -------------
@@ -277,7 +289,7 @@ Noble Gases
 PHAST
 -----
 
-PHAST noble gases are fit to reproduce CCSD(T) à la the molecular PHAST models.
+PHAST noble gases are fit to reproduce CCSD(T) à la the molecular PHAST models. These parameters are unpublished and should be used with caution.
 
 He
 
@@ -312,15 +324,51 @@ Xe
 PHAHST
 ------
 
-To be published ...
+`https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837 <https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837>`_
+
+He
+
+.. code-block:: none
+
+    ATOM      1 He   He  M    1      0.000000    0.000000    0.000000   4.00260  0.00000  0.2002  4.68451  2.38376  0.00000  0.00000  1.40716 11.13635 107.96400
+
+Ne
+
+.. code-block:: none
+
+    ATOM      1 Ne   Ne  M    1      0.000000    0.000000    0.000000  20.18000  0.00000  0.3823  4.99432  2.80240  0.00000  0.00000  6.21275 67.98647 911.37600
+
+Ar
+
+.. code-block:: none
+
+    ATOM      1 Ar   Ar  M    1      0.000000    0.000000    0.000000  39.94800  0.00000  1.6550  3.88525  3.68623  0.00000  0.00000 65.46000 1438.90000 38745.00000
+
+Kr
+
+.. code-block:: none
+
+    ATOM      1 Kr   Kr  M    1      0.000000    0.000000    0.000000  83.79800  0.00000  2.4970  3.52894  4.03477  0.00000  0.00000 130.10000 3981.00000 149225.00000
+
+Xe
+
+.. code-block:: none
+
+    ATOM      1 Xe   Xe  M    1      0.000000    0.000000    0.000000  131.29300  0.00000  4.026  3.24691  4.47518  0.00000  0.00000 288.40000 11390.00000 551047.00000
 
 Metal-Organic Frameworks
 ========================
 
-UFF
----
+PHAHST
+------
 
+`https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837 <https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837>`_
 
+.. code-block:: none
 
+    ATOM      1 Cu   MOF F    1      0.000000    0.000000    0.000000 63.54630  0.00000  0.29252  8.82345  2.73851  0.00000  0.00000  6.96956 262.82938 13951.49740
+    ATOM      1 C    MOF F    1      0.000000    0.000000    0.000000 12.01100  0.00000  0.71317  4.00147  3.35929  0.00000  0.00000 11.88969 547.51694 27317.97855
+    ATOM      1 O    MOF F    1      0.000000    0.000000    0.000000 15.99900  0.00000  1.68064  3.89544  3.23867  0.00000  0.00000 27.70093 709.36452 19820.89339
+    ATOM      1 H    MOF F    1      0.000000    0.000000    0.000000  1.00790  0.00000  0.02117  3.63874  1.87446  0.00000  0.00000  0.16278  5.03239 202.99322
 
 

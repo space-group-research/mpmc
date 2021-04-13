@@ -13,7 +13,7 @@ Main Commands
     :widths: 20,40
 
     "job_name [string]", "Base job name for output files. **(required)**"
-    "seed [int]", "Initialize the random number generator using the specified seed values. **(default = randomized on startup)**"
+    "seed [int]", "Initialize the random number generator using the specified seed values. **(default = randomized on startup based on current time)**"
     "numsteps [int]", "Total number of steps (moves) for Monte Carlo simulations. **(required for Monte Carlo)**"
     "corrtime [int]", "Sets the correlation time in steps. Every corrtime steps averages and trajectory outputs are produced. **(required for Monte Carlo)**"
     "temperature [double]", "Sets the (initial) temperature. **(required for Monte Carlo)**"
@@ -21,7 +21,7 @@ Main Commands
     "cuda [on|off]", "Turns on/off nVIDIA CUDA for the calculation of the polarization equations. **(default = off)**"
 
 General Monte Carlo Options
--------------------
+---------------------------
 
 .. csv-table::
     :header: "Command","Description"
@@ -79,6 +79,7 @@ uVT Options
     "n2_fugacity [on|off]", "Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) **(default = off)**"
     "user_fugacities [double] ([double]) ([double]) (...)", "Specifies the fugacities for species in insert_input. Accepts up to eight arguments."
     "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insertion/deletion move over a translational/rotational move. **(default = 0.0)**"
+    "free_volume [double]", "Used for statistics calculations in MOF sorption simulations."
     "cavity_bias [on|off]", "Use cavity bias for insertions in uVT Monte Carlo. **(default = off)**"
     "cavity_grid [int]", "Number of grid points in each dimension used in cavity_bias."
     "cavity_radius [double]", "Radius of sphere used to determine if a cavity grid point is unoccupied."
@@ -103,16 +104,6 @@ Replay Options
 
     "calc_pressure [on|off]", "Perform Frenkel pressure calculation over the uvt/nvt input trajectory. **(default = off)**"
     "calc_pressure_dv [double]", "Size of volume moves to perform in the pressure calculation."
-
-Miscellaneous Options
----------------------
-
-.. csv-table::
-    :header: "Command","Description"
-    :widths: 20,40
-
-    "free_volume [double]", "Used for statistics calculations in MOF sorption simulations."
-    "independent_particle [on|off]", "Treats each atom as an independent particle. Assigns unique molecule_id to each atom. **(default = off)**"
 
 Input / Output Commands
 =======================
@@ -143,7 +134,7 @@ Input / Output Commands
     "basis1 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
     "basis2 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
     "basis3 [double] [double] [double]", "Specifies the basis vector's x-, y- and z- components."
-    "[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]", "Specifies the basis vectors of the unit-cell in the .car style (i.e. a, b, c, alpha, beta, gamma)."
+    "[abcbasis|carbasis] [double] [double] [double] [double] [double] [double]", "Specifies the basis vectors of the unit-cell by a, b, c, alpha, beta, gamma."
 
 Potential Commands
 ==================

@@ -66,6 +66,7 @@ int safe_atof(char *, double *);
 int safe_atoi(char *a, int *i);
 int safe_atou(char *a, uint32_t *i);
 int safe_atol(char *a, long unsigned int *l);
+void car2basis(system_t *, double, double, double, double, double, double);
 
 int check_system(system_t *);
 system_t *read_config(char *);
@@ -129,7 +130,7 @@ void cleanup(system_t *);
 void terminate_handler(int, system_t *);
 int memnullcheck(void *, int, int, char *);
 int filecheck(void *, char *, int);
-void free_all_molecules(system_t *, molecule_t *);
+void free_all_molecules(molecule_t *);
 void free_all_pairs(system_t *);
 
 /* mc */

@@ -34,13 +34,13 @@ int replay_trajectory(system_t* system) {
     while (1) {
         //remove old structures from previous loop or from input.c prior to calling this function
         free_all_pairs(system);
-        free_all_molecules(system, system->molecules);
+        free_all_molecules(system->molecules);
         if (system->insertion_molecules_array) {
             free(system->insertion_molecules_array);
             system->insertion_molecules_array = NULL;
         }
         if (system->insertion_molecules) {
-            free_all_molecules(system, system->insertion_molecules);
+            free_all_molecules(system->insertion_molecules);
             system->insertion_molecules = NULL;
         }
 

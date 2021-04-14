@@ -336,19 +336,6 @@ Surface Scan Options
     "surf_print_level [1-6]", "Verbosity of surface trajectory data written to surf_output. **(default = 3)**"
     "surf_output", "Output file for surface curves."
 
-Virial Coefficient Options
---------------------------
-
-.. csv-table::
-    :header: "Command","Description"
-    :widths: 20,40
-
-    "surf_virial [on|off]", "Perform calculation of second virial coefficient. **(default = off)**"
-    "virial_tmin [double]", "Use with surf_virial. Minimum temperature considered. **(default = 10)**"
-    "virial_tmax [double]", "Use with surf_virial. Maximum temperature. **(default = 1000)**"
-    "virial_dt [double]", "Use with surf_virial. Temperature increment. **(default = 10)**"
-    "virial_npts [int]", "Use with surf_virial. Number of points to consider in virial calculation for each spherical shell. **(default = 25)**"
-
 External Tools
 ==============
 

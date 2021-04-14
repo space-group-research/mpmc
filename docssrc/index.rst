@@ -6,8 +6,8 @@ Welcome to MPMC's documentation!
     :maxdepth: 3
 
     introduction
-    tutorial
     input_files
+    tutorial
     commands
     models
 

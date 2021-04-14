@@ -41,7 +41,7 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by Jon Belof and is now maintained by a group of researchers (Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan, Douglas Franz and Brian Space) in the Department of Chemistry and SMMARTT Materials Research Center at the University of South Florida. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
+<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by Jon Belof and is now maintained by the Brian Space group in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
 <p>Optimized for the study of nanoscale interfaces, MPMC supports simulation of Coulomb and Lennard-Jones systems, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.</p>
 <div class="section" id="citing-mpmc">
 <h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Permalink to this headline">¶</a></h2>
@@ -55,7 +55,7 @@
 </div>
 <div class="section" id="supported-systems">
 <h2>Supported Systems<a class="headerlink" href="#supported-systems" title="Permalink to this headline">¶</a></h2>
-<p>Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use <a class="reference external" href="https://www.open-mpi.org/">OpenMPI</a> or <a class="reference external" href="https://developer.nvidia.com/cuda-zone">CUDA</a>. Configuring with Coupled-Dipole VDW or QM Rotation requires <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>.</p>
+<p>Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use <a class="reference external" href="https://www.open-mpi.org/">OpenMPI</a> or <a class="reference external" href="https://developer.nvidia.com/cuda-zone">CUDA</a>. Configuring with Coupled-Dipole VDW or QM Rotation options requires <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>.</p>
 <p>MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primarily tested on Linux and support is not guaranteed on other platforms.</p>
 </div>
 <div class="section" id="downloading-mpmc">
@@ -78,7 +78,7 @@ cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUIL
 make
 </pre></div>
 </div>
-<p>Make sure to add MPMC to your path after compiling.</p>
+<p>Make sure to add MPMC to your path after compiling!</p>
 </div>
 <div class="section" id="running-mpmc">
 <h2>Running MPMC<a class="headerlink" href="#running-mpmc" title="Permalink to this headline">¶</a></h2>

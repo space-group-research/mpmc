@@ -12,8 +12,6 @@ BSSP H\ :sub:`2` + MOF5 Simulation (uVT)
 PHAHST H\ :sub:`2` + MOF5 Simulation (uVT)
 ==========================================
 
-To be published ...
-
 Simulated Annealing
 ===================
 

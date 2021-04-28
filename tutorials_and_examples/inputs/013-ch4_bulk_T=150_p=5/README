@@ -1,3 +1,0 @@
-Equilibrate CH4 at 150K, 5atm.
-
-Parallel tempering, coupled-dipole vdW and wolf polarization are used. System should be run in parallel on 4+ cores.

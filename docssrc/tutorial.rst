@@ -3,13 +3,13 @@ Tutorials
 
 WIP
 
-Bulk BSSP H\ :sub:`2` Simulation (NVT)
+Bulk BSS H\ :sub:`2` Simulation (NVT)
 ======================================
 
-BSSP H\ :sub:`2` + MOF5 Simulation (uVT)
+BSSP H\ :sub:`2` + MOF-5 Simulation (uVT)
 ========================================
 
-PHAHST H\ :sub:`2` + MOF5 Simulation (uVT)
+PHAHST H\ :sub:`2` + HKUST-1 Simulation (uVT)
 ==========================================
 
 Simulated Annealing
@@ -30,10 +30,10 @@ Potential Energy Surface Fitting (surf_fit and surf_multi_fit)
 Multisorbate uVT
 ================
 
-Coupled-Dipole Van der Waals
+Coupled-Dipole van der Waals
 ============================
 
-BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with Nvidia CUDA
+BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with NVIDIA CUDA
 =========================================================
 
 Parameterizing a MOM

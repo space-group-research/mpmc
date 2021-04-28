@@ -84,8 +84,21 @@ PQR files used by MPMC contain additional columns compared to standard .pqr or .
 17-19: Dispersion coefficients for PHAHST simulations
 
 
-For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0.
+For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0. An excerpt of the PQR file from the second tutorial, BSSP H\ :sub:`2` sorption in MOF-5, is provided below as an example.
 
+.. code-block:: none
+
+    ATOM      1 ZN   MOF F   1       7.568   5.314  -7.516  65.3900   1.8530  0.16000 62.39930  2.46200
+    ATOM      2 ZN   MOF F   1       5.335  -5.287  -5.283  65.3900   1.8530  0.16000 62.39930  2.46200
+    ATOM      3 ZN   MOF F   1       5.335   7.547   7.551  65.3900   1.8530  0.16000 62.39930  2.46200
+    ATOM      4 ZN   MOF F   1       5.335  -7.520   7.551  65.3900   1.8530  0.16000 62.39930  2.46200
+    ATOM      5 ZN   MOF F   1      -5.266   7.547  -7.516  65.3900   1.8530  0.16000 62.39930  2.46200
+    [...]
+    ATOM    425 H2G  H2  M    2      0.000   0.000   0.000  0.00000 -0.74640  0.69380 12.76532  3.15528
+    ATOM    426 H2E  H2  M    2      0.371   0.000   0.000  1.00800  0.37320  0.00044  0.00000  0.00000
+    ATOM    427 H2E  H2  M    2     -0.371  -0.000   0.000  1.00800  0.37320  0.00044  0.00000  0.00000
+    ATOM    428 H2N  H2  M    2      0.363   0.000   0.000  0.00000  0.00000  0.00000  2.16726  2.37031
+    ATOM    429 H2N  H2  M    2     -0.363  -0.000   0.000  0.00000  0.00000  0.00000  2.16726  2.37031
 
 
 Surface Fitting Files

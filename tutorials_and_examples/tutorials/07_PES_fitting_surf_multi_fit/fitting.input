@@ -1,0 +1,36 @@
+ensemble                surf_fit
+fit_arbitrary_configs   on
+surf_multi_fit          on
+
+basis1                  1000000.0 0.0 0.0
+basis2                  0.0 1000000.0 0.0
+basis3                  0.0 0.0 1000000.0
+
+fit_max_energy		100
+fit_schedule        0.0000001
+fit_start_temp		1000
+
+surf_scale_epsilon      0.002
+surf_scale_sigma        0.001
+surf_scale_omega        0.0
+surf_scale_r            0.0
+surf_scale_q            0.0
+surf_scale_c6           0.0
+surf_scale_c8           0.0
+surf_scale_pol          0.0
+
+surf_weight_constant 0.0
+surf_descent            on
+
+disp_expansion on
+extrapolate_disp_coeffs off
+damp_dispersion on
+
+polarization off
+polar_damp_type exponential
+polar_damp 2.1304
+
+pqr_input		multifit_sites.pqr
+
+
+multi_fit_input configs.out

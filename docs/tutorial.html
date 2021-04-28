@@ -41,41 +41,105 @@
   <div class="section" id="tutorials">
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
 <p>WIP</p>
-<div class="section" id="bulk-bssp-h2-simulation-nvt">
-<h2>Bulk BSSP H<sub>2</sub> Simulation (NVT)<a class="headerlink" href="#bulk-bssp-h2-simulation-nvt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bulk-bss-h2-simulation-nvt">
+<h2>Bulk BSS H<sub>2</sub> Simulation (NVT)<a class="headerlink" href="#bulk-bss-h2-simulation-nvt" title="Permalink to this headline">¶</a></h2>
+<p>Basic LJ/ES bulk sorption modeling for H2 (using BSS model).</p>
+<p>(repulsion-dispersion + electrostatics only; no polarizaion)</p>
 </div>
-<div class="section" id="bssp-h2-mof5-simulation-uvt">
-<h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT)<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bssp-h2-mof-5-simulation-uvt">
+<h2>BSSP H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bssp-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+<p>Basic Polarized bulk sorption modeling for H2 (using BSSP model).</p>
+<p>(U = repulsion-dispersion + electrostatics + polarization)</p>
 </div>
-<div class="section" id="phahst-h2-mof5-simulation-uvt">
-<h2>PHAHST H<sub>2</sub> + MOF5 Simulation (uVT)<a class="headerlink" href="#phahst-h2-mof5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="phahst-h2-hkust-1-simulation-uvt">
+<h2>PHAHST H<sub>2</sub> + HKUST-1 Simulation (uVT)<a class="headerlink" href="#phahst-h2-hkust-1-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="simulated-annealing">
 <h2>Simulated Annealing<a class="headerlink" href="#simulated-annealing" title="Permalink to this headline">¶</a></h2>
+<p>This is a sample simulated annealing (using NVT) script for the MOF NOTT-112.
+Two files are included.</p>
+<p>input.pqr (1) contains the MOF with a single H2 molecule about 2.5A from
+the CuC open metal site.</p>
+<p>sa.inp (2) contains instructions for MPMC to run the annealing, starting from
+40K and decreasing the temperature by a factor of 0.99999 each MC step. Pressure
+is kept constant at 0.1atm.</p>
+<p>S.A. generally takes less time than uptake simulations for several reasons:
+Being an NVT model, the number of sorbate molecules is fixed (e.g. at 1)
+The simluation need not ‘equilibrate’; only run until a desired final
+temperature is reached.</p>
 </div>
 <div class="section" id="replaying-a-trajectory">
 <h2>Replaying a Trajectory<a class="headerlink" href="#replaying-a-trajectory" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="single-point-energy-and-quantum-rotation-calculations">
 <h2>Single Point Energy and Quantum Rotation Calculations<a class="headerlink" href="#single-point-energy-and-quantum-rotation-calculations" title="Permalink to this headline">¶</a></h2>
+<p>Included is a TGZ file containing the PDB files with the BSS model
+located at all four H2 sorption sites in MOF-5 (alpha. beta, gamma, and delta).
+An input file to run the quantum rotation calculations is also included in the
+TGZ file. Note that running quantum rotations calculations is predicated upon
+turning the quantum rotations part of the code on when compiling MPMC. By
+executing quantum rotation calculations on the four H2 sorption sites, you
+should obtain rotational levels that are very close to those shown in Table 1
+of Ivana’s JCP 2012 paper (see included paper) for the respective sites.</p>
+<p>Paper: <a class="reference external" href="http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906">http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906</a></p>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-fit">
 <h2>Potential Energy Surface Fitting (surf_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit" title="Permalink to this headline">¶</a></h2>
+<p>These are sample inputs for fitting noble gases in MPMC.</p>
+<p>Use, for example,</p>
+<p>/path/to/mpmc helium_fitting.input</p>
+<p>to run.</p>
+<p>All 3 files are required to run PES
+*.input (MPMC input)
+*.pqr (initial parameters/coordinates)
+*.dat (PES input data)</p>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-fit-and-surf-multi-fit">
 <h2>Potential Energy Surface Fitting (surf_fit and surf_multi_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit-and-surf-multi-fit" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="multisorbate-uvt">
 <h2>Multisorbate uVT<a class="headerlink" href="#multisorbate-uvt" title="Permalink to this headline">¶</a></h2>
+<p>These input files will run a multi-sorbate simulation in an rht-MOF (NOTT-112).
+The two sorbates are H2 (BSSP) and CO2 (PHAST). I have done 3 sorbates in this
+system with success (e.g. N2). Pretty sure code is generalized to any number of
+sorbates.</p>
+<p>Files
+1. insert.pqr
+Only needed for multi-sorbate simulations (for gas sorption)
+Includes the sorbate models to be included
+2. input.pqr
+Includes the MOF coordinates and initial sorbate (only 1 is needed)
+3. *.inp
+The actual MPMC input file, which cites the above 2 sub-inputs.</p>
+<p>This is one of the largest (in phase-space and atom count) systems we’ve ever
+worked on, so it takes a while. Especially for large corrtime in *.inp.</p>
 </div>
 <div class="section" id="coupled-dipole-van-der-waals">
-<h2>Coupled-Dipole Van der Waals<a class="headerlink" href="#coupled-dipole-van-der-waals" title="Permalink to this headline">¶</a></h2>
+<h2>Coupled-Dipole van der Waals<a class="headerlink" href="#coupled-dipole-van-der-waals" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
-<h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with Nvidia CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>
+<h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with NVIDIA CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="parameterizing-a-mom">
 <h2>Parameterizing a MOM<a class="headerlink" href="#parameterizing-a-mom" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="d-chain-replay">
+<h2>1D Chain Replay<a class="headerlink" href="#d-chain-replay" title="Permalink to this headline">¶</a></h2>
+<p>Here we use ‘ensemble replay’ to read in a series of increasingly
+larger 1D-chain samples (starting from 2-atoms and up to 512).</p>
+<p>Each component of the energy is re-calcualte for each sample, for
+various potential options (one sec of potential options per input
+file). One may take the energy output files and process them (via scale.sh) to
+check for the small-size scalability and accuracy of our calculations.</p>
+</div>
+<div class="section" id="id1">
+<h2>3D Chain Replay<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Here we use ‘ensemble replay’ to read in a series of increasingly
+larger crystal samples (starting from 2-atoms and up to 1024).</p>
+<p>Each component of the energy is re-calcualte for each sample, for
+various potential options (one sec of potential options per input
+file). One may take the energy output files and process them (via scale.sh) to
+check for the small-size scalability and accuracy of our calculations.</p>
 </div>
 </div>
 
@@ -89,18 +153,20 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorials</a><ul>
-<li><a class="reference internal" href="#bulk-bssp-h2-simulation-nvt">Bulk BSSP H<sub>2</sub> Simulation (NVT)</a></li>
-<li><a class="reference internal" href="#bssp-h2-mof5-simulation-uvt">BSSP H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
-<li><a class="reference internal" href="#phahst-h2-mof5-simulation-uvt">PHAHST H<sub>2</sub> + MOF5 Simulation (uVT)</a></li>
+<li><a class="reference internal" href="#bulk-bss-h2-simulation-nvt">Bulk BSS H<sub>2</sub> Simulation (NVT)</a></li>
+<li><a class="reference internal" href="#bssp-h2-mof-5-simulation-uvt">BSSP H<sub>2</sub> + MOF-5 Simulation (uVT)</a></li>
+<li><a class="reference internal" href="#phahst-h2-hkust-1-simulation-uvt">PHAHST H<sub>2</sub> + HKUST-1 Simulation (uVT)</a></li>
 <li><a class="reference internal" href="#simulated-annealing">Simulated Annealing</a></li>
 <li><a class="reference internal" href="#replaying-a-trajectory">Replaying a Trajectory</a></li>
 <li><a class="reference internal" href="#single-point-energy-and-quantum-rotation-calculations">Single Point Energy and Quantum Rotation Calculations</a></li>
 <li><a class="reference internal" href="#potential-energy-surface-fitting-surf-fit">Potential Energy Surface Fitting (surf_fit)</a></li>
 <li><a class="reference internal" href="#potential-energy-surface-fitting-surf-fit-and-surf-multi-fit">Potential Energy Surface Fitting (surf_fit and surf_multi_fit)</a></li>
 <li><a class="reference internal" href="#multisorbate-uvt">Multisorbate uVT</a></li>
-<li><a class="reference internal" href="#coupled-dipole-van-der-waals">Coupled-Dipole Van der Waals</a></li>
-<li><a class="reference internal" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with Nvidia CUDA</a></li>
+<li><a class="reference internal" href="#coupled-dipole-van-der-waals">Coupled-Dipole van der Waals</a></li>
+<li><a class="reference internal" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with NVIDIA CUDA</a></li>
 <li><a class="reference internal" href="#parameterizing-a-mom">Parameterizing a MOM</a></li>
+<li><a class="reference internal" href="#d-chain-replay">1D Chain Replay</a></li>
+<li><a class="reference internal" href="#id1">3D Chain Replay</a></li>
 </ul>
 </li>
 </ul>

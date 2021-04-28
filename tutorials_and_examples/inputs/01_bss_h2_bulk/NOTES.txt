@@ -1,7 +1,0 @@
-2016 Space group
-D. Franz
-=====================
-
-Basic LJ/ES bulk sorption modeling for H2 (using BSS model).
-
-(repulsion-dispersion + electrostatics only; no polarizaion)

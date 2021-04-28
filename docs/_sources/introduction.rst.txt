@@ -79,7 +79,7 @@ To clone the submodule into an existing MPMC installation, use this instead:
 
 .. code-block:: none
 
-    cd ${local_mpmc_dir}
+    cd mpmc
     git submodule init
     git submodule update
 

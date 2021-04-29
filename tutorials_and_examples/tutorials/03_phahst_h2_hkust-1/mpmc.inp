@@ -2,6 +2,7 @@ job_name                    muvt
 
 ensemble                    uvt
 
+seed                        1024
 numsteps                    1000000
 corrtime                    1000
 

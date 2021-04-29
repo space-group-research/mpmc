@@ -2,6 +2,7 @@ job_name                        MOF5+BSS ! job name, which will determine defaul
 
 ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
 
+seed                            1024  ! initial seed for the RNG
 numsteps                        1000  ! Total number of MC steps to run.
 corrtime                        100   ! Output averages every X steps
 

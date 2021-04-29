@@ -1,7 +1,7 @@
 Tutorials
 *********
 
-WIP
+A series of example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory. All 
 
 Bulk BSS H\ :sub:`2` Simulation (NVT)
 =====================================
@@ -94,14 +94,8 @@ The actual MPMC input file, which cites the above 2 sub-inputs.
 This is one of the largest (in phase-space and atom count) systems we've ever
 worked on, so it takes a while. Especially for large corrtime in \*.inp.
 
-Coupled-Dipole van der Waals
-============================
-
 BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with NVIDIA CUDA
 =========================================================
-
-Parameterizing a MOM
-====================
 
 1D Chain Replay
 ===============

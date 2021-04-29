@@ -1,0 +1,6 @@
+job_name                        MOF5+BSS
+
+ensemble                        replay
+
+read_pqr_box                    on
+traj_input                      MOF5+BSS.traj-00000.pqr

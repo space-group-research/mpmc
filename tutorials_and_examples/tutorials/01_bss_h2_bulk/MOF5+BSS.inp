@@ -1,27 +1,20 @@
-! are comments yo
-job_name                        MOF5+BSS ! job name, which will determine output file names
+job_name                        MOF5+BSS ! job name, which will determine default output file names
 
-rd_only				off
+ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
 
-ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT etc. are possible.
+numsteps                        1000  ! Total number of MC steps to run.
+corrtime                        100   ! Output averages every X steps
 
-numsteps                        1000000 ! Total number of MC steps to run.
-corrtime                        1000 ! Total number of sampling points to run (averaging points)
+insert_probability              0.667 ! Probability to add or remove a sorbate molecule (otherwise do a combination rotation/translation)
+move_factor                     0.01  ! Fraction of the system box to translate per step
+rot_factor                      0.01  ! Fraction of a full circle to rotate per step
 
-insert_probability              0.667 ! Probability at each step to add or remove a sorbate molecule.
-move_factor	                0.01 ! Probability at each step to translate a molecule in phase space.
-rot_factor	                0.01 ! Probability at each step to rotate a molecule on its center of mass.
+temperature                     298.0 ! T of system in K
+pressure                        1.0   ! P of system in atm
+h2_fugacity                     on    ! Converts pressure to fugacity
 
-temperature                     77.0 ! T of system in K
-pressure                        70.0 ! P of system in atm
-h2_fugacity                     on ! Fugacity option for pressure correction (for H2 it is usually negligable)
+abcbasis                        25.669 25.669 25.669 90 90 90 ! system cell definition
 
-basis1                          25.669  0.0     0.0 ! Unit cell "box" parameters. Cubes, e.g., are a diagonal matrix with identical values.
-basis2                          0.0     25.669  0.0
-basis3                          0.0     0.0     25.669
-
-wrapall                         on		! auto-wrap the unit cell with the given MOF (in case there is some deviation)
-pqr_input                       input.pqr	! define the input PDB file to read!
-pop_histogram           	on		! generate a histogram file for visualization later
-pop_histogram_output    	histogram.dat   ! filename for the above
-!parallel_restarts		on		! parallel restarts option (only available if included in compilation)
+pqr_input                       input.pqr     ! the input PQR file to read
+pop_histogram                   on            ! generate a histogram file for visualization later
+pop_histogram_output            histogram.dat ! filename for the above

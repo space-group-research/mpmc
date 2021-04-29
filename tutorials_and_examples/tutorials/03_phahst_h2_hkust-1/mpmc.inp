@@ -13,8 +13,9 @@ temperature                 303
 pressure                    20
 
 parallel_restarts           on
+
+phahst                      on
 extrapolate_disp_coeffs     on
-disp_expansion              on
 damp_dispersion             on
 cavity_autoreject_repulsion 10000
 
@@ -34,7 +35,6 @@ polar_gs_ranked             on
 polar_gamma                 1.03
 polar_precision             0.001
 
-wrapall                     on
 read_pqr_box                on
 pqr_input                   HKUST-1.pqr
 

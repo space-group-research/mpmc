@@ -100,9 +100,6 @@ Coupled-Dipole van der Waals
 BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with NVIDIA CUDA
 =========================================================
 
-Parameterizing a MOM
-====================
-
 1D Chain Replay
 ===============
 

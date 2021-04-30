@@ -2,9 +2,9 @@
 
 ![MPMC](docssrc/mpmc.png)
 
-MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by [Jon Belof](http://people.llnl.gov/belof1) and is now maintained by a group of researchers (Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan, Douglas Franz and [Brian Space](http://drbrian.space/)) in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia's CUDA and the OpenCL architecture).
+MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by [Jon Belof](http://people.llnl.gov/belof1), includes contributions from Kieth McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and Douglas Franz, and is currently maintained by the [Brian Space group](http://drbrian.space/) in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia's CUDA and the OpenCL architecture).
 
-Optimized for the study of nanoscale interfaces, MPMC supports simulation of Coulomb and Lennard-Jones systems, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.
+Optimized for the study of nanoscale interfaces, MPMC supports many common intermolecular potentials including Lennard-Jones and damped dispersion paired with exponential repulsion, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.
 
 ## Getting Started
 
@@ -34,14 +34,17 @@ bash compile.sh
 
 #### Documentation Link
 
+Additional documentation, including tutorials, detailed command lists, and PHAST/PHAHST models is available at the following link.
+
 http://mpmccode.github.io/mpmc/
 
 
 ## Selected Publications
 
-* [Porous materials with optimal adsorption thermodynamics and kinetics for CO2 separations.](https://www.nature.com/articles/nature11893)\
-Nugent, P.; Belmabkhout, Y.; Burd, S. D.; Cairns, A. J.; Luebke, R.; Forrest, K. A.; Pham, T.; Ma, S.; Space, B.; Wojtas, L.; Eddaoudi, M.; Zaworotko, M. J.\
-*Nature.* **2013**, 495, 80-84.
+
+
+* [Next-Generation Accurate, Transferable, and Polarizable Potentials for Material Simulations.](https://pubs.acs.org/doi/10.1021/acs.jctc.0c00837)\
+Hogan, A.; Space, B. *J. Chem. Theory Comput.* **2020**, 16 (12), 7632-7644.
 
 * [On the Mechanism of Hydrogen Storage in a Metal-Organic Framework Material.](https://pubs.acs.org/doi/abs/10.1021/ja0737164)\
 Belof, J. L.; Stern, A. C.; Eddaoudi, M.; Space, B.,\

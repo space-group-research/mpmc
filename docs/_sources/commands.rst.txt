@@ -122,7 +122,6 @@ Input / Output Commands
     "xyz_output [filename]", "Specifies filename for writing trajectory in xyz format. Clobbers existing file(s)."
     "pop_histogram [on|off]", "Turns on population histogram. **(default = off)**"
     "pop_histogram_output [filename]", "Specifies filename for writing popular histogram. Clobbers existing file(s). **(default = histogram.dx)**"
-    "virial_output [filename]", "Specifies filename for writing virial data. Clobbers existing file(s)."
     "dipole_output [filename]", "Specifies filename for writing induced dipole data. Clobbers existing file(s)."
     "field_output [filename]", "Specifies filename for writing total electrostatic field for each molecule. Clobbers existing file(s)."
     "frozen_output [filename]", "Specifies filename for writing frozen atoms in dx format. Clobbers existing file(s)."

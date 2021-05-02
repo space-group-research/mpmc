@@ -41,7 +41,7 @@
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <a class="reference internal image-reference" href="_images/mpmc.png"><img alt="_images/mpmc.png" class="align-center" src="_images/mpmc.png" style="width: 600px;" /></a>
-<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by <a class="reference external" href="http://people.llnl.gov/belof1">Jon Belof</a>, includes contributions from Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and Douglas Franz, and is currently maintained by the <a class="reference external" href="http://drbrian.space/">Brian Space group</a> in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA and the OpenCL architecture).</p>
+<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by <a class="reference external" href="http://people.llnl.gov/belof1">Jon Belof</a>, includes contributions from Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and Douglas Franz, and is currently maintained by the <a class="reference external" href="http://drbrian.space/">Brian Space group</a> in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
 <p>Optimized for the study of nanoscale interfaces, MPMC supports many common intermolecular potentials including Lennard-Jones and damped dispersion paired with exponential repulsion, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.</p>
 <div class="section" id="citing-mpmc">
 <h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Permalink to this headline">¶</a></h2>
@@ -74,7 +74,7 @@
 <p>Note that <a class="reference external" href="https://cmake.org/">CMake v2.8</a> is required for compilation. More complete control may be exercised by invoking CMake directly:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mkdir build
 cd build
-cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
+cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
 make
 </pre></div>
 </div>
@@ -182,7 +182,7 @@ python run_tests.py
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 01, 2021.
+      Last updated on May 02, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>

@@ -10,7 +10,6 @@ cmake_minimum_required(VERSION 2.8)
 
 option(MPI "Use MPI to parallelize the calculations (requires MPI)" OFF)
 option(CUDA "Use CUDA to offload polarization calculations to a GPU (requires CUDA)" OFF)
-option(OPENCL "Use OpenCL to offload polarization calculations to a GPU (requires OpenCL)" OFF)
 option(QM_ROTATION "Enable Quantum Mechanics Rigid Rotator calculations (requires LAPACK)" OFF)
 option(VDW "Enable Coupled-Dipole Van der Waals (requires LAPACK)" OFF)
 
@@ -118,22 +117,6 @@ if(CUDA)
     find_package(Threads REQUIRED)
 else()
     message("-- CUDA Disabled")
-endif()
-
-if(OPENCL)
-    message("-- OpenCl Enabled")
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-    find_package(OpenCL REQUIRED)
-    if(NOT OPENCL_FOUND)
-        message(FATAL_ERROR "--OpenCl not found! Exiting ...")
-    endif()
-    set(SRC ${SRC}
-        src/polarization_gpu/polar_ocl.c
-        src/io/setup_ocl.c)
-    set(INCLUDE ${INCLUDE} ${OpenCL_INCLUDE_DIRS})
-    set(LIB ${LIB} ${OpenCL_LIBRARIES})
-else()
-    message("-- OpenCl Disabled")
 endif()
 
 if(QM_ROTATION)

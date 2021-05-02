@@ -44,13 +44,13 @@ if [ $? == 0 ]; then
 fi
 
 if [ "$1" = "debug" ]; then
-    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Debug -Wno-dev ../
+    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Debug -Wno-dev ../
 elif [ "$1" = "cuda" ]; then
-    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=ON -DCMAKE_BUILD_TYPE=release -Wno-dev ../
+    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=ON -DCMAKE_BUILD_TYPE=release -Wno-dev ../
 elif [ "$1" = "mpi" ]; then
-    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=ON -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=release -Wno-dev ../
+    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=ON -DCUDA=OFF -DCMAKE_BUILD_TYPE=release -Wno-dev ../
 else
-    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DOPENCL=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
+    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Release -Wno-dev ../
 fi
 
 NUMCORES=4

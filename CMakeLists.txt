@@ -59,7 +59,7 @@ src/mc/surf_fit.c
 src/mc/fugacity.cpp
 src/mc/cavity.c
 src/mc/checkpoint.c
-src/histogram/histogram.c
+src/io/histogram.c
 src/energy/lj_buffered_14_7.c
 src/energy/bessel.c
 src/energy/dreiding.c
@@ -114,7 +114,7 @@ endif()
 if(CUDA)
     message("-- CUDA Enabled")
     find_package(CUDA REQUIRED)
-    set(SRC ${SRC} src/polarization_gpu/polar_cuda_pcg.cu)
+    set(SRC ${SRC} src/polarization/polar_cuda_pcg.cu)
     set(CUDA_PROPAGATE_HOST_FLAGS OFF)
     find_package(Threads REQUIRED)
 else()

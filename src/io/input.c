@@ -1738,16 +1738,6 @@ system_t *setup_system(char *input_file) {
         output(linebuf);
     }
 
-#ifdef OPENCL
-    if (system->opencl) {
-        output(
-            "INPUT: Installing OpenCL kernel...\n");
-        system->ocl = setup_ocl();
-        output(
-            "INPUT: ...OpenCL kernel installed.\n");
-    }
-#endif
-
     /* ensure that all SPECTRE charges lie within the restricted domain */
     if (system->spectre) spectre_wrapall(system);
 

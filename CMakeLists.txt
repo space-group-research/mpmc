@@ -90,7 +90,6 @@ src/io/check_input.c
 src/io/input.c
 src/io/mpi.c
 src/io/read_pqr.c
-src/io/setup_ocl.c
 src/polarization/thole_field.c
 src/polarization/polar_wolf_lookup.c
 src/polarization/thole_polarizability.c

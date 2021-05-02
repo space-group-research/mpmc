@@ -34,7 +34,7 @@ bash compile.sh
 
 #### Documentation Link
 
-Additional documentation, including tutorials, detailed command lists, and PHAST/PHAHST models is available at the following link.
+Additional documentation, including tutorials, detailed command lists, and PHAST/PHAHST models are available at the following link.
 
 http://mpmccode.github.io/mpmc/
 

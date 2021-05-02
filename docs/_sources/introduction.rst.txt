@@ -75,7 +75,7 @@ and then rebuilding as necessary.
 MPMC Tutorials
 ==============
 
-
+Example MPMC input scripts and PQRs are available in the tutorials_and_examples
 
 MPMC Testing Suite
 ==================

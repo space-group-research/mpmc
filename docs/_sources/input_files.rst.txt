@@ -6,7 +6,7 @@ The bulk of MPMC runs require two plain text files, the input script and the PQR
 MPMC Input Script
 =================
 
-The MPMC input script contains a series of commands, usually of the form :code:`[command name] [on|off|value]`, and one per line. Comments may be included by beginning a line with :code:`!` or :code:`#`. Whitespace is ignored and the order of the commands is not important as the entire input script is read and then the simulation is started. A minimal MPMC input script contains the ensemble to simulate in, the temperature (and possibly pressure), the number of steps, and the output frequency. As an example, a minimal input script for a :math:`\mu VT` simulation of H\ :sub:`2` sorption in MOF-5 is provided below.
+The MPMC input script contains a series of commands, usually of the form :code:`[command name] [on|off|value]`, and one per line. Comments may be included by beginning a line with :code:`!` or :code:`#`. Whitespace is ignored and the order of the commands is not important as the entire input script is read and then the simulation is started. A minimal MPMC input script contains the ensemble to simulate in, the temperature (and possibly pressure), the number of steps, and the output frequency. As an example, a minimal input script for a :math:`\mu VT` simulation of H\ :sub:`2` sorption in MOF-5 is provided below and the full example is found in tutorial 1.
 
 .. code-block:: none
 
@@ -31,7 +31,7 @@ The full list of commands is available in :doc:`commands`.
 PQR File
 =============
 
-PQR files used by MPMC contain additional columns compared to standard .pqr or .pdb files to support inclusion of the force field parameters. 
+PQR files used by MPMC contain additional columns compared to standard .pqr or .pdb files to support inclusion of the force field parameters. The format is as follows:
 
 .. code-block:: none
 
@@ -45,19 +45,19 @@ PQR files used by MPMC contain additional columns compared to standard .pqr or .
 2: Atom ID, starting from 1 to N\ :sub:`atoms`
 
 
-3: Element, can include additional numbers/letters in the case of multiple atom types (e.g. "ZN", "C1", "O2", "H2G", etc)
+3: Element label, doesn't have to be unique, can include additional numbers/letters in the case of multiple atom types (e.g. "ZN", "C1", "O2", "H2G", etc)
 
 
-4: Molecular label, doesn't have to be unique (e.g. "MOF" or "H2")
+4: Molecule label, doesn't have to be unique (e.g. "MOF" or "H2")
 
 
-5: M = Movable, F = Frozen (a MOF, e.g., is normally frozen, while sorbates are movable.)
+5: M = Movable, F = Frozen (determines whether a molecule has Monte Carlo moves applied to it, e.g. a solid porous material would be frozen and sorbate movable in typical simulations)
 
 
 6: Molecule ID, starting from 1 to N\ :sub:`molecules`
 
 
-7-9: X, Y, Z coordinates in Angstroms
+7-9: X, Y, Z cartesian coordinates in Angstroms
 
 
 10: Mass of atom in amu
@@ -81,10 +81,10 @@ PQR files used by MPMC contain additional columns compared to standard .pqr or .
 16: :math:`\alpha` for gaussian wave packet Coulombic interactions (normally not needed)
 
 
-17-19: Dispersion coefficients for PHAHST simulations
+17-19: Dispersion coefficients (in a.u.) for PHAHST simulations
 
 
-For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0. An excerpt of the PQR file from the second tutorial, BSSP H\ :sub:`2` sorption in MOF-5, is provided below as an example.
+For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0. An excerpt of the PQR file from the tutorial 2, BSSP H\ :sub:`2` sorption in MOF-5, is provided below as an example.
 
 .. code-block:: none
 
@@ -104,7 +104,50 @@ For typical Lennard-Jones simulations columns 15-19 are not needed and if omitte
 Surface Fitting Files
 =====================
 
+The default surface fitting input consists of three Euler angles specifying the rotational configuration for each molecule in the dimer followed by a list of center-of-mass distances and their respective ab initio energies used in the fitting process. When using this style of surface fitting the input PQR file consists of the two molecules in the dimer with their center-of-mass at the origin. An example for CO\ :sub:`2` calculated at the CCSD(T)/CBS level is provided below:
+
+.. code-block:: none
+
+    * Data for slip parallel orientation of CO2 dimer
+
+    alpha1	0.3333333333 pi
+    beta1	0.0
+    gamma1	0.0
+
+    alpha2	0.3333333333 pi
+    beta2	0.0
+    gamma2	0.0
+
+    2.5  7911.3
+    2.6  5866.4
+    2.7  3581.48
+    2.8  2002.818
+    2.9  933.35671939
+    3.0  227.08190367
+    [...]
 
 
 Surf_multi_fit Files
 --------------------
+
+The surf_multi_fit inputs are more general, able to handle an arbitrary number of atoms or molecules in arbitrary configurations. They begin with the word "Configuration", followed by the ab initio energy, then a list of atoms in the system, with the format: atom type, molecule number, x, y, z, and partial charge. An example for an He dimer is shown below:
+
+.. code-block:: none
+
+    Configuration 1
+    286570.1
+    He 1   0 0 0 0
+    He 2 0.529177 0 0 0
+    Configuration 2
+    173854.3
+    He 1   0 0 0 0
+    He 2 0.66147125 0 0 0
+    Configuration 3
+    104342.9
+    He 1   0 0 0 0
+    He 2 0.7937655 0 0 0
+    [...]
+
+
+
+

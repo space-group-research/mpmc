@@ -43,7 +43,7 @@
 <p>The bulk of MPMC runs require two plain text files, the input script and the PQR data file. The input script contains all of the commands defining the type of run to be performed as well as details about the state point, control of the potentials, control of the input/output, etc. The PQR file contains the atomic positions of the system as well as force field parameters such as partial charges and van der Waals coefficients on each atom.</p>
 <div class="section" id="mpmc-input-script">
 <h2>MPMC Input Script<a class="headerlink" href="#mpmc-input-script" title="Permalink to this headline">¶</a></h2>
-<p>The MPMC input script contains a series of commands, usually of the form <code class="code docutils literal notranslate"><span class="pre">[command</span> <span class="pre">name]</span> <span class="pre">[on|off|value]</span></code>, and one per line. Comments may be included by beginning a line with <code class="code docutils literal notranslate"><span class="pre">!</span></code> or <code class="code docutils literal notranslate"><span class="pre">#</span></code>. Whitespace is ignored and the order of the commands is not important as the entire input script is read and then the simulation is started. A minimal MPMC input script contains the ensemble to simulate in, the temperature (and possibly pressure), the number of steps, and the output frequency. As an example, a minimal input script for a <span class="math notranslate nohighlight">\(\mu VT\)</span> simulation of H<sub>2</sub> sorption in MOF-5 is provided below.</p>
+<p>The MPMC input script contains a series of commands, usually of the form <code class="code docutils literal notranslate"><span class="pre">[command</span> <span class="pre">name]</span> <span class="pre">[on|off|value]</span></code>, and one per line. Comments may be included by beginning a line with <code class="code docutils literal notranslate"><span class="pre">!</span></code> or <code class="code docutils literal notranslate"><span class="pre">#</span></code>. Whitespace is ignored and the order of the commands is not important as the entire input script is read and then the simulation is started. A minimal MPMC input script contains the ensemble to simulate in, the temperature (and possibly pressure), the number of steps, and the output frequency. As an example, a minimal input script for a <span class="math notranslate nohighlight">\(\mu VT\)</span> simulation of H<sub>2</sub> sorption in MOF-5 is provided below and the full example is found in tutorial 1.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>job_name MOF5+BSS
 
 ensemble uvt
@@ -64,18 +64,18 @@ abcbasis  25.669 25.669 25.669 90 90 90
 </div>
 <div class="section" id="pqr-file">
 <h2>PQR File<a class="headerlink" href="#pqr-file" title="Permalink to this headline">¶</a></h2>
-<p>PQR files used by MPMC contain additional columns compared to standard .pqr or .pdb files to support inclusion of the force field parameters.</p>
+<p>PQR files used by MPMC contain additional columns compared to standard .pqr or .pdb files to support inclusion of the force field parameters. The format is as follows:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>1     2    3          4           5    6         7  8  9  10    11      12              13          14        15     16         17  18  19
 ATOM  ID#  Element    MolecLabel  M/F  MolecID   x  y  z  mass  charge  polarizability  LJ epsilon  LJ sigma  Omega  GWP alpha  C6  C8  C10
 </pre></div>
 </div>
 <p>1: ATOM verbatim</p>
 <p>2: Atom ID, starting from 1 to N<sub>atoms</sub></p>
-<p>3: Element, can include additional numbers/letters in the case of multiple atom types (e.g. “ZN”, “C1”, “O2”, “H2G”, etc)</p>
-<p>4: Molecular label, doesn’t have to be unique (e.g. “MOF” or “H2”)</p>
-<p>5: M = Movable, F = Frozen (a MOF, e.g., is normally frozen, while sorbates are movable.)</p>
+<p>3: Element label, doesn’t have to be unique, can include additional numbers/letters in the case of multiple atom types (e.g. “ZN”, “C1”, “O2”, “H2G”, etc)</p>
+<p>4: Molecule label, doesn’t have to be unique (e.g. “MOF” or “H2”)</p>
+<p>5: M = Movable, F = Frozen (determines whether a molecule has Monte Carlo moves applied to it, e.g. a solid porous material would be frozen and sorbate movable in typical simulations)</p>
 <p>6: Molecule ID, starting from 1 to N<sub>molecules</sub></p>
-<p>7-9: X, Y, Z coordinates in Angstroms</p>
+<p>7-9: X, Y, Z cartesian coordinates in Angstroms</p>
 <p>10: Mass of atom in amu</p>
 <p>11: Partial charge in e</p>
 <p>12: Polarizability in Angstrom<sup>3</sup></p>
@@ -83,8 +83,8 @@ ATOM  ID#  Element    MolecLabel  M/F  MolecID   x  y  z  mass  charge  polariza
 <p>14: <span class="math notranslate nohighlight">\(\sigma\)</span> (in Angstrom) for Lennard-Jones simulations or <span class="math notranslate nohighlight">\(\rho\)</span> (in Angstrom) for PHAHST simulations</p>
 <p>15: <span class="math notranslate nohighlight">\(\omega\)</span> (in a.u.) for many-body van der Waals interactions</p>
 <p>16: <span class="math notranslate nohighlight">\(\alpha\)</span> for gaussian wave packet Coulombic interactions (normally not needed)</p>
-<p>17-19: Dispersion coefficients for PHAHST simulations</p>
-<p>For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0. An excerpt of the PQR file from the second tutorial, BSSP H<sub>2</sub> sorption in MOF-5, is provided below as an example.</p>
+<p>17-19: Dispersion coefficients (in a.u.) for PHAHST simulations</p>
+<p>For typical Lennard-Jones simulations columns 15-19 are not needed and if omitted will default to 0. An excerpt of the PQR file from the tutorial 2, BSSP H<sub>2</sub> sorption in MOF-5, is provided below as an example.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ATOM      1 ZN   MOF F   1       7.568   5.314  -7.516  65.3900   1.8530  0.16000 62.39930  2.46200
 ATOM      2 ZN   MOF F   1       5.335  -5.287  -5.283  65.3900   1.8530  0.16000 62.39930  2.46200
 ATOM      3 ZN   MOF F   1       5.335   7.547   7.551  65.3900   1.8530  0.16000 62.39930  2.46200
@@ -101,8 +101,44 @@ ATOM    429 H2N  H2  M    2     -0.363  -0.000   0.000  0.00000  0.00000  0.0000
 </div>
 <div class="section" id="surface-fitting-files">
 <h2>Surface Fitting Files<a class="headerlink" href="#surface-fitting-files" title="Permalink to this headline">¶</a></h2>
+<p>The default surface fitting input consists of three Euler angles specifying the rotational configuration for each molecule in the dimer followed by a list of center-of-mass distances and their respective ab initio energies used in the fitting process. When using this style of surface fitting the input PQR file consists of the two molecules in the dimer with their center-of-mass at the origin. An example for CO<sub>2</sub> calculated at the CCSD(T)/CBS level is provided below:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>* Data for slip parallel orientation of CO2 dimer
+
+alpha1      0.3333333333 pi
+beta1       0.0
+gamma1      0.0
+
+alpha2      0.3333333333 pi
+beta2       0.0
+gamma2      0.0
+
+2.5  7911.3
+2.6  5866.4
+2.7  3581.48
+2.8  2002.818
+2.9  933.35671939
+3.0  227.08190367
+[...]
+</pre></div>
+</div>
 <div class="section" id="surf-multi-fit-files">
 <h3>Surf_multi_fit Files<a class="headerlink" href="#surf-multi-fit-files" title="Permalink to this headline">¶</a></h3>
+<p>The surf_multi_fit inputs are more general, able to handle an arbitrary number of atoms or molecules in arbitrary configurations. They begin with the word “Configuration”, followed by the ab initio energy, then a list of atoms in the system, with the format: atom type, molecule number, x, y, z, and partial charge. An example for an He dimer is shown below:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuration 1
+286570.1
+He 1   0 0 0 0
+He 2 0.529177 0 0 0
+Configuration 2
+173854.3
+He 1   0 0 0 0
+He 2 0.66147125 0 0 0
+Configuration 3
+104342.9
+He 1   0 0 0 0
+He 2 0.7937655 0 0 0
+[...]
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -162,7 +198,7 @@ ATOM    429 H2N  H2  M    2     -0.363  -0.000   0.000  0.00000  0.00000  0.0000
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on Apr 29, 2021.
+      Last updated on May 03, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>

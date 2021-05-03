@@ -21,20 +21,6 @@
 #define H2_R0 0.742                    /* equilibrium bond distance in angstroms */
 #define H2_SPRING_CONSTANT 35.2        /* harmonic spring constant at well minimum */
 
-/* DREIDING parameters */
-#define DREIDING_GAMMA 12.0
-
-/* Silvera-Goldman parameters */
-#define ALPHA 1.713   /* unitless */
-#define BETA 1.5671   /* 1/a.u. */
-#define GAMMA 0.00993 /* 1/a.u.^2 */
-#define C6 12.14      /* multipole term1 a.u.^6 */
-#define C8 215.2      /* multipole term2 a.u.^8 */
-#define C10 4813.9    /* multipole term3 a.u.^10 */
-#define C9 143.1      /* 3-body term a.u.^9 */
-#define RM 8.321      /* position of max well depth (a.u.) times 1.28 */
-//http://www.pnas.org/content/99/3/1129.full.pdf
-
 /* conversion factors */
 #define au2invseconds 4.13412763705666648752113572754445220741745180640e16
 #define AU2ANGSTROM 0.529177249 /* convert from Bohr radii to angstroms */

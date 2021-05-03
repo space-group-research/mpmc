@@ -9,6 +9,17 @@ University of South Florida
 
 #include <mc.h>
 
+/* Silvera-Goldman parameters */
+#define ALPHA 1.713   /* unitless */
+#define BETA 1.5671   /* 1/a.u. */
+#define GAMMA 0.00993 /* 1/a.u.^2 */
+#define C6 12.14      /* multipole term1 a.u.^6 */
+#define C8 215.2      /* multipole term2 a.u.^8 */
+#define C10 4813.9    /* multipole term3 a.u.^10 */
+#define C9 143.1      /* 3-body term a.u.^9 */
+#define RM 8.321      /* position of max well depth (a.u.) times 1.28 */
+//http://www.pnas.org/content/99/3/1129.full.pdf
+
 /* Silvera-Goldman H2 potential */
 double sg(system_t *system) {
     molecule_t *molecule_ptr;

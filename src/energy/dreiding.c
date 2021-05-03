@@ -9,6 +9,9 @@ University of South Florida
 
 #include <mc.h>
 
+/* DREIDING parameters */
+#define DREIDING_GAMMA 12.0
+
 /* dreiding potential */
 double dreiding(system_t *system) {
     molecule_t *molecule_ptr;

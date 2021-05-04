@@ -273,7 +273,7 @@ void quantum_rotational_grid(system_t *system, molecule_t *molecule) {
 
 /* find the rotational 1-body energies for each molecule in the system */
 void quantum_system_rotational_energies(system_t *system) {
-    int i;
+    int i, j;
     molecule_t *molecule_ptr;
 
     /* get the rotational eigenspectrum for each moveable molecule */
@@ -306,40 +306,41 @@ void quantum_system_rotational_energies(system_t *system) {
         }
     }
 
-#ifdef DEBUG
-    for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
-        if (!(molecule_ptr->frozen || molecule_ptr->adiabatic)) {
-            for (i = 0; i < system->quantum_rotation_level_max; i++) {
-                printf(
-                    "DEBUG_QROT: molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f meV or %.6f / B) ",
-                    molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i],
-                    molecule_ptr->quantum_rotational_energies[i] * KB / (100.0 * H * C),
-                    8.61733238e-2 * (molecule_ptr->quantum_rotational_energies[i] - molecule_ptr->quantum_rotational_energies[0]),
-                    molecule_ptr->quantum_rotational_energies[i] / system->quantum_rotation_B);
-
-                if (molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_SYMMETRIC)
+    if (system->quantum_rotation_print_eigenspectrum) {
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            if (!(molecule_ptr->frozen || molecule_ptr->adiabatic)) {
+                for (i = 0; i < system->quantum_rotation_level_max; i++) {
                     printf(
-                        "*** symmetric ***");
-                else if (molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_ANTISYMMETRIC)
-                    printf(
-                        "*** antisymmetric ***");
+                        "DEBUG_QROT: molecule #%d (%s) rotational level %d = %.6f K (%.6f cm^-1 or %.6f meV or %.6f / B) ",
+                        molecule_ptr->id, molecule_ptr->moleculetype, i, molecule_ptr->quantum_rotational_energies[i],
+                        molecule_ptr->quantum_rotational_energies[i] * KB / (100.0 * H * C),
+                        8.61733238e-2 * (molecule_ptr->quantum_rotational_energies[i] - molecule_ptr->quantum_rotational_energies[0]),
+                        molecule_ptr->quantum_rotational_energies[i] / system->quantum_rotation_B);
 
-                printf(
-                    "\n");
-            }
+                    if (molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_SYMMETRIC)
+                        printf(
+                            "*** symmetric ***");
+                    else if (molecule_ptr->quantum_rotational_eigensymmetry[i] == QUANTUM_ROTATION_ANTISYMMETRIC)
+                        printf(
+                            "*** antisymmetric ***");
 
-            for (i = 0; i < system->quantum_rotation_level_max; i++) {
-                printf(
-                    "DEBUG_QROT: molecule #%d (%s) eigenvec rot level %d\n", molecule_ptr->id, molecule_ptr->moleculetype, i);
-                for (j = 0; j < (system->quantum_rotation_l_max + 1) * (system->quantum_rotation_l_max + 1); j++)
                     printf(
-                        "\tj=%d %.6f %.6f\n", j, molecule_ptr->quantum_rotational_eigenvectors[i][j].real,
-                        molecule_ptr->quantum_rotational_eigenvectors[i][j].imaginary);
-                printf(
-                    "\n");
+                        "\n");
+                }
+
+                for (i = 0; i < system->quantum_rotation_level_max; i++) {
+                    printf(
+                        "DEBUG_QROT: molecule #%d (%s) eigenvec rot level %d\n", molecule_ptr->id, molecule_ptr->moleculetype, i);
+                    for (j = 0; j < (system->quantum_rotation_l_max + 1) * (system->quantum_rotation_l_max + 1); j++)
+                        printf(
+                            "\tj=%d %.6f %.6f\n", j, molecule_ptr->quantum_rotational_eigenvectors[i][j].real,
+                            molecule_ptr->quantum_rotational_eigenvectors[i][j].imaginary);
+                    printf(
+                        "\n");
+                }
             }
         }
     }
 
-#endif /* DEBUG */
+
 }

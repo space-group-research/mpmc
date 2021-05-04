@@ -1222,6 +1222,16 @@ int do_command(system_t *system, char **token) {
         else
             return 1;
     } else if (!strcasecmp(token[0],
+                         "quantum_rotation_print_eigenspectrum")) {
+        if (!strcasecmp(token[1],
+                        "on"))
+            system->quantum_rotation_print_eigenspectrum = 1;
+        else if (!strcasecmp(token[1],
+                             "off"))
+            system->quantum_rotation_print_eigenspectrum = 0;
+        else
+            return 1;
+    } else if (!strcasecmp(token[0],
                            "quantum_rotation_hindered")) {
         if (!strcasecmp(token[1],
                         "on"))

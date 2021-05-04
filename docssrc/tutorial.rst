@@ -52,11 +52,11 @@ Single Point Energy and Quantum Rotation Calculations
 =====================================================
 
 This folder contains the PQR files with the BSS model                                  
-located at all four H\ :sub:`2` sorption sites in MOF-5 (alpha. beta, gamma, and delta).                               
+located at all four H\ :sub:`2` sorption sites in MOF-5 (alpha, beta, gamma, and delta).                               
 An input file to run the quantum rotation calculations is also included in the                                
 folder. Note that running quantum rotations calculations is predicated upon                                 
 turning the quantum rotations part of the code on when compiling MPMC. By                                     
-executing quantum rotation calculations on the four H\ :sub:`2` sorption sites, you                                    
+executing quantum rotation calculations on the four H\ :sub:`2` sorption sites (by varying :code:`pqr_input`), you                                    
 should obtain rotational levels that are very close to those shown in Table 1                                 
 of Ivana's JCP 2012 paper (see link) for the respective sites. Note that the :code:`total_energy`
 ensemble here calculates the potential energy (and rotational eigenspectrum) but does not perform any

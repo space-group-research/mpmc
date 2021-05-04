@@ -436,7 +436,7 @@ typedef struct _system {
     molecule_t **insertion_molecules_array;  // array providing direct access to elements of above list
 
     // quantum rotation stuff
-    int quantum_rotation, quantum_rotation_hindered;
+    int quantum_rotation, quantum_rotation_hindered, quantum_rotation_print_eigenspectrum;
     double quantum_rotation_B;
     double quantum_rotation_hindered_barrier;
     int quantum_rotation_level_max, quantum_rotation_l_max, quantum_rotation_theta_max, quantum_rotation_phi_max, quantum_rotation_sum;

@@ -69,10 +69,10 @@ uVT Options
     :widths: 20,40
 
     "pressure [double]", "Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). **(required for NPT/uVT Monte Carlo)**"
-    "h2_fugacity [on|off]", "Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) **(default = off)**"
-    "co2_fugacity [on|off]", "Used for converting pressure to fugacity of CO2 uVT simulations. (Peng-Robinson) **(default = off)**"
-    "ch4_fugacity [on|off]", "Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) **(default = off)**"
-    "n2_fugacity [on|off]", "Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) **(default = off)**"
+    "h2_fugacity [on|off]", "Used for converting pressure to fugacity of H\ :sub:`2` uVT simulations. (Zhou/Shaw/BACK depending on state point) **(default = off)**"
+    "co2_fugacity [on|off]", "Used for converting pressure to fugacity of CO\ :sub:`2` uVT simulations. (Peng-Robinson) **(default = off)**"
+    "ch4_fugacity [on|off]", "Used for converting pressure to fugacity of CH\ :sub:`4` uVT simulations. (Peng-Robinson/BACK depending on state point) **(default = off)**"
+    "n2_fugacity [on|off]", "Used for converting pressure to fugacity of N\ :sub:`2` uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) **(default = off)**"
     "user_fugacities [double] ([double]) ([double]) (...)", "Specifies the fugacities for species in insert_input. Accepts up to eight arguments."
     "insert_probability [double]", "In a uVT simulation, the probability to randomly choose an insertion/deletion move over a translational/rotational move. **(default = 0.0)**"
     "free_volume [double]", "Used for statistics calculations in MOF sorption simulations."
@@ -277,9 +277,10 @@ Quantum Rotation Commands
     :widths: 20,40
 
     "quantum_rotation [on|off]", "Enables quantum rotational eigenspectrum calculation. **(default = off)**"
+    "quantum_rotation_print_eigenspectrum [on|off]", "Prints quantum rotational eigenspectrum to stdout **(default = off)**"
     "quantum_rotation_hindered [on|off]", "Calculates the rotational energy levels using the hindered potential :math:`\textrm{sin}^2 \theta`. **(default = off)**"
-    "quantum_rotation_hindered_barrier [double]", ""
-    "quantum_rotation_B [double]", "Sets the rotational constant. For H2, it is 85.35060622 Kelvin."
+    "quantum_rotation_hindered_barrier [double]", "Barrier height for the hundered potential."
+    "quantum_rotation_B [double]", "Sets the rotational constant. For H\ :sub:`2`, it is 85.35060622 Kelvin."
     "quantum_rotation_level_max [int]", "Number of rotational energy levels to solve for (Equal to (l_max + 1)2). **(default = 36)**"
     "quantum_rotation_l_max [int]", "Number of rotational energy levels to solve for (Equal to (l_max + 1)2). **(default = 36)**"
     "quantum_rotation_sum [int]", "Number of rotational energy levels to sum over. **(default = 10)**"

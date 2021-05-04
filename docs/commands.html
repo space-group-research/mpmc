@@ -191,16 +191,16 @@
 <td><p>Sets the initial pressure for NPT and uVT simulations. In uVT the pressure is converted to a fugacity via a fugacity option or assuming the ideal gas limit (P==f). <strong>(required for NPT/uVT Monte Carlo)</strong></p></td>
 </tr>
 <tr class="row-odd"><td><p>h2_fugacity [on|off]</p></td>
-<td><p>Used for converting pressure to fugacity of H2 uVT simulations. (Zhou/Shaw/BACK depending on state point) <strong>(default = off)</strong></p></td>
+<td><p>Used for converting pressure to fugacity of H<sub>2</sub> uVT simulations. (Zhou/Shaw/BACK depending on state point) <strong>(default = off)</strong></p></td>
 </tr>
 <tr class="row-even"><td><p>co2_fugacity [on|off]</p></td>
-<td><p>Used for converting pressure to fugacity of CO2 uVT simulations. (Peng-Robinson) <strong>(default = off)</strong></p></td>
+<td><p>Used for converting pressure to fugacity of CO<sub>2</sub> uVT simulations. (Peng-Robinson) <strong>(default = off)</strong></p></td>
 </tr>
 <tr class="row-odd"><td><p>ch4_fugacity [on|off]</p></td>
-<td><p>Used for converting pressure to fugacity of CH4 uVT simulations. (Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></p></td>
+<td><p>Used for converting pressure to fugacity of CH<sub>4</sub> uVT simulations. (Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></p></td>
 </tr>
 <tr class="row-even"><td><p>n2_fugacity [on|off]</p></td>
-<td><p>Used for converting pressure to fugacity of N2 uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></p></td>
+<td><p>Used for converting pressure to fugacity of N<sub>2</sub> uVT simulations. (Zhou/Peng-Robinson/BACK depending on state point) <strong>(default = off)</strong></p></td>
 </tr>
 <tr class="row-odd"><td><p>user_fugacities [double] ([double]) ([double]) (…)</p></td>
 <td><p>Specifies the fugacities for species in insert_input. Accepts up to eight arguments.</p></td>
@@ -703,25 +703,28 @@
 <tr class="row-even"><td><p>quantum_rotation [on|off]</p></td>
 <td><p>Enables quantum rotational eigenspectrum calculation. <strong>(default = off)</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p>quantum_rotation_hindered [on|off]</p></td>
+<tr class="row-odd"><td><p>quantum_rotation_print_eigenspectrum [on|off]</p></td>
+<td><p>Prints quantum rotational eigenspectrum to stdout <strong>(default = off)</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>quantum_rotation_hindered [on|off]</p></td>
 <td><p>Calculates the rotational energy levels using the hindered potential <span class="math notranslate nohighlight">\(\textrm{sin}^2 \theta\)</span>. <strong>(default = off)</strong></p></td>
 </tr>
-<tr class="row-even"><td><p>quantum_rotation_hindered_barrier [double]</p></td>
-<td></td>
+<tr class="row-odd"><td><p>quantum_rotation_hindered_barrier [double]</p></td>
+<td><p>Barrier height for the hundered potential.</p></td>
 </tr>
-<tr class="row-odd"><td><p>quantum_rotation_B [double]</p></td>
-<td><p>Sets the rotational constant. For H2, it is 85.35060622 Kelvin.</p></td>
+<tr class="row-even"><td><p>quantum_rotation_B [double]</p></td>
+<td><p>Sets the rotational constant. For H<sub>2</sub>, it is 85.35060622 Kelvin.</p></td>
 </tr>
-<tr class="row-even"><td><p>quantum_rotation_level_max [int]</p></td>
+<tr class="row-odd"><td><p>quantum_rotation_level_max [int]</p></td>
 <td><p>Number of rotational energy levels to solve for (Equal to (l_max + 1)2). <strong>(default = 36)</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p>quantum_rotation_l_max [int]</p></td>
+<tr class="row-even"><td><p>quantum_rotation_l_max [int]</p></td>
 <td><p>Number of rotational energy levels to solve for (Equal to (l_max + 1)2). <strong>(default = 36)</strong></p></td>
 </tr>
-<tr class="row-even"><td><p>quantum_rotation_sum [int]</p></td>
+<tr class="row-odd"><td><p>quantum_rotation_sum [int]</p></td>
 <td><p>Number of rotational energy levels to sum over. <strong>(default = 10)</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p>quantum_vibration [on|off]</p></td>
+<tr class="row-even"><td><p>quantum_vibration [on|off]</p></td>
 <td><p><strong>(default = off)</strong></p></td>
 </tr>
 </tbody>

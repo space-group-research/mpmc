@@ -40,7 +40,7 @@
             
   <div class="section" id="tutorials">
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
-<p>A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory.</p>
+<p>A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory. A brief description of each folder follows, it is encouraged to cross reference the input files with the <a class="reference internal" href="commands.html"><span class="doc">Commands</span></a> page and to run each example yourself.</p>
 <div class="section" id="bss-h2-mof-5-simulation-uvt">
 <h2>BSS H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bss-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a basic electrostatic/Lennard-Jones-based simulation of H<sub>2</sub> sorption in MOF-5 (using the BSS H<sub>2</sub> model and UFF parameters on MOF-5). The simulation may be started by simply invoking <code class="code docutils literal notranslate"><span class="pre">mpmc</span> <span class="pre">MOF5+BSS.inp</span></code>. Every corrtime steps averages are output to stdout, including the average potential energy, number of molecules sorbed, Qst, timing information, etc.</p>
@@ -79,11 +79,11 @@ C_{2n,ij} &amp;= \sqrt{C_{2n,ii} C_{2n,jj}}\end{split}\]</div>
 <div class="section" id="single-point-energy-and-quantum-rotation-calculations">
 <h2>Single Point Energy and Quantum Rotation Calculations<a class="headerlink" href="#single-point-energy-and-quantum-rotation-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This folder contains the PQR files with the BSS model
-located at all four H<sub>2</sub> sorption sites in MOF-5 (alpha. beta, gamma, and delta).
+located at all four H<sub>2</sub> sorption sites in MOF-5 (alpha, beta, gamma, and delta).
 An input file to run the quantum rotation calculations is also included in the
 folder. Note that running quantum rotations calculations is predicated upon
 turning the quantum rotations part of the code on when compiling MPMC. By
-executing quantum rotation calculations on the four H<sub>2</sub> sorption sites, you
+executing quantum rotation calculations on the four H<sub>2</sub> sorption sites (by varying <code class="code docutils literal notranslate"><span class="pre">pqr_input</span></code>), you
 should obtain rotational levels that are very close to those shown in Table 1
 of Ivana’s JCP 2012 paper (see link) for the respective sites. Note that the <code class="code docutils literal notranslate"><span class="pre">total_energy</span></code>
 ensemble here calculates the potential energy (and rotational eigenspectrum) but does not perform any
@@ -92,34 +92,26 @@ Monte Carlo steps.</p>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-fit">
 <h2>Potential Energy Surface Fitting (surf_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit" title="Permalink to this headline">¶</a></h2>
-<p>These are sample inputs for fitting noble gases in MPMC.</p>
-<p>Use, for example,</p>
-<p>/path/to/mpmc helium_fitting.input</p>
-<p>to run.</p>
-<p>All 3 files are required to run PES
-*.input (MPMC input)
-*.pqr (initial parameters/coordinates)
-*.dat (PES input data)</p>
+<p>These are sample inputs for fitting an Argon potential energy surface in MPMC using the default fitting code. An additional file (or files) is needed to specify the ab initio surface to fit to. The files are as follows:</p>
+<ul class="simple">
+<li><p>*.input (MPMC input)</p></li>
+<li><p>*.pqr (initial parameters/coordinates)</p></li>
+<li><p>*.dat (PES input data)</p></li>
+</ul>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-multi-fit">
 <h2>Potential Energy Surface Fitting (surf_multi_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-multi-fit" title="Permalink to this headline">¶</a></h2>
+<p>These are sample inputs for fitting an argon potential using the <code class="code docutils literal notranslate"><span class="pre">surf_fit</span></code> fitting code. A slightly different (and more accurate) ab initio surface is used. The files are as follows:</p>
+<ul class="simple">
+<li><p>*.input (MPMC input)</p></li>
+<li><p>*.pqr (initial parameters/)</p></li>
+<li><p>configs.out (PES input data)</p></li>
+</ul>
 </div>
 <div class="section" id="multisorbate-uvt">
 <h2>Multisorbate uVT<a class="headerlink" href="#multisorbate-uvt" title="Permalink to this headline">¶</a></h2>
 <p>These input files will run a multi-sorbate simulation in an rht-MOF (NOTT-112).
-The two sorbates are H2 (BSSP) and CO2 (PHAST). I have done 3 sorbates in this
-system with success (e.g. N2). Pretty sure code is generalized to any number of
-sorbates.</p>
-<p>Files
-1. insert.pqr
-Only needed for multi-sorbate simulations (for gas sorption)
-Includes the sorbate models to be included
-2. input.pqr
-Includes the MOF coordinates and initial sorbate (only 1 is needed)
-3. *.inp
-The actual MPMC input file, which cites the above 2 sub-inputs.</p>
-<p>This is one of the largest (in phase-space and atom count) systems we’ve ever
-worked on, so it takes a while. Especially for large corrtime in *.inp.</p>
+The two sorbates are H2 (BSSP) and CO2 (PHAST). In multi-sorbate simulations a separate PQR file containing the molecules to be inserted/deleted needs to provided, insert.pqr here. Note this system is rather large and treated with explicit polarization so averages will take a relatively long time to converge.</p>
 </div>
 <div class="section" id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
 <h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with NVIDIA CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>

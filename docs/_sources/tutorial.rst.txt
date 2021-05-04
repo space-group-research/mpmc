@@ -1,7 +1,7 @@
 Tutorials
 *********
 
-A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory.
+A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory. A brief description of each folder follows, it is encouraged to cross reference the input files with the :doc:`commands` page and to run each example yourself.
 
 BSS H\ :sub:`2` + MOF-5 Simulation (uVT)
 ========================================
@@ -52,11 +52,11 @@ Single Point Energy and Quantum Rotation Calculations
 =====================================================
 
 This folder contains the PQR files with the BSS model                                  
-located at all four H\ :sub:`2` sorption sites in MOF-5 (alpha. beta, gamma, and delta).                               
+located at all four H\ :sub:`2` sorption sites in MOF-5 (alpha, beta, gamma, and delta).                               
 An input file to run the quantum rotation calculations is also included in the                                
 folder. Note that running quantum rotations calculations is predicated upon                                 
 turning the quantum rotations part of the code on when compiling MPMC. By                                     
-executing quantum rotation calculations on the four H\ :sub:`2` sorption sites, you                                    
+executing quantum rotation calculations on the four H\ :sub:`2` sorption sites (by varying :code:`pqr_input`), you                                    
 should obtain rotational levels that are very close to those shown in Table 1                                 
 of Ivana's JCP 2012 paper (see link) for the respective sites. Note that the :code:`total_energy`
 ensemble here calculates the potential energy (and rotational eigenspectrum) but does not perform any
@@ -67,41 +67,26 @@ Paper: http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906
 Potential Energy Surface Fitting (surf_fit)
 ===========================================
 
-These are sample inputs for fitting noble gases in MPMC.
+These are sample inputs for fitting an Argon potential energy surface in MPMC using the default fitting code. An additional file (or files) is needed to specify the ab initio surface to fit to. The files are as follows:
 
-Use, for example,
-
-/path/to/mpmc helium_fitting.input
-
-to run.
-
-All 3 files are required to run PES
-\*.input (MPMC input)
-\*.pqr (initial parameters/coordinates)
-\*.dat (PES input data)
+* \*.input (MPMC input)
+* \*.pqr (initial parameters/coordinates)
+* \*.dat (PES input data)
 
 Potential Energy Surface Fitting (surf_multi_fit)
 ==============================================================
+
+These are sample inputs for fitting an argon potential using the :code:`surf_fit` fitting code. A slightly different (and more accurate) ab initio surface is used. The files are as follows:
+
+* \*.input (MPMC input)
+* \*.pqr (initial parameters/)
+* configs.out (PES input data)
 
 Multisorbate uVT
 ================
 
 These input files will run a multi-sorbate simulation in an rht-MOF (NOTT-112).
-The two sorbates are H2 (BSSP) and CO2 (PHAST). I have done 3 sorbates in this
-system with success (e.g. N2). Pretty sure code is generalized to any number of
-sorbates.
-
-Files
-1. insert.pqr
-Only needed for multi-sorbate simulations (for gas sorption)
-Includes the sorbate models to be included
-2. input.pqr
-Includes the MOF coordinates and initial sorbate (only 1 is needed)
-3. \*.inp
-The actual MPMC input file, which cites the above 2 sub-inputs.
-
-This is one of the largest (in phase-space and atom count) systems we've ever
-worked on, so it takes a while. Especially for large corrtime in \*.inp.
+The two sorbates are H2 (BSSP) and CO2 (PHAST). In multi-sorbate simulations a separate PQR file containing the molecules to be inserted/deleted needs to provided, insert.pqr here. Note this system is rather large and treated with explicit polarization so averages will take a relatively long time to converge.
 
 BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with NVIDIA CUDA
 =========================================================

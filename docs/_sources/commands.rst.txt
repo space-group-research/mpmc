@@ -151,6 +151,8 @@ Potential Commands
     "scale_charge [double]", "Scales the charges on all frozen atoms."
     "rd_lrc [on|off]", "Turns on long-range corrections to repulsion/dispersion energies via integration from r_cutoff to infinity. **(default = on)**"
     "rd_only [on|off]", "Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) **(default = off)**"
+    "sg [on|off]", "Silvera-Goldman potential (hard coded, see src/energy/sg.c for details). **(default = off)**"
+    "dreiding [on|off]", "Dreiding potential. (see src/energy/dreiding.c for details) **(default = off)**"
 
 Lennard-Jones Mixing Rules
 --------------------------
@@ -239,15 +241,13 @@ None of these are guaranteed to work.\
     :header: "Command","Description"
     :widths: 20,40
 
-    "sg [on|off]", "Silvera-Goldman potential. **(default = off)**"
-    "dreiding [on|off]", "Dreiding potential. **(default = off)**"
     "spectre [on|off]", "??? **(default = off)**"
     "spectre_max_charge [double]", ""
     "spectre_max_target [double]", ""
-    "rd_anharmonic [on|off]", "??? Turns on 1D bonded RD potential or something? **(default = off)**"
+    "rd_anharmonic [on|off]", "1-dimensional anharmonic spring potential. **(default = off)**"
     "rd_anharmonic_k [double]", "Harmonic term (order 2)."
     "rd_anharmonic_g [double]", "Anharmonic term (order 4)."
-    "feynman_kleinert [on|off]", "??? Iterative Feynman-Kleinert correction for anharmonic bond potential. **(default = off)**"
+    "feynman_kleinert [on|off]", "Iterative Feynman-Kleinert correction for anharmonic bond potential. **(default = off)**"
 
 Annealing / Tempering Commands
 ==============================

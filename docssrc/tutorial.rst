@@ -1,57 +1,62 @@
 Tutorials
 *********
 
-A series of example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory. All 
+A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory.
 
-Bulk BSS H\ :sub:`2` Simulation (NVT)
-=====================================
+BSS H\ :sub:`2` + MOF-5 Simulation (uVT)
+========================================
 
-Basic LJ/ES bulk sorption modeling for H2 (using BSS model).
+This is a basic electrostatic/Lennard-Jones-based simulation of H\ :sub:`2` sorption in MOF-5 (using the BSS H\ :sub:`2` model and UFF parameters on MOF-5). The simulation may be started by simply invoking :code:`mpmc MOF5+BSS.inp`. Every corrtime steps averages are output to stdout, including the average potential energy, number of molecules sorbed, Qst, timing information, etc.
 
-(repulsion-dispersion + electrostatics only; no polarizaion)
+
+Several different output files are created in the simulation directory by default:
+
+\*.traj.pqr - this is the entire trajectory of the system at every corrtime
+\*.restart.pqr - this is the most recent snapshot of the system
+\*.final.pqr - output upon completion of the simulation, this is the last snapshot of the system
+histogram.dat - this is a histogram of sorbate positions in the .dx format
+frozen.dx - this is the frozen (MOF-5) atoms in the .dx format
 
 BSSP H\ :sub:`2` + MOF-5 Simulation (uVT)
 =========================================
 
-Basic Polarized bulk sorption modeling for H2 (using BSSP model).
-
-(U = repulsion-dispersion + electrostatics + polarization)
+This is a very similar simulation to the first tutorial with the main difference arising from the use of the BSSP polarizable H\ :sub:`2` model. The polarizability options in this input file should be robust for most situations, it is advised to double check the polar_max_iter produces a converged polarization energy when simulating in a novel system however.
 
 PHAHST H\ :sub:`2` + HKUST-1 Simulation (uVT)
 =============================================
 
+This is a similar simulation to the second tutorial with the Lennard-Jones repulsion/dispersion potential replaced by physically ground exponential repulsion/damped dispersion potential:
+
+.. math::
+
+    U_{rd} &= \sum_{i \neq j} \frac{F_0}{\beta_{ij}}e^{\beta_{ij}(r_{ij}-\rho_{ij})}+\sum_{n=3}^5 f_{2n}(\beta r_{ij} ) \frac{C_{2n}}{r_{ij}^{2n}} \\
+    f_{2n}( \beta r_{ij} ) &= 1 - e^{-\beta r_{ij}} \sum_{k=0}^{2n} \frac{(\beta r_{ij})^k}{k!} \\
+    \rho_{ij} &= \frac{1}{2}(\rho_{ii} + \rho_{jj}) \\
+    \beta_{ij} &= 2 \frac{\beta_{ii} \beta_{jj}}{\beta_{ii}+\beta_{jj}}
+
+The use of the cavity_autoreject_repulsion and polar_precision options ensure that nuclear fusion doesn't happen due to a polarization catastrophe and finite exponential repulsion potential energy. For more information on the PHAHST force field please see: https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837\ .
+
 Simulated Annealing
 ===================
 
-This is a sample simulated annealing (using NVT) script for the MOF NOTT-112.
-Two files are included.
-
-input.pqr (1) contains the MOF with a single H2 molecule about 2.5A from
-the CuC open metal site.
-
-sa.inp (2) contains instructions for MPMC to run the annealing, starting from
-40K and decreasing the temperature by a factor of 0.99999 each MC step. Pressure
-is kept constant at 0.1atm.
-
-S.A. generally takes less time than uptake simulations for several reasons:
-Being an NVT model, the number of sorbate molecules is fixed (e.g. at 1)
-The simluation need not 'equilibrate'; only run until a desired final 
-temperature is reached.
+This is a sample simulated annealing script for the MOF NOTT-112. Simulated annealing is typically used to identify minimums in the potential energy surface, i.e. binding sites in material simulations. The input pqr contains the MOF with a single H\ :sub:`2` molecule about 2.5 angstrom from the CuC open metal site. The temperature starts at 40 K and is decreased by a factor of 0.99999 each MC step.
 
 Replaying a Trajectory
 ======================
 
+The "replay" ensemble takes in a \*.traj.pqr file, either produced from a previous run or created artificially, and recalculates averages without running a simulation. This is useful in case some quantity needs to be recalculated without running a full simulation. The provided \*.traj.pqr file was produced from the first tutorial.
+
 Single Point Energy and Quantum Rotation Calculations
 =====================================================
 
-Included is a TGZ file containing the PDB files with the BSS model                                  
+This folder contains the PQR files with the BSS model                                  
 located at all four H2 sorption sites in MOF-5 (alpha. beta, gamma, and delta).                               
 An input file to run the quantum rotation calculations is also included in the                                
-TGZ file. Note that running quantum rotations calculations is predicated upon                                 
+folder. Note that running quantum rotations calculations is predicated upon                                 
 turning the quantum rotations part of the code on when compiling MPMC. By                                     
 executing quantum rotation calculations on the four H2 sorption sites, you                                    
 should obtain rotational levels that are very close to those shown in Table 1                                 
-of Ivana's JCP 2012 paper (see included paper) for the respective sites. 
+of Ivana's JCP 2012 paper (see link) for the respective sites. 
 
 Paper: http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906
 
@@ -71,7 +76,7 @@ All 3 files are required to run PES
 \*.pqr (initial parameters/coordinates)
 \*.dat (PES input data)
 
-Potential Energy Surface Fitting (surf_fit and surf_multi_fit)
+Potential Energy Surface Fitting (surf_multi_fit)
 ==============================================================
 
 Multisorbate uVT
@@ -97,15 +102,14 @@ worked on, so it takes a while. Especially for large corrtime in \*.inp.
 BSSP H\ :sub:`2` + MOF5 Simulation (uVT) with NVIDIA CUDA
 =========================================================
 
+This is the second tutorial with the sole exception of the switch :code:`cuda on`. MPMC needs to be compiled with cuda and a cuda capable GPU must be present.
+
 1D Chain Replay
 ===============
 
-Here we use 'ensemble replay' to read in a series of increasingly
-larger 1D-chain samples (starting from 2-atoms and up to 512).
-
-Each component of the energy is re-calcualte for each sample, for
-various potential options (one sec of potential options per input
-file). One may take the energy output files and process them (via scale.sh) to 
+Here we use :code:`ensemble replay` to read in a series of increasingly
+larger 1D-chain samples (starting from 2-atoms and up to 512). Each component of the energy is re-calculated for each sample, for
+various potential options (the different input files). One may take the energy output files and process them (via scale.sh) to 
 check for the small-size scalability and accuracy of our calculations.
 
 3D Chain Replay
@@ -114,7 +118,7 @@ check for the small-size scalability and accuracy of our calculations.
 Here we use 'ensemble replay' to read in a series of increasingly
 larger crystal samples (starting from 2-atoms and up to 1024).
 
-Each component of the energy is re-calcualte for each sample, for
-various potential options (one sec of potential options per input
-file). One may take the energy output files and process them (via scale.sh) to 
+Each component of the energy is re-calculated for each sample, for
+various potential options (the different input files). One may take the energy output files and process them (via scale.sh) to 
 check for the small-size scalability and accuracy of our calculations.
+

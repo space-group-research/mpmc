@@ -28,4 +28,7 @@ basis2                          0.0     25.669  0.0
 basis3                          0.0     0.0     25.669
 
 wrapall                         on
-pqr_input                       input.pqr
+pqr_input                       MOF5+alpha.pqr
+#pqr_input                       MOF5+beta.pqr
+#pqr_input                       MOF5+delta.pqr
+#pqr_input                       MOF5+alpha.pqr

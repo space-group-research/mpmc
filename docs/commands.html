@@ -393,6 +393,12 @@
 <tr class="row-even"><td><p>rd_only [on|off]</p></td>
 <td><p>Only calculate repulsion/dispersion energies. (excludes coupled dipole vdW) <strong>(default = off)</strong></p></td>
 </tr>
+<tr class="row-odd"><td><p>sg [on|off]</p></td>
+<td><p>Silvera-Goldman potential (hard coded, see src/energy/sg.c for details). <strong>(default = off)</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>dreiding [on|off]</p></td>
+<td><p>Dreiding potential. (see src/energy/dreiding.c for details) <strong>(default = off)</strong></p></td>
+</tr>
 </tbody>
 </table>
 <div class="section" id="lennard-jones-mixing-rules">
@@ -603,12 +609,6 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>sg [on|off]</p></td>
-<td><p>Silvera-Goldman potential. <strong>(default = off)</strong></p></td>
-</tr>
-<tr class="row-odd"><td><p>dreiding [on|off]</p></td>
-<td><p>Dreiding potential. <strong>(default = off)</strong></p></td>
-</tr>
 <tr class="row-even"><td><p>spectre [on|off]</p></td>
 <td><p>??? <strong>(default = off)</strong></p></td>
 </tr>
@@ -619,7 +619,7 @@
 <td></td>
 </tr>
 <tr class="row-odd"><td><p>rd_anharmonic [on|off]</p></td>
-<td><p>??? Turns on 1D bonded RD potential or something? <strong>(default = off)</strong></p></td>
+<td><p>1-dimensional anharmonic spring potential. <strong>(default = off)</strong></p></td>
 </tr>
 <tr class="row-even"><td><p>rd_anharmonic_k [double]</p></td>
 <td><p>Harmonic term (order 2).</p></td>
@@ -628,7 +628,7 @@
 <td><p>Anharmonic term (order 4).</p></td>
 </tr>
 <tr class="row-even"><td><p>feynman_kleinert [on|off]</p></td>
-<td><p>??? Iterative Feynman-Kleinert correction for anharmonic bond potential. <strong>(default = off)</strong></p></td>
+<td><p>Iterative Feynman-Kleinert correction for anharmonic bond potential. <strong>(default = off)</strong></p></td>
 </tr>
 </tbody>
 </table>
@@ -948,7 +948,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 01, 2021.
+      Last updated on May 03, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>

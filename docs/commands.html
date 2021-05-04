@@ -863,7 +863,11 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>traj_pqr2pdb</p></td>
-<td><p>Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you’re just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You’ll do so like this: <br /> <br />[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd <br /> <br />More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. <br /> <br />Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</p></td>
+<td><p>Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you’re just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You’ll do so like this:</p>
+<p>[<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ ./traj_pqr2pdb.sh INPUT.pqr &gt; OUTPUT.pdb [<a class="reference external" href="mailto:user&#37;&#52;&#48;machine">user<span>&#64;</span>machine</a>]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd</p>
+<p>More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision.</p>
+<p>Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -948,7 +952,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 03, 2021.
+      Last updated on May 04, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>

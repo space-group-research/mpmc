@@ -1,10 +1,6 @@
 Commands
 ********
 
-.. |br| raw:: html
-
-   <br />
-
 Main Commands
 =============
 
@@ -343,7 +339,13 @@ External Tools
     :header: "Tool","Description"
     :widths: 20,40
 
-    "traj_pqr2pdb", "Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you're just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You'll do so like this: |br| |br|\
-    [user@machine]$ ./traj_pqr2pdb.sh INPUT.pqr > OUTPUT.pdb [user@machine]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd |br| |br|\
-    More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision. |br| |br|\
+    "traj_pqr2pdb", "Designed a workaround for viewing long_output PQR trajectories in VMD! This is useful for ultra-dense systems, or if you're just precision obsessed like me :D. The shell script (traj_pqr2pdb.sh) will convert your PQR to a PDB trajectory, which you can then read into VMD. You'll do so like this:
+    
+    
+    [user@machine]$ ./traj_pqr2pdb.sh INPUT.pqr > OUTPUT.pdb [user@machine]$ vmd OUTPUT.pdb -e traj_pqr2pdb.vmd
+    
+    
+    More specifically, the shell script will temporarily reduce the precision of your atomic coordinates (.6f) to .3f, and store that removed precision in another column of the file. The PDB that is created is a readable trajectory file by VMD. The secondary script that you load into VMD along with the PDB will reassign the atomic coordinates of each atom, in each frame, restoring the precision.
+    
+    
     Note: Although the file mode bits should be preserved, the shell script should be executable but the vmd script should not be."

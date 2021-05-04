@@ -45,44 +45,49 @@
 <h2>BSS H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bss-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a basic electrostatic/Lennard-Jones-based simulation of H<sub>2</sub> sorption in MOF-5 (using the BSS H<sub>2</sub> model and UFF parameters on MOF-5). The simulation may be started by simply invoking <code class="code docutils literal notranslate"><span class="pre">mpmc</span> <span class="pre">MOF5+BSS.inp</span></code>. Every corrtime steps averages are output to stdout, including the average potential energy, number of molecules sorbed, Qst, timing information, etc.</p>
 <p>Several different output files are created in the simulation directory by default:</p>
-<p>*.traj.pqr - this is the entire trajectory of the system at every corrtime
-*.restart.pqr - this is the most recent snapshot of the system
-*.final.pqr - output upon completion of the simulation, this is the last snapshot of the system
-histogram.dat - this is a histogram of sorbate positions in the .dx format
-frozen.dx - this is the frozen (MOF-5) atoms in the .dx format</p>
+<ul class="simple">
+<li><p>*.traj.pqr - this is the entire trajectory of the system at every corrtime</p></li>
+<li><p>*.restart.pqr - this is the most recent snapshot of the system</p></li>
+<li><p>*.final.pqr - output upon completion of the simulation, this is the last snapshot of the system</p></li>
+<li><p>histogram.dat - this is a histogram of sorbate positions in the .dx format</p></li>
+<li><p>frozen.dx - this is the frozen (MOF-5) atoms in the .dx format</p></li>
+</ul>
 </div>
 <div class="section" id="bssp-h2-mof-5-simulation-uvt">
 <h2>BSSP H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bssp-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
-<p>This is a very similar simulation to the first tutorial with the main difference arising from the use of the BSSP polarizable H<sub>2</sub> model. The polarizability options in this input file should be robust for most situations, it is advised to double check the polar_max_iter produces a converged polarization energy when simulating in a novel system however.</p>
+<p>This is a very similar simulation to the first tutorial with the main difference arising from the use of the BSSP polarizable H<sub>2</sub> model. The polarizability options in this input file should be robust for most situations, it is advised to double check the <code class="code docutils literal notranslate"><span class="pre">polar_max_iter</span></code> produces a converged polarization energy when simulating in a novel system however.</p>
 </div>
 <div class="section" id="phahst-h2-hkust-1-simulation-uvt">
 <h2>PHAHST H<sub>2</sub> + HKUST-1 Simulation (uVT)<a class="headerlink" href="#phahst-h2-hkust-1-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a similar simulation to the second tutorial with the Lennard-Jones repulsion/dispersion potential replaced by physically ground exponential repulsion/damped dispersion potential:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}U_{rd} &amp;= \sum_{i \neq j} \frac{F_0}{\beta_{ij}}e^{\beta_{ij}(r_{ij}-\rho_{ij})}+\sum_{n=3}^5 f_{2n}(\beta r_{ij} ) \frac{C_{2n}}{r_{ij}^{2n}} \\
+\[\begin{split}U_{rd} &amp;= \sum_{i \neq j} \frac{F_0}{\beta_{ij}}e^{\beta_{ij}(r_{ij}-\rho_{ij})}+\sum_{n=3}^5 f_{2n}(\beta r_{ij} ) \frac{C_{2n,ij}}{r_{ij}^{2n}} \\
 f_{2n}( \beta r_{ij} ) &amp;= 1 - e^{-\beta r_{ij}} \sum_{k=0}^{2n} \frac{(\beta r_{ij})^k}{k!} \\
 \rho_{ij} &amp;= \frac{1}{2}(\rho_{ii} + \rho_{jj}) \\
-\beta_{ij} &amp;= 2 \frac{\beta_{ii} \beta_{jj}}{\beta_{ii}+\beta_{jj}}\end{split}\]</div>
-<p>The use of the cavity_autoreject_repulsion and polar_precision options ensure that nuclear fusion doesn’t happen due to a polarization catastrophe and finite exponential repulsion potential energy. For more information on the PHAHST force field please see: <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837">https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837</a>.</p>
+\beta_{ij} &amp;= 2 \frac{\beta_{ii} \beta_{jj}}{\beta_{ii}+\beta_{jj}}\\
+C_{2n,ij} &amp;= \sqrt{C_{2n,ii} C_{2n,jj}}\end{split}\]</div>
+<p>The use of the <code class="code docutils literal notranslate"><span class="pre">cavity_autoreject_repulsion</span></code> and <code class="code docutils literal notranslate"><span class="pre">polar_precision</span></code> options ensure that nuclear fusion doesn’t happen due to a polarization catastrophe and finite exponential repulsion potential energy. For more information on the PHAHST force field please see: <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837">https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837</a>.</p>
 </div>
 <div class="section" id="simulated-annealing">
 <h2>Simulated Annealing<a class="headerlink" href="#simulated-annealing" title="Permalink to this headline">¶</a></h2>
-<p>This is a sample simulated annealing script for the MOF NOTT-112. Simulated annealing is typically used to identify minimums in the potential energy surface, i.e. binding sites in material simulations. The input pqr contains the MOF with a single H<sub>2</sub> molecule about 2.5 angstrom from the CuC open metal site. The temperature starts at 40 K and is decreased by a factor of 0.99999 each MC step.</p>
+<p>This is a sample simulated annealing script for H<sub>2</sub> in the MOF NOTT-112. Simulated annealing is typically used to identify minimums in the potential energy surface, i.e. binding sites in material simulations. The input pqr contains the MOF with a single H<sub>2</sub> molecule about 2.5 angstrom from the CuC open metal site. The temperature starts at 40 K and is decreased by a factor of 0.99999 each MC step. At the end of the simulation the H<sub>2</sub> molecule will be in its lowest energy configuration around the open metal site. Small values for <code class="code docutils literal notranslate"><span class="pre">move_factor</span></code> and <code class="code docutils literal notranslate"><span class="pre">rot_factor</span></code> prevent the H<sub>2</sub> from straying away too far from its initial position.</p>
 </div>
 <div class="section" id="replaying-a-trajectory">
 <h2>Replaying a Trajectory<a class="headerlink" href="#replaying-a-trajectory" title="Permalink to this headline">¶</a></h2>
-<p>The “replay” ensemble takes in a *.traj.pqr file, either produced from a previous run or created artificially, and recalculates averages without running a simulation. This is useful in case some quantity needs to be recalculated without running a full simulation. The provided *.traj.pqr file was produced from the first tutorial.</p>
+<p>The “replay” ensemble takes in a *.traj.pqr file, either produced from a previous run or created artificially, and recalculates averages without running a simulation. This is useful in case some quantity needs to be recalculated without running a full simulation. The provided MOF5+BSS.traj-00000.pqr file was produced from the first tutorial.</p>
 </div>
 <div class="section" id="single-point-energy-and-quantum-rotation-calculations">
 <h2>Single Point Energy and Quantum Rotation Calculations<a class="headerlink" href="#single-point-energy-and-quantum-rotation-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This folder contains the PQR files with the BSS model
-located at all four H2 sorption sites in MOF-5 (alpha. beta, gamma, and delta).
+located at all four H<sub>2</sub> sorption sites in MOF-5 (alpha. beta, gamma, and delta).
 An input file to run the quantum rotation calculations is also included in the
 folder. Note that running quantum rotations calculations is predicated upon
 turning the quantum rotations part of the code on when compiling MPMC. By
-executing quantum rotation calculations on the four H2 sorption sites, you
+executing quantum rotation calculations on the four H<sub>2</sub> sorption sites, you
 should obtain rotational levels that are very close to those shown in Table 1
-of Ivana’s JCP 2012 paper (see link) for the respective sites.</p>
+of Ivana’s JCP 2012 paper (see link) for the respective sites. Note that the <code class="code docutils literal notranslate"><span class="pre">total_energy</span></code>
+ensemble here calculates the potential energy (and rotational eigenspectrum) but does not perform any
+Monte Carlo steps.</p>
 <p>Paper: <a class="reference external" href="http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906">http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906</a></p>
 </div>
 <div class="section" id="potential-energy-surface-fitting-surf-fit">
@@ -118,7 +123,7 @@ worked on, so it takes a while. Especially for large corrtime in *.inp.</p>
 </div>
 <div class="section" id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
 <h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with NVIDIA CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>
-<p>This is the second tutorial with the sole exception of the switch <code class="code docutils literal notranslate"><span class="pre">cuda</span> <span class="pre">on</span></code>. MPMC needs to be compiled with cuda and a cuda capable GPU must be present.</p>
+<p>This is the second tutorial with the sole exception of the switch <code class="code docutils literal notranslate"><span class="pre">cuda</span> <span class="pre">on</span></code>. MPMC needs to be compiled with cuda and a cuda capable GPU must be present. Performance may be compared with the second tutorial.</p>
 </div>
 <div class="section" id="d-chain-replay">
 <h2>1D Chain Replay<a class="headerlink" href="#d-chain-replay" title="Permalink to this headline">¶</a></h2>
@@ -198,7 +203,7 @@ check for the small-size scalability and accuracy of our calculations.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 03, 2021.
+      Last updated on May 04, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>

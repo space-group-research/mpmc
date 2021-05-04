@@ -59,7 +59,7 @@ MPMC accepts only one argument on the command line, the location of the MPMC inp
 
 .. code-block:: none
 
-    mpmc mpmc.inp
+    mpmc input.inp
 
 Updating MPMC
 =============
@@ -75,7 +75,7 @@ and then rebuilding as necessary.
 MPMC Tutorials
 ==============
 
-Example MPMC input scripts and PQRs are available in the tutorials_and_examples
+Example MPMC input scripts and PQRs are available in the tutorials_and_examples folder in the root directory.
 
 MPMC Testing Suite
 ==================
@@ -99,12 +99,12 @@ To run the tests, make sure you have Python installed, compile MPMC normally, an
 .. code-block:: none
 
     cd mpmc_testing
-    python run_tests.py
+    python3 run_tests.py
 
-More information about the test suite can be found in its `repository <https://github.com/LucianoLaratelli/mpmc_testing>`_.
+More information about the test suite can be found in its `repository <https://github.com/mpmccode/mpmc_testing>`_.
 
 License
 =======
 
-MPMC is liscensed under the GNU GPL v3 license, a copy is located in the `root directory <https://github.com/mpmccode/mpmc/blob/master/LICENSE>`_.
+MPMC is licensed under the GNU GPL v3 license, a copy is located in the `root directory <https://github.com/mpmccode/mpmc/blob/master/LICENSE>`_.
 

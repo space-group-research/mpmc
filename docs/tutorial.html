@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Tutorials &#8212; MPMC 1.1.306 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Commands" href="commands.html" />
@@ -38,10 +39,10 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tutorials">
+  <section id="tutorials">
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
 <p>A series of representative example input and .pqr files exist in the tutorials_and_examples folder in the MPMC root directory. A brief description of each folder follows, it is encouraged to cross reference the input files with the <a class="reference internal" href="commands.html"><span class="doc">Commands</span></a> page and to run each example yourself.</p>
-<div class="section" id="bss-h2-mof-5-simulation-uvt">
+<section id="bss-h2-mof-5-simulation-uvt">
 <h2>BSS H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bss-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a basic electrostatic/Lennard-Jones-based simulation of H<sub>2</sub> sorption in MOF-5 (using the BSS H<sub>2</sub> model and UFF parameters on MOF-5). The simulation may be started by simply invoking <code class="code docutils literal notranslate"><span class="pre">mpmc</span> <span class="pre">MOF5+BSS.inp</span></code>. Every corrtime steps averages are output to stdout, including the average potential energy, number of molecules sorbed, Qst, timing information, etc.</p>
 <p>Several different output files are created in the simulation directory by default:</p>
@@ -52,12 +53,12 @@
 <li><p>histogram.dat - this is a histogram of sorbate positions in the .dx format</p></li>
 <li><p>frozen.dx - this is the frozen (MOF-5) atoms in the .dx format</p></li>
 </ul>
-</div>
-<div class="section" id="bssp-h2-mof-5-simulation-uvt">
+</section>
+<section id="bssp-h2-mof-5-simulation-uvt">
 <h2>BSSP H<sub>2</sub> + MOF-5 Simulation (uVT)<a class="headerlink" href="#bssp-h2-mof-5-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a very similar simulation to the first tutorial with the main difference arising from the use of the BSSP polarizable H<sub>2</sub> model. The polarizability options in this input file should be robust for most situations, it is advised to double check the <code class="code docutils literal notranslate"><span class="pre">polar_max_iter</span></code> produces a converged polarization energy when simulating in a novel system however.</p>
-</div>
-<div class="section" id="phahst-h2-hkust-1-simulation-uvt">
+</section>
+<section id="phahst-h2-hkust-1-simulation-uvt">
 <h2>PHAHST H<sub>2</sub> + HKUST-1 Simulation (uVT)<a class="headerlink" href="#phahst-h2-hkust-1-simulation-uvt" title="Permalink to this headline">¶</a></h2>
 <p>This is a similar simulation to the second tutorial with the Lennard-Jones repulsion/dispersion potential replaced by physically ground exponential repulsion/damped dispersion potential:</p>
 <div class="math notranslate nohighlight">
@@ -67,16 +68,16 @@ f_{2n}( \beta r_{ij} ) &amp;= 1 - e^{-\beta r_{ij}} \sum_{k=0}^{2n} \frac{(\beta
 \beta_{ij} &amp;= 2 \frac{\beta_{ii} \beta_{jj}}{\beta_{ii}+\beta_{jj}}\\
 C_{2n,ij} &amp;= \sqrt{C_{2n,ii} C_{2n,jj}}\end{split}\]</div>
 <p>The use of the <code class="code docutils literal notranslate"><span class="pre">cavity_autoreject_repulsion</span></code> and <code class="code docutils literal notranslate"><span class="pre">polar_precision</span></code> options ensure that nuclear fusion doesn’t happen due to a polarization catastrophe and finite exponential repulsion potential energy. For more information on the PHAHST force field please see: <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837">https://pubs.acs.org/doi/abs/10.1021/acs.jctc.0c00837</a>.</p>
-</div>
-<div class="section" id="simulated-annealing">
+</section>
+<section id="simulated-annealing">
 <h2>Simulated Annealing<a class="headerlink" href="#simulated-annealing" title="Permalink to this headline">¶</a></h2>
 <p>This is a sample simulated annealing script for H<sub>2</sub> in the MOF NOTT-112. Simulated annealing is typically used to identify minimums in the potential energy surface, i.e. binding sites in material simulations. The input pqr contains the MOF with a single H<sub>2</sub> molecule about 2.5 angstrom from the CuC open metal site. The temperature starts at 40 K and is decreased by a factor of 0.99999 each MC step. At the end of the simulation the H<sub>2</sub> molecule will be in its lowest energy configuration around the open metal site. Small values for <code class="code docutils literal notranslate"><span class="pre">move_factor</span></code> and <code class="code docutils literal notranslate"><span class="pre">rot_factor</span></code> prevent the H<sub>2</sub> from straying away too far from its initial position.</p>
-</div>
-<div class="section" id="replaying-a-trajectory">
+</section>
+<section id="replaying-a-trajectory">
 <h2>Replaying a Trajectory<a class="headerlink" href="#replaying-a-trajectory" title="Permalink to this headline">¶</a></h2>
 <p>The “replay” ensemble takes in a *.traj.pqr file, either produced from a previous run or created artificially, and recalculates averages without running a simulation. This is useful in case some quantity needs to be recalculated without running a full simulation. The provided MOF5+BSS.traj-00000.pqr file was produced from the first tutorial.</p>
-</div>
-<div class="section" id="single-point-energy-and-quantum-rotation-calculations">
+</section>
+<section id="single-point-energy-and-quantum-rotation-calculations">
 <h2>Single Point Energy and Quantum Rotation Calculations<a class="headerlink" href="#single-point-energy-and-quantum-rotation-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This folder contains the PQR files with the BSS model
 located at all four H<sub>2</sub> sorption sites in MOF-5 (alpha, beta, gamma, and delta).
@@ -89,8 +90,8 @@ of Ivana’s JCP 2012 paper (see link) for the respective sites. Note that the <
 ensemble here calculates the potential energy (and rotational eigenspectrum) but does not perform any
 Monte Carlo steps.</p>
 <p>Paper: <a class="reference external" href="http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906">http://scitation.aip.org/content/aip/journal/jcp/137/1/10.1063/1.4730906</a></p>
-</div>
-<div class="section" id="potential-energy-surface-fitting-surf-fit">
+</section>
+<section id="potential-energy-surface-fitting-surf-fit">
 <h2>Potential Energy Surface Fitting (surf_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-fit" title="Permalink to this headline">¶</a></h2>
 <p>These are sample inputs for fitting an Argon potential energy surface in MPMC using the default fitting code. An additional file (or files) is needed to specify the ab initio surface to fit to. The files are as follows:</p>
 <ul class="simple">
@@ -98,8 +99,8 @@ Monte Carlo steps.</p>
 <li><p>*.pqr (initial parameters/coordinates)</p></li>
 <li><p>*.dat (PES input data)</p></li>
 </ul>
-</div>
-<div class="section" id="potential-energy-surface-fitting-surf-multi-fit">
+</section>
+<section id="potential-energy-surface-fitting-surf-multi-fit">
 <h2>Potential Energy Surface Fitting (surf_multi_fit)<a class="headerlink" href="#potential-energy-surface-fitting-surf-multi-fit" title="Permalink to this headline">¶</a></h2>
 <p>These are sample inputs for fitting an argon potential using the <code class="code docutils literal notranslate"><span class="pre">surf_fit</span></code> fitting code. A slightly different (and more accurate) ab initio surface is used. The files are as follows:</p>
 <ul class="simple">
@@ -107,32 +108,32 @@ Monte Carlo steps.</p>
 <li><p>*.pqr (initial parameters/)</p></li>
 <li><p>configs.out (PES input data)</p></li>
 </ul>
-</div>
-<div class="section" id="multisorbate-uvt">
+</section>
+<section id="multisorbate-uvt">
 <h2>Multisorbate uVT<a class="headerlink" href="#multisorbate-uvt" title="Permalink to this headline">¶</a></h2>
 <p>These input files will run a multi-sorbate simulation in an rht-MOF (NOTT-112).
 The two sorbates are H2 (BSSP) and CO2 (PHAST). In multi-sorbate simulations a separate PQR file containing the molecules to be inserted/deleted needs to provided, insert.pqr here. Note this system is rather large and treated with explicit polarization so averages will take a relatively long time to converge.</p>
-</div>
-<div class="section" id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
+</section>
+<section id="bssp-h2-mof5-simulation-uvt-with-nvidia-cuda">
 <h2>BSSP H<sub>2</sub> + MOF5 Simulation (uVT) with NVIDIA CUDA<a class="headerlink" href="#bssp-h2-mof5-simulation-uvt-with-nvidia-cuda" title="Permalink to this headline">¶</a></h2>
 <p>This is the second tutorial with the sole exception of the switch <code class="code docutils literal notranslate"><span class="pre">cuda</span> <span class="pre">on</span></code>. MPMC needs to be compiled with cuda and a cuda capable GPU must be present. Performance may be compared with the second tutorial.</p>
-</div>
-<div class="section" id="d-chain-replay">
+</section>
+<section id="d-chain-replay">
 <h2>1D Chain Replay<a class="headerlink" href="#d-chain-replay" title="Permalink to this headline">¶</a></h2>
 <p>Here we use <code class="code docutils literal notranslate"><span class="pre">ensemble</span> <span class="pre">replay</span></code> to read in a series of increasingly
 larger 1D-chain samples (starting from 2-atoms and up to 512). Each component of the energy is re-calculated for each sample, for
 various potential options (the different input files). One may take the energy output files and process them (via scale.sh) to
 check for the small-size scalability and accuracy of our calculations.</p>
-</div>
-<div class="section" id="id1">
+</section>
+<section id="id1">
 <h2>3D Chain Replay<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Here we use ‘ensemble replay’ to read in a series of increasingly
 larger crystal samples (starting from 2-atoms and up to 1024).</p>
 <p>Each component of the energy is re-calculated for each sample, for
 various potential options (the different input files). One may take the energy output files and process them (via scale.sh) to
 check for the small-size scalability and accuracy of our calculations.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -195,8 +196,8 @@ check for the small-size scalability and accuracy of our calculations.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 04, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Last updated on May 12, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>

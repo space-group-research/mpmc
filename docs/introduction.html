@@ -4,16 +4,16 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Introduction &#8212; MPMC 1.1.306 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input File Specifications" href="input_files.html" />
@@ -38,12 +38,12 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="introduction">
+  <section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <a class="reference internal image-reference" href="_images/mpmc.png"><img alt="_images/mpmc.png" class="align-center" src="_images/mpmc.png" style="width: 600px;" /></a>
-<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by <a class="reference external" href="http://people.llnl.gov/belof1">Jon Belof</a>, includes contributions from Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and Douglas Franz, and is currently maintained by the <a class="reference external" href="http://drbrian.space/">Brian Space group</a> in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
+<p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by <a class="reference external" href="http://people.llnl.gov/belof1">Jon Belof</a>, includes contributions from Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and <a class="reference external" href="https://douglasfranz.com">Douglas Franz</a>, and is currently maintained by the <a class="reference external" href="http://drbrian.space/">Brian Space group</a> in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
 <p>Optimized for the study of nanoscale interfaces, MPMC supports many common intermolecular potentials including Lennard-Jones and damped dispersion paired with exponential repulsion, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.</p>
-<div class="section" id="citing-mpmc">
+<section id="citing-mpmc">
 <h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><div class="line-block">
@@ -52,20 +52,20 @@
 <div class="line"><em>Adv. Theory Simul.</em> <strong>2019</strong>, DOI: 10.1002/adts.201900113.</div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="supported-systems">
+</section>
+<section id="supported-systems">
 <h2>Supported Systems<a class="headerlink" href="#supported-systems" title="Permalink to this headline">¶</a></h2>
 <p>Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use <a class="reference external" href="https://www.open-mpi.org/">OpenMPI</a> or <a class="reference external" href="https://developer.nvidia.com/cuda-zone">CUDA</a>. Configuring with Coupled-Dipole VDW or QM Rotation options requires <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>.</p>
 <p>MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primarily tested on Linux and support is not guaranteed on other platforms.</p>
-</div>
-<div class="section" id="downloading-mpmc">
+</section>
+<section id="downloading-mpmc">
 <h2>Downloading MPMC<a class="headerlink" href="#downloading-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC can be downloaded from the <a class="reference external" href="https://github.com/mpmccode/mpmc/releases">releases page on GitHub</a> or with the following command:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc
 </pre></div>
 </div>
-</div>
-<div class="section" id="building-mpmc">
+</section>
+<section id="building-mpmc">
 <h2>Building MPMC<a class="headerlink" href="#building-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>Once MPMC has been downloaded it may be quickly compiled with the following bash script:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>bash compile.sh
@@ -79,27 +79,27 @@ make
 </pre></div>
 </div>
 <p>Make sure to add MPMC to your path after compiling!</p>
-</div>
-<div class="section" id="running-mpmc">
+</section>
+<section id="running-mpmc">
 <h2>Running MPMC<a class="headerlink" href="#running-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC accepts only one argument on the command line, the location of the MPMC input script:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mpmc input.inp
 </pre></div>
 </div>
-</div>
-<div class="section" id="updating-mpmc">
+</section>
+<section id="updating-mpmc">
 <h2>Updating MPMC<a class="headerlink" href="#updating-mpmc" title="Permalink to this headline">¶</a></h2>
 <p>MPMC can be updated with the following command:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git pull
 </pre></div>
 </div>
 <p>and then rebuilding as necessary.</p>
-</div>
-<div class="section" id="mpmc-tutorials">
+</section>
+<section id="mpmc-tutorials">
 <h2>MPMC Tutorials<a class="headerlink" href="#mpmc-tutorials" title="Permalink to this headline">¶</a></h2>
 <p>Example MPMC input scripts and PQRs are available in the tutorials_and_examples folder in the root directory.</p>
-</div>
-<div class="section" id="mpmc-testing-suite">
+</section>
+<section id="mpmc-testing-suite">
 <h2>MPMC Testing Suite<a class="headerlink" href="#mpmc-testing-suite" title="Permalink to this headline">¶</a></h2>
 <p>An end-to-end test suite for MPMC is currently under development. If cloning MPMC anew, use the following to include the tests:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc --recurse-submodules
@@ -117,12 +117,12 @@ python3 run_tests.py
 </pre></div>
 </div>
 <p>More information about the test suite can be found in its <a class="reference external" href="https://github.com/mpmccode/mpmc_testing">repository</a>.</p>
-</div>
-<div class="section" id="license">
+</section>
+<section id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>MPMC is licensed under the GNU GPL v3 license, a copy is located in the <a class="reference external" href="https://github.com/mpmccode/mpmc/blob/master/LICENSE">root directory</a>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -182,8 +182,8 @@ python3 run_tests.py
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 04, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Last updated on May 12, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>

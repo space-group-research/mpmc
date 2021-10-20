@@ -345,7 +345,7 @@ int write_molecules(system_t *system, FILE *fp) {
     else
         ext_output = 0;
 
-    /* write PBC data */  //VMD uses a weird convention which essentially reverses alpha <-> beta
+    /* write PBC data */
     fprintf(fp,
             "CRYST1");
     fprintf(fp,
@@ -355,9 +355,9 @@ int write_molecules(system_t *system, FILE *fp) {
     fprintf(fp,
             "%9.3f", sqrt(dddotprod(pbc->basis[2], pbc->basis[2])));
     fprintf(fp,
-            "%7.2f", 180.0 / M_PI * acos(dddotprod(pbc->basis[2], pbc->basis[0]) / sqrt(dddotprod(pbc->basis[0], pbc->basis[0]) * dddotprod(pbc->basis[2], pbc->basis[2]))));
-    fprintf(fp,
             "%7.2f", 180.0 / M_PI * acos(dddotprod(pbc->basis[1], pbc->basis[2]) / sqrt(dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[2], pbc->basis[2]))));
+    fprintf(fp,
+            "%7.2f", 180.0 / M_PI * acos(dddotprod(pbc->basis[2], pbc->basis[0]) / sqrt(dddotprod(pbc->basis[0], pbc->basis[0]) * dddotprod(pbc->basis[2], pbc->basis[2]))));
     fprintf(fp,
             "%7.2f", 180.0 / M_PI * acos(dddotprod(pbc->basis[0], pbc->basis[1]) / sqrt(dddotprod(pbc->basis[1], pbc->basis[1]) * dddotprod(pbc->basis[0], pbc->basis[0]))));
     fprintf(fp,

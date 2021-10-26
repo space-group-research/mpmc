@@ -219,6 +219,10 @@ int mc(system_t *system) {
         memnullcheck(sinfo_mpi, sizeof(sorbateInfo_t), __LINE__ - 1, __FILE__);
         system->sorbateGlobal = calloc(system->sorbateCount, sizeof(sorbateAverages_t));
         memnullcheck(system->sorbateGlobal, sizeof(sorbateAverages_t), __LINE__ - 1, __FILE__);
+        // allocate space for the multisorb N-product averages for multisorb Qst
+        for (int i=0; i<system->sorbateCount; i++) {
+            system->sorbateGlobal[i].avgNM = malloc((int)system->sorbateCount * sizeof(double));
+        }
     }
 
     // compute message size

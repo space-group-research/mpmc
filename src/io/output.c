@@ -1325,6 +1325,11 @@ int write_averages(system_t *system) {
                     "             wt_%%(%s)(ME)= %.5lf +- %.5le %%\n",
                     system->sorbateInfo[i].id, system->sorbateGlobal[i].percent_wt_me,
                     system->sorbateGlobal[i].percent_wt_me_err);
+                if (system->sorbateGlobal[i].qst > 0) {
+                    printf(
+                            "             Qst(%s)= %.5lf kJ/mol\n",
+                            system->sorbateInfo[i].id, system->sorbateGlobal[i].qst);
+                }
             }
             printf(
                 "             Selectivity(%s)= %.4lf +- %.4lf\n",

@@ -28,12 +28,10 @@ int is_singular(double **a, int n) {
 
     unsigned int j;
     int i, singular;
-    double big, temp, *vv;
+    double big, temp;
 
     singular = 0;
 
-    vv = (double *) malloc(n * sizeof(double));
-    memnullcheck(vv, n * sizeof(double), __LINE__ - 1, __FILE__);
     for (i = 0; i < n; i++) {
         big = 0.0;
         for (j = 0; j < n; j++)
@@ -43,8 +41,6 @@ int is_singular(double **a, int n) {
             singular = 1;
             break;
         }
-        vv[i] = 1.0 / big;
     }
-
     return singular;
 }

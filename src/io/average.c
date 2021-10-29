@@ -8,6 +8,7 @@ University of South Florida
 
 #include <mc.h>
 
+
 /* determine the acceptance rate */
 void track_ar(nodestats_t *ns) {
     if (ns->accept + ns->reject)
@@ -170,6 +171,13 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t *sinfo) {
         sorbateGlobal[i].avgN_sq = factor * sorbateGlobal[i].avgN_sq + sinfo[i].currN * sinfo[i].currN / m;
         sorbateGlobal[i].avgN_err = sdom * sqrt(sorbateGlobal[i].avgN_sq - sorbateGlobal[i].avgN * sorbateGlobal[i].avgN);
 
+        // N-products with self and other sorbates (for multi-sorb Qst)
+        for (j=0; j<system->sorbateCount; j++) {
+            sorbateGlobal[i].avgNM[j] = factor * sorbateGlobal[i].avgNM[j] + (sinfo[i].currN * sinfo[j].currN) / m;
+        }
+        // system energy times N (for multi-sorb Qst)
+        sorbateGlobal[i].avgUN = factor * sorbateGlobal[i].avgUN + (system->observables->energy * sinfo[i].currN) / m;
+
         sorbateGlobal[i].percent_wt = factor * sorbateGlobal[i].percent_wt + sinfo[i].percent_wt / m;
         sorbateGlobal[i].percent_wt_sq = factor * sorbateGlobal[i].percent_wt_sq + sinfo[i].percent_wt * sinfo[i].percent_wt / m;
         sorbateGlobal[i].percent_wt_err = sdom * sqrt(sorbateGlobal[i].percent_wt_sq - sorbateGlobal[i].percent_wt * sorbateGlobal[i].percent_wt);
@@ -205,6 +213,71 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t *sinfo) {
         sorbateGlobal[i].selectivity_err =
             sorbateGlobal[i].selectivity * sqrt(relative_err);
     }
+
+    /* Qst for multiple sorbates
+        Follows the formulae from
+        Arora, Gaurav, and Stanley I. Sandler. "Air separation by single wall carbon nanotubes:
+        Thermodynamics and adsorptive selectivity." The Journal of chemical physics 123.4 (2005): 044705.
+    */
+    double **dBmudN, **fNN, **fNN_T;
+    double *dUdBmu;
+    double dUdN;
+    int N = (int)system->sorbateCount;
+    // allocate space for arrays
+    dBmudN = (double **) calloc(N, sizeof(double*));
+    fNN = (double **) calloc(N, sizeof(double*));
+    fNN_T = (double **) calloc(N, sizeof(double*));
+    dUdBmu = malloc(N * sizeof(double));
+    for (i=0; i<N; i++) {
+        dBmudN[i] = (double *) malloc(N * sizeof(double));
+        fNN[i] = (double *) malloc(N * sizeof(double));
+        fNN_T[i] = (double *) malloc(N * sizeof(double));
+    }
+
+    // populate the fluctuation matrices. (Eqn 13)
+    for (i=0; i<N; i++) {
+        dUdBmu[i] = sorbateGlobal[i].avgUN - system->avg_observables->energy * sorbateGlobal[i].avgN;
+        for (j=0; j<N; j++) {
+            fNN[i][j] = sorbateGlobal[i].avgNM[j] - sorbateGlobal[i].avgN * sorbateGlobal[j].avgN;
+            dBmudN[i][j] = 0.;
+        }
+    }
+    // transpose fNN (because our matrix inversion wants it pre-transposed)
+    for (i=0; i<N; i++) {
+        for (j=0; j<N; j++) {
+            fNN_T[i][j] = fNN[j][i];
+        }
+    }
+
+    // only proceed if we have a non-singular (i.e. invertible) matrix
+    int singular_flag = is_singular(fNN_T, N);
+    if (!singular_flag) {
+
+        // invert fNN to get dBmudN: derivates of beta*mu with respect to N.
+        invert_matrix(N, fNN_T, dBmudN);
+
+        for (i=0; i<system->sorbateCount; i++) {
+            dUdN = 0;
+            // do the sum in Eqn 13
+            for (int k=0; k<system->sorbateCount; k++) {
+                dUdN += dUdBmu[k] * dBmudN[k][i];
+            }
+            sorbateGlobal[i].qst = system->temperature - dUdN;
+            sorbateGlobal[i].qst *= KB * NA / 1000.0; // convert to kJ/mol
+        }
+
+    }
+
+    // cleanup
+    for (i = 0; i < N; i++) {
+        free(dBmudN[i]);
+        free(fNN[i]);
+        free(fNN_T[i]);
+    }
+    free(dBmudN);
+    free(fNN);
+    free(fNN_T);
+    free(dUdBmu);
 
     return;
 }

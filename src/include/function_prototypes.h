@@ -286,3 +286,4 @@ double dddotprod(double *, double *);
 double didotprod(double *, int *);
 int iidotprod(int *, int *);
 double min(double a, double b);
+int is_singular(double **a, int n);

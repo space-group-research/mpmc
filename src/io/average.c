@@ -278,7 +278,6 @@ void update_root_sorb_averages(system_t *system, sorbateInfo_t *sinfo) {
     free(fNN);
     free(fNN_T);
     free(dUdBmu);
-    dBmudN = fNN = fNN_T = dUdBmu = NULL;
 
     return;
 }

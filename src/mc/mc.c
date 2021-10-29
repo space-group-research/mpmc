@@ -515,6 +515,9 @@ int mc(system_t *system) {
     }
 
     if (system->sorbateCount > 1) {
+        for (int i=0; i<system->sorbateCount; i++) {
+            free(system->sorbateGlobal[i].avgNM);
+        }
         free(system->sorbateGlobal);
         free(sinfo_mpi);
     }

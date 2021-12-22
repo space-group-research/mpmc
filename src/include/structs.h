@@ -343,8 +343,9 @@ typedef struct _system {
     // the CLI arguments passed for this run
     char **argv;
 
-    // where the built in models live
+    // built-in models
     char *model_dir;
+    char **models;
 
     //surface fitting options
     int surf_fit_multi_configs;

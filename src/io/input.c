@@ -191,11 +191,21 @@ int do_command(system_t *system, char **token) {
     // built-in sorbate models
     else if (!strcasecmp(token[0],
                          "model_dir")) {
-        system->model_dir = token[1];
+        system->model_dir = calloc(MAXLINE, sizeof(char));
+        memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        sprintf(system->model_dir, token[1]);
     }
-    else if (!strcasecmp(token[0],
-                         "models")) {
-        //system->models;
+    else if (!strcasecmp(token[0], "models")) {
+        if (system->models == NULL) {
+            system->models = calloc(20, sizeof(char *));
+            memnullcheck(system->models, 20 * sizeof(char *), __LINE__ - 1, __FILE__);
+            for (i = 0; i < 20; i++) {
+                system->models[i] = calloc(MAXLINE, sizeof(char));
+                memnullcheck(system->models, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+            }
+        }
+        for (i = 0; strlen(token[i + 1]) > 0; i++)
+            strcpy(system->models[i], token[i + 1]);
     }
 
     else if (!strcasecmp(token[0],
@@ -1565,7 +1575,6 @@ void setdefaults(system_t *system) {
         parts[index] = strtok(0, "/");
         if (!strcmp(parts[index-1], "build")) {
             build_index_flag = index-1;
-            //printf("here");
         }
     }
     if (build_index_flag != -1) {
@@ -1575,14 +1584,10 @@ void setdefaults(system_t *system) {
             strncat(probable_model_path, "/", 1);
         }
         strncat(probable_model_path, "models/", 7);
-        //printf("%s\n", probable_model_path);
-        //strncpy(system->model_dir, probable_model_path, strlen(probable_model_path));
-        //system->model_dir = probable_model_path;
+
         system->model_dir = calloc(MAXLINE, sizeof(char));
         memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
         sprintf(system->model_dir, probable_model_path);
-        //printf("%s\n", system->model_dir);
-        //printf("%lu\n", strlen(system->model_dir));
     }
 
     /* set the default scaling to 1 */

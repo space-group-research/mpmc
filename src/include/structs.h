@@ -340,6 +340,12 @@ typedef struct _system {
     // is this a restart of a parallel job?
     int parallel_restarts;
 
+    // the CLI arguments passed for this run
+    char **argv;
+
+    // where the built in models live
+    char *model_dir;
+
     //surface fitting options
     int surf_fit_multi_configs;
     char *multi_fit_input;

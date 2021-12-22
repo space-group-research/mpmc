@@ -1293,6 +1293,10 @@ int check_system(system_t *system) {
     }
 
     //miscellaneous options
+    if (system->model_dir) {
+        sprintf(linebuf, "INPUT: using model_dir: %s\n", system->model_dir);
+        output(linebuf);
+    }
 
     if (system->gwp) {
         output(

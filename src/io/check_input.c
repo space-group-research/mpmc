@@ -1292,7 +1292,7 @@ int check_system(system_t *system) {
         io_files_options(system);
     }
 
-    //miscellaneous options
+    // built-in models options
     if (system->model_dir) {
         sprintf(linebuf, "INPUT: using model_dir: %s\n", system->model_dir);
         output(linebuf);
@@ -1304,6 +1304,7 @@ int check_system(system_t *system) {
         }
     }
 
+    //miscellaneous options
     if (system->gwp) {
         output(
             "INPUT: Gaussian wavepacket code active\n");

@@ -1297,6 +1297,12 @@ int check_system(system_t *system) {
         sprintf(linebuf, "INPUT: using model_dir: %s\n", system->model_dir);
         output(linebuf);
     }
+    if (system->models) {
+        size_t n = sizeof(system->models) / sizeof(system->models[0]);
+        for (int i=0; i<n; i++) {
+            printf("%s\n", system->models[i]);
+        }
+    }
 
     if (system->gwp) {
         output(

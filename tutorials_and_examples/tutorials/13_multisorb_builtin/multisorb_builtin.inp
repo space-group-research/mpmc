@@ -1,0 +1,27 @@
+job_name                        multisorb ! job name, which will determine default output file names
+ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
+
+! here we select which models we want.
+models co2_epm2 h2_buch h2o_tip3p 
+user_fugacities 1 1 1
+! could specify a different models directory if u want.
+! mpmc will default to the one that comes with source code (in build/)
+! model_dir /my/custom/model/dir
+
+
+seed                            1024    ! initial seed for the RNG
+numsteps                        100000 ! Total number of MC steps to run.
+corrtime                        100    ! Output averages every X steps
+
+insert_probability              0.667 ! Probability to add or remove a sorbate molecule (otherwise do a combination rotation/translation)
+move_factor                     0.01  ! Fraction of the system box to translate per step
+rot_factor                      0.01  ! Fraction of a full circle to rotate per step
+
+temperature                     298.0 ! T of system in K
+
+abcbasis                        25.669 25.669 25.669 90 90 90 ! system cell definition
+
+! note this file just has the MOF and no sorbates.
+pqr_input                       input.pqr     ! the input PQR file to read
+pop_histogram                   on            ! generate a histogram file for visualization later
+pop_histogram_output            histogram.dat ! filename for the above

@@ -1298,8 +1298,7 @@ int check_system(system_t *system) {
         output(linebuf);
     }
     if (system->models) {
-        size_t n = sizeof(system->models) / sizeof(system->models[0]);
-        for (int i=0; i<n; i++) {
+        for (int i=0; strlen(system->models[i]) > 0; i++) {
             sprintf(linebuf,
                 "INPUT: Using model: %s\n", system->models[i]);
             output(linebuf);

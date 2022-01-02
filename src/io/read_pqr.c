@@ -414,7 +414,7 @@ void setup_builtin_models(system_t *system) {
         strcpy(system->insert_input, model_filename);
 
         // read in this prototype molecule.
-        molecule_t *butt = read_insertion_molecules(system);
+        // molecule_t *butt = read_insertion_molecules(system);
         printf("on model %s\n", system->models[model_index]);
     }
 

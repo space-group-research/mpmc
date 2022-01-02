@@ -399,27 +399,31 @@ void addSorbateToList(system_t *, char *);
 
 void setup_builtin_models(system_t *system) {
     // force the insert pqr to have this name.
-    system->insert_input = "insert.pqr";
+    system->insert_input = calloc(MAXLINE, sizeof(char));
+    memnullcheck(system->insert_input, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+    strcpy(system->insert_input, "insert.pqr");
 
     char *model_filename;
+    FILE *insert_fptr = fopen("insert.pqr", "w");
+    FILE *model_fptr;
+    char buffer[MAXLINE];
     unsigned int model_index;
 
     for (model_index = 0; model_index < sizeof(system->models) / sizeof(system->models[0]); model_index++) {
         model_filename = strcat(system->model_dir, system->models[model_index]);
         printf("model_filename %s\n", model_filename);
 
-        // force the insert pqr to have this name.
-        system->insert_input = calloc(MAXLINE, sizeof(char));
-        memnullcheck(system->insert_input, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
-        strcpy(system->insert_input, model_filename);
+        // read this model's info and append to master insertion file.
+        model_fptr = fopen(model_filename, "r");
+        while (fgets(buffer, MAXLINE, model_fptr)) {
+            fprintf(insert_fptr, "%s\n", buffer);
+        }
+        fclose(model_fptr);
 
-        // read in this prototype molecule.
-        // molecule_t *butt = read_insertion_molecules(system);
         printf("on model %s\n", system->models[model_index]);
     }
 
-
-
+    fclose(insert_fptr);
 }
 
 molecule_t *read_insertion_molecules(system_t *system) {

@@ -397,6 +397,13 @@ molecule_t *read_molecules(FILE *fp, system_t *system) {
 int sorbateIs_Not_InList(system_t *, char *);
 void addSorbateToList(system_t *, char *);
 
+int startsWith(const char *pre, const char *str)
+{
+    size_t lenpre = strlen(pre),
+           lenstr = strlen(str);
+    return lenstr < lenpre ? 0 : memcmp(pre, str, lenpre) == 0;
+}
+
 void setup_builtin_models(system_t *system) {
     // force the insert pqr to have this name.
     system->insert_input = calloc(MAXLINE, sizeof(char));
@@ -408,19 +415,39 @@ void setup_builtin_models(system_t *system) {
     FILE *model_fptr;
     char buffer[MAXLINE];
     unsigned int model_index;
+    unsigned int atom_index = 1;
+    unsigned int token_count;
+    char delim[] = " ";
 
-    for (model_index = 0; model_index < sizeof(system->models) / sizeof(system->models[0]); model_index++) {
-        model_filename = strcat(system->model_dir, system->models[model_index]);
-        printf("model_filename %s\n", model_filename);
+    for (model_index = 0; strlen(system->models[model_index]) > 0; model_index++) {
+        model_filename = calloc(MAXLINE, sizeof(char));
+        memnullcheck(model_filename, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        strcpy(model_filename, system->model_dir);
+        strcat(model_filename, system->models[model_index]);
+        printf("INPUT: model_filename for %s: %s\n", system->models[model_index], model_filename);
 
         // read this model's info and append to master insertion file.
         model_fptr = fopen(model_filename, "r");
         while (fgets(buffer, MAXLINE, model_fptr)) {
-            fprintf(insert_fptr, "%s\n", buffer);
+            if (startsWith("//", buffer)) continue; // avoid comments in the model files.
+
+            // tokenize the line and replace atom and molecule IDs as needed
+            char *token = strtok(buffer, delim);
+            token_count = 0;
+            while (token != NULL) {
+                if (token_count == 1)
+                    fprintf(insert_fptr, "%i ", atom_index);
+                else if (token_count == 5)
+                    fprintf(insert_fptr, "%i ", model_index+1);
+                else
+                    fprintf(insert_fptr, "%s ", token);
+                token = strtok(NULL, delim);
+                token_count++;
+            }
+            atom_index++;
         }
         fclose(model_fptr);
-
-        printf("on model %s\n", system->models[model_index]);
+        fprintf(insert_fptr, "\n"); // JIC
     }
 
     fclose(insert_fptr);

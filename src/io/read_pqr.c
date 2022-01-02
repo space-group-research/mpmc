@@ -369,7 +369,7 @@ molecule_t *read_molecules(FILE *fp, system_t *system) {
             return (NULL);
         }
     } else {
-        if (!moveable) {
+        if (!moveable && !system->models) {
             error(
                 "INPUT: no moveable molecules found, there must be at least one in your PQR file\n");
             return (NULL);
@@ -396,6 +396,31 @@ molecule_t *read_molecules(FILE *fp, system_t *system) {
 // the sorbate list and which will add the sorbate if necessary.
 int sorbateIs_Not_InList(system_t *, char *);
 void addSorbateToList(system_t *, char *);
+
+void setup_builtin_models(system_t *system) {
+    // force the insert pqr to have this name.
+    system->insert_input = "insert.pqr";
+
+    char *model_filename;
+    unsigned int model_index;
+
+    for (model_index = 0; model_index < sizeof(system->models) / sizeof(system->models[0]); model_index++) {
+        model_filename = strcat(system->model_dir, system->models[model_index]);
+        printf("model_filename %s\n", model_filename);
+
+        // force the insert pqr to have this name.
+        system->insert_input = calloc(MAXLINE, sizeof(char));
+        memnullcheck(system->insert_input, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        strcpy(system->insert_input, model_filename);
+
+        // read in this prototype molecule.
+        molecule_t *butt = read_insertion_molecules(system);
+        printf("on model %s\n", system->models[model_index]);
+    }
+
+
+
+}
 
 molecule_t *read_insertion_molecules(system_t *system) {
     int j;

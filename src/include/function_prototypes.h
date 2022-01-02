@@ -107,6 +107,7 @@ int open_surf_traj_file(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles(system_t *, int);
 molecule_t *read_insertion_molecules(system_t *);
+void setup_builtin_models(system_t *);
 void count_sorbates(system_t *);
 
 /* main */

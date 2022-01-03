@@ -178,9 +178,15 @@ void checkpoint(system_t *system) {
     }
 
     /* if we have a molecule already backed up (from a previous accept), go ahead and free it */
-    if (system->checkpoint->molecule_backup) free_molecule(system, system->checkpoint->molecule_backup);
+    if (system->checkpoint->molecule_backup) 
+        free_molecule(system, system->checkpoint->molecule_backup);
+    /* if there is no molecule_altered yet, force it to be the insertion molecule template */
+    /* (if we have a system with N=0 on MC step 0) */
+    if (!system->checkpoint->molecule_altered)
+        system->checkpoint->molecule_altered = system->insertion_molecules;
     /* backup the state that will be altered */
-    system->checkpoint->molecule_backup = copy_molecule(system, system->checkpoint->molecule_altered);
+    if (system->checkpoint->molecule_altered)
+        system->checkpoint->molecule_backup = copy_molecule(system, system->checkpoint->molecule_altered);
 
     return;
 }

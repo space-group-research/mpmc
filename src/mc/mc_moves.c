@@ -672,6 +672,7 @@ void make_move(system_t *system) {
             enumerate_particles(system);
 
             break;
+
         case MOVETYPE_REMOVE: /* remove a randomly chosen molecule */
 
             if (system->cavity_bias) {

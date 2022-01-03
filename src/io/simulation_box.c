@@ -56,6 +56,10 @@ int setup_simulation_box(FILE* finput, system_t* system) {
         printboxdim(system->pbc);
 
     // read in the insertion molecules
+    // first check for built-in model selection
+    if (system->models && system->model_dir) {
+        setup_builtin_models(system);
+    }
     if (system->insert_input) {
         system->insertion_molecules = read_insertion_molecules(system);
         if (!system->insertion_molecules) {

@@ -188,6 +188,26 @@ int do_command(system_t *system, char **token) {
             return 1;
     }
 
+    // built-in sorbate models
+    else if (!strcasecmp(token[0],
+                         "model_dir")) {
+        system->model_dir = calloc(MAXLINE, sizeof(char));
+        memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        sprintf(system->model_dir, token[1]);
+    }
+    else if (!strcasecmp(token[0], "models")) {
+        if (system->models == NULL) {
+            system->models = calloc(20, sizeof(char *));
+            memnullcheck(system->models, 20 * sizeof(char *), __LINE__ - 1, __FILE__);
+            for (i = 0; i < 20; i++) {
+                system->models[i] = calloc(MAXLINE, sizeof(char));
+                memnullcheck(system->models, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+            }
+        }
+        for (i = 0; strlen(token[i + 1]) > 0; i++)
+            strcpy(system->models[i], token[i + 1]);
+    }
+
     else if (!strcasecmp(token[0],
                          "surf_decomp")) {
         if (!strcasecmp(token[1],
@@ -1540,6 +1560,36 @@ void setdefaults(system_t *system) {
     // i.e., this is not a restart of a parallel job
     system->parallel_restarts = 0;
 
+    // directory that holds all the built-in models
+    // we have to find where the executable lives,
+    // then find the models dir relative to that.
+    char *exe_path = system->argv[0];
+    char str[1000];
+    strncpy(str, exe_path, sizeof(str));
+    char* parts[100] = {0};
+    unsigned int index = 0;
+    parts[index] = strtok(str, "/");
+    int build_index_flag = -1; 
+    while(parts[index] != 0) {
+        ++index;
+        parts[index] = strtok(0, "/");
+        if (!strcmp(parts[index-1], "build")) {
+            build_index_flag = index-1;
+        }
+    }
+    if (build_index_flag != -1) {
+        char probable_model_path[1000] = "/";
+        for (int i=0; i<build_index_flag; i++) {
+            strncat(probable_model_path, parts[i], strlen(parts[i]));
+            strncat(probable_model_path, "/", 1);
+        }
+        strncat(probable_model_path, "models/", 7);
+
+        system->model_dir = calloc(MAXLINE, sizeof(char));
+        memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        sprintf(system->model_dir, probable_model_path);
+    }
+
     /* set the default scaling to 1 */
     system->scale_charge = 1.0;
     system->rot_factor = 1.0;
@@ -1610,7 +1660,7 @@ void setdefaults(system_t *system) {
     return;
 }
 
-system_t *read_config(char *input_file) {
+system_t *read_config(char *input_file, char **argv) {
     system_t *system;
     char linebuffer[MAXLINE], *n;
     char errormsg[MAXLINE];
@@ -1636,6 +1686,9 @@ system_t *read_config(char *input_file) {
         token[i] = calloc(MAXLINE, sizeof(char));
         memnullcheck(token[i], MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
     }
+
+    /* set CLI arguments that were used */
+    system->argv = argv;
 
     /* set default vaules */
     setdefaults(system);
@@ -1682,13 +1735,13 @@ system_t *read_config(char *input_file) {
     return (system);
 }
 
-system_t *setup_system(char *input_file) {
+system_t *setup_system(char *input_file, char **argv) {
     system_t *system;
     char linebuf[MAXLINE];
     FILE *finput;
 
     //read the main input file and sets values to flags and sets options
-    system = read_config(input_file);
+    system = read_config(input_file, argv);
     if (!system) {
         // error message generated in read_config()
         return (NULL);

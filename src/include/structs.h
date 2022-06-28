@@ -211,12 +211,15 @@ typedef struct _avg_observables {
 // used for storing global sorbate averages
 typedef struct _sorbateAverages {
     double avgN, avgN_sq, avgN_err;                             // average sorbate count
+    double *avgNM;                                              // average product of sorbate counts with other sorbate counts
+    double avgUN;                                               // average product of energy * sorbate count
     double percent_wt, percent_wt_sq, percent_wt_err;           // weight percent for this sorbate (sorb_mass / total_mass)
     double percent_wt_me, percent_wt_me_sq, percent_wt_me_err;  // weight percent for this sorbate (sorb_mass / frozen_mass)
     double excess_ratio, excess_ratio_sq, excess_ratio_err;     // excess adsorption ratio
     double pore_density, pore_density_sq, pore_density_err;     // mass / volume of pore
     double density, density_sq, density_err;                    // mass of sorbate / volume
     double selectivity, selectivity_err;                        // sorbate's selectivity ratio relative to all other sorbates in the insert list.
+    double qst;                                                 // Qst for this sorbate
     struct _sorbateAverages *next;
 } sorbateAverages_t;
 
@@ -336,6 +339,13 @@ typedef struct _system {
 
     // is this a restart of a parallel job?
     int parallel_restarts;
+
+    // the CLI arguments passed for this run
+    char **argv;
+
+    // built-in models
+    char *model_dir;
+    char **models;
 
     //surface fitting options
     int surf_fit_multi_configs;

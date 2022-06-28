@@ -1,4 +1,4 @@
 [submodule "mpmc_testing"]
 	path = mpmc_testing
-	url = git@github.com:LucianoLaratelli/mpmc_testing.git
+	url = https://github.com/mpmccode/mpmc_testing.git
 	branch = master

@@ -369,7 +369,7 @@ molecule_t *read_molecules(FILE *fp, system_t *system) {
             return (NULL);
         }
     } else {
-        if (!moveable) {
+        if (!moveable && !system->models) {
             error(
                 "INPUT: no moveable molecules found, there must be at least one in your PQR file\n");
             return (NULL);
@@ -396,6 +396,62 @@ molecule_t *read_molecules(FILE *fp, system_t *system) {
 // the sorbate list and which will add the sorbate if necessary.
 int sorbateIs_Not_InList(system_t *, char *);
 void addSorbateToList(system_t *, char *);
+
+int startsWith(const char *pre, const char *str)
+{
+    size_t lenpre = strlen(pre),
+           lenstr = strlen(str);
+    return lenstr < lenpre ? 0 : memcmp(pre, str, lenpre) == 0;
+}
+
+void setup_builtin_models(system_t *system) {
+    // force the insert pqr to have this name.
+    system->insert_input = calloc(MAXLINE, sizeof(char));
+    memnullcheck(system->insert_input, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+    strcpy(system->insert_input, "insert.pqr");
+
+    char *model_filename;
+    FILE *insert_fptr = fopen("insert.pqr", "w");
+    FILE *model_fptr;
+    char buffer[MAXLINE];
+    unsigned int model_index;
+    unsigned int atom_index = 1;
+    unsigned int token_count;
+    char delim[] = " ";
+
+    for (model_index = 0; strlen(system->models[model_index]) > 0; model_index++) {
+        model_filename = calloc(MAXLINE, sizeof(char));
+        memnullcheck(model_filename, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
+        strcpy(model_filename, system->model_dir);
+        strcat(model_filename, system->models[model_index]);
+        printf("INPUT: model_filename for %s: %s\n", system->models[model_index], model_filename);
+
+        // read this model's info and append to master insertion file.
+        model_fptr = fopen(model_filename, "r");
+        while (fgets(buffer, MAXLINE, model_fptr)) {
+            if (startsWith("//", buffer)) continue; // avoid comments in the model files.
+
+            // tokenize the line and replace atom and molecule IDs as needed
+            char *token = strtok(buffer, delim);
+            token_count = 0;
+            while (token != NULL) {
+                if (token_count == 1)
+                    fprintf(insert_fptr, "%i ", atom_index);
+                else if (token_count == 5)
+                    fprintf(insert_fptr, "%i ", model_index+1);
+                else
+                    fprintf(insert_fptr, "%s ", token);
+                token = strtok(NULL, delim);
+                token_count++;
+            }
+            atom_index++;
+        }
+        fclose(model_fptr);
+        fprintf(insert_fptr, "\n"); // JIC
+    }
+
+    fclose(insert_fptr);
+}
 
 molecule_t *read_insertion_molecules(system_t *system) {
     int j;

@@ -69,12 +69,12 @@ int safe_atol(char *a, long unsigned int *l);
 void car2basis(system_t *, double, double, double, double, double, double);
 
 int check_system(system_t *);
-system_t *read_config(char *);
+system_t *read_config(char *, char **);
 int setup_simulation_box(FILE *, system_t *);
 int check_config(system_t *);
 molecule_t *read_molecules(FILE *, system_t *);
 int read_pqr_box(FILE *, system_t *);
-system_t *setup_system(char *);
+system_t *setup_system(char *, char **);
 char *make_filename(char *, int);
 void error(char *);
 void output(char *);
@@ -107,6 +107,7 @@ int open_surf_traj_file(system_t *);
 void close_files(system_t *);
 curveData_t *readFitInputFiles(system_t *, int);
 molecule_t *read_insertion_molecules(system_t *);
+void setup_builtin_models(system_t *);
 void count_sorbates(system_t *);
 
 /* main */
@@ -286,3 +287,4 @@ double dddotprod(double *, double *);
 double didotprod(double *, int *);
 int iidotprod(int *, int *);
 double min(double a, double b);
+int is_singular(double **a, int n);

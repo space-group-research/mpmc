@@ -1,13 +1,6 @@
 project(mpmc)
 cmake_minimum_required(VERSION 2.8)
 
-#if (CMAKE_VERSION VERSION_LESS "3.1")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
-#else ()
-  #set (CMAKE_CXX_STANDARD 11)
-#endif()
-
-
 option(MPI "Use MPI to parallelize the calculations (requires MPI)" OFF)
 option(CUDA "Use CUDA to offload polarization calculations to a GPU (requires CUDA)" OFF)
 option(QM_ROTATION "Enable Quantum Mechanics Rigid Rotator calculations (requires LAPACK)" OFF)
@@ -28,17 +21,6 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g -Wall")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -Wall")
-
-
-
-#use MATCHES here to use these flags for both regular Clang and AppleClang
-if ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-  #nothing to do here
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++" )
-elseif ("${CMAKE_COMPILER_ID}" STREQUAL "Intel") #just in case
-endif()
-
 
 set(LIB m)
 

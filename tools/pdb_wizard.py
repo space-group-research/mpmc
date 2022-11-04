@@ -134,6 +134,7 @@ list_of_elements = [
     "Yb",
     "Zn",
     "Zr",
+    "Da",
 ]
 
 element_masses = {
@@ -246,6 +247,7 @@ element_masses = {
     "Bh": 262,
     "Db": 262,
     "Sg": 263,
+    "Da": 0,
 }
 
 
@@ -352,9 +354,9 @@ class PBC:
 
         self.reciprocal_basis_matrix = array(
             [
-                [reciprocal_basis00, reciprocal_basis10, reciprocal_basis20],
-                [reciprocal_basis01, reciprocal_basis11, reciprocal_basis21],
-                [reciprocal_basis02, reciprocal_basis12, reciprocal_basis22],
+                [reciprocal_basis00, reciprocal_basis01, reciprocal_basis02],
+                [reciprocal_basis10, reciprocal_basis11, reciprocal_basis12],
+                [reciprocal_basis20, reciprocal_basis21, reciprocal_basis22],
             ]
         )
 
@@ -420,9 +422,9 @@ class PBC:
 
         self.reciprocal_basis_matrix = array(
             [
-                [reciprocal_basis00, reciprocal_basis10, reciprocal_basis20],
-                [reciprocal_basis01, reciprocal_basis11, reciprocal_basis21],
-                [reciprocal_basis02, reciprocal_basis12, reciprocal_basis22],
+                [reciprocal_basis00, reciprocal_basis01, reciprocal_basis02],
+                [reciprocal_basis10, reciprocal_basis11, reciprocal_basis12],
+                [reciprocal_basis20, reciprocal_basis21, reciprocal_basis22],
             ]
         )
 

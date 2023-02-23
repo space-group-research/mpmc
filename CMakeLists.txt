@@ -77,6 +77,7 @@ src/polarization/thole_polarizability.c
 src/polarization/thole_matrix.c
 src/polarization/polar_ewald.c
 src/polarization/thole_iterative.c
+src/polarization/polar_cuda_pcg.cu
 )
 
 if(MPI)

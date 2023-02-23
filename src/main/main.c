@@ -13,6 +13,7 @@ int rank, size;
 #endif
 #include "surface_fit_arbitrary.h"
 #include "surface_multi_fit.h"
+#include "function_prototypes.h"
 
 //kill MPI before quitting, when neccessary
 void die(int code) {
@@ -241,6 +242,18 @@ int main(int argc, char **argv) {
         output(
             "MAIN: *************************************************\n");
     }
+
+    polar_cuda(system);
+    thole_resize_matrices(system);
+    thole_amatrix(system);
+    printf("N: %d\n", system->checkpoint->thole_N_atom);
+    for (int i = 0; i < 3 * system->checkpoint->thole_N_atom; i++) {
+        for (int j = 0; j < 3 * system->checkpoint->thole_N_atom; j++) {
+            printf("%10.7f ", system->A_matrix[i][j]);
+        }
+        printf("\n");
+    }
+    exit(0);
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */
         if (surface(system) < 0) {

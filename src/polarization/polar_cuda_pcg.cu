@@ -8,6 +8,7 @@ University of South Florida
 
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
+#include <stdio.h>
 
 #define MAXFVALUE	1.0e13f
 
@@ -21,6 +22,16 @@ __global__ void precondition_z(int N, float *A, float *r, float *z)
     int i = blockIdx.x;
     if (i<N) z[i] = 1.0/A[N*i+i]*r[i];
     return;
+}
+
+__global__ void print_a(int N, float *A) {
+    for (int i = 0; i < 3 * 3 * N * N; i++) {
+        printf("%10.7f ", A[i]);
+        if ((i + 1) % (N * 3) == 0 && i != 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
 }
 
 __global__ void build_a(int N, float *A, const float damp, float3 *pos, float *pols)
@@ -88,6 +99,7 @@ __global__ void build_a(int N, float *A, const float damp, float3 *pos, float *p
             dri.y = dr.y - dri.y;
             dri.z = dr.z - dri.z;
             r2 = dri.x*dri.x + dri.y*dri.y + dri.z*dri.z;
+
 
             // various powers of r that we need
             r = sqrtf(r2);
@@ -311,6 +323,7 @@ void* polar_cuda(void *ptr)
 
     // make A matrix on GPU
     build_a<<<N,THREADS>>>(N, A, system->polar_damp, pos, pols);
+    print_a<<<1, 1>>>(N, A);
     cudaErrorHandler(cudaGetLastError(),__LINE__-1);
 
     // R = B - A*X0

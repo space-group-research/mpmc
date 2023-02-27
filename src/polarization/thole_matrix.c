@@ -62,10 +62,13 @@ void thole_amatrix(system_t *system) {
     for (i = 0; i < N; i++) {
         ii = i * 3;
         for (p = 0; p < 3; p++) {
-            if (atom_array[i]->polarizability != 0.0)
+            if (atom_array[i]->polarizability != 0.0) {
                 system->A_matrix[ii + p][ii + p] = 1.0 / atom_array[i]->polarizability;
-            else
+                printf("polarizability: %f\n", atom_array[i]->polarizability);
+            }
+            else {
                 system->A_matrix[ii + p][ii + p] = MAXVALUE;
+            }
         }
     }
 
@@ -118,6 +121,9 @@ void thole_amatrix(system_t *system) {
                     error(
                         "error: something unexpected happened in thole_matrix.c");
             }
+            
+            printf("damp1: %f\n", wdamp1);
+            printf("damp2: %f\n", wdamp2);
 
             /* build the tensor */
             for (p = 0; p < 3; p++) {

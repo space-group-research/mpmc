@@ -20,5 +20,5 @@ pqr_input                       input.pqr     ! the input PQR file to read
 pop_histogram                   on            ! generate a histogram file for visualization later
 pop_histogram_output            histogram.dat ! filename for the above
 cuda on
-polar_damp_type                 linear
+polar_damp_type                 exponential
 polar_damp                      1

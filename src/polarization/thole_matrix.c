@@ -11,27 +11,46 @@ University of South Florida
 void print_matrix(int N, double **matrix) {
     int i, j;
 
-    printf(
-        "\n");
+    printf("\n");
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            printf(
-                "%.3f ", matrix[i][j]);
+            printf("%8.5f ", matrix[i][j]);
         }
-        printf(
-            "\n");
+        printf("\n");
     }
-    printf(
-        "\n");
+    printf("\n");
+}
+
+void zero_out_kmatrix(system_t *system, int N) {
+    int i, j;
+    /* zero out the matrix */
+    for (i = 0; i < 3 * N; i++) {
+        for (j = 0; j < 3 * N; j++) {
+            system->K_matrix[i][j] = 0;
+        }
+    }
 }
 
 void zero_out_amatrix(system_t *system, int N) {
     int i, j;
     /* zero out the matrix */
     for (i = 0; i < 3 * N; i++)
-        for (j = 0; j < 3 * N; j++)
+        for (j = 0; j < 3 * N; j++) {
             system->A_matrix[i][j] = 0;
+            system->K_matrix[i][j] = 0;
+        }
     return;
+}
+
+void thole_kmatrix(system_t *system) {
+    int N = system->natoms;
+    atom_t **atom_arr = system->atom_array;
+    zero_out_kmatrix(system, N);
+    for (int i = 0; i < 3 * N; i++) {
+        int atom_num = i / 3;
+        double denom = atom_arr[atom_num]->omega * atom_arr[atom_num]->omega * atom_arr[atom_num]->polarizability;
+        system->K_matrix[i][i] = 1 / denom;
+    }
 }
 
 /* calculate the dipole field tensor */
@@ -55,6 +74,7 @@ void thole_amatrix(system_t *system) {
     //array of atoms generated in pairs.c
     atom_array = system->atom_array;
     N = system->natoms;
+    printf("N: %d\n", N);
 
     zero_out_amatrix(system, N);
 
@@ -64,7 +84,6 @@ void thole_amatrix(system_t *system) {
         for (p = 0; p < 3; p++) {
             if (atom_array[i]->polarizability != 0.0) {
                 system->A_matrix[ii + p][ii + p] = 1.0 / atom_array[i]->polarizability;
-                printf("polarizability: %f\n", atom_array[i]->polarizability);
             }
             else {
                 system->A_matrix[ii + p][ii + p] = MAXVALUE;
@@ -122,8 +141,6 @@ void thole_amatrix(system_t *system) {
                         "error: something unexpected happened in thole_matrix.c");
             }
             
-            printf("damp1: %f\n", wdamp1);
-            printf("damp2: %f\n", wdamp2);
 
             /* build the tensor */
             for (p = 0; p < 3; p++) {
@@ -151,7 +168,7 @@ void thole_amatrix(system_t *system) {
     return;
 }
 
-/* for uvt runs, resize the A (and B) matrices */
+/* for uvt runs, resize the A (and B (and K)) matrices */
 void thole_resize_matrices(system_t *system) {
     int i, N, dN, oldN;
 
@@ -165,8 +182,12 @@ void thole_resize_matrices(system_t *system) {
 
     // grow A matricies by free/malloc (to prevent fragmentation)
     //free the A matrix
-    for (i = 0; i < oldN; i++) free(system->A_matrix[i]);
+    for (i = 0; i < oldN; i++){
+        free(system->A_matrix[i]);
+        free(system->K_matrix[i]);
+    } 
     free(system->A_matrix);
+    free(system->K_matrix);
 
     //if not iterative, free the B matrix
     if (!system->polar_iterative) {
@@ -177,10 +198,14 @@ void thole_resize_matrices(system_t *system) {
     //(RE)allocate the A matrix
     system->A_matrix = calloc(N, sizeof(double *));
     memnullcheck(system->A_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
+    system->K_matrix = calloc(N, sizeof(double *));
+    memnullcheck(system->K_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
 
     for (i = 0; i < N; i++) {
         system->A_matrix[i] = malloc(N * sizeof(double));
         memnullcheck(system->A_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
+        system->K_matrix[i] = malloc(N * sizeof(double));
+        memnullcheck(system->K_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
     }
 
     //(RE)allocate the B matrix if not iterative

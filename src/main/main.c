@@ -218,13 +218,9 @@ int main(int argc, char **argv) {
     printf("-------------------------\nCPU\n");
     thole_resize_matrices(system);
     thole_amatrix(system);
-    printf("N: %d\n", system->checkpoint->thole_N_atom);
-    for (int i = 0; i < 3 * system->checkpoint->thole_N_atom; i++) {
-        for (int j = 0; j < 3 * system->checkpoint->thole_N_atom; j++) {
-            printf("%10.7f ", system->A_matrix[i][j]);
-        }
-        printf("\n");
-    }
+    //print_matrix(3 * system->checkpoint->thole_N_atom, system->A_matrix);
+    thole_kmatrix(system);
+    print_matrix(3 * system->checkpoint->thole_N_atom, system->K_matrix);
     exit(0);
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */

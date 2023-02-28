@@ -12,7 +12,7 @@
 
 #define MAXFVALUE 1.0e13f
 
-#define THREADS 64
+#define THREADS 1024
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -31,8 +31,9 @@ __global__ void print_b(int N, float *B) {
 }
 
 __global__ void print_a(int N, float *A) {
+  printf("N: %d\n", N);
   for (int i = 0; i < 3 * 3 * N * N; i++) {
-    printf("%10.7f ", A[i]);
+    printf("%8.5f ", A[i]);
     if ((i + 1) % (N * 3) == 0 && i != 0) {
       printf("\n");
     }
@@ -40,6 +41,10 @@ __global__ void print_a(int N, float *A) {
   printf("\n");
 }
 
+/**
+ * Method uses exponential polarization regardless of method requested in input
+ * script
+ */
 __global__ void build_a(int N, float *A, const float damp, float3 *pos,
                         float *pols) {
   int i = blockIdx.x, j;
@@ -123,8 +128,6 @@ __global__ void build_a(int N, float *A, const float damp, float3 *pos,
       damping_term1 = 1.0f - expr * (0.5f * damp2 * r2 + damp * r + 1.0f);
       damping_term2 = 1.0f - expr * (damp3 * r * r2 / 6.0f + 0.5f * damp2 * r2 +
                                      damp * r + 1.0f);
-      printf("damp1: %f\n", damping_term1);
-      printf("damp2: %f\n", damping_term2);
 
       // construct the Tij tensor field, unrolled by hand to avoid conditional
       // on the diagonal terms
@@ -358,7 +361,7 @@ void *polar_cuda(void *ptr) {
 
   // make A matrix on GPU
   build_a<<<N, THREADS>>>(N, A, system->polar_damp, pos, pols);
-  print_a<<<1, 1>>>(N, A);
+  // print_a<<<1, 1>>>(N, A);
   cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
 
   // R = B - A*X0

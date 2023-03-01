@@ -214,12 +214,12 @@ int main(int argc, char **argv) {
         output("MAIN: *************************************************\n");
     }
 
-    polar_cuda(system);
+    // polar_cuda(system);
     printf("-------------------------\nCPU\n");
     thole_resize_matrices(system);
     thole_amatrix(system);
     //print_matrix(3 * system->checkpoint->thole_N_atom, system->A_matrix);
-    thole_kmatrix(system);
+    mbvdw(system);
     print_matrix(3 * system->checkpoint->thole_N_atom, system->K_matrix);
     exit(0);
 

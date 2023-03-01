@@ -6,6 +6,7 @@ University of South Florida
 
 */
 
+#include <math.h>
 #include <mc.h>
 
 void print_matrix(int N, double **matrix) {
@@ -21,12 +22,12 @@ void print_matrix(int N, double **matrix) {
     printf("\n");
 }
 
-void zero_out_kmatrix(system_t *system, int N) {
+void zero_out_matrix(double **matrix, int N) {
     int i, j;
     /* zero out the matrix */
     for (i = 0; i < 3 * N; i++) {
         for (j = 0; j < 3 * N; j++) {
-            system->K_matrix[i][j] = 0;
+            matrix[i][j] = 0;
         }
     }
 }
@@ -34,22 +35,67 @@ void zero_out_kmatrix(system_t *system, int N) {
 void zero_out_amatrix(system_t *system, int N) {
     int i, j;
     /* zero out the matrix */
-    for (i = 0; i < 3 * N; i++)
+    for (i = 0; i < 3 * N; i++) {
         for (j = 0; j < 3 * N; j++) {
             system->A_matrix[i][j] = 0;
-            system->K_matrix[i][j] = 0;
         }
+    }
     return;
 }
 
-void thole_kmatrix(system_t *system) {
+void build_l_inverse(system_t *system) {
+    zero_out_matrix(system->L_inverse_matrix, system->natoms);
+    for (int i = 0; i < system->natoms; i++) {
+        system->L_inverse_matrix[i][i] = 1 / system->L_matrix[i][i];
+    }
+}
+
+void build_lmatrix(system_t *system) {
+    int N = system->natoms;
+    zero_out_matrix(system->L_matrix, N);
+    for (int i = 0; i < 3 * N; i++) {
+         system->L_matrix[i][i] = sqrt(system->K_matrix[i][i]);
+    }
+}
+
+void build_kmatrix(system_t *system) {
     int N = system->natoms;
     atom_t **atom_arr = system->atom_array;
-    zero_out_kmatrix(system, N);
+    zero_out_matrix(system->K_matrix, N);
+    printf("omega: %f\n", atom_arr[0]->omega);
+    printf("polarizability: %f\n", atom_arr[0]->polarizability);
     for (int i = 0; i < 3 * N; i++) {
         int atom_num = i / 3;
         double denom = atom_arr[atom_num]->omega * atom_arr[atom_num]->omega * atom_arr[atom_num]->polarizability;
         system->K_matrix[i][i] = 1 / denom;
+    }
+}
+
+
+void mbvdw(system_t *system) {
+    thole_amatrix(system);
+    build_kmatrix(system);
+    build_lmatrix(system);
+    build_l_inverse(system);
+
+    int N = system->natoms;
+    atom_t **atom_arr = system->atom_array;
+    int matrix_size = 3 * 3 * N * N;
+    double C_matrix[3 * N][3 * N];
+
+    for (int i = 0; i < 3 * N; i++) {
+        for (int j = 0; j < 3 * N; j++) {
+            // Take the A matrix entry at a spot and multiply by the omega of each atom as well as 
+            // the square root of the product of the polarizabilities
+            C_matrix[i][j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
+                             sqrtf(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
+        }
+    }
+    for (int i = 0; i < 3 * N; i++) {
+        for (int j = 0; j < 3 * N; j++) {
+            printf("%8.5f ", C_matrix[i][j]);
+        }
+        printf("\n");
     }
 }
 
@@ -185,9 +231,13 @@ void thole_resize_matrices(system_t *system) {
     for (i = 0; i < oldN; i++){
         free(system->A_matrix[i]);
         free(system->K_matrix[i]);
+        free(system->L_matrix[i]);
+        free(system->L_inverse_matrix[i]);
     } 
     free(system->A_matrix);
     free(system->K_matrix);
+    free(system->L_matrix);
+    free(system->L_inverse_matrix);
 
     //if not iterative, free the B matrix
     if (!system->polar_iterative) {
@@ -200,12 +250,20 @@ void thole_resize_matrices(system_t *system) {
     memnullcheck(system->A_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
     system->K_matrix = calloc(N, sizeof(double *));
     memnullcheck(system->K_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
+    system->L_matrix = calloc(N, sizeof(double *));
+    memnullcheck(system->L_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
+    system->L_inverse_matrix = calloc(N, sizeof(double *));
+    memnullcheck(system->L_inverse_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
 
     for (i = 0; i < N; i++) {
         system->A_matrix[i] = malloc(N * sizeof(double));
         memnullcheck(system->A_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
         system->K_matrix[i] = malloc(N * sizeof(double));
         memnullcheck(system->K_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
+        system->L_matrix[i] = malloc(N * sizeof(double));
+        memnullcheck(system->L_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
+        system->L_inverse_matrix[i] = malloc(N * sizeof(double));
+        memnullcheck(system->L_inverse_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
     }
 
     //(RE)allocate the B matrix if not iterative

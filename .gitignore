@@ -7,3 +7,4 @@ build/*
 cmake-build-debug/
 .dropbox.attr
 .vscode
+.cache/

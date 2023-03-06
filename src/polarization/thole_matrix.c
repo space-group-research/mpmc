@@ -114,6 +114,7 @@ double mbvdw(system_t *system) {
     char uplo = 'U';
     double *eigenvalues = malloc( 3 * N * sizeof(double));
     //int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, 3 * N, C_matrix, 3 * N, eigenvalues);
+    free(C_pointer);
     free(eigenvalues);
 }
 

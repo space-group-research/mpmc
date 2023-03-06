@@ -111,6 +111,7 @@ if(QM_ROTATION)
         src/quantum_rotation/rotational_integrate.c
         src/quantum_rotation/rotational_potential.c)
     set(LIB ${LIB} lapack)
+    set(LIB ${LIB} lapacke)
 else()
     message("-- QM Rotation Disabled")
 endif()

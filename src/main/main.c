@@ -218,9 +218,7 @@ int main(int argc, char **argv) {
     printf("-------------------------\nCPU\n");
     thole_resize_matrices(system);
     thole_amatrix(system);
-    //print_matrix(3 * system->checkpoint->thole_N_atom, system->A_matrix);
     mbvdw(system);
-    print_matrix(3 * system->checkpoint->thole_N_atom, system->K_matrix);
     exit(0);
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */

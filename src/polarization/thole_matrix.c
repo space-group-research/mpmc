@@ -8,6 +8,8 @@ University of South Florida
 
 #include <math.h>
 #include <mc.h>
+#include <lapacke.h>
+
 
 void print_matrix(int N, double **matrix) {
     int i, j;
@@ -72,7 +74,7 @@ void build_kmatrix(system_t *system) {
 }
 
 
-void mbvdw(system_t *system) {
+double mbvdw(system_t *system) {
     thole_amatrix(system);
     build_kmatrix(system);
     build_lmatrix(system);
@@ -82,6 +84,7 @@ void mbvdw(system_t *system) {
     atom_t **atom_arr = system->atom_array;
     int matrix_size = 3 * 3 * N * N;
     double C_matrix[3 * N][3 * N];
+    double *C_pointer = (double *)malloc(matrix_size * sizeof(double));
 
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
@@ -89,6 +92,9 @@ void mbvdw(system_t *system) {
             // the square root of the product of the polarizabilities
             C_matrix[i][j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
                              sqrtf(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
+            C_pointer[i * 3 * N + j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
+                                       sqrtf(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
+
         }
     }
     for (int i = 0; i < 3 * N; i++) {
@@ -97,6 +103,18 @@ void mbvdw(system_t *system) {
         }
         printf("\n");
     }
+    printf("\n");
+    for (int i = 0; i < 3 * N; i++) {
+        for (int j = 0; j < 3 * N; j++) {
+            printf("%8.5f ", C_pointer[i * 3 * N + j]);
+        }
+        printf("\n");
+    }
+    char jobz = 'N';
+    char uplo = 'U';
+    double *eigenvalues = malloc( 3 * N * sizeof(double));
+    //int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, 3 * N, C_matrix, 3 * N, eigenvalues);
+    free(eigenvalues);
 }
 
 /* calculate the dipole field tensor */

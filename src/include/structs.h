@@ -455,6 +455,7 @@ typedef struct _system {
   int damp_type;
   /* A matrix, B matrix, polarizability tensor, and matricies to assist in mbvdw */
   double **A_matrix, **B_matrix, C_matrix[3][3], **K_matrix, **L_matrix, **L_inverse_matrix;
+  double mbvdw_energy; // Energy value used in mbvdw
   vdw_t *vdw_eiso_info; // keeps track of molecule vdw self energies
   double *polar_wolf_alpha_table, polar_wolf_alpha_lookup_cutoff;
   int polar_wolf_alpha_table_max; // stores the total size of the array

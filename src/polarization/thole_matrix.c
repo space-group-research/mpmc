@@ -6,9 +6,10 @@ University of South Florida
 
 */
 
+#include <lapacke.h>
 #include <math.h>
 #include <mc.h>
-#include <lapacke.h>
+#include "defines.h"
 
 
 void print_matrix(int N, double **matrix) {
@@ -74,7 +75,7 @@ void build_kmatrix(system_t *system) {
 }
 
 
-double mbvdw(system_t *system) {
+void mbvdw(system_t *system) {
     thole_amatrix(system);
     build_kmatrix(system);
     build_lmatrix(system);
@@ -83,38 +84,36 @@ double mbvdw(system_t *system) {
     int N = system->natoms;
     atom_t **atom_arr = system->atom_array;
     int matrix_size = 3 * 3 * N * N;
-    double C_matrix[3 * N][3 * N];
-    double *C_pointer = (double *)malloc(matrix_size * sizeof(double));
+    double *C_matrix = (double *)malloc(matrix_size * sizeof(double));
 
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
             // Take the A matrix entry at a spot and multiply by the omega of each atom as well as 
             // the square root of the product of the polarizabilities
-            C_matrix[i][j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
-                             sqrtf(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
-            C_pointer[i * 3 * N + j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
-                                       sqrtf(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
-
+            C_matrix[i * 3 * N + j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
+                                      sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
         }
-    }
-    for (int i = 0; i < 3 * N; i++) {
-        for (int j = 0; j < 3 * N; j++) {
-            printf("%8.5f ", C_matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-    for (int i = 0; i < 3 * N; i++) {
-        for (int j = 0; j < 3 * N; j++) {
-            printf("%8.5f ", C_pointer[i * 3 * N + j]);
-        }
-        printf("\n");
     }
     char jobz = 'N';
     char uplo = 'U';
     double *eigenvalues = malloc( 3 * N * sizeof(double));
-    //int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, 3 * N, C_matrix, 3 * N, eigenvalues);
-    free(C_pointer);
+    int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, 3 * N, C_matrix, 3 * N, eigenvalues);
+    if (info > 0) {
+        printf("Eigenvalues failed");
+        exit(1);
+    }
+    double energy = 0;
+    for (int i = 0; i < 3 * N; i++) {
+        double arg = ( HBAR * eigenvalues[i]) / ( 2 * KB * system->temperature);
+        energy += .5 * HBAR * eigenvalues[i] * (cosh(arg) / sinh(arg));
+    }
+    printf("Eigenvalues: \n");
+    for (int i = 0; i < 3 * N; i++) {
+        printf("%.40f\n", eigenvalues[i]);
+    }
+    printf("Energy: %.40f\n", energy);
+    system->mbvdw_energy = energy;
+    free(C_matrix);
     free(eigenvalues);
 }
 

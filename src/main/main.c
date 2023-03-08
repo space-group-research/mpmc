@@ -217,9 +217,9 @@ int main(int argc, char **argv) {
     // polar_cuda(system);
     printf("-------------------------\nCPU\n");
     thole_resize_matrices(system);
-    thole_amatrix(system);
     mbvdw(system);
-    exit(0);
+    cleanup(system);
+    die(0);
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */
         if (surface(system) < 0) {

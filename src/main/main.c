@@ -214,8 +214,6 @@ int main(int argc, char **argv) {
         output("MAIN: *************************************************\n");
     }
 
-    // polar_cuda(system);
-    printf("-------------------------\nCPU\n");
     thole_resize_matrices(system);
     mbvdw(system);
     cleanup(system);

@@ -15,7 +15,7 @@ University of South Florida
 void print_matrix(int N, double **matrix) {
     int i, j;
 
-    printf("\n");
+    printf("\nA matrix:\n");
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             printf("%8.5f ", matrix[i][j]);
@@ -65,8 +65,6 @@ void build_kmatrix(system_t *system) {
     int N = system->natoms;
     atom_t **atom_arr = system->atom_array;
     zero_out_matrix(system->K_matrix, N);
-    printf("omega: %f\n", atom_arr[0]->omega);
-    printf("polarizability: %f\n", atom_arr[0]->polarizability);
     for (int i = 0; i < 3 * N; i++) {
         int atom_num = i / 3;
         double denom = atom_arr[atom_num]->omega * atom_arr[atom_num]->omega * atom_arr[atom_num]->polarizability;
@@ -77,6 +75,7 @@ void build_kmatrix(system_t *system) {
 
 void mbvdw(system_t *system) {
     thole_amatrix(system);
+    print_matrix(system->natoms * 3, system->A_matrix);
     build_kmatrix(system);
     build_lmatrix(system);
     build_l_inverse(system);
@@ -94,6 +93,14 @@ void mbvdw(system_t *system) {
                                       sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
         }
     }
+    printf("\nC matrix: \n");
+    for (int i = 0; i < 3 * N; i++) {
+        for (int j = 0; j < 3 * N; j++) {
+            printf("%8.5f ", C_matrix[i * 3 * N + j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
     char jobz = 'N';
     char uplo = 'U';
     double *eigenvalues = malloc( 3 * N * sizeof(double));
@@ -104,12 +111,14 @@ void mbvdw(system_t *system) {
     }
     double energy = 0;
     for (int i = 0; i < 3 * N; i++) {
-        double arg = ( HBAR * eigenvalues[i]) / ( 2 * KB * system->temperature);
+        double arg = ( HBAR * eigenvalues[i] ) / ( 2 * KB * system->temperature );
         energy += .5 * HBAR * eigenvalues[i] * (cosh(arg) / sinh(arg));
-    }
-    printf("Eigenvalues: \n");
-    for (int i = 0; i < 3 * N; i++) {
-        printf("%.40f\n", eigenvalues[i]);
+        printf("arg: %.40f\n", arg);
+        printf("sinh: %.40f\n", sinh(arg));
+        printf("cosh: %.40f\n", cosh(arg));
+        printf("cosh / sinh: %.40f\n", cosh(arg) / sinh(arg));
+        printf("eigenvalue: %.40f\n", eigenvalues[i]);
+        printf("energy: %40f\n\n", eigenvalues[i] * cosh(arg) / sinh(arg));
     }
     printf("Energy: %.40f\n", energy);
     system->mbvdw_energy = energy;
@@ -138,7 +147,6 @@ void thole_amatrix(system_t *system) {
     //array of atoms generated in pairs.c
     atom_array = system->atom_array;
     N = system->natoms;
-    printf("N: %d\n", N);
 
     zero_out_amatrix(system, N);
 

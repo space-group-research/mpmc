@@ -132,8 +132,6 @@ if(CUDA)
 else()
     add_executable(${PROJECT_NAME} ${SRC})
 endif()
-find_package(lapacke REQUIRED)
-target_link_libraries(${PROJECT_NAME} lapacke)
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(MPI)

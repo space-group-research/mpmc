@@ -1,0 +1,14 @@
+# OpenDX format coordinate file for frozen atoms
+object 1 class array type float rank 1 shape 3 items 0 data follows
+object 2 class array type int rank 1 shape 2 items 0 data follows
+attribute "element type" string "lines"
+attribute "ref" string "positions"
+object 3 class array type float rank 0 items 0 data follows
+attribute "dep" string "positions"
+object 4 class array type float rank 1 shape 3 items 0 data follows
+object "irregular positions irregular connections" class field
+component "positions" value 1
+component "connections" value 2
+component "data" value 3
+component "colors" value 4
+end

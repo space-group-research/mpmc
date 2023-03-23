@@ -6,7 +6,7 @@ University of South Florida
 
 */
 
-#include <lapacke.h>
+//#include <lapack.h>
 #include <math.h>
 #include <mc.h>
 #include "defines.h"
@@ -72,7 +72,17 @@ void build_kmatrix(system_t *system) {
     }
 }
 
+#ifdef VDW
+//prototype for dsyev (LAPACK)
+extern void dsyev_(char *, char *, int *, double *, int *, double *, double *, int *, int *);
+#else
+void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, int *h, int *i) {
+    error(
+        "ERROR: Not compiled with Linear Algebra VDW.\n");
+    die(-1);
+}
 
+#endif
 void mbvdw(system_t *system) {
     thole_amatrix(system);
     print_matrix(system->natoms * 3, system->A_matrix);
@@ -87,16 +97,19 @@ void mbvdw(system_t *system) {
 
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
-            // Take the A matrix entry at a spot and multiply by the omega of each atom as well as 
-            // the square root of the product of the polarizabilities
-            C_matrix[i * 3 * N + j] = system->A_matrix[i][j] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
+            /* LAPACK using 1D arrays for storing matricies.
+                / 0  3  6 \
+                | 1  4  7 |		= 	[ 0 1 2 3 4 5 6 7 8 ]
+                \ 2  5  8 /									*/
+            // C_matrix is stored in reverse order because fortran uses oppositely aligned arrays from C
+            C_matrix[i * 3 * N + j] = system->A_matrix[j][i] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
                                       sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
         }
     }
     printf("\nC matrix: \n");
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
-            printf("%8.5f ", C_matrix[i * 3 * N + j]);
+            printf("%8.5f ", C_matrix[j * 3 * N + i]);
         }
         printf("\n");
     }
@@ -104,10 +117,18 @@ void mbvdw(system_t *system) {
     char jobz = 'N';
     char uplo = 'U';
     double *eigenvalues = malloc( 3 * N * sizeof(double));
-    int info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, 3 * N, C_matrix, 3 * N, eigenvalues);
+    int matrixDimension = 3 * N;
+    int lda = 3 * N;
+    int lwork = -1;
+    int info;
+    double *work = malloc(sizeof(double));
+    dsyev_(&jobz, &uplo, &matrixDimension, C_matrix, &lda, eigenvalues, work, &lwork, &info);
+    lwork = (int)work[0];
+    work = realloc(work, lwork * sizeof(double));
+    dsyev_(&jobz, &uplo, &matrixDimension, C_matrix, &lda, eigenvalues, work, &lwork, &info);
     if (info > 0) {
         printf("Eigenvalues failed");
-        exit(1);
+        die(-1);
     }
     double energy = 0;
     for (int i = 0; i < 3 * N; i++) {

@@ -1,6 +1,6 @@
 job_name                        AR_TEST ! job name, which will determine default output file names
 
-ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
+ensemble                        total_energy ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
 
 seed                            1024    ! initial seed for the RNG
 numsteps                        10000 ! Total number of MC steps to run.
@@ -19,6 +19,5 @@ abcbasis                        25.669 25.669 25.669 90 90 90 ! system cell defi
 pqr_input                       input1.pqr     ! the input PQR file to read
 pop_histogram                   on            ! generate a histogram file for visualization later
 pop_histogram_output            histogram.dat ! filename for the above
-cuda on
 polar_damp_type                 exponential
 polar_damp                      1

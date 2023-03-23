@@ -11,6 +11,7 @@ University of South Florida
 #include <mc.h>
 #include "defines.h"
 
+#define halfHBAR 3.81911146e-12     //Ks
 
 void print_matrix(int N, double **matrix) {
     int i, j;
@@ -83,9 +84,10 @@ void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, i
 }
 
 #endif
+
 void mbvdw(system_t *system) {
     thole_amatrix(system);
-    print_matrix(system->natoms * 3, system->A_matrix);
+    //print_matrix(system->natoms * 3, system->A_matrix);
     build_kmatrix(system);
     build_lmatrix(system);
     build_l_inverse(system);
@@ -106,6 +108,7 @@ void mbvdw(system_t *system) {
                                       sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
         }
     }
+    /*
     printf("\nC matrix: \n");
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
@@ -113,6 +116,7 @@ void mbvdw(system_t *system) {
         }
         printf("\n");
     }
+    */
     printf("\n\n");
     char jobz = 'N';
     char uplo = 'U';
@@ -132,19 +136,19 @@ void mbvdw(system_t *system) {
     }
     double energy = 0;
     for (int i = 0; i < 3 * N; i++) {
-        double arg = ( HBAR * eigenvalues[i] ) / ( 2 * KB * system->temperature );
-        energy += .5 * HBAR * eigenvalues[i] * (cosh(arg) / sinh(arg));
-        printf("arg: %.40f\n", arg);
-        printf("sinh: %.40f\n", sinh(arg));
-        printf("cosh: %.40f\n", cosh(arg));
-        printf("cosh / sinh: %.40f\n", cosh(arg) / sinh(arg));
-        printf("eigenvalue: %.40f\n", eigenvalues[i]);
-        printf("energy: %40f\n\n", eigenvalues[i] * cosh(arg) / sinh(arg));
+        if (eigenvalues[i] < 0) {
+            eigenvalues[i] = 0;
+        }
+        energy += sqrt(eigenvalues[i]);
+        printf("%f\n", sqrt(eigenvalues[i]));
     }
+    //convert a.u. -> s^-1 -> K
+    energy *= au2invseconds * halfHBAR;
     printf("Energy: %.40f\n", energy);
     system->mbvdw_energy = energy;
     free(C_matrix);
     free(eigenvalues);
+    free(work);
 }
 
 /* calculate the dipole field tensor */

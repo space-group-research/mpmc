@@ -1,0 +1,51 @@
+job_name                    muvt
+
+ensemble                    total_energy
+
+seed                        1024
+numsteps                    10000
+corrtime                    100
+
+insert_probability          0.666
+move_factor                 0.01
+rot_factor                  0.10
+
+temperature                 303
+pressure                    20
+
+parallel_restarts           on
+
+phahst                      on
+extrapolate_disp_coeffs     on
+damp_dispersion             on
+cavity_autoreject_repulsion 10000
+
+h2_fugacity                on
+feynman_hibbs              on
+feynman_hibbs_order        4
+
+polarization                on
+polar_damp_type             exponential
+polar_damp                  1
+polar_wolf                  on
+polar_wolf_alpha            0.13
+
+polar_iterative             on
+polar_palmo                 on
+polar_gs_ranked             on
+polar_gamma                 1.03
+polar_precision             0.001
+
+read_pqr_box                on
+pqr_input                   HKUST-1.pqr
+
+pop_histogram               off
+pop_histogram_output        /dev/null
+energy_output               /dev/null
+traj_output                 /dev/null
+field_output                /dev/null
+dipole_output               /dev/null
+frozen_output               /dev/null
+
+
+abcbasis                    26.343  26.343  26.343  90  90  90

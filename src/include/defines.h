@@ -5,14 +5,14 @@
 #define M_PI 3.14159265358979323846
 #endif /* M_PI */
 
-#define H 6.626068e-34    /* Planck's constant in J s */
+#define PLANCKS_CONSTANT 6.626068e-34    /* Planck's constant in J s */
 #define HBAR 1.054571e-34 /* above divided by 2pi in J s */
 #define HBAR2 1.11211999e-68
 #define HBAR4 1.23681087e-136
 #define KB 1.3806503e-23 /* Boltzmann's constant in J/K */
 #define KB2 1.90619525e-46
 #define NA 6.0221415e23 /* Avogadro's number */
-#define C 2.99792458e8  /* speed of light in vacuum in m/s */
+#define SPEED_OF_LIGHT 2.99792458e8  /* speed of light in vacuum in m/s */
 
 /* H2 specific constants */
 #define H2_MASS 3.348e-27              /* mass of H2 molecule in kg */

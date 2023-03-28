@@ -1,3 +1,4 @@
+#include "defines.h"
 #include <mc.h>
 #ifdef MPI
 #include <mpi.h>
@@ -232,7 +233,7 @@ void qrot_options(system_t *system) {
         die(-1);
     } else {
         sprintf(linebuf,
-                "INPUT: Quantum rotational constant B = %.3f K (%.3f cm^-1)\n", system->quantum_rotation_B, system->quantum_rotation_B * KB / (100.0 * H * C));
+                "INPUT: Quantum rotational constant B = %.3f K (%.3f cm^-1)\n", system->quantum_rotation_B, system->quantum_rotation_B * KB / (100.0 * PLANCKS_CONSTANT * SPEED_OF_LIGHT));
         output(linebuf);
     }
 

@@ -2,6 +2,7 @@
 #define STRUCTS_H
 
 #include "defines.h"
+#include <stdio.h>
 
 /* complex value */
 typedef struct _complex_t {

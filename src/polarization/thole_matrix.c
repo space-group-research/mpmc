@@ -118,6 +118,7 @@ void mbvdw(system_t *system) {
     }
     */
     printf("\n\n");
+
     char jobz = 'N';
     char uplo = 'U';
     double *eigenvalues = malloc( 3 * N * sizeof(double));
@@ -134,17 +135,19 @@ void mbvdw(system_t *system) {
         printf("Eigenvalues failed");
         die(-1);
     }
+
     double energy = 0;
     for (int i = 0; i < 3 * N; i++) {
         if (eigenvalues[i] < 0) {
             eigenvalues[i] = 0;
         }
         energy += sqrt(eigenvalues[i]);
-        printf("%f\n", sqrt(eigenvalues[i]));
+        //printf("%f\n", sqrt(eigenvalues[i]));
     }
+    printf("Energy: %.4le\n", energy);
     //convert a.u. -> s^-1 -> K
     energy *= au2invseconds * halfHBAR;
-    printf("Energy: %.40f\n", energy);
+    printf("Energy: %.4le\n", energy);
     system->mbvdw_energy = energy;
     free(C_matrix);
     free(eigenvalues);

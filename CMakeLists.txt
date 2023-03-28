@@ -78,7 +78,6 @@ src/polarization/thole_polarizability.c
 src/polarization/thole_matrix.c
 src/polarization/polar_ewald.c
 src/polarization/thole_iterative.c
-# src/polarization/polar_cuda_pcg.cu
 )
 
 if(MPI)
@@ -99,6 +98,7 @@ if(CUDA)
     set(SRC ${SRC} src/polarization/polar_cuda_pcg.cu)
     set(CUDA_PROPAGATE_HOST_FLAGS OFF)
     find_package(Threads REQUIRED)
+    find_package(lapack REQUIRED)
 else()
     message("-- CUDA Disabled")
 endif()
@@ -128,7 +128,10 @@ include_directories(${INCLUDE})
 if(CUDA)
     cuda_add_executable(${PROJECT_NAME} ${SRC})
     cuda_add_cublas_to_target(${PROJECT_NAME})
-    target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
+    # link_directories(/opt/cuda/lib64/libcusolver.so)
+    find_library(CUSOLVER_LIBRARY cusolver HINTS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+    target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${CUSOLVER_LIBRARY})
+    link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 else()
     add_executable(${PROJECT_NAME} ${SRC})
 endif()

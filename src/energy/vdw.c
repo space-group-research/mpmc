@@ -16,6 +16,13 @@ energy calculation.
 
 #include <mc.h>
 #include <math.h>
+
+#ifndef CUDA
+#include <cuda_runtime.h>
+#include <cusolverDn.h>
+#include <cublas_v2.h>
+#endif
+
 #define TWOoverHBAR 2.6184101e11    //K^-1 s^-1
 #define cHBAR 7.63822291e-12        //Ks //HBAR is already taken to be in Js
 #define halfHBAR 3.81911146e-12     //Ks
@@ -154,8 +161,8 @@ void printevects(struct mtx *M) {
 double *lapack_diag(struct mtx *M, int jobtype) {
     char job;         //job type
     char uplo = 'L';  //operate on lower triagle
-    double *work;     //working space for dsyev
-    int lwork;        //size of work array
+    double *workArr;     //working space for dsyev
+    int workSize;        //size of work array
     int rval = 0;     //returned from dsyev_
     double *eigvals;
     char linebuf[MAXLINE];
@@ -170,30 +177,42 @@ double *lapack_diag(struct mtx *M, int jobtype) {
 
     //allocate eigenvalues array
     eigvals = malloc(M->dim * sizeof(double));
-    checknull(eigvals,
-              "double * eigvals", M->dim * sizeof(double));
+    checknull(eigvals, "double * eigvals", M->dim * sizeof(double));
     //optimize the size of work array
-    lwork = -1;
-    work = malloc(sizeof(double));
-    checknull(work,
-              "double * work", sizeof(double));
-    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);
+    workSize = -1;
+    workArr = malloc(sizeof(double));
+    checknull(workArr, "double * work", sizeof(double));
+
+    #ifndef CUDA
+
+    printf("want to be here------------------------\n");
+    cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VALUE;
+    cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
+    cusolverDnDsyevd_bufferSize(cusolverH, jobz, uplo, M->dim, M, M->dim, eigenvals, &workSize);
+    cudaMalloc(&work, lwork * sizeof(double));
+    cusolverDnDsyevd(cusolverH, jobz, uplo, M->dim, , M, M->dim, eigenvals, workArr, &workSize, devInfo);
+    cudaMemcpy(&rval, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+
+    #else
+
+    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
     //now optimize work array size is stored as work[0]
-    lwork = (int)work[0];
-    work = realloc(work, lwork * sizeof(double));
-    checknull(work,
-              "double * work", lwork * sizeof(double));
+    workSize = (int)workArr[0];
+    workArr = realloc(workArr, workSize * sizeof(double));
+    checknull(workArr, "double * work", workSize * sizeof(double));
     //diagonalize
-    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);
+    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
+    printf("dont want to be here --------------------\n");
+
+    #endif /* ifndef CUDA */
 
     if (rval != 0) {
-        sprintf(linebuf,
-                "error: LAPACK: dsyev returned error: %d\n", rval);
+        sprintf(linebuf, "error: LAPACK: dsyev returned error: %d\n", rval);
         error(linebuf);
         die(-1);
     }
 
-    free(work);
+    free(workArr);
 
     return eigvals;
 }
@@ -601,7 +620,9 @@ double vdw(system_t *system) {
 
     //return energy in inverse time (a.u.) units
     e_total = eigen2energy(eigvals, Cm->dim, system->temperature);
+    printf("etotal: %.4le\n", e_total);
     e_total *= au2invsec * halfHBAR;  //convert a.u. -> s^-1 -> K
+    printf("etotal now: %.4le\n", e_total);
 
     //vdw energy comparison
     if (system->polarvdw == 3)

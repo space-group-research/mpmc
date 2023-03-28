@@ -216,6 +216,7 @@ int main(int argc, char **argv) {
 
     thole_resize_matrices(system);
     mbvdw(system);
+    printf("vdw: %f\n", vdw(system));
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */
         if (surface(system) < 0) {

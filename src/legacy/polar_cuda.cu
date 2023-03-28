@@ -181,8 +181,8 @@ __global__ void thole_iterative_cuda(float4 *arg_ptr, int DATA_ARRAY_SIZE ) {
 
 extern "C" {
 
-float polar_cuda(system_t *system) {
 
+float polar_cuda(system_t *system) {
 	molecule_t *molecule_ptr;
 	atom_t *atom_ptr;
 	int current_iteration, i, p, q;	// local counters 

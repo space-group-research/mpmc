@@ -54,6 +54,7 @@ struct mtx *alloc_mtx(int dim) {
     //alloc matrix variable and set dim
     struct mtx *M = NULL;
     M = malloc(sizeof(struct mtx));
+    M = malloc(sizeof(struct mtx));
     checknull(M,
               "struct mtx * M", sizeof(struct mtx));
     M->dim = dim;
@@ -638,6 +639,7 @@ double vdw(system_t *system) {
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
+    
     if (system->polarvdw == 2)
         printevects(Cm);
 

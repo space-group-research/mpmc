@@ -144,10 +144,8 @@ void mbvdw(system_t *system) {
         energy += sqrt(eigenvalues[i]);
         //printf("%f\n", sqrt(eigenvalues[i]));
     }
-    printf("Energy: %.4le\n", energy);
     //convert a.u. -> s^-1 -> K
     energy *= au2invseconds * halfHBAR;
-    printf("Energy: %.4le\n", energy);
     system->mbvdw_energy = energy;
     free(C_matrix);
     free(eigenvalues);

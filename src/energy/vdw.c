@@ -17,7 +17,7 @@ energy calculation.
 #include <mc.h>
 #include <math.h>
 
-#ifndef CUDA
+#ifdef CUDA
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 #include <cublas_v2.h>
@@ -160,8 +160,6 @@ void printevects(struct mtx *M) {
 	\ 2  5  8 /									*/
 double *lapack_diag(struct mtx *M, int jobtype) {
     char job;         //job type
-    char uplo = 'L';  //operate on lower triagle
-    double *workArr;     //working space for dsyev
     int workSize;        //size of work array
     int rval = 0;     //returned from dsyev_
     double *eigvals;
@@ -180,21 +178,46 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     checknull(eigvals, "double * eigvals", M->dim * sizeof(double));
     //optimize the size of work array
     workSize = -1;
-    workArr = malloc(sizeof(double));
-    checknull(workArr, "double * work", sizeof(double));
 
-    #ifndef CUDA
+    #ifdef CUDA
 
-    printf("want to be here------------------------\n");
-    cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VALUE;
+    double *workArr;
+
+    // Declare arrays on the device
+    double *d_A, *d_W;
+    int *devInfo;
+    double *d_work;
+    int lwork = 0;
+    cusolverDnHandle_t cusolverH;
+    cusolverDnCreate(&cusolverH);
+
+    cudaMalloc((void **)&d_A, M->dim * M->dim * sizeof(double));
+    cudaMalloc((void **)&d_W, M->dim * sizeof(double));
+    cudaMalloc((void **)&devInfo, sizeof(int));
+    cudaMemcpy(d_A, M->val, M->dim * M->dim * sizeof(double), cudaMemcpyHostToDevice);
+
+    cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
     cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-    cusolverDnDsyevd_bufferSize(cusolverH, jobz, uplo, M->dim, M, M->dim, eigenvals, &workSize);
-    cudaMalloc(&work, lwork * sizeof(double));
-    cusolverDnDsyevd(cusolverH, jobz, uplo, M->dim, , M, M->dim, eigenvals, workArr, &workSize, devInfo);
-    cudaMemcpy(&rval, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+
+    // Find optimal workspace size
+    cusolverDnDsyevd_bufferSize(cusolverH, jobz, uplo, M->dim, d_A, M->dim, d_W, &lwork);
+    cudaMalloc( (void **) &d_work, lwork * sizeof(double));
+    // Solve for eigenvalues
+    cusolverDnDsyevd(cusolverH, jobz, uplo, M->dim, d_A, M->dim, d_W, d_work, lwork, devInfo);
+    cudaDeviceSynchronize();
+
+    cudaMemcpy(eigvals, d_W, M->dim * sizeof(double), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_A);
+    cudaFree(d_W);
+    cudaFree(devInfo);
+    cudaDeviceReset();
 
     #else
 
+    char uplo = 'L';  //operate on lower triagle
+    double *workArr = malloc(sizeof(double));
+    checknull(workArr, "double * work", sizeof(double));
     dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
     //now optimize work array size is stored as work[0]
     workSize = (int)workArr[0];
@@ -202,7 +225,6 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     checknull(workArr, "double * work", workSize * sizeof(double));
     //diagonalize
     dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
-    printf("dont want to be here --------------------\n");
 
     #endif /* ifndef CUDA */
 
@@ -600,7 +622,8 @@ double vdw(system_t *system) {
     double **Am = system->A_matrix;  //A_matrix
     struct mtx *Cm;                  //C_matrix (we use single pointer due to LAPACK requirements)
     double *eigvals;                 //eigenvales
-    double fh_corr, lr_corr;
+    double fh_corr = 0; 
+    double lr_corr = 0;
 
     N = system->natoms;
 
@@ -620,9 +643,8 @@ double vdw(system_t *system) {
 
     //return energy in inverse time (a.u.) units
     e_total = eigen2energy(eigvals, Cm->dim, system->temperature);
-    printf("etotal: %.4le\n", e_total);
+    printf("etotal: %e\n", e_total);
     e_total *= au2invsec * halfHBAR;  //convert a.u. -> s^-1 -> K
-    printf("etotal now: %.4le\n", e_total);
 
     //vdw energy comparison
     if (system->polarvdw == 3)
@@ -647,5 +669,7 @@ double vdw(system_t *system) {
     free(eigvals);
     free_mtx(Cm);
 
-    return e_total - e_iso + fh_corr + lr_corr;
+    double energy = e_total - e_iso + fh_corr + lr_corr;
+    printf("vdw: %e\n", energy);
+    return energy;
 }

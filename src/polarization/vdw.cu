@@ -1,5 +1,7 @@
-#include "cublas.h"
+#include "cublas_v2.h"
 #include <cuda_runtime.h>
+#include <cusolverDn.h>
+#include "defines.h"
 #include "structs.h"
 #include "function_prototypes.h"
 #include <stdio.h>
@@ -7,6 +9,7 @@
 
 #define THREADS 1024
 #define MAXFVALUE 1.0e13f
+#define halfHBAR 3.81911146e-12     //Ks
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -124,18 +127,20 @@ __global__ static void build_a(int N, float *A, const float damp, float3 *pos, f
 
 __global__
 void build_c(int matrix_size, int dim, float *A, float *pols, float *omegas, float *device_C_matrix) {
-    int i = blockIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= matrix_size) return;
 
-    const int N_per_thread = int(matrix_size - 0.5) / THREADS + 1;
-    const int threadid = threadIdx.x;
-    const int threadid_plus_one = threadIdx.x + 1;
-    for (int j = threadid * N_per_thread; j < threadid_plus_one * N_per_thread && j < matrix_size; j++) {
-        int row = j % dim;
-        int col = j / dim;
-        // Reverse aligned matrix because of fortran bindings
-        device_C_matrix[row * 3 * dim / 3 + col] = A[j] * omegas[col / 3] * omegas[row / 3] * 
-                                                   sqrt(pols[col / 3] * pols[row / 3]);
+    int row = i % dim;
+    int col = i / dim;
+    // Reverse aligned matrix because of fortran bindings
+    device_C_matrix[row * 3 * dim / 3 + col] = A[i] * omegas[col / 3] * omegas[row / 3] * 
+                                                sqrt(pols[col / 3] * pols[row / 3]);
+}
+
+__global__
+void print_arr(int arr_size, float *arr) {
+    for (int i = 0; i < arr_size; i++) {
+        printf("%.3le\n", arr[i]);
     }
 }
 
@@ -157,16 +162,17 @@ void build_kinvsquared(int matrix_size, int dim, float *pols, float *omegas, flo
     }
 }
 
-__global__ static void print_a(int N, float *A) {
+__global__ static void print_matrix(int N, float *A) {
     printf("N: %d\n", N);
     for (int i = 0; i < 3 * 3 * N * N; i++) {
-        printf("%8.5f ", A[i]);
+        printf("%.3le ", A[i]);
         if ((i + 1) % (N * 3) == 0 && i != 0) {
             printf("\n");
         }
     }
     printf("\n");
 }
+
 
 extern "C" {
 #include <stdlib.h>
@@ -214,7 +220,6 @@ extern "C" {
         cudaMalloc((void **)&device_omegas, N * sizeof(float));
         cudaMalloc((void **) &device_invKsquared_matrix, matrix_size * sizeof(float));
 
-
         // copy over the basis matrix
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -242,17 +247,51 @@ extern "C" {
         cudaMemcpy(device_pols, host_pols, N * sizeof(float), cudaMemcpyHostToDevice);
 
         build_a<<<N, THREADS>>>(N, device_A, system->polar_damp, device_pos, device_pols);
-        printf("here\n");
-
-        print_a<<<N, THREADS>>>(N, device_A);
-        exit(1);
+        cudaDeviceSynchronize();
 
         for (i = 0; i < N; i++) {
-            host_omegas[i] = system->atom_array[i]->polarizability;
+            host_omegas[i] = system->atom_array[i]->omega;
         }
         cudaMemcpy(device_omegas, host_omegas, N * sizeof(float), cudaMemcpyHostToDevice);
-        build_c<<<N, THREADS>>>(matrix_size, dim, device_A, device_pols, device_omegas, device_C_matrix);
-        build_kinvsquared<<<N, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsquared_matrix);
+        int blocks = (matrix_size + THREADS - 1) / THREADS;
+        build_c<<<blocks, THREADS>>>(matrix_size, dim, device_A, device_pols, device_omegas, device_C_matrix);
+        build_kinvsquared<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsquared_matrix);
+        cudaDeviceSynchronize();
+        print_matrix<<<1, 1>>>(N, device_C_matrix);
+        cudaDeviceSynchronize();
+
+        int *devInfo;
+        float *d_work;
+        float *d_W;
+        int lwork = 0;
+        cudaMalloc((void **)&d_W, dim * sizeof(float));
+        cudaMalloc((void **)&d_work, dim * sizeof(float));
+        cudaMalloc((void **)&devInfo, sizeof(int));
+        cusolverDnHandle_t cusolverH;
+        cusolverDnCreate(&cusolverH);
+
+        cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
+        cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
+
+        // Find optimal workspace size
+        cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_A, dim, d_W, &lwork);
+        cudaMalloc( (void **) &d_work, lwork * sizeof(float));
+        // Solve for eigenvalues
+        cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_A, dim, d_W, d_work, lwork, devInfo);
+        cudaDeviceSynchronize();
+
+        float *host_eigenvalues = (float *)malloc(dim * sizeof(float));
+        cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost);
+        float e_total = 0;
+        for (int i = 0; i < dim; i++) {
+            if (host_eigenvalues[i] < 0) host_eigenvalues[i] = 0;
+            printf("eigs[%d]: %e\n", i, host_eigenvalues[i]);
+            e_total += sqrt(host_eigenvalues[i]);
+        }
+        printf("etotal: %f\n", e_total);
+        e_total *= au2invseconds * halfHBAR;
+        printf("etotal: %f\n", e_total);
+        exit(0);
 
 
         return 0.;

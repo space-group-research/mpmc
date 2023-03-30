@@ -14,6 +14,7 @@ energy calculation.
 
 */
 
+#include "defines.h"
 #include <mc.h>
 #include <math.h>
 
@@ -87,21 +88,25 @@ void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, i
 void print_mtx(struct mtx *Cm) {
     int iC, jC;
 
-    printf(
-        "\n==============begin===================\n");
+    printf("\n==============begin===================\n");
     for (iC = 0; iC < Cm->dim; iC++) {
         for (jC = 0; jC < Cm->dim; jC++) {
-            if (jC > iC) continue;
-            printf(
-                "%.1le ", (Cm->val)[iC + jC * (Cm->dim)]);
+            printf("%.3le ", (Cm->val)[iC + jC * (Cm->dim)]);
         }
-        printf(
-            "\n");
+        printf("\n");
     }
-    printf(
-        "\n==============end=================\n");
+    printf("\n==============end=================\n");
 
     return;
+}
+
+void print_matrx(struct mtx *M) {
+    for (int i = 0; i < M->dim * M->dim; i++) {
+         printf("%.3le ", M->val[i]);
+        if ((i + 1) % M->dim == 0 && i != 0) {
+            printf("\n");
+        }
+    }
 }
 
 //build C matrix for a given molecule/system, with atom indicies (offset)/3..(offset+dim)/3
@@ -215,6 +220,7 @@ double *lapack_diag(struct mtx *M, int jobtype) {
 
     #else
 
+    printf("no cuda\n");
     char uplo = 'L';  //operate on lower triagle
     double *workArr = malloc(sizeof(double));
     checknull(workArr, "double * work", sizeof(double));
@@ -226,7 +232,7 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     //diagonalize
     dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
 
-    #endif /* ifndef CUDA */
+    #endif /* ifdef CUDA */
 
     if (rval != 0) {
         sprintf(linebuf, "error: LAPACK: dsyev returned error: %d\n", rval);
@@ -235,6 +241,11 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     }
 
     free(workArr);
+    for (int i = 0; i < M->dim; i++) {
+        printf("eigvals: %f\n", eigvals[i]);
+    }
+    if (M->dim == 6)
+        exit(1);
 
     return eigvals;
 }
@@ -257,6 +268,7 @@ double eigen2energy(double *eigvals, int dim, double temperature) {
         if (eigvals[i] < 0) eigvals[i] = 0;
         //		rval += wtanh(sqrt(eigvals[i]), temperature);
         rval += sqrt(eigvals[i]);
+        printf("eigs[%d]: %e\n", i, eigvals[i]);
     }
     return rval;
 }
@@ -634,7 +646,9 @@ double vdw(system_t *system) {
     e_iso = sum_eiso_vdw(system, sqrtKinv);
 
     //Build the C_Matrix
+    thole_amatrix(system);
     Cm = build_M(3 * N, 0, Am, sqrtKinv);
+    print_matrx(Cm);
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
@@ -646,6 +660,8 @@ double vdw(system_t *system) {
     e_total = eigen2energy(eigvals, Cm->dim, system->temperature);
     printf("etotal: %e\n", e_total);
     e_total *= au2invsec * halfHBAR;  //convert a.u. -> s^-1 -> K
+    printf("etotal: %f\n", e_total);
+    exit(1);
 
     //vdw energy comparison
     if (system->polarvdw == 3)

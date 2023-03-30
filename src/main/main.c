@@ -215,8 +215,12 @@ int main(int argc, char **argv) {
     }
 
     thole_resize_matrices(system);
+    #ifdef CUDA
     vdw_cuda(system);
+    #else
+    //mbvdw(system);
     printf("vdw: %f\n", vdw(system));
+    #endif
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */
         if (surface(system) < 0) {

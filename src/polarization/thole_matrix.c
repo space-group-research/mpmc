@@ -108,7 +108,6 @@ void mbvdw(system_t *system) {
                                       sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
         }
     }
-    /*
     printf("\nC matrix: \n");
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 3 * N; j++) {
@@ -116,7 +115,7 @@ void mbvdw(system_t *system) {
         }
         printf("\n");
     }
-    */
+    exit(1);
     printf("\n\n");
 
     char jobz = 'N';

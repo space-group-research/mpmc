@@ -30,7 +30,7 @@ __global__ void print_b(int N, float *B) {
     }
 }
 
-__global__ void print_a(int N, float *A) {
+__global__ static void print_a(int N, float *A) {
     printf("N: %d\n", N);
     for (int i = 0; i < 3 * 3 * N * N; i++) {
         printf("%8.5f ", A[i]);
@@ -45,7 +45,7 @@ __global__ void print_a(int N, float *A) {
  * Method uses exponential polarization regardless of method requested in input
  * script
  */
-__global__ void build_a(int N, float *A, const float damp, float3 *pos, float *pols) {
+__global__ static void build_a(int N, float *A, const float damp, float3 *pos, float *pols) {
     int i = blockIdx.x, j;
 
     if (i >= N)
@@ -57,12 +57,9 @@ __global__ void build_a(int N, float *A, const float damp, float3 *pos, float *p
 
     const float one_over_pol_i = 1.0 / pols[i];
     const float3 pos_i = pos[i];
-    const float3 recip_basis_0 =
-        make_float3(recip_basis[0], recip_basis[1], recip_basis[2]);
-    const float3 recip_basis_1 =
-        make_float3(recip_basis[3], recip_basis[4], recip_basis[5]);
-    const float3 recip_basis_2 =
-        make_float3(recip_basis[6], recip_basis[7], recip_basis[8]);
+    const float3 recip_basis_0 = make_float3(recip_basis[0], recip_basis[1], recip_basis[2]);
+    const float3 recip_basis_1 = make_float3(recip_basis[3], recip_basis[4], recip_basis[5]);
+    const float3 recip_basis_2 = make_float3(recip_basis[6], recip_basis[7], recip_basis[8]);
     const float3 basis_0 = make_float3(basis[0], basis[1], basis[2]);
     const float3 basis_1 = make_float3(basis[3], basis[4], basis[5]);
     const float3 basis_2 = make_float3(basis[6], basis[7], basis[8]);
@@ -359,7 +356,8 @@ extern "C" {
 
         // make A matrix on GPU
         build_a<<<N, THREADS>>>(N, A, system->polar_damp, pos, pols);
-        // print_a<<<1, 1>>>(N, A);
+        print_a<<<1, 1>>>(N, A);
+        exit(0);
         cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
 
         // R = B - A*X0

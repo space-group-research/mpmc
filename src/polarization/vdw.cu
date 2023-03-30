@@ -6,6 +6,7 @@
 #include <mc.h>
 
 #define THREADS 1024
+#define MAXFVALUE 1.0e13f
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -14,7 +15,7 @@ __constant__ float recip_basis[9];
  * Method uses exponential polarization regardless of method requested in input
  * script
  */
-__global__ void build_a(int N, float *A, const float damp, float3 *pos, float *pols) {
+__global__ static void build_a(int N, float *A, const float damp, float3 *pos, float *pols) {
     int i = blockIdx.x, j;
 
     if (i >= N)
@@ -121,14 +122,64 @@ __global__ void build_a(int N, float *A, const float damp, float3 *pos, float *p
     return;
 }
 
+__global__
+void build_c(int matrix_size, int dim, float *A, float *pols, float *omegas, float *device_C_matrix) {
+    int i = blockIdx.x;
+    if (i >= matrix_size) return;
+
+    const int N_per_thread = int(matrix_size - 0.5) / THREADS + 1;
+    const int threadid = threadIdx.x;
+    const int threadid_plus_one = threadIdx.x + 1;
+    for (int j = threadid * N_per_thread; j < threadid_plus_one * N_per_thread && j < matrix_size; j++) {
+        int row = j % dim;
+        int col = j / dim;
+        // Reverse aligned matrix because of fortran bindings
+        device_C_matrix[row * 3 * dim / 3 + col] = A[j] * omegas[col / 3] * omegas[row / 3] * 
+                                                   sqrt(pols[col / 3] * pols[row / 3]);
+    }
+}
+
+__global__
+void build_kinvsquared(int matrix_size, int dim, float *pols, float *omegas, float *device_invKsquared_matrix) {
+    int i = blockIdx.x;
+    if (i >= matrix_size) return;
+
+    const int N_per_thread = int(matrix_size - 0.5) / THREADS + 1;
+    const int threadid = threadIdx.x;
+    const int threadid_plus_one = threadIdx.x + 1;
+    for (int j = threadid * N_per_thread; j < threadid_plus_one * N_per_thread && j < matrix_size; j++) {
+        int row = j % dim;
+        int col = j / dim;
+        if (row != col) {
+            continue;
+        }
+        device_invKsquared_matrix[j] = 1 / (pols[row / 3] * omegas[row / 3] * omegas[row / 3]);
+    }
+}
+
+__global__ static void print_a(int N, float *A) {
+    printf("N: %d\n", N);
+    for (int i = 0; i < 3 * 3 * N * N; i++) {
+        printf("%8.5f ", A[i]);
+        if ((i + 1) % (N * 3) == 0 && i != 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
 extern "C" {
+#include <stdlib.h>
+#include <mc.h>
+
     double vdw_cuda(void *systemptr) {
         system_t *system = (system_t *)systemptr;
         int N = system->natoms;
-
-
         int matrix_size = 3 * 3 * N * N;
+
         double *C_matrix = (double *)malloc(matrix_size * sizeof(double));
+        float *device_C_matrix;
+        cudaMalloc(&device_C_matrix, matrix_size * sizeof(double));
         atom_t **atom_arr = system->atom_array;
         for (int i = 0; i < 3 * N; i++) {
             for (int j = 0; j < 3 * N; j++) {
@@ -141,6 +192,70 @@ extern "C" {
                     sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
             }
         }
+        cudaMemcpy(device_C_matrix, C_matrix, matrix_size * sizeof(double), cudaMemcpyHostToDevice);
 
+
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+        int dim = 3 * N;
+        float *host_pols, *host_basis, *host_recip_basis, *host_omegas;
+        float3 *host_pos;
+        host_pols = (float *)calloc(N, sizeof(float));
+        host_pos = (float3 *)calloc(N, sizeof(float3));
+        host_basis = (float *)calloc(9, sizeof(float));
+        host_recip_basis = (float *)calloc(9, sizeof(float));
+        host_omegas = (float *)calloc(N, sizeof(float));
+
+        float *device_pols, *device_A, *device_omegas, *device_invKsquared_matrix;
+        float3 *device_pos;
+        cudaMalloc((void **)&device_pols, N * sizeof(float));
+        cudaMalloc((void **)&device_pos, N * sizeof(float3));
+        cudaMalloc((void **)&device_A, matrix_size * sizeof(float));
+        cudaMalloc((void **)&device_omegas, N * sizeof(float));
+        cudaMalloc((void **) &device_invKsquared_matrix, matrix_size * sizeof(float));
+
+
+        // copy over the basis matrix
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                host_basis[i * 3 + j] = (float)system->pbc->basis[j][i];
+                host_recip_basis[i * 3 + j] = (float)system->pbc->reciprocal_basis[j][i];
+            }
+        }
+        cudaMemcpy(basis, host_basis, 9 * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(recip_basis, host_basis, 9 * sizeof(float), cudaMemcpyHostToDevice);
+
+        int i;
+        for (molecule_ptr = system->molecules, i = 0; molecule_ptr;
+                molecule_ptr = molecule_ptr->next) {
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr;
+                    atom_ptr = atom_ptr->next, i++) {
+                host_pos[i].x = (float)atom_ptr->pos[0];
+                host_pos[i].y = (float)atom_ptr->pos[1];
+                host_pos[i].z = (float)atom_ptr->pos[2];
+                host_pols[i] = (atom_ptr->polarizability == 0.0)
+                    ? 1.0f / MAXFVALUE
+                    : (float)atom_ptr->polarizability;
+            }
+        }
+        cudaMemcpy(device_pos, host_pos, N * sizeof(float3), cudaMemcpyHostToDevice);
+        cudaMemcpy(device_pols, host_pols, N * sizeof(float), cudaMemcpyHostToDevice);
+
+        build_a<<<N, THREADS>>>(N, device_A, system->polar_damp, device_pos, device_pols);
+        printf("here\n");
+
+        print_a<<<N, THREADS>>>(N, device_A);
+        exit(1);
+
+        for (i = 0; i < N; i++) {
+            host_omegas[i] = system->atom_array[i]->polarizability;
+        }
+        cudaMemcpy(device_omegas, host_omegas, N * sizeof(float), cudaMemcpyHostToDevice);
+        build_c<<<N, THREADS>>>(matrix_size, dim, device_A, device_pols, device_omegas, device_C_matrix);
+        build_kinvsquared<<<N, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsquared_matrix);
+
+
+        return 0.;
     }
 }
+

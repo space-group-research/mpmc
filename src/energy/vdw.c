@@ -54,7 +54,6 @@ struct mtx *alloc_mtx(int dim) {
     //alloc matrix variable and set dim
     struct mtx *M = NULL;
     M = malloc(sizeof(struct mtx));
-    M = malloc(sizeof(struct mtx));
     checknull(M,
               "struct mtx * M", sizeof(struct mtx));
     M->dim = dim;

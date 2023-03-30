@@ -215,7 +215,7 @@ int are_we_done_yet(system_t *, int);
 /* polarization - CUDA */
 #ifdef CUDA
 void *polar_cuda(void *);
-void polar_vdw(void *);
+double vdw_cuda(void *);
 #endif /* CUDA */
 
 /* linear algebra - VDW */

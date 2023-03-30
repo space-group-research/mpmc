@@ -10,6 +10,9 @@
 #define THREADS 1024
 #define MAXFVALUE 1.0e13f
 #define halfHBAR 3.81911146e-12     //Ks
+#define cHBAR 7.63822291e-12        //Ks //HBAR is already taken to be in Js
+#define FINITE_DIFF 0.01            //too small -> vdw calc noises becomes a problem
+#define TWOoverHBAR 2.6184101e11    //K^-1 s^-1
 
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
@@ -126,7 +129,7 @@ __global__ static void build_a(int N, float *A, const float damp, float3 *pos, f
 }
 
 __global__
-void build_c(int matrix_size, int dim, float *A, float *pols, float *omegas, float *device_C_matrix) {
+void build_c_matrix(int matrix_size, int dim, float *A, float *pols, float *omegas, float *device_C_matrix) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= matrix_size) return;
 
@@ -145,28 +148,23 @@ void print_arr(int arr_size, float *arr) {
 }
 
 __global__
-void build_kinvsquared(int matrix_size, int dim, float *pols, float *omegas, float *device_invKsquared_matrix) {
-    int i = blockIdx.x;
+void build_kinvsqrt(int matrix_size, int dim, float *pols, float *omegas, float *device_invKsqrt_matrix) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= matrix_size) return;
 
-    const int N_per_thread = int(matrix_size - 0.5) / THREADS + 1;
-    const int threadid = threadIdx.x;
-    const int threadid_plus_one = threadIdx.x + 1;
-    for (int j = threadid * N_per_thread; j < threadid_plus_one * N_per_thread && j < matrix_size; j++) {
-        int row = j % dim;
-        int col = j / dim;
-        if (row != col) {
-            continue;
-        }
-        device_invKsquared_matrix[j] = 1 / (pols[row / 3] * omegas[row / 3] * omegas[row / 3]);
+    int row = i % dim;
+    int col = i / dim;
+    if (row != col) {
+        return;
     }
+    device_invKsqrt_matrix[row * 3 * dim / 3 + col] = sqrt((pols[row / 3] * omegas[row / 3] * omegas[row / 3]));
 }
 
-__global__ static void print_matrix(int N, float *A) {
-    printf("N: %d\n", N);
-    for (int i = 0; i < 3 * 3 * N * N; i++) {
+__global__ static void print_matrix(int dim, float *A) {
+    printf("N: %d\n", dim);
+    for (int i = 0; i < dim * dim; i++) {
         printf("%.3le ", A[i]);
-        if ((i + 1) % (N * 3) == 0 && i != 0) {
+        if ((i + 1) % (dim) == 0 && i != 0) {
             printf("\n");
         }
     }
@@ -177,6 +175,388 @@ __global__ static void print_matrix(int N, float *A) {
 extern "C" {
 #include <stdlib.h>
 #include <mc.h>
+
+    
+    //only run dsyev from LAPACK if compiled with -llapack, otherwise report an error
+#ifdef VDW
+    //prototype for dsyev (LAPACK)
+    extern void dsyev_(char *, char *, int *, double *, int *, double *, double *, int *, int *);
+#else
+    void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, int *h, int *i) {
+        error(
+            "ERROR: Not compiled with Linear Algebra VDW.\n");
+        die(-1);
+    }
+#endif
+
+    //calculate energies for isolated molecules
+    //if we don't know it, calculate it and save the value
+    static double calc_e_iso(system_t *system, molecule_t *mptr, float *device_A_matrix, float *device_pols,
+            float *device_omegas) {
+        int nstart, nsize;   // , curr_dimM;  (unused variable)
+        double e_iso;        //total vdw energy of isolated molecules
+        double *eigvals = (double *) malloc(3 * system->natoms);     //eigenvalues of Cm_cm
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+
+        nstart = nsize = 0;  //loop through each individual molecule
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            if (molecule_ptr != mptr) {  //count atoms then skip to next molecule
+                for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) nstart++;
+                continue;
+            }
+
+            //now that we've found the molecule of interest, count natoms, and calc energy
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) nsize++;
+
+            //build matrix for calculation of vdw energy of isolated molecule
+            //Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
+            float *device_C_matrix;
+            int dim = 3 * nsize;
+            int matrix_size = dim * dim;
+            cudaMalloc((void **) &device_C_matrix, matrix_size);
+            int blocks = (matrix_size + THREADS - 1) / THREADS;
+            build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+            //diagonalize M and extract eigenvales -> calculate energy
+
+            int *devInfo;
+            float *d_work;
+            float *d_W;
+            int lwork = 0;
+            cudaMalloc((void **)&d_W, dim * sizeof(float));
+            cudaMalloc((void **)&d_work, dim * sizeof(float));
+            cudaMalloc((void **)&devInfo, sizeof(int));
+            cusolverDnHandle_t cusolverH;
+            cusolverDnCreate(&cusolverH);
+
+            cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
+            cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
+
+            // Find optimal workspace size
+            cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, &lwork);
+            cudaMalloc( (void **) &d_work, lwork * sizeof(float));
+            // Solve for eigenvalues
+            cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, d_work, lwork, devInfo);
+            cudaDeviceSynchronize();
+
+            float *host_eigenvalues = (float *)malloc(dim * sizeof(float));
+            cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost);
+            for (int i = 0; i < dim; i++) {
+                if (host_eigenvalues[i] < 0) host_eigenvalues[i] = 0;
+                //printf("eigs[%d]: %e\n", i, host_eigenvalues[i]);
+                e_iso += sqrt(host_eigenvalues[i]);
+            }
+
+            //free memory
+            free(eigvals);
+            cudaFree(device_C_matrix);
+
+            //convert a.u. -> s^-1 -> K
+            return e_iso * au2invseconds * halfHBAR;
+        }
+
+        //unmatched molecule
+        return NAN;  //we should never get here
+    }
+
+
+    static double sum_eiso_vdw(system_t *system, float *device_A_matrix, float *device_pols, float *device_omegas) {
+        char linebuf[MAXLINE];
+        double e_iso = 0;
+        molecule_t *mp;
+        // atom_t * ap;  (unused variable)
+        vdw_t *vp;
+        vdw_t *vpscan;
+
+        //loop through molecules. if not known, calculate, store and count. otherwise just count.
+        for (mp = system->molecules; mp; mp = mp->next) {
+            for (vp = system->vdw_eiso_info; vp != NULL; vp = vp->next) {  //loop through all vp's
+                if (strncmp(vp->mtype, mp->moleculetype, MAXLINE) == 0) {
+                    e_iso += vp->energy;  //count energy
+                    break;                //break out of vp loop. the current molecule is accounted for now. go to the next molecule
+                } else
+                    continue;  //not a match, check the next vp
+            }                  //vp loop
+
+            if (vp == NULL) {  //if the molecule was unmatched, we need to grow the list
+                               // end of vp list and we haven't matched yet -> grow vdw_eiso_info
+                               // scan to the last non-NULL element
+                if (system->vdw_eiso_info == NULL) {
+                    system->vdw_eiso_info = (vdw_t *)calloc(1, sizeof(vdw_t));  //allocate space
+                    vpscan = system->vdw_eiso_info;  //set scan pointer
+                } else {
+                    for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next)
+                        ;
+                    vpscan->next = (vdw_t *)calloc(1, sizeof(vdw_t));  //allocate space
+                    vpscan = vpscan->next;
+                }  //done scanning and malloc'ing
+
+                //set values
+                strncpy(vpscan->mtype, mp->moleculetype, MAXLINE);  //assign moleculetype
+                vpscan->energy = calc_e_iso(system, mp, device_A_matrix, device_pols, device_omegas);  //assign energy
+                if (isfinite(vpscan->energy) == 0) {                //if nan, then calc_e_iso failed
+                    sprintf(linebuf, "VDW: Problem in calc_e_iso.\n");
+                    exit(1);
+                }
+                //otherwise count the energy and move to the next molecule
+                e_iso += vpscan->energy;
+
+            }  //vp==NULL
+        }      //mp loop
+
+        ////all of this logic is actually really bad if we're doing surface fitting, since omega will change... :-(
+        //free everything so we can recalc next step
+        if (system->ensemble == ENSEMBLE_SURF_FIT) {
+            system->vdw_eiso_info = NULL;
+        }
+
+        return e_iso;
+    }
+
+    //calculate T matrix element for a particular separation
+    static double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
+        double energy = 0;
+        double lr = system->polar_damp * r;
+        double lr2 = lr * lr;
+        double lr3 = lr * lr2;
+        double Txx = pow(r, -3) * (-2.0 + (0.5 * lr3 + lr2 + 2 * lr + 2) * exp(-lr));
+        double Tyy = pow(r, -3) * (1 - (0.5 * lr2 + lr + 1) * exp(-lr));
+        double *eigvals = (double *) malloc(36 * sizeof(double));
+        double *T_matrix = (double *) malloc(36 * sizeof(double));
+
+        //only the sub-diagonals are non-zero
+        T_matrix[1] = T_matrix[2] = T_matrix[4] = T_matrix[5] = T_matrix[6] = T_matrix[8] = T_matrix[9] = T_matrix[11] = 0;
+        T_matrix[12] = T_matrix[13] = T_matrix[15] = T_matrix[16] = T_matrix[19] = T_matrix[20] = T_matrix[22] = T_matrix[23] = 0;
+        T_matrix[24] = T_matrix[26] = T_matrix[27] = T_matrix[29] = T_matrix[30] = T_matrix[31] = T_matrix[33] = T_matrix[34] = 0;
+
+        //true diagonals
+        T_matrix[0] = T_matrix[7] = T_matrix[14] = (atom->omega) * (atom->omega);
+        T_matrix[21] = T_matrix[28] = T_matrix[35] = (pair->atom->omega) * (pair->atom->omega);
+
+        //sub-diagonals
+        T_matrix[3] = T_matrix[18] =
+            (atom->omega) * (pair->atom->omega) * sqrt(atom->polarizability * pair->atom->polarizability) * Txx;
+        T_matrix[10] = T_matrix[17] = T_matrix[25] = T_matrix[32] =
+            (atom->omega) * (pair->atom->omega) * sqrt(atom->polarizability * pair->atom->polarizability) * Tyy;
+
+        //eigvals = lapack_diag(M, 1);
+        //energy = eigen2energy(eigvals, 6, system->temperature);
+        char job = 'N';
+        char uplo = 'L';  //operate on lower triagle
+        int workSize = -1;
+        int rval = 0;
+        int dim = 6;
+        double *workArr = (double *) malloc(sizeof(double));
+        dsyev_(&job, &uplo, &dim, T_matrix, &dim, eigvals, workArr, &workSize, &rval);
+        //now optimize work array size is stored as work[0]
+        workSize = (int)workArr[0];
+        workArr = (double *) realloc(workArr, workSize * sizeof(double));
+        //diagonalize
+        dsyev_(&job, &uplo, &dim, T_matrix, &dim, eigvals, workArr, &workSize, &rval);
+
+        //subtract energy of atoms at infinity
+        //	energy -= 3*wtanh(atom->omega, system->temperature);
+        energy -= 3 * atom->omega;
+        //	energy -= 3*wtanh(pair->atom->omega, system->temperature);
+        energy -= 3 * pair->atom->omega;
+        for (int i = 0; i < dim; i++) {
+            energy += sqrt(eigvals[i]);
+        }
+
+        free(eigvals);
+        free(workArr);
+        free(T_matrix);
+
+        return energy * au2invseconds * halfHBAR;
+    }
+
+    //with damping
+    static double twobody(system_t *system) {
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+        pair_t *pair_ptr;
+        double energy = 0;
+
+        //for each pair
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                for (pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
+                    //skip if frozen
+                    if (pair_ptr->frozen) continue;
+                    //skip if they belong to the same molecule
+                    if (molecule_ptr == pair_ptr->molecule) continue;
+                    //skip if distance is greater than cutoff
+                    if (pair_ptr->rimg > system->pbc->cutoff) continue;
+                    //check if fh is non-zero
+                    if (atom_ptr->polarizability == 0 || pair_ptr->atom->polarizability == 0 ||
+                        atom_ptr->omega == 0 || pair_ptr->atom->omega == 0) continue;  //no vdw energy
+
+                    //calculate two-body energies
+                    energy += e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg);
+                }
+            }
+        }
+
+        return energy;
+    }
+
+    // feynman-hibbs using 2BE (shitty)
+    static double fh_vdw_corr_2be(system_t *system) {
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+        pair_t *pair_ptr;
+        double rm;                 //reduced mass
+        double w1, w2;             //omegas
+        double a1, a2;             //alphas
+        double cC;                 //leading coefficient to r^-6
+        double dv, d2v, d3v, d4v;  //derivatives
+        double corr = 0;           //correction to the energy
+        double corr_single;        //single vdw interaction energy
+
+        //for each pair
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                for (pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
+                    //skip if frozen
+                    if (pair_ptr->frozen) continue;
+                    //skip if they belong to the same molecule
+                    if (molecule_ptr == pair_ptr->molecule) continue;
+                    //skip if distance is greater than cutoff
+                    if (pair_ptr->rimg > system->pbc->cutoff) continue;
+                    //fetch alphas and omegas
+                    a1 = atom_ptr->polarizability;
+                    a2 = pair_ptr->atom->polarizability;
+                    w1 = atom_ptr->omega;
+                    w2 = pair_ptr->atom->omega;
+                    if (w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0) continue;  //no vdw energy
+                    // 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
+                    cC = 1.5 * cHBAR * w1 * w2 / (w1 + w2) * au2invseconds * a1 * a2;
+                    // reduced mass
+                    rm = AMU2KG * (molecule_ptr->mass) * (pair_ptr->molecule->mass) /
+                        ((molecule_ptr->mass) + (pair_ptr->molecule->mass));
+
+                    //derivatives
+                    dv = 6.0 * cC * pow(pair_ptr->rimg, -7);
+                    d2v = dv * (-7.0) / pair_ptr->rimg;
+                    if (system->feynman_hibbs_order >= 4) {
+                        d3v = d2v * (-8.0) / pair_ptr->rimg;
+                        d4v = d3v * (-9.0) / pair_ptr->rimg;
+                    }
+
+                    //2nd order correction
+                    corr_single = pow(METER2ANGSTROM, 2) * (HBAR * HBAR / (24.0 * KB * system->temperature * rm)) * (d2v + 2.0 * dv / pair_ptr->rimg);
+                    //4th order correction
+                    if (system->feynman_hibbs_order >= 4)
+                        corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) / (1152.0 * pow(KB * system->temperature * rm, 2))) *
+                                    (15.0 * dv / pow(pair_ptr->rimg, 3) + 4.0 * d3v / pair_ptr->rimg + d4v);
+
+                    corr += corr_single;
+                }
+            }
+        }
+
+        return corr;
+    }
+
+    // feynman-hibbs correction - molecular pair finite differencing method
+    static double fh_vdw_corr(system_t *system) {
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+        pair_t *pair_ptr;
+        double rm;                 //reduced mass
+        double E[5];               //energy at five points, used for finite differencing
+        double dv, d2v, d3v, d4v;  //derivatives
+        double corr = 0;           //correction to the energy
+        double corr_single;        //single vdw interaction energy
+        double h = FINITE_DIFF;    //small dr used for finite differencing //too small -> vdw calculation noise becomes a problem
+
+        //for each pair
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                for (pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
+                    //skip if frozen
+                    if (pair_ptr->frozen) continue;
+                    //skip if they belong to the same molecule
+                    if (molecule_ptr == pair_ptr->molecule) continue;
+                    //skip if distance is greater than cutoff
+                    if (pair_ptr->rimg > system->pbc->cutoff) continue;
+                    //check if fh is non-zero
+                    if (atom_ptr->polarizability == 0 || pair_ptr->atom->polarizability == 0 ||
+                            atom_ptr->omega == 0 || pair_ptr->atom->omega == 0) continue;  //no vdw energy
+
+                    //calculate two-body energies
+                    E[0] = e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg - h - h);  //smaller r
+                    E[1] = e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg - h);
+                    E[2] = e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg);      //current r
+                    E[3] = e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg + h);  //larger r
+                    E[4] = e2body(system, atom_ptr, pair_ptr, pair_ptr->rimg + h + h);
+
+                    //derivatives (Numerical Methods Using Matlab 4E 2004 Mathews/Fink 6.2)
+                    dv = (E[3] - E[1]) / (2.0 * h);
+                    d2v = (E[3] - 2.0 * E[2] + E[1]) / (h * h);
+                    d3v = (E[4] - 2 * E[3] + 2 * E[1] - E[0]) / (2 * pow(h, 3));
+                    d4v = (E[4] - 4 * E[3] + 6 * E[2] - 4 * E[1] + E[0]) / pow(h, 4);
+
+                    // reduced mass
+                    rm = AMU2KG * (molecule_ptr->mass) * (pair_ptr->molecule->mass) /
+                        ((molecule_ptr->mass) + (pair_ptr->molecule->mass));
+
+                    //2nd order correction
+                    corr_single = pow(METER2ANGSTROM, 2) * (HBAR * HBAR / (24.0 * KB * system->temperature * rm)) * (d2v + 2.0 * dv / pair_ptr->rimg);
+                    //4th order correction
+                    if (system->feynman_hibbs_order >= 4)
+                        corr_single += pow(METER2ANGSTROM, 4) * (pow(HBAR, 4) / (1152.0 * pow(KB * system->temperature * rm, 2))) *
+                            (15.0 * dv / pow(pair_ptr->rimg, 3) + 4.0 * d3v / pair_ptr->rimg + d4v);
+
+                    corr += corr_single;
+                }
+            }
+        }
+
+        return corr;
+    }
+
+    // long-range correction
+    static double lr_vdw_corr(system_t *system) {
+        molecule_t *molecule_ptr;
+        atom_t *atom_ptr;
+        pair_t *pair_ptr;
+        double w1, w2;    //omegas
+        double a1, a2;    //alphas
+        double cC;        //leading coefficient to r^-6
+        double corr = 0;  //correction to the energy
+
+        //skip if PBC isn't set-up
+        if (system->pbc->volume == 0) {
+            fprintf(stderr, "VDW: PBC not set-up. Did you define your basis? Skipping LRC.\n");
+            return 0;
+        }
+
+        for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
+            for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
+                for (pair_ptr = atom_ptr->pairs; pair_ptr; pair_ptr = pair_ptr->next) {
+                    //skip if frozen
+                    if (pair_ptr->frozen) continue;
+                    //skip if same molecule  // don't do this... this DOES contribute to LRC
+                    //					if ( molecule_ptr == pair_ptr->molecule ) continue;
+                    //fetch alphas and omegas
+                    a1 = atom_ptr->polarizability;
+                    a2 = pair_ptr->atom->polarizability;
+                    w1 = atom_ptr->omega;
+                    w2 = pair_ptr->atom->omega;
+                    if (w1 == 0 || w2 == 0 || a1 == 0 || a2 == 0) continue;  //no vdw energy
+                    // 3/4 hbar/k_B(Ks) omega(s^-1)  Ang^6
+                    cC = 1.5 * cHBAR * w1 * w2 / (w1 + w2) * au2invseconds * a1 * a2;
+
+                    // long-range correction
+                    corr += -4.0 / 3.0 * M_PI * cC * pow(system->pbc->cutoff, -3) / system->pbc->volume;
+                }
+            }
+        }
+
+        return corr;
+    }
+
 
     double vdw_cuda(void *systemptr) {
         system_t *system = (system_t *)systemptr;
@@ -212,13 +592,13 @@ extern "C" {
         host_recip_basis = (float *)calloc(9, sizeof(float));
         host_omegas = (float *)calloc(N, sizeof(float));
 
-        float *device_pols, *device_A, *device_omegas, *device_invKsquared_matrix;
+        float *device_pols, *device_A_matrix, *device_omegas, *device_invKsqrt_matrix;
         float3 *device_pos;
         cudaMalloc((void **)&device_pols, N * sizeof(float));
         cudaMalloc((void **)&device_pos, N * sizeof(float3));
-        cudaMalloc((void **)&device_A, matrix_size * sizeof(float));
+        cudaMalloc((void **)&device_A_matrix, matrix_size * sizeof(float));
         cudaMalloc((void **)&device_omegas, N * sizeof(float));
-        cudaMalloc((void **) &device_invKsquared_matrix, matrix_size * sizeof(float));
+        cudaMalloc((void **) &device_invKsqrt_matrix, matrix_size * sizeof(float));
 
         // copy over the basis matrix
         for (int i = 0; i < 3; i++) {
@@ -246,7 +626,7 @@ extern "C" {
         cudaMemcpy(device_pos, host_pos, N * sizeof(float3), cudaMemcpyHostToDevice);
         cudaMemcpy(device_pols, host_pols, N * sizeof(float), cudaMemcpyHostToDevice);
 
-        build_a<<<N, THREADS>>>(N, device_A, system->polar_damp, device_pos, device_pols);
+        build_a<<<N, THREADS>>>(N, device_A_matrix, system->polar_damp, device_pos, device_pols);
         cudaDeviceSynchronize();
 
         for (i = 0; i < N; i++) {
@@ -254,11 +634,16 @@ extern "C" {
         }
         cudaMemcpy(device_omegas, host_omegas, N * sizeof(float), cudaMemcpyHostToDevice);
         int blocks = (matrix_size + THREADS - 1) / THREADS;
-        build_c<<<blocks, THREADS>>>(matrix_size, dim, device_A, device_pols, device_omegas, device_C_matrix);
-        build_kinvsquared<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsquared_matrix);
+        build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+        build_kinvsqrt<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsqrt_matrix);
+        /*
         cudaDeviceSynchronize();
-        print_matrix<<<1, 1>>>(N, device_C_matrix);
+        print_matrix<<<1, 1>>>(dim, device_C_matrix);
+        printf("\n");
         cudaDeviceSynchronize();
+        print_matrix<<<1, 1>>>(dim, device_invKsqrt_matrix);
+        cudaDeviceSynchronize();
+        */
 
         int *devInfo;
         float *d_work;
@@ -274,10 +659,10 @@ extern "C" {
         cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
 
         // Find optimal workspace size
-        cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_A, dim, d_W, &lwork);
+        cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, &lwork);
         cudaMalloc( (void **) &d_work, lwork * sizeof(float));
         // Solve for eigenvalues
-        cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_A, dim, d_W, d_work, lwork, devInfo);
+        cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, d_work, lwork, devInfo);
         cudaDeviceSynchronize();
 
         float *host_eigenvalues = (float *)malloc(dim * sizeof(float));
@@ -285,16 +670,41 @@ extern "C" {
         float e_total = 0;
         for (int i = 0; i < dim; i++) {
             if (host_eigenvalues[i] < 0) host_eigenvalues[i] = 0;
-            printf("eigs[%d]: %e\n", i, host_eigenvalues[i]);
+            //printf("eigs[%d]: %e\n", i, host_eigenvalues[i]);
             e_total += sqrt(host_eigenvalues[i]);
         }
-        printf("etotal: %f\n", e_total);
         e_total *= au2invseconds * halfHBAR;
-        printf("etotal: %f\n", e_total);
-        exit(0);
+
+        //double e_iso = sum_eiso_vdw(system, device_A_matrix, device_pols, device_omegas);
+        double e_iso = 0;
+
+        //vdw energy comparison
+        if (system->polarvdw == 3) {
+            printf("VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
+        }
+
+        double fh_corr, lr_corr;
+        if (system->feynman_hibbs) {
+            if (system->vdw_fh_2be)
+                fh_corr = fh_vdw_corr_2be(system);  //2be method
+            else
+                fh_corr = fh_vdw_corr(system);  //mpfd
+        } else
+            fh_corr = 0;
+
+        if (system->rd_lrc)
+            lr_corr = lr_vdw_corr(system);
+        else
+            lr_corr = 0;
 
 
-        return 0.;
+        double energy = e_total - e_iso + fh_corr + lr_corr;
+        printf("etotal: %le\n", e_total);
+        printf("e_iso: %le\n", e_iso);
+        printf("fh_corr: %le\n", fh_corr);
+        printf("lr_corr: %le\n", lr_corr);
+        printf("vdw: %e\n", energy);
+        return energy;
     }
 }
 

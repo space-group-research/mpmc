@@ -55,13 +55,11 @@ struct mtx *alloc_mtx(int dim) {
     //alloc matrix variable and set dim
     struct mtx *M = NULL;
     M = malloc(sizeof(struct mtx));
-    checknull(M,
-              "struct mtx * M", sizeof(struct mtx));
+    checknull(M, "struct mtx * M", sizeof(struct mtx));
     M->dim = dim;
     //alloc matrix storage space
     M->val = calloc(dim * dim, sizeof(double));
-    checknull(M->val,
-              "struct mtx * M->val", dim * dim * sizeof(double));
+    checknull(M->val, "struct mtx * M->val", dim * dim * sizeof(double));
     return M;
 }
 
@@ -241,11 +239,6 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     }
 
     free(workArr);
-    for (int i = 0; i < M->dim; i++) {
-        printf("eigvals: %f\n", eigvals[i]);
-    }
-    if (M->dim == 6)
-        exit(1);
 
     return eigvals;
 }
@@ -268,14 +261,14 @@ double eigen2energy(double *eigvals, int dim, double temperature) {
         if (eigvals[i] < 0) eigvals[i] = 0;
         //		rval += wtanh(sqrt(eigvals[i]), temperature);
         rval += sqrt(eigvals[i]);
-        printf("eigs[%d]: %e\n", i, eigvals[i]);
+        //printf("eigs[%d]: %le\n", i, eigvals[i]);
     }
     return rval;
 }
 
 //calculate energies for isolated molecules
 //if we don't know it, calculate it and save the value
-double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
+static double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
     int nstart, nsize;   // , curr_dimM;  (unused variable)
     double e_iso;        //total vdw energy of isolated molecules
     struct mtx *Cm_iso;  //matrix Cm_isolated
@@ -381,8 +374,7 @@ double *getsqrtKinv(system_t *system, int N) {
 
     //malloc 3*N wastes an insignificant amount of memory, but saves us a lot of index management
     sqrtKinv = malloc(3 * N * sizeof(double));
-    checknull(sqrtKinv,
-              "double * sqrtKinv", 3 * N * sizeof(double));
+    checknull(sqrtKinv, "double * sqrtKinv", 3 * N * sizeof(double));
 
     for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
         for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
@@ -398,7 +390,7 @@ double *getsqrtKinv(system_t *system, int N) {
 }
 
 // long-range correction
-double lr_vdw_corr(system_t *system) {
+static double lr_vdw_corr(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -440,7 +432,7 @@ double lr_vdw_corr(system_t *system) {
 }
 
 //calculate T matrix element for a particular separation
-double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
+static double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
     double energy;
     double lr = system->polar_damp * r;
     double lr2 = lr * lr;
@@ -481,7 +473,7 @@ double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
 }
 
 // feynman-hibbs correction - molecular pair finite differencing method
-double fh_vdw_corr(system_t *system) {
+static double fh_vdw_corr(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -539,7 +531,7 @@ double fh_vdw_corr(system_t *system) {
 }
 
 // feynman-hibbs using 2BE (shitty)
-double fh_vdw_corr_2be(system_t *system) {
+static double fh_vdw_corr_2be(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -597,7 +589,7 @@ double fh_vdw_corr_2be(system_t *system) {
 }
 
 //with damping
-double twobody(system_t *system) {
+static double twobody(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -626,6 +618,15 @@ double twobody(system_t *system) {
     return energy;
 }
 
+static void print_m(int dim, double *matrix) {
+    for (int i = 0; i < dim * dim; i++) {
+         printf("%.3le ", matrix[i]);
+        if ((i + 1) % dim == 0 && i != 0) {
+            printf("\n");
+        }
+    }
+}
+
 //returns interaction VDW energy
 double vdw(system_t *system) {
     int N;                           //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
@@ -648,7 +649,7 @@ double vdw(system_t *system) {
     //Build the C_Matrix
     thole_amatrix(system);
     Cm = build_M(3 * N, 0, Am, sqrtKinv);
-    print_matrx(Cm);
+    //print_matrx(Cm);
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
@@ -658,10 +659,7 @@ double vdw(system_t *system) {
 
     //return energy in inverse time (a.u.) units
     e_total = eigen2energy(eigvals, Cm->dim, system->temperature);
-    printf("etotal: %e\n", e_total);
     e_total *= au2invsec * halfHBAR;  //convert a.u. -> s^-1 -> K
-    printf("etotal: %f\n", e_total);
-    exit(1);
 
     //vdw energy comparison
     if (system->polarvdw == 3)
@@ -685,8 +683,13 @@ double vdw(system_t *system) {
     free(sqrtKinv);
     free(eigvals);
     free_mtx(Cm);
+    cudaDeviceReset();
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
+    printf("etotal: %le\n", e_total);
+    printf("e_iso: %le\n", e_iso);
+    printf("fh_corr: %le\n", fh_corr);
+    printf("lr_corr: %le\n", lr_corr);
     printf("vdw: %e\n", energy);
     return energy;
 }

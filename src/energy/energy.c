@@ -158,12 +158,7 @@ double energy(system_t *system) {
             system->observables->coulombic_energy = coulombic_energy;
 
             if (system->polarvdw) {
-#ifdef CUDA
-                vdw_energy = vdw_cuda(system);
-#else
                 vdw_energy = vdw(system);
-#endif
-                system->observables->vdw_energy = vdw_energy;
             }
         }
 

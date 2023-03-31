@@ -561,7 +561,7 @@ extern "C" {
     }
 
 
-    double vdw_cuda(void *systemptr) {
+    void *vdw_cuda(void *systemptr) {
         system_t *system = (system_t *)systemptr;
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
@@ -726,7 +726,8 @@ extern "C" {
         printf("fh_corr: %le\n", fh_corr);
         printf("lr_corr: %le\n", lr_corr);
         printf("vdw: %e\n", energy);
-        return energy;
+        system->observables->vdw_energy = energy;
+        return NULL;
     }
 }
 

@@ -214,6 +214,7 @@ int main(int argc, char **argv) {
         output("MAIN: *************************************************\n");
     }
 
+    /*
     thole_resize_matrices(system);
     for (int i = 0; i < 50; i++) {
         printf("i: %d", i);
@@ -223,6 +224,8 @@ int main(int argc, char **argv) {
     vdw(system);
     #endif
     }
+    exit(0);
+    */
 
     if (system->ensemble == ENSEMBLE_SURF) { /* surface */
         if (surface(system) < 0) {

@@ -250,6 +250,9 @@ extern "C" {
             //free memory
             free(eigvals);
             cudaFree(device_C_matrix);
+            cudaFree(d_W);
+            cudaFree(d_work);
+            cudaFree(devInfo);
 
             //convert a.u. -> s^-1 -> K
             return e_iso * au2invseconds * halfHBAR;
@@ -636,8 +639,8 @@ extern "C" {
         int blocks = (matrix_size + THREADS - 1) / THREADS;
         build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
         build_kinvsqrt<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsqrt_matrix);
-        /*
         cudaDeviceSynchronize();
+        /*
         print_matrix<<<1, 1>>>(dim, device_C_matrix);
         printf("\n");
         cudaDeviceSynchronize();
@@ -697,6 +700,25 @@ extern "C" {
         else
             lr_corr = 0;
 
+
+        free(C_matrix);
+        free(host_omegas);
+        free(host_eigenvalues);
+        free(host_basis);
+        free(host_recip_basis);
+        free(host_pos);
+        free(host_pols);
+        cudaFree(device_C_matrix);
+        cudaFree(device_A_matrix);
+        cudaFree(device_omegas);
+        cudaFree(device_pols);
+        cudaFree(device_pos);
+        cudaFree(device_invKsqrt_matrix);
+        cudaFree(d_W);
+        cudaFree(d_work);
+        cudaFree(devInfo);
+        cudaDeviceReset();
+        
 
         double energy = e_total - e_iso + fh_corr + lr_corr;
         printf("etotal: %le\n", e_total);

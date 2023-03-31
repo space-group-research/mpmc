@@ -218,7 +218,6 @@ double *lapack_diag(struct mtx *M, int jobtype) {
 
     #else
 
-    printf("no cuda\n");
     char uplo = 'L';  //operate on lower triagle
     double *workArr = malloc(sizeof(double));
     checknull(workArr, "double * work", sizeof(double));
@@ -683,7 +682,6 @@ double vdw(system_t *system) {
     free(sqrtKinv);
     free(eigvals);
     free_mtx(Cm);
-    cudaDeviceReset();
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
     printf("etotal: %le\n", e_total);

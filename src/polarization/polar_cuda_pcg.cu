@@ -356,8 +356,6 @@ extern "C" {
 
         // make A matrix on GPU
         build_a<<<N, THREADS>>>(N, A, system->polar_damp, pos, pols);
-        print_a<<<1, 1>>>(N, A);
-        exit(0);
         cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
 
         // R = B - A*X0

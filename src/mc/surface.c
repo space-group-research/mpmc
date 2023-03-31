@@ -32,7 +32,13 @@ double surface_energy(system_t *system, int energy_type) {
         case ENERGY_TOTAL:
             if (!(system->sg || system->rd_only)) coulombic_energy = coulombic_nopbc(system->molecules);
             if (system->polarization) polar_energy = polar(system);
-            if (system->polarvdw) vdw_energy = vdw(system);
+            if (system->polarvdw) {
+                #ifdef CUDA
+                vdw_energy = vdw_cuda(system);
+                #else
+                vdw_energy = vdw(system);
+                #endif
+            }
             if (system->sg)
                 rd_energy = sg_nopbc(system->molecules);
             else if (system->cdvdw_exp_repulsion)
@@ -67,7 +73,13 @@ double surface_energy(system_t *system, int energy_type) {
             if (system->polarization) polar_energy = polar(system);
             break;
         case ENERGY_VDW:
-            if (system->polarvdw) vdw_energy = vdw(system);
+            if (system->polarvdw) {
+                #ifdef CUDA
+                vdw_energy = vdw_cuda(system);
+                #else
+                vdw_energy = vdw(system);
+                #endif
+            }
             break;
     }
 

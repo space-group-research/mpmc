@@ -50,3 +50,5 @@ frozen_output               /dev/null
 
 abcbasis                    26.343  26.343  26.343  90  90  90
 cuda on
+cdvdw on
+cavity_autoreject_absolute on

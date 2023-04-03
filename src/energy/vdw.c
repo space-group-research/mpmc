@@ -629,6 +629,7 @@ static void print_m(int dim, double *matrix) {
 //returns interaction VDW energy
 double vdw(system_t *system) {
     int N;                           //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
+    printf("NORMAL VDW\n");
     double e_total, e_iso;           //total energy, isolation energy (atoms @ infinity)
     double *sqrtKinv;                //matrix K^(-1/2); cholesky decomposition of K
     double **Am = system->A_matrix;  //A_matrix

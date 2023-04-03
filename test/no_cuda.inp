@@ -21,3 +21,5 @@ pop_histogram                   on            ! generate a histogram file for vi
 pop_histogram_output            histogram.dat ! filename for the above
 polar_damp_type                 exponential
 polar_damp                      1
+cdvdw comp
+polar_max_iter 4

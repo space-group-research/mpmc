@@ -563,6 +563,7 @@ extern "C" {
 
     void *vdw_cuda(void *systemptr) {
         system_t *system = (system_t *)systemptr;
+        printf("CUDA VDW\n");
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
 

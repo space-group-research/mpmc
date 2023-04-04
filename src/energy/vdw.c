@@ -331,8 +331,7 @@ double sum_eiso_vdw(system_t *system, double *sqrtKinv) {
                           "calloc vdw_t * vdw_eiso_info", sizeof(vdw_t));
                 vpscan = system->vdw_eiso_info;  //set scan pointer
             } else {
-                for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next)
-                    ;
+                for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next);
                 vpscan->next = calloc(1, sizeof(vdw_t));  //allocate space
                 checknull(vpscan->next,
                           "calloc vdw_t * vpscan->next", sizeof(vdw_t));

@@ -17,6 +17,15 @@
 __constant__ float basis[9];
 __constant__ float recip_basis[9];
 
+__global__ static void build_c(int N, float *A, float *omegas, float *pols, float *C, int dim) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= dim * dim) return;
+    int row = i / dim;
+    int col = i % dim;
+    C[col * dim + row] = A[row * dim + col] * pols[row] * pols[col] *
+                         sqrt(omegas[row] * omegas[col]);
+}
+
 /**
  * Method uses exponential polarization regardless of method requested in input
  * script
@@ -141,6 +150,20 @@ void build_c_matrix(int matrix_size, int dim, float *A, float *pols, float *omeg
 }
 
 __global__
+void build_c_matrix_with_offset(int C_dim, int A_dim, int offset, float *A, float *pols, float *omegas, float *C_matrix) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int row = i % C_dim;
+    int col = i / C_dim;
+    if (col < offset || col >= C_dim + offset) return;
+    if (row < offset || row >= C_dim + offset) return;
+    float a1 = pols[row / 3]; // alphas
+    float a2 = pols[col / 3];
+    float w1 = omegas[row / 3]; // omegas
+    float w2 = omegas[col / 3];
+    C_matrix[row * 3 * C_dim / 3 + col] = A[row * A_dim + col] * w1 * w2 * sqrt(a1 * a2);
+}
+
+__global__
 void print_arr(int arr_size, float *arr) {
     for (int i = 0; i < arr_size; i++) {
         printf("%.3le\n", arr[i]);
@@ -191,7 +214,7 @@ extern "C" {
 
     //calculate energies for isolated molecules
     //if we don't know it, calculate it and save the value
-    static double calc_e_iso(system_t *system, molecule_t *mptr, float *device_A_matrix, float *device_pols,
+    static double calc_e_iso(system_t *system, molecule_t *mptr, float *device_A_matrix, int A_dim, float *device_pols,
             float *device_omegas) {
         int nstart, nsize;   // , curr_dimM;  (unused variable)
         double e_iso;        //total vdw energy of isolated molecules
@@ -212,11 +235,15 @@ extern "C" {
             //build matrix for calculation of vdw energy of isolated molecule
             //Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
             float *device_C_matrix;
+            
             int dim = 3 * nsize;
+            int offset = 3 * nstart;
             int matrix_size = dim * dim;
             cudaMalloc((void **) &device_C_matrix, matrix_size);
             int blocks = (matrix_size + THREADS - 1) / THREADS;
-            build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+            //build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+            build_c_matrix_with_offset<<<blocks, THREADS>>>(dim, A_dim, offset, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+            cudaDeviceSynchronize();
             //diagonalize M and extract eigenvales -> calculate energy
 
             int *devInfo;
@@ -263,7 +290,7 @@ extern "C" {
     }
 
 
-    static double sum_eiso_vdw(system_t *system, float *device_A_matrix, float *device_pols, float *device_omegas) {
+    static double sum_eiso_vdw(system_t *system, float *device_A_matrix, int A_dim, float *device_pols, float *device_omegas) {
         char linebuf[MAXLINE];
         double e_iso = 0;
         molecule_t *mp;
@@ -296,7 +323,7 @@ extern "C" {
 
                 //set values
                 strncpy(vpscan->mtype, mp->moleculetype, MAXLINE);  //assign moleculetype
-                vpscan->energy = calc_e_iso(system, mp, device_A_matrix, device_pols, device_omegas);  //assign energy
+                vpscan->energy = calc_e_iso(system, mp, device_A_matrix, A_dim, device_pols, device_omegas);  //assign energy
                 if (isfinite(vpscan->energy) == 0) {                //if nan, then calc_e_iso failed
                     sprintf(linebuf, "VDW: Problem in calc_e_iso.\n");
                     exit(1);
@@ -566,28 +593,10 @@ extern "C" {
         printf("CUDA VDW\n");
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
-
-        double *C_matrix = (double *)malloc(matrix_size * sizeof(double));
-        float *device_C_matrix;
-        cudaMalloc(&device_C_matrix, matrix_size * sizeof(double));
-        atom_t **atom_arr = system->atom_array;
-        for (int i = 0; i < 3 * N; i++) {
-            for (int j = 0; j < 3 * N; j++) {
-                /* LAPACK using 1D arrays for storing matricies.
-                   / 0  3  6 \
-                   | 1  4  7 |		= 	[ 0 1 2 3 4 5 6 7 8 ]
-                   \ 2  5  8 /									*/
-                // C_matrix is stored in reverse order because fortran uses oppositely aligned arrays from C
-                C_matrix[i * 3 * N + j] = system->A_matrix[j][i] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
-                    sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
-            }
-        }
-        cudaMemcpy(device_C_matrix, C_matrix, matrix_size * sizeof(double), cudaMemcpyHostToDevice);
-
+        int dim = 3 * N;
 
         molecule_t *molecule_ptr;
         atom_t *atom_ptr;
-        int dim = 3 * N;
         float *host_pols, *host_basis, *host_recip_basis, *host_omegas;
         float3 *host_pos;
         host_pols = (float *)calloc(N, sizeof(float));
@@ -596,13 +605,14 @@ extern "C" {
         host_recip_basis = (float *)calloc(9, sizeof(float));
         host_omegas = (float *)calloc(N, sizeof(float));
 
-        float *device_pols, *device_A_matrix, *device_omegas, *device_invKsqrt_matrix;
+        float *device_pols, *device_A_matrix, *device_omegas, *device_invKsqrt_matrix, *device_C_matrix;
         float3 *device_pos;
         cudaMalloc((void **)&device_pols, N * sizeof(float));
         cudaMalloc((void **)&device_pos, N * sizeof(float3));
         cudaMalloc((void **)&device_A_matrix, matrix_size * sizeof(float));
         cudaMalloc((void **)&device_omegas, N * sizeof(float));
         cudaMalloc((void **) &device_invKsqrt_matrix, matrix_size * sizeof(float));
+        cudaMalloc(&device_C_matrix, matrix_size * sizeof(double));
 
         // copy over the basis matrix
         for (int i = 0; i < 3; i++) {
@@ -679,8 +689,7 @@ extern "C" {
         }
         e_total *= au2invseconds * halfHBAR;
 
-        //double e_iso = sum_eiso_vdw(system, device_A_matrix, device_pols, device_omegas);
-        double e_iso = 0;
+        double e_iso = sum_eiso_vdw(system, device_A_matrix, dim, device_pols, device_omegas);
 
         //vdw energy comparison
         if (system->polarvdw == 3) {
@@ -702,7 +711,6 @@ extern "C" {
             lr_corr = 0;
 
 
-        free(C_matrix);
         free(host_omegas);
         free(host_eigenvalues);
         free(host_basis);
@@ -718,7 +726,6 @@ extern "C" {
         cudaFree(d_W);
         cudaFree(d_work);
         cudaFree(devInfo);
-        cudaDeviceReset();
         
 
         double energy = e_total - e_iso + fh_corr + lr_corr;

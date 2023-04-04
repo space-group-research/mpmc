@@ -1,6 +1,6 @@
 job_name                    muvt
 
-ensemble                    uvt
+ensemble                    total_energy
 
 seed                        1024
 numsteps                    10000
@@ -18,7 +18,7 @@ parallel_restarts           on
 phahst                      on
 extrapolate_disp_coeffs     on
 damp_dispersion             on
-cavity_autoreject_repulsion 10000
+cavity_autoreject_absolute on
 
 h2_fugacity                on
 feynman_hibbs              on
@@ -34,7 +34,7 @@ polar_iterative             on
 polar_palmo                 on
 polar_gs_ranked             on
 polar_gamma                 1.03
-polar_precision             0.001
+polar_max_iter 4
 
 read_pqr_box                on
 pqr_input                   HKUST-1.pqr
@@ -49,3 +49,5 @@ frozen_output               /dev/null
 
 
 abcbasis                    26.343  26.343  26.343  90  90  90
+cdvdw comp
+polar_max_iter 4

@@ -6,6 +6,7 @@
 #include "function_prototypes.h"
 #include <stdio.h>
 #include <mc.h>
+#include <cuda.h>
 
 #define THREADS 1024
 #define MAXFVALUE 1.0e13f
@@ -145,10 +146,11 @@ void build_c_matrix(int matrix_size, int dim, float *A, float *pols, float *omeg
     int row = i % dim;
     int col = i / dim;
     // Reverse aligned matrix because of fortran bindings
-    device_C_matrix[row * 3 * dim / 3 + col] = A[i] * omegas[col / 3] * omegas[row / 3] * 
+    device_C_matrix[i] = A[i] * omegas[col / 3] * omegas[row / 3] * 
                                                 sqrt(pols[col / 3] * pols[row / 3]);
 }
 
+/*
 __global__
 void build_c_matrix_with_offset(int C_dim, int A_dim, int offset, float *A, float *pols, float *omegas, float *C_matrix) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -161,6 +163,25 @@ void build_c_matrix_with_offset(int C_dim, int A_dim, int offset, float *A, floa
     float w1 = omegas[row / 3]; // omegas
     float w2 = omegas[col / 3];
     C_matrix[row * 3 * C_dim / 3 + col] = A[row * A_dim + col] * w1 * w2 * sqrt(a1 * a2);
+}
+*/
+
+__global__
+void build_c_matrix_with_offset(int C_dim, int A_dim, int offset, float *A, float *pols, float *omegas, float *C_matrix) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= A_dim * A_dim) return;
+    int row = i % C_dim;
+    int col = i / C_dim;
+    float a1 = pols[row / 3]; // alphas
+    float a2 = pols[col / 3];
+    float w1 = omegas[row / 3]; // omegas
+    float w2 = omegas[col / 3];
+    if (col < offset || col >= C_dim + offset || row < offset || row >= C_dim + offset) {
+        C_matrix[i] = 0;
+    }
+    else {
+        C_matrix[i] = A[i] * w1 * w2 * sqrt(a1 * a2);
+    }
 }
 
 __global__
@@ -197,9 +218,8 @@ __global__ static void print_matrix(int dim, float *A) {
 
 extern "C" {
 #include <stdlib.h>
-#include <mc.h>
+//#include <mc.h>
 
-    
     //only run dsyev from LAPACK if compiled with -llapack, otherwise report an error
 #ifdef VDW
     //prototype for dsyev (LAPACK)
@@ -212,13 +232,20 @@ extern "C" {
     }
 #endif
 
+    static void cudaErrorHandler(cudaError_t error, int line) {
+        if (error != cudaSuccess) {
+            printf("POLAR_CUDA: GPU is reporting an error: %s %s:%d\n",
+                    cudaGetErrorString(error), __FILE__, line);
+        }
+    }
+
     //calculate energies for isolated molecules
     //if we don't know it, calculate it and save the value
     static double calc_e_iso(system_t *system, molecule_t *mptr, float *device_A_matrix, int A_dim, float *device_pols,
             float *device_omegas) {
+        return 0;
         int nstart, nsize;   // , curr_dimM;  (unused variable)
         double e_iso;        //total vdw energy of isolated molecules
-        double *eigvals = (double *) malloc(3 * system->natoms);     //eigenvalues of Cm_cm
         molecule_t *molecule_ptr;
         atom_t *atom_ptr;
 
@@ -235,39 +262,48 @@ extern "C" {
             //build matrix for calculation of vdw energy of isolated molecule
             //Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
             float *device_C_matrix;
-            
             int dim = 3 * nsize;
             int offset = 3 * nstart;
-            int matrix_size = dim * dim;
-            cudaMalloc((void **) &device_C_matrix, matrix_size);
+            int matrix_size = A_dim * A_dim;
+            cudaErrorHandler(cudaMalloc((void **) &device_C_matrix, matrix_size * sizeof(float)), __LINE__);
             int blocks = (matrix_size + THREADS - 1) / THREADS;
+            printf("BLOCKS: %d\n", blocks);
+            printf("dim: %d\n", dim);
+            printf("matrix size: %d\n", matrix_size);
             //build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
-            build_c_matrix_with_offset<<<blocks, THREADS>>>(dim, A_dim, offset, device_A_matrix, device_pols, device_omegas, device_C_matrix);
+            //build_c_matrix_with_offset<<<blocks, THREADS>>>(dim, A_dim, offset, device_A_matrix, device_pols, device_omegas, device_C_matrix);
             cudaDeviceSynchronize();
+            cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
             //diagonalize M and extract eigenvales -> calculate energy
 
             int *devInfo;
             float *d_work;
             float *d_W;
             int lwork = 0;
-            cudaMalloc((void **)&d_W, dim * sizeof(float));
-            cudaMalloc((void **)&d_work, dim * sizeof(float));
-            cudaMalloc((void **)&devInfo, sizeof(int));
+            cudaErrorHandler(cudaMalloc((void **)&d_W, dim * sizeof(float)), __LINE__);
+            cudaErrorHandler(cudaMalloc((void **)&d_work, dim * sizeof(float)), __LINE__);
+            cudaErrorHandler(cudaMalloc((void **)&devInfo, sizeof(int)), __LINE__);
+            cudaDeviceSynchronize();
             cusolverDnHandle_t cusolverH;
             cusolverDnCreate(&cusolverH);
+            cudaDeviceSynchronize();
 
             cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
             cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
 
             // Find optimal workspace size
             cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, &lwork);
-            cudaMalloc( (void **) &d_work, lwork * sizeof(float));
+            cudaDeviceSynchronize();
+            cudaErrorHandler(cudaFree(d_work), __LINE__);
+            cudaDeviceSynchronize();
+            cudaErrorHandler(cudaMalloc( (void **) &d_work, lwork * sizeof(float)), __LINE__);
+            cudaDeviceSynchronize();
             // Solve for eigenvalues
             cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, d_work, lwork, devInfo);
             cudaDeviceSynchronize();
 
             float *host_eigenvalues = (float *)malloc(dim * sizeof(float));
-            cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost);
+            cudaErrorHandler(cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost), __LINE__);
             for (int i = 0; i < dim; i++) {
                 if (host_eigenvalues[i] < 0) host_eigenvalues[i] = 0;
                 //printf("eigs[%d]: %e\n", i, host_eigenvalues[i]);
@@ -275,11 +311,11 @@ extern "C" {
             }
 
             //free memory
-            free(eigvals);
-            cudaFree(device_C_matrix);
-            cudaFree(d_W);
-            cudaFree(d_work);
-            cudaFree(devInfo);
+            free(host_eigenvalues);
+            cudaErrorHandler(cudaFree(device_C_matrix), __LINE__);
+            cudaErrorHandler(cudaFree(d_W), __LINE__);
+            cudaErrorHandler(cudaFree(d_work), __LINE__);
+            cudaErrorHandler(cudaFree(devInfo), __LINE__);
 
             //convert a.u. -> s^-1 -> K
             return e_iso * au2invseconds * halfHBAR;
@@ -315,8 +351,7 @@ extern "C" {
                     system->vdw_eiso_info = (vdw_t *)calloc(1, sizeof(vdw_t));  //allocate space
                     vpscan = system->vdw_eiso_info;  //set scan pointer
                 } else {
-                    for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next)
-                        ;
+                    for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next);
                     vpscan->next = (vdw_t *)calloc(1, sizeof(vdw_t));  //allocate space
                     vpscan = vpscan->next;
                 }  //done scanning and malloc'ing
@@ -587,10 +622,9 @@ extern "C" {
         return corr;
     }
 
-
     void *vdw_cuda(void *systemptr) {
-        system_t *system = (system_t *)systemptr;
         printf("CUDA VDW\n");
+        system_t *system = (system_t *)systemptr;
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
         int dim = 3 * N;
@@ -605,14 +639,15 @@ extern "C" {
         host_recip_basis = (float *)calloc(9, sizeof(float));
         host_omegas = (float *)calloc(N, sizeof(float));
 
-        float *device_pols, *device_A_matrix, *device_omegas, *device_invKsqrt_matrix, *device_C_matrix;
+        float *device_pols, *device_A_matrix, *device_omegas, *device_C_matrix;
         float3 *device_pos;
-        cudaMalloc((void **)&device_pols, N * sizeof(float));
-        cudaMalloc((void **)&device_pos, N * sizeof(float3));
-        cudaMalloc((void **)&device_A_matrix, matrix_size * sizeof(float));
-        cudaMalloc((void **)&device_omegas, N * sizeof(float));
-        cudaMalloc((void **) &device_invKsqrt_matrix, matrix_size * sizeof(float));
-        cudaMalloc(&device_C_matrix, matrix_size * sizeof(double));
+        cudaErrorHandler(cudaMalloc((void **)&device_pols, N * sizeof(float)), __LINE__);
+        cudaErrorHandler(cudaMalloc((void **)&device_pos, N * sizeof(float3)), __LINE__);
+        cudaErrorHandler(cudaMalloc((void **)&device_A_matrix, matrix_size * sizeof(float)), __LINE__);
+        cudaErrorHandler(cudaMalloc((void **)&device_omegas, N * sizeof(float)), __LINE__);
+        //cudaErrorHandler(cudaMalloc((void **) &device_invKsqrt_matrix, matrix_size * sizeof(float)), __LINE__);
+        cudaErrorHandler(cudaMalloc(&device_C_matrix, matrix_size * sizeof(double)), __LINE__);
+        cudaDeviceSynchronize();
 
         // copy over the basis matrix
         for (int i = 0; i < 3; i++) {
@@ -621,8 +656,9 @@ extern "C" {
                 host_recip_basis[i * 3 + j] = (float)system->pbc->reciprocal_basis[j][i];
             }
         }
-        cudaMemcpy(basis, host_basis, 9 * sizeof(float), cudaMemcpyHostToDevice);
-        cudaMemcpy(recip_basis, host_basis, 9 * sizeof(float), cudaMemcpyHostToDevice);
+        cudaErrorHandler(cudaMemcpyToSymbol(basis, host_basis, 9 * sizeof(float), 0, cudaMemcpyHostToDevice), __LINE__);
+        cudaErrorHandler(cudaMemcpyToSymbol(recip_basis, host_basis, 9 * sizeof(float), 0, cudaMemcpyHostToDevice), __LINE__);
+        cudaDeviceSynchronize();
 
         int i;
         for (molecule_ptr = system->molecules, i = 0; molecule_ptr;
@@ -637,25 +673,30 @@ extern "C" {
                     : (float)atom_ptr->polarizability;
             }
         }
-        cudaMemcpy(device_pos, host_pos, N * sizeof(float3), cudaMemcpyHostToDevice);
-        cudaMemcpy(device_pols, host_pols, N * sizeof(float), cudaMemcpyHostToDevice);
+        cudaErrorHandler(cudaMemcpy(device_pos, host_pos, N * sizeof(float3), cudaMemcpyHostToDevice), __LINE__);
+        cudaErrorHandler(cudaMemcpy(device_pols, host_pols, N * sizeof(float), cudaMemcpyHostToDevice), __LINE__);
+        cudaDeviceSynchronize();
 
         build_a<<<N, THREADS>>>(N, device_A_matrix, system->polar_damp, device_pos, device_pols);
         cudaDeviceSynchronize();
+        cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
 
         for (i = 0; i < N; i++) {
             host_omegas[i] = system->atom_array[i]->omega;
         }
-        cudaMemcpy(device_omegas, host_omegas, N * sizeof(float), cudaMemcpyHostToDevice);
+        cudaErrorHandler(cudaMemcpy(device_omegas, host_omegas, N * sizeof(float), cudaMemcpyHostToDevice), __LINE__);
+        cudaDeviceSynchronize();
+
         int blocks = (matrix_size + THREADS - 1) / THREADS;
         build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
-        build_kinvsqrt<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsqrt_matrix);
+        cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
+        cudaDeviceSynchronize();
+        //build_kinvsqrt<<<blocks, THREADS>>>(matrix_size, dim, device_pols, device_omegas, device_invKsqrt_matrix);
+        cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
         cudaDeviceSynchronize();
         /*
         print_matrix<<<1, 1>>>(dim, device_C_matrix);
         printf("\n");
-        cudaDeviceSynchronize();
-        print_matrix<<<1, 1>>>(dim, device_invKsqrt_matrix);
         cudaDeviceSynchronize();
         */
 
@@ -663,24 +704,31 @@ extern "C" {
         float *d_work;
         float *d_W;
         int lwork = 0;
-        cudaMalloc((void **)&d_W, dim * sizeof(float));
-        cudaMalloc((void **)&d_work, dim * sizeof(float));
-        cudaMalloc((void **)&devInfo, sizeof(int));
+        cudaErrorHandler(cudaMalloc((void **)&d_W, dim * sizeof(float)), __LINE__);
+        cudaErrorHandler(cudaMalloc((void **)&d_work, dim * sizeof(float)), __LINE__);
+        cudaErrorHandler(cudaMalloc((void **)&devInfo, sizeof(int)), __LINE__);
+        cudaDeviceSynchronize();
         cusolverDnHandle_t cusolverH;
         cusolverDnCreate(&cusolverH);
+        cudaDeviceSynchronize();
+        /*
 
         cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
         cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
 
         // Find optimal workspace size
         cusolverDnSsyevd_bufferSize(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, &lwork);
-        cudaMalloc( (void **) &d_work, lwork * sizeof(float));
+        cudaErrorHandler(cudaFree(d_work), __LINE__);
+        cudaDeviceSynchronize();
+        cudaErrorHandler(cudaMalloc( (void **) &d_work, lwork * sizeof(float)), __LINE__);
+        cudaDeviceSynchronize();
         // Solve for eigenvalues
         cusolverDnSsyevd(cusolverH, jobz, uplo, dim, device_C_matrix, dim, d_W, d_work, lwork, devInfo);
         cudaDeviceSynchronize();
 
         float *host_eigenvalues = (float *)malloc(dim * sizeof(float));
-        cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaErrorHandler(cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(float), cudaMemcpyDeviceToHost), __LINE__);
+        cudaDeviceSynchronize();
         float e_total = 0;
         for (int i = 0; i < dim; i++) {
             if (host_eigenvalues[i] < 0) host_eigenvalues[i] = 0;
@@ -695,6 +743,7 @@ extern "C" {
         if (system->polarvdw == 3) {
             printf("VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
         }
+        */
 
         double fh_corr, lr_corr;
         if (system->feynman_hibbs) {
@@ -712,28 +761,43 @@ extern "C" {
 
 
         free(host_omegas);
-        free(host_eigenvalues);
+        //free(host_eigenvalues);
         free(host_basis);
         free(host_recip_basis);
         free(host_pos);
         free(host_pols);
-        cudaFree(device_C_matrix);
-        cudaFree(device_A_matrix);
-        cudaFree(device_omegas);
-        cudaFree(device_pols);
-        cudaFree(device_pos);
-        cudaFree(device_invKsqrt_matrix);
-        cudaFree(d_W);
-        cudaFree(d_work);
-        cudaFree(devInfo);
-        
+        cudaErrorHandler(cudaFree(device_C_matrix), __LINE__);
+        cudaErrorHandler(cudaFree(device_A_matrix), __LINE__);
+        cudaErrorHandler(cudaFree(device_omegas), __LINE__);
+        cudaErrorHandler(cudaFree(device_pols), __LINE__);
+        cudaErrorHandler(cudaFree(device_pos), __LINE__);
+        cudaErrorHandler(cudaFree(d_W), __LINE__);
+        cudaErrorHandler(cudaFree(d_work), __LINE__);
+        cudaErrorHandler(cudaFree(devInfo), __LINE__);
+        cusolverDnDestroy(cusolverH);
+        cudaDeviceSynchronize();
 
-        double energy = e_total - e_iso + fh_corr + lr_corr;
+        /*
+        size_t free, total;
+        //cuMemGetInfo(&free, &total);
+        printf("free: %d\n", free);
+        printf("total: %d\n", total);
+
+        cudaDeviceReset();
+        //cuMemGetInfo(&free, &total);
+        printf("free: %d\n", free);
+        printf("total: %d\n", total);
+        */
+        
+        //double energy = e_total - e_iso + fh_corr + lr_corr;
+        double energy = 0;
+        /*
         printf("etotal: %le\n", e_total);
         printf("e_iso: %le\n", e_iso);
         printf("fh_corr: %le\n", fh_corr);
         printf("lr_corr: %le\n", lr_corr);
         printf("vdw: %e\n", energy);
+        */
         system->observables->vdw_energy = energy;
         return NULL;
     }

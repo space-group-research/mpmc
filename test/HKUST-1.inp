@@ -3,7 +3,7 @@ job_name                    muvt
 ensemble                    total_energy
 
 seed                        1024
-numsteps                    10000
+numsteps                    10
 corrtime                    100
 
 insert_probability          0.666

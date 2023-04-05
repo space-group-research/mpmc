@@ -231,7 +231,7 @@ extern "C" {
         return "<unknown>";
     }
 
-    void cudaErrorHandler(cudaError_t error, int line) {
+    static void cudaErrorHandler(cudaError_t error, int line) {
         if (error != cudaSuccess) {
             printf("POLAR_CUDA: GPU is reporting an error: %s %s:%d\n",
                     cudaGetErrorString(error), __FILE__, line);

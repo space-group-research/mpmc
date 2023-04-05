@@ -684,10 +684,12 @@ double vdw(system_t *system) {
     free_mtx(Cm);
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
+    /*
     printf("etotal: %le\n", e_total);
     printf("e_iso: %le\n", e_iso);
     printf("fh_corr: %le\n", fh_corr);
     printf("lr_corr: %le\n", lr_corr);
     printf("vdw: %e\n", energy);
+        */
     return energy;
 }

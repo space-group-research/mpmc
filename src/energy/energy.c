@@ -118,6 +118,7 @@ double energy(system_t *system) {
                 polar_energy = polar(system);
                 system->observables->polarization_energy = polar_energy;
             }
+            /*
             if (system->cuda && system->polarvdw) {
                 int vdw_status = pthread_create(&vdw_worker, NULL, vdw_cuda, (void *)system);
                 if (vdw_status) {
@@ -128,6 +129,7 @@ double energy(system_t *system) {
                 vdw_energy = vdw(system);
                 system->observables->vdw_energy = vdw_energy;
             }
+            */
 #else
             polar_energy = polar(system);
             system->observables->polarization_energy = polar_energy;
@@ -181,9 +183,17 @@ double energy(system_t *system) {
         if (!(system->sg || system->rd_only) && system->polarization && system->cuda) {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;
-            pthread_join(vdw_worker, NULL);
-            vdw_energy = system->observables->vdw_energy;
         }
+        cudaDeviceReset();
+        //printf("here\n");
+        vdw_cuda(system);
+        vdw_energy = system->observables->vdw_energy;
+        /*
+        pthread_join(vdw_worker, NULL);
+        vdw_energy = system->observables->vdw_energy;
+        */
+        cudaDeviceSynchronize();
+        cudaDeviceReset();
 #endif
     }  // end if cavity_autoreject_absolute did not find bad match. (if potential==0)
     else {
@@ -193,11 +203,13 @@ double energy(system_t *system) {
 
     /* sum the total potential energy */
     potential_energy += rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
+    /*
     printf("rd_energy: %f\n", rd_energy);
     printf("coulombic_energy: %f\n", coulombic_energy);
     printf("polar_energy: %f\n", polar_energy);
     printf("vdw_energy: %f\n", vdw_energy);
     printf("three_body_energy: %f\n", three_body_energy);
+    */
 
     /* not truly potential, but stick it there for convenience of MC */
 

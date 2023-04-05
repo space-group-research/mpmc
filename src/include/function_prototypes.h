@@ -263,7 +263,6 @@ void test_cavity_grid(system_t *);
 void test_lj(system_t *);
 void test_q(system_t *);
 #endif  /* DEBUG */
-#endif  // FXN_PROTOTYPES_H
 
 //fugacity functions
 double h2_fugacity(double, double);
@@ -290,3 +289,4 @@ double didotprod(double *, int *);
 int iidotprod(int *, int *);
 double min(double a, double b);
 int is_singular(double **a, int n);
+#endif  // FXN_PROTOTYPES_H

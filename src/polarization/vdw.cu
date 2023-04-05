@@ -312,6 +312,7 @@ extern "C" {
 
             //free memory
             free(host_eigenvalues);
+            cusolverDnDestroy(cusolverH);
             cudaErrorHandler(cudaFree(device_C_matrix), __LINE__);
             cudaErrorHandler(cudaFree(d_W), __LINE__);
             cudaErrorHandler(cudaFree(d_work), __LINE__);

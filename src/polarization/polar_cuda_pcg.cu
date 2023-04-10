@@ -395,6 +395,10 @@ extern "C" {
         // P = Z
         cublasErrorHandler(cublasScopy(handle, 3 * N, z, 1, p, 1), __LINE__);
 
+        // TODO: remove this line, its temporary
+        // BUG: Not meant to be here :)
+        system->polar_max_iter = 0;
+        
         for (iterations = 0; iterations < system->polar_max_iter; iterations++) {
             // alpha = R^tZ/P^tAP
             cublasErrorHandler(cublasSdot(handle, 3 * N, r, 1, z, 1, &alpha), __LINE__);

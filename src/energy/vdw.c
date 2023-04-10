@@ -76,8 +76,7 @@ void free_mtx(struct mtx *M) {
 extern void dsyev_(char *, char *, int *, double *, int *, double *, double *, int *, int *);
 #else
 void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, int *h, int *i) {
-    error(
-        "ERROR: Not compiled with Linear Algebra VDW.\n");
+    error("ERROR: Not compiled with Linear Algebra VDW.\n");
     die(-1);
 }
 #endif
@@ -123,6 +122,7 @@ struct mtx *build_M(int dim, int offset, double **Am, double *sqrtKinv) {
     //allocate
     Cm = alloc_mtx(nonzero);
 
+
     //build lapack compatible matrix from Am[offset..dim, offset..dim]
     iC = jC = -1;  //C index
     for (iA = offset; iA < dim + offset; iA++) {
@@ -136,6 +136,12 @@ struct mtx *build_M(int dim, int offset, double **Am, double *sqrtKinv) {
                 Am[iA][jA] * sqrtKinv[iA] * sqrtKinv[jA];
         }
     }
+    /*
+    printf("dim: %d\n", dim);
+    printf("offset: %d\n\n", offset);
+    print_matrx(Cm);
+    printf("\n\n");
+    */
 
     return Cm;
 }
@@ -182,42 +188,7 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     //optimize the size of work array
     workSize = -1;
 
-    #ifdef CUDA
-
-    double *workArr;
-
-    // Declare arrays on the device
-    double *d_A, *d_W;
-    int *devInfo;
-    double *d_work;
-    int lwork = 0;
-    cusolverDnHandle_t cusolverH;
-    cusolverDnCreate(&cusolverH);
-
-    cudaMalloc((void **)&d_A, M->dim * M->dim * sizeof(double));
-    cudaMalloc((void **)&d_W, M->dim * sizeof(double));
-    cudaMalloc((void **)&devInfo, sizeof(int));
-    cudaMemcpy(d_A, M->val, M->dim * M->dim * sizeof(double), cudaMemcpyHostToDevice);
-
-    cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_NOVECTOR;
-    cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-
-    // Find optimal workspace size
-    cusolverDnDsyevd_bufferSize(cusolverH, jobz, uplo, M->dim, d_A, M->dim, d_W, &lwork);
-    cudaMalloc( (void **) &d_work, lwork * sizeof(double));
-    // Solve for eigenvalues
-    cusolverDnDsyevd(cusolverH, jobz, uplo, M->dim, d_A, M->dim, d_W, d_work, lwork, devInfo);
-    cudaDeviceSynchronize();
-
-    cudaMemcpy(eigvals, d_W, M->dim * sizeof(double), cudaMemcpyDeviceToHost);
-
-    cudaFree(d_A);
-    cudaFree(d_W);
-    cudaFree(devInfo);
-    cudaDeviceReset();
-
-    #else
-
+    
     char uplo = 'L';  //operate on lower triagle
     double *workArr = malloc(sizeof(double));
     checknull(workArr, "double * work", sizeof(double));
@@ -229,7 +200,6 @@ double *lapack_diag(struct mtx *M, int jobtype) {
     //diagonalize
     dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
 
-    #endif /* ifdef CUDA */
 
     if (rval != 0) {
         sprintf(linebuf, "error: LAPACK: dsyev returned error: %d\n", rval);
@@ -250,7 +220,7 @@ double wtanh ( double w, double T ) {
 }
 */
 
-double eigen2energy(double *eigvals, int dim, double temperature) {
+static double eigen2energy(double *eigvals, int dim, double temperature) {
     int i;
     double rval = 0;
 
@@ -287,6 +257,13 @@ static double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
 
         //build matrix for calculation of vdw energy of isolated molecule
         Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
+        /*
+        printf("small c matrix:\n");
+        printf("dim: %d\n", 3 * nsize);
+        printf("offset: %d\n\n", 3 * nstart);
+        print_matrx(Cm_iso);
+        printf("\n\n");
+        */
         //diagonalize M and extract eigenvales -> calculate energy
         eigvals = lapack_diag(Cm_iso, 1);  //no eigenvectors
         e_iso = eigen2energy(eigvals, Cm_iso->dim, system->temperature);
@@ -633,11 +610,17 @@ double vdw(system_t *system) {
     double *sqrtKinv;                //matrix K^(-1/2); cholesky decomposition of K
     double **Am = system->A_matrix;  //A_matrix
     struct mtx *Cm;                  //C_matrix (we use single pointer due to LAPACK requirements)
-    double *eigvals;                 //eigenvales
+    double *eigvals;                 //eigenvalues
     double fh_corr = 0; 
     double lr_corr = 0;
 
     N = system->natoms;
+
+    /*
+    printf("NORMAL VDW A MATRIX: \n");
+    print_matrix(3 * N, system->A_matrix);
+    printf("\n\n");
+    */
 
     //allocate arrays. sqrtKinv is a diagonal matrix. d,e are used for matrix diag.
     sqrtKinv = getsqrtKinv(system, N);
@@ -648,7 +631,10 @@ double vdw(system_t *system) {
     //Build the C_Matrix
     thole_amatrix(system);
     Cm = build_M(3 * N, 0, Am, sqrtKinv);
-    //print_matrx(Cm);
+    /*
+    printf("normal vdw c matrix: dim %d\n", Cm->dim);
+    print_matrx(Cm);
+    */
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
@@ -662,8 +648,7 @@ double vdw(system_t *system) {
 
     //vdw energy comparison
     if (system->polarvdw == 3)
-        printf(
-            "VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
+        printf("VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
 
     if (system->feynman_hibbs) {
         if (system->vdw_fh_2be)
@@ -684,12 +669,10 @@ double vdw(system_t *system) {
     free_mtx(Cm);
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
-    /*
-    printf("etotal: %le\n", e_total);
-    printf("e_iso: %le\n", e_iso);
+    printf("etotal: %.9le\n", e_total);
+    printf("e_iso: %.9le\n", e_iso);
     printf("fh_corr: %le\n", fh_corr);
     printf("lr_corr: %le\n", lr_corr);
-    printf("vdw: %e\n", energy);
-        */
+    printf("vdw: %.4e\n", energy);
     return energy;
 }

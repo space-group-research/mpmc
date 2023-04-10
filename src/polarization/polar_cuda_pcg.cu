@@ -30,6 +30,24 @@ __global__ void print_b(int N, float *B) {
     }
 }
 
+__global__
+static void print_basis_sets() {
+    for (int i = 0; i < 3 * 3; i++) {
+        printf("%8.5f ", basis[i]);
+        if ((i + 1) % 3 == 0 && i != 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+    for (int i = 0; i < 3 * 3; i++) {
+        printf("%8.5f ", recip_basis[i]);
+        if ((i + 1) % 3 == 0 && i != 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
 __global__ static void print_a(int N, float *A) {
     printf("N: %d\n", N);
     for (int i = 0; i < 3 * 3 * N * N; i++) {
@@ -356,6 +374,12 @@ extern "C" {
 
         // make A matrix on GPU
         build_a<<<N, THREADS>>>(N, A, system->polar_damp, pos, pols);
+        /*
+        printf("polar a matrix\n");
+        print_a<<<1, 1>>>(N, A);
+        cudaDeviceSynchronize();
+        printf("\n\n\n\n");
+        */
         cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
 
         // R = B - A*X0

@@ -1,6 +1,6 @@
 job_name                    muvt
 
-ensemble                    total_energy
+ensemble                    uvt
 
 seed                        1024
 numsteps                    1000
@@ -50,5 +50,5 @@ frozen_output               /dev/null
 
 abcbasis                    26.343  26.343  26.343  90  90  90
 cuda on
-cdvdw comp
+cdvdw on
 polar_max_iter 4

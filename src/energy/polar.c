@@ -43,8 +43,7 @@ double polar(system_t *system) {
     if (!system->polar_zodid) {
         thole_amatrix(system);
         if (system->polarizability_tensor) {
-            output(
-                "POLAR: A matrix:\n");
+            output("POLAR: A matrix:\n");
             print_matrix(3 * ((int)system->checkpoint->thole_N_atom), system->A_matrix);
         }
     }
@@ -96,8 +95,7 @@ double polar(system_t *system) {
 
         /* output the 3x3 molecular polarizability tensor */
         if (system->polarizability_tensor) {
-            output(
-                "POLAR: B matrix:\n");
+            output("POLAR: B matrix:\n");
             print_matrix(3 * ((int)system->checkpoint->thole_N_atom), system->B_matrix);
             thole_polarizability_tensor(system);
             die(0);
@@ -116,12 +114,10 @@ double polar(system_t *system) {
     potential *= -0.5;
 
 #ifdef DEBUG
-    fprintf(stderr,
-            "mu MOLECULE ATOM * DIPOLES * STATIC * INDUCED * pot/atom -0.5*mu*E_s\n");
+    fprintf(stderr, "mu MOLECULE ATOM * DIPOLES * STATIC * INDUCED * pot/atom -0.5*mu*E_s\n");
     for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
         for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
-            fprintf(stderr,
-                    "mu %4d %4d * %8.5lf %8.5lf %8.5lf * %8.5lf %8.5lf %8.5lf * %8.5lf %8.5lf %8.5lf * %lf %lf\n",
+            fprintf(stderr, "mu %4d %4d * %8.5lf %8.5lf %8.5lf * %8.5lf %8.5lf %8.5lf * %8.5lf %8.5lf %8.5lf * %lf %lf\n",
                     molecule_ptr->id, atom_ptr->id,
                     atom_ptr->mu[0], atom_ptr->mu[1], atom_ptr->mu[2],
                     atom_ptr->ef_static[0], atom_ptr->ef_static[1], atom_ptr->ef_static[2],

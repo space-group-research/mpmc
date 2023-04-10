@@ -10,16 +10,17 @@ University of South Florida
 #include <math.h>
 #include <mc.h>
 #include "defines.h"
+#include "function_prototypes.h"
 
 #define halfHBAR 3.81911146e-12     //Ks
 
-void print_matrix(int N, double **matrix) {
+void print_matrix(int dim, double **matrix) {
     int i, j;
 
     printf("\nA matrix:\n");
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            printf("%8.5f ", matrix[i][j]);
+    for (i = 0; i < dim; i++) {
+        for (j = 0; j < dim; j++) {
+            printf("%.3le ", matrix[i][j]);
         }
         printf("\n");
     }
@@ -173,6 +174,7 @@ void thole_amatrix(system_t *system) {
     atom_array = system->atom_array;
     N = system->natoms;
 
+    thole_resize_matrices(system);
     zero_out_amatrix(system, N);
 
     /* set the diagonal blocks */

@@ -118,18 +118,19 @@ double energy(system_t *system) {
                 polar_energy = polar(system);
                 system->observables->polarization_energy = polar_energy;
             }
-            /*
+
             if (system->cuda && system->polarvdw) {
                 int vdw_status = pthread_create(&vdw_worker, NULL, vdw_cuda, (void *)system);
                 if (vdw_status) {
-                    printf("Error in VDW cuda\n");
+                    printf("Error in creating VDW cuda thread\n");
                     exit(-1);
                 }
             } else {
+                thole_resize_matrices(system);
+                thole_amatrix(system);
                 vdw_energy = vdw(system);
                 system->observables->vdw_energy = vdw_energy;
             }
-            */
 #else
             polar_energy = polar(system);
             system->observables->polarization_energy = polar_energy;
@@ -172,11 +173,6 @@ double energy(system_t *system) {
                 coulombic_energy = coulombic(system);
             system->observables->coulombic_energy = coulombic_energy;
 
-            /*
-            if (system->polarvdw) {
-                vdw_energy = vdw(system);
-            }
-            */
         }
 
 #ifdef CUDA
@@ -184,16 +180,14 @@ double energy(system_t *system) {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;
         }
-        cudaDeviceReset();
-        //printf("here\n");
+        /*
         vdw_cuda(system);
         vdw_energy = system->observables->vdw_energy;
-        /*
-        pthread_join(vdw_worker, NULL);
-        vdw_energy = system->observables->vdw_energy;
         */
-        cudaDeviceSynchronize();
-        cudaDeviceReset();
+        if (system->cuda && system->polarvdw) {
+            pthread_join(vdw_worker, NULL);
+            vdw_energy = system->observables->vdw_energy;
+        }
 #endif
     }  // end if cavity_autoreject_absolute did not find bad match. (if potential==0)
     else {

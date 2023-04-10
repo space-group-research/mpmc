@@ -11,7 +11,8 @@
 #include <mc.h>
 #include <cuda.h>
 
-#define THREADS 1024
+// This resulted in the same times across 64, 128, 256, and 512. I just went with a middle ground...
+#define THREADS 128
 #define MAXFVALUE 1.0e13f
 #define halfHBAR 3.81911146e-12     //Ks
 #define cHBAR 7.63822291e-12        //Ks //HBAR is already taken to be in Js
@@ -766,8 +767,7 @@ extern "C" {
         e_total = eigen2energy(host_eigenvalues, dim, system->temperature);
         e_total *= au2invseconds * halfHBAR;
 
-        //double e_iso = sum_eiso_vdw(system, device_A_matrix, dim, device_pols, device_omegas);
-        double e_iso = 0;
+        double e_iso = sum_eiso_vdw(system, device_A_matrix, dim, device_pols, device_omegas);
 
         //vdw energy comparison
         if (system->polarvdw == 3) {
@@ -809,11 +809,13 @@ extern "C" {
         
 
         double energy = e_total - e_iso + fh_corr + lr_corr;
+        /*
         printf("etotal: %.9le\n", e_total);
         printf("e_iso: %.9le\n", e_iso);
         printf("fh_corr: %le\n", fh_corr);
         printf("lr_corr: %le\n", lr_corr);
         printf("vdw: %.4e\n", energy);
+        */
         system->observables->vdw_energy = energy;
         return NULL;
     }

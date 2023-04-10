@@ -296,6 +296,7 @@ int mc(system_t *system) {
 
     /* main MC loop */
     for (system->step = 1; system->step <= system->numsteps; (system->step)++) {
+        printf("step: %d\n", system->step);
         /* restore the last accepted energy */
         initial_energy = system->observables->energy;
 

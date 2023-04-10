@@ -1,9 +1,9 @@
 job_name                    muvt
 
-ensemble                    total_energy
+ensemble                    uvt
 
-seed                        1024
-numsteps                    1000
+seed                        10241
+numsteps                    1500
 corrtime                    100
 
 insert_probability          0.666

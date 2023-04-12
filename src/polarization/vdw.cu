@@ -233,6 +233,7 @@ __global__ static void print_matrix(int dim, double *A) {
 
 extern "C" {
 #include <stdlib.h>
+#include <time.h>
 //#include <mc.h>
 
     //only run dsyev from LAPACK if compiled with -llapack, otherwise report an error
@@ -654,6 +655,7 @@ extern "C" {
     }
 
     void *vdw_cuda(void *systemptr) {
+        clock_t clck = clock();
         system_t *system = (system_t *)systemptr;
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
@@ -817,6 +819,8 @@ extern "C" {
         printf("vdw: %.4e\n", energy);
         */
         system->observables->vdw_energy = energy;
+        clock_t end = clock();
+        printf("vdw cuda time: %f\n", (double)(end - clck) / CLOCKS_PER_SEC);
         return NULL;
     }
 }

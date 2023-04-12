@@ -173,6 +173,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <structs.h>
+#include <time.h>
 
     void thole_field(system_t *);
 
@@ -264,6 +265,7 @@ extern "C" {
     }
 
     void *polar_cuda(void *ptr) {
+        clock_t start = clock();
         system_t *system = (system_t *)ptr;
         molecule_t *molecule_ptr;
         atom_t *atom_ptr;
@@ -483,6 +485,8 @@ extern "C" {
         cublasErrorHandler(cublasDestroy(handle), __LINE__);
 
         system->observables->polarization_energy = (double)potential;
+        clock_t end = clock();
+        printf("polar cuda time: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
         return NULL;
     }
 }

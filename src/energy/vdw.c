@@ -604,6 +604,7 @@ static void print_m(int dim, double *matrix) {
 
 //returns interaction VDW energy
 double vdw(system_t *system) {
+    clock_t start = clock();
     int N;                           //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
     double e_total, e_iso;           //total energy, isolation energy (atoms @ infinity)
     double *sqrtKinv;                //matrix K^(-1/2); cholesky decomposition of K
@@ -675,5 +676,7 @@ double vdw(system_t *system) {
     printf("lr_corr: %le\n", lr_corr);
     printf("vdw: %.4e\n", energy);
     */
+    clock_t end = clock();
+    printf("cpu vdw time: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
     return energy;
 }

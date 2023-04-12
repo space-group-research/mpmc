@@ -193,7 +193,6 @@ void thole_amatrix(system_t *);
 void thole_bmatrix(system_t *);
 void thole_bmatrix_dipoles(system_t *);
 void thole_polarizability_tensor(system_t *);
-void mbvdw(system_t *);
 void thole_field(system_t *);
 void thole_field_wolf(system_t *);
 void thole_field_nopbc(system_t *);

@@ -139,6 +139,7 @@ double energy(system_t *system) {
 #endif /* CUDA */
         }
 
+        clock_t clck = clock();
         /* get the repulsion/dispersion potential */
         if (system->rd_anharmonic)
             rd_energy = anharmonic(system);
@@ -174,6 +175,7 @@ double energy(system_t *system) {
             system->observables->coulombic_energy = coulombic_energy;
 
         }
+        printf("energy loop time: %ld", (clock() - clck) / CLOCKS_PER_SEC);
 
 #ifdef CUDA
         if (!(system->sg || system->rd_only) && system->polarization && system->cuda) {

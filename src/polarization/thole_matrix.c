@@ -48,109 +48,6 @@ void zero_out_amatrix(system_t *system, int N) {
     return;
 }
 
-void build_l_inverse(system_t *system) {
-    zero_out_matrix(system->L_inverse_matrix, system->natoms);
-    for (int i = 0; i < system->natoms; i++) {
-        system->L_inverse_matrix[i][i] = 1 / system->L_matrix[i][i];
-    }
-}
-
-void build_lmatrix(system_t *system) {
-    int N = system->natoms;
-    zero_out_matrix(system->L_matrix, N);
-    for (int i = 0; i < 3 * N; i++) {
-         system->L_matrix[i][i] = sqrt(system->K_matrix[i][i]);
-    }
-}
-
-void build_kmatrix(system_t *system) {
-    int N = system->natoms;
-    atom_t **atom_arr = system->atom_array;
-    zero_out_matrix(system->K_matrix, N);
-    for (int i = 0; i < 3 * N; i++) {
-        int atom_num = i / 3;
-        double denom = atom_arr[atom_num]->omega * atom_arr[atom_num]->omega * atom_arr[atom_num]->polarizability;
-        system->K_matrix[i][i] = 1 / denom;
-    }
-}
-
-#ifdef VDW
-//prototype for dsyev (LAPACK)
-extern void dsyev_(char *, char *, int *, double *, int *, double *, double *, int *, int *);
-#else
-void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, int *h, int *i) {
-    error(
-        "ERROR: Not compiled with Linear Algebra VDW.\n");
-    die(-1);
-}
-
-#endif
-
-void mbvdw(system_t *system) {
-    thole_amatrix(system);
-    //print_matrix(system->natoms * 3, system->A_matrix);
-    build_kmatrix(system);
-    build_lmatrix(system);
-    build_l_inverse(system);
-
-    int N = system->natoms;
-    atom_t **atom_arr = system->atom_array;
-    int matrix_size = 3 * 3 * N * N;
-    double *C_matrix = (double *)malloc(matrix_size * sizeof(double));
-
-    for (int i = 0; i < 3 * N; i++) {
-        for (int j = 0; j < 3 * N; j++) {
-            /* LAPACK using 1D arrays for storing matricies.
-                / 0  3  6 \
-                | 1  4  7 |		= 	[ 0 1 2 3 4 5 6 7 8 ]
-                \ 2  5  8 /									*/
-            // C_matrix is stored in reverse order because fortran uses oppositely aligned arrays from C
-            C_matrix[i * 3 * N + j] = system->A_matrix[j][i] * atom_arr[i / 3]->omega * atom_arr[j / 3]->omega *
-                                      sqrt(atom_arr[i / 3]->polarizability * atom_arr[j / 3]->polarizability);
-        }
-    }
-    printf("\nC matrix: \n");
-    for (int i = 0; i < 3 * N; i++) {
-        for (int j = 0; j < 3 * N; j++) {
-            printf("%8.5f ", C_matrix[j * 3 * N + i]);
-        }
-        printf("\n");
-    }
-    exit(1);
-    printf("\n\n");
-
-    char jobz = 'N';
-    char uplo = 'U';
-    double *eigenvalues = malloc( 3 * N * sizeof(double));
-    int matrixDimension = 3 * N;
-    int lda = 3 * N;
-    int lwork = -1;
-    int info;
-    double *work = malloc(sizeof(double));
-    dsyev_(&jobz, &uplo, &matrixDimension, C_matrix, &lda, eigenvalues, work, &lwork, &info);
-    lwork = (int)work[0];
-    work = realloc(work, lwork * sizeof(double));
-    dsyev_(&jobz, &uplo, &matrixDimension, C_matrix, &lda, eigenvalues, work, &lwork, &info);
-    if (info > 0) {
-        printf("Eigenvalues failed");
-        die(-1);
-    }
-
-    double energy = 0;
-    for (int i = 0; i < 3 * N; i++) {
-        if (eigenvalues[i] < 0) {
-            eigenvalues[i] = 0;
-        }
-        energy += sqrt(eigenvalues[i]);
-        //printf("%f\n", sqrt(eigenvalues[i]));
-    }
-    //convert a.u. -> s^-1 -> K
-    energy *= au2invseconds * halfHBAR;
-    system->mbvdw_energy = energy;
-    free(C_matrix);
-    free(eigenvalues);
-    free(work);
-}
 
 /* calculate the dipole field tensor */
 void thole_amatrix(system_t *system) {
@@ -283,14 +180,8 @@ void thole_resize_matrices(system_t *system) {
     //free the A matrix
     for (i = 0; i < oldN; i++){
         free(system->A_matrix[i]);
-        free(system->K_matrix[i]);
-        free(system->L_matrix[i]);
-        free(system->L_inverse_matrix[i]);
     } 
     free(system->A_matrix);
-    free(system->K_matrix);
-    free(system->L_matrix);
-    free(system->L_inverse_matrix);
 
     //if not iterative, free the B matrix
     if (!system->polar_iterative) {
@@ -301,22 +192,10 @@ void thole_resize_matrices(system_t *system) {
     //(RE)allocate the A matrix
     system->A_matrix = calloc(N, sizeof(double *));
     memnullcheck(system->A_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
-    system->K_matrix = calloc(N, sizeof(double *));
-    memnullcheck(system->K_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
-    system->L_matrix = calloc(N, sizeof(double *));
-    memnullcheck(system->L_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
-    system->L_inverse_matrix = calloc(N, sizeof(double *));
-    memnullcheck(system->L_inverse_matrix, N * sizeof(double *), __LINE__ - 1, __FILE__);
 
     for (i = 0; i < N; i++) {
         system->A_matrix[i] = malloc(N * sizeof(double));
         memnullcheck(system->A_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
-        system->K_matrix[i] = malloc(N * sizeof(double));
-        memnullcheck(system->K_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
-        system->L_matrix[i] = malloc(N * sizeof(double));
-        memnullcheck(system->L_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
-        system->L_inverse_matrix[i] = malloc(N * sizeof(double));
-        memnullcheck(system->L_inverse_matrix[i], N * sizeof(double), __LINE__ - 1, __FILE__);
     }
 
     //(RE)allocate the B matrix if not iterative

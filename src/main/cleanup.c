@@ -151,9 +151,6 @@ void free_matrices(system_t *system) {
 
     free(system->A_matrix);
     free(system->B_matrix);
-    free(system->K_matrix);
-    free(system->L_matrix);
-    free(system->L_inverse_matrix);
     system->A_matrix = system->B_matrix = NULL;
 
     return;

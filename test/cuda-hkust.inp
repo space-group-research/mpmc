@@ -3,7 +3,7 @@ job_name                    muvt
 ensemble                    uvt
 
 seed                        10241
-numsteps                    1500
+numsteps                    10000
 corrtime                    100
 
 insert_probability          0.666

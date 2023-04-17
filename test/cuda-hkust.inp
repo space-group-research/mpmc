@@ -3,7 +3,7 @@ job_name                    muvt
 ensemble                    uvt
 
 seed                        1024
-numsteps                    500
+numsteps                    10000
 corrtime                    100
 
 insert_probability          0.666
@@ -38,6 +38,7 @@ polar_max_iter 4
 
 read_pqr_box                on
 pqr_input                   HKUST-1.pqr
+#pqr_input                   muvt.final.pqr
 
 pop_histogram               off
 pop_histogram_output        /dev/null

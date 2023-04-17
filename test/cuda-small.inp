@@ -1,6 +1,6 @@
 job_name                        AR_TEST ! job name, which will determine default output file names
 
-ensemble                        total_energy ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
+ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
 
 seed                            1024    ! initial seed for the RNG
 numsteps                        100 ! Total number of MC steps to run.

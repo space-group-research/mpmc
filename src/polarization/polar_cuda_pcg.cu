@@ -398,7 +398,7 @@ extern "C" {
 
         // TODO: remove this line, its temporary
         // BUG: Not meant to be here :)
-        system->polar_max_iter = 0;
+        //system->polar_max_iter = 0;
         
         for (iterations = 0; iterations < system->polar_max_iter; iterations++) {
             // alpha = R^tZ/P^tAP

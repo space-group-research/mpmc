@@ -198,13 +198,6 @@ double energy(system_t *system) {
 
     /* sum the total potential energy */
     potential_energy += rd_energy + coulombic_energy + polar_energy + vdw_energy + three_body_energy;
-    /*
-    printf("rd_energy: %f\n", rd_energy);
-    printf("coulombic_energy: %f\n", coulombic_energy);
-    printf("polar_energy: %f\n", polar_energy);
-    printf("vdw_energy: %f\n", vdw_energy);
-    printf("three_body_energy: %f\n", three_body_energy);
-    */
 
     /* not truly potential, but stick it there for convenience of MC */
 

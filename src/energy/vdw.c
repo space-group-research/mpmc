@@ -18,12 +18,6 @@ energy calculation.
 #include <mc.h>
 #include <math.h>
 
-#ifdef CUDA
-#include <cuda_runtime.h>
-#include <cusolverDn.h>
-#include <cublas_v2.h>
-#endif
-
 #define TWOoverHBAR 2.6184101e11    //K^-1 s^-1
 #define cHBAR 7.63822291e-12        //Ks //HBAR is already taken to be in Js
 #define halfHBAR 3.81911146e-12     //Ks
@@ -136,12 +130,6 @@ struct mtx *build_M(int dim, int offset, double **Am, double *sqrtKinv) {
                 Am[iA][jA] * sqrtKinv[iA] * sqrtKinv[jA];
         }
     }
-    /*
-    printf("dim: %d\n", dim);
-    printf("offset: %d\n\n", offset);
-    print_matrx(Cm);
-    printf("\n\n");
-    */
 
     return Cm;
 }
@@ -230,7 +218,6 @@ static double eigen2energy(double *eigvals, int dim, double temperature) {
         if (eigvals[i] < 0) eigvals[i] = 0;
         //		rval += wtanh(sqrt(eigvals[i]), temperature);
         rval += sqrt(eigvals[i]);
-        //printf("eigs[%d]: %le\n", i, eigvals[i]);
     }
     return rval;
 }

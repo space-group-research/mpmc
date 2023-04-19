@@ -290,25 +290,14 @@ extern "C" {
             for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) nsize++;
 
             //build matrix for calculation of vdw energy of isolated molecule
-            //Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
             double *device_C_matrix;
             int dim = 3 * nsize;
             int offset = 3 * nstart;
             int matrix_size = A_dim * A_dim;
             cudaErrorHandler(cudaMalloc((void **) &device_C_matrix, matrix_size * sizeof(double)), __LINE__);
             int blocks = (matrix_size + THREADS - 1) / THREADS;
-            /*
-            printf("dim: %d\n", dim);
-            printf("offset: %d\n", offset);
-            */
             build_c_matrix_with_offset<<<blocks, THREADS>>>(dim, A_dim, offset, device_A_matrix, device_pols, device_omegas, device_C_matrix);
             cudaDeviceSynchronize();
-            /*
-            printf("Small VDW C Matrix: \n");
-            print_matrix<<<1, 1>>>(A_dim, device_C_matrix);
-            cudaDeviceSynchronize();
-            printf("\n\n");
-            */
             cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
             //diagonalize M and extract eigenvales -> calculate energy
 
@@ -656,7 +645,6 @@ extern "C" {
     }
 
     void *vdw_cuda(void *systemptr) {
-        clock_t clck = clock();
         system_t *system = (system_t *)systemptr;
         int N = system->natoms;
         int matrix_size = 3 * 3 * N * N;
@@ -712,13 +700,6 @@ extern "C" {
         build_a<<<N, THREADS>>>(N, device_A_matrix, system->polar_damp, device_pos, device_pols);
         cudaDeviceSynchronize();
         cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
-        /*
-        printf("A MATRIX:");
-        print_matrix<<<1, 1>>>(dim, device_A_matrix);
-        print_a<<<1, 1>>>(N, device_A_matrix);
-        printf("\n\n");
-        cudaDeviceSynchronize();
-        */
 
         for (i = 0; i < N; i++) {
             host_omegas[i] = system->atom_array[i]->omega;
@@ -730,13 +711,6 @@ extern "C" {
         build_c_matrix<<<blocks, THREADS>>>(matrix_size, dim, device_A_matrix, device_pols, device_omegas, device_C_matrix);
         cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
         cudaDeviceSynchronize();
-        /*
-        printf("Device Big C matrix dim: %d", dim);
-        print_matrix<<<1, 1>>>(dim, device_C_matrix);
-        printf("\n\n");
-        cudaErrorHandler(cudaGetLastError(), __LINE__ - 1);
-        cudaDeviceSynchronize();
-        */
 
         int *devInfo;
         double *d_work;
@@ -812,17 +786,7 @@ extern "C" {
         
 
         double energy = e_total - e_iso + fh_corr + lr_corr;
-        /*
-        printf("etotal: %.9le\n", e_total);
-        printf("e_iso: %.9le\n", e_iso);
-        printf("fh_corr: %le\n", fh_corr);
-        printf("lr_corr: %le\n", lr_corr);
-        printf("vdw: %.4e\n", energy);
-        */
         system->observables->vdw_energy = energy;
-        clock_t end = clock();
-        printf("%d x %d\n", dim, dim);
-        printf("vdw cuda time: %f\n", (double)(end - clck) / CLOCKS_PER_SEC);
         return NULL;
     }
 }

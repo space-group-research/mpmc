@@ -3,7 +3,7 @@ job_name                        AR_TEST ! job name, which will determine default
 ensemble                        uvt ! thermodynamic ensemble, e.g. Grand-Canonical here. NVT, PVT, etc. are possible.
 
 seed                            1024    ! initial seed for the RNG
-numsteps                        100 ! Total number of MC steps to run.
+numsteps                        400 ! Total number of MC steps to run.
 corrtime                        100    ! Output averages every X steps
 
 insert_probability              0.667 ! Probability to add or remove a sorbate molecule (otherwise do a combination rotation/translation)

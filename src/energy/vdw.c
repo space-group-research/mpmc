@@ -257,13 +257,6 @@ static double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
 
         //build matrix for calculation of vdw energy of isolated molecule
         Cm_iso = build_M(3 * (nsize), 3 * nstart, system->A_matrix, sqrtKinv);
-        /*
-        printf("small c matrix:\n");
-        printf("dim: %d\n", 3 * nsize);
-        printf("offset: %d\n\n", 3 * nstart);
-        print_matrx(Cm_iso);
-        printf("\n\n");
-        */
         //diagonalize M and extract eigenvales -> calculate energy
         eigvals = lapack_diag(Cm_iso, 1);  //no eigenvectors
         e_iso = eigen2energy(eigvals, Cm_iso->dim, system->temperature);
@@ -604,7 +597,6 @@ static void print_m(int dim, double *matrix) {
 
 //returns interaction VDW energy
 double vdw(system_t *system) {
-    clock_t start = clock();
     int N;                           //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
     double e_total, e_iso;           //total energy, isolation energy (atoms @ infinity)
     double *sqrtKinv;                //matrix K^(-1/2); cholesky decomposition of K
@@ -616,12 +608,6 @@ double vdw(system_t *system) {
 
     N = system->natoms;
 
-    /*
-    printf("NORMAL VDW A MATRIX: \n");
-    print_matrix(3 * N, system->A_matrix);
-    printf("\n\n");
-    */
-
     //allocate arrays. sqrtKinv is a diagonal matrix. d,e are used for matrix diag.
     sqrtKinv = getsqrtKinv(system, N);
 
@@ -631,10 +617,6 @@ double vdw(system_t *system) {
     //Build the C_Matrix
     thole_amatrix(system);
     Cm = build_M(3 * N, 0, Am, sqrtKinv);
-    /*
-    printf("normal vdw c matrix: dim %d\n", Cm->dim);
-    print_matrx(Cm);
-    */
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
@@ -669,15 +651,5 @@ double vdw(system_t *system) {
     free_mtx(Cm);
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
-    /*
-    printf("etotal: %.9le\n", e_total);
-    printf("e_iso: %.9le\n", e_iso);
-    printf("fh_corr: %le\n", fh_corr);
-    printf("lr_corr: %le\n", lr_corr);
-    printf("vdw: %.4e\n", energy);
-    */
-    clock_t end = clock();
-    printf("%d x %d\n", 3 * N, 3 * N);
-    printf("cpu vdw time: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
     return energy;
 }

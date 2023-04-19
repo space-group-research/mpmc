@@ -14,10 +14,8 @@ energy calculation.
 
 */
 
-#include "defines.h"
 #include <mc.h>
 #include <math.h>
-
 #define TWOoverHBAR 2.6184101e11    //K^-1 s^-1
 #define cHBAR 7.63822291e-12        //Ks //HBAR is already taken to be in Js
 #define halfHBAR 3.81911146e-12     //Ks
@@ -49,11 +47,13 @@ struct mtx *alloc_mtx(int dim) {
     //alloc matrix variable and set dim
     struct mtx *M = NULL;
     M = malloc(sizeof(struct mtx));
-    checknull(M, "struct mtx * M", sizeof(struct mtx));
+    checknull(M,
+              "struct mtx * M", sizeof(struct mtx));
     M->dim = dim;
     //alloc matrix storage space
     M->val = calloc(dim * dim, sizeof(double));
-    checknull(M->val, "struct mtx * M->val", dim * dim * sizeof(double));
+    checknull(M->val,
+              "struct mtx * M->val", dim * dim * sizeof(double));
     return M;
 }
 
@@ -70,7 +70,8 @@ void free_mtx(struct mtx *M) {
 extern void dsyev_(char *, char *, int *, double *, int *, double *, double *, int *, int *);
 #else
 void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, int *h, int *i) {
-    error("ERROR: Not compiled with Linear Algebra VDW.\n");
+    error(
+        "ERROR: Not compiled with Linear Algebra VDW.\n");
     die(-1);
 }
 #endif
@@ -79,25 +80,21 @@ void dsyev_(char *a, char *b, int *c, double *d, int *e, double *f, double *g, i
 void print_mtx(struct mtx *Cm) {
     int iC, jC;
 
-    printf("\n==============begin===================\n");
+    printf(
+        "\n==============begin===================\n");
     for (iC = 0; iC < Cm->dim; iC++) {
         for (jC = 0; jC < Cm->dim; jC++) {
-            printf("%.3le ", (Cm->val)[iC + jC * (Cm->dim)]);
+            if (jC > iC) continue;
+            printf(
+                "%.1le ", (Cm->val)[iC + jC * (Cm->dim)]);
         }
-        printf("\n");
+        printf(
+            "\n");
     }
-    printf("\n==============end=================\n");
+    printf(
+        "\n==============end=================\n");
 
     return;
-}
-
-void print_matrx(struct mtx *M) {
-    for (int i = 0; i < M->dim * M->dim; i++) {
-         printf("%.3le ", M->val[i]);
-        if ((i + 1) % M->dim == 0 && i != 0) {
-            printf("\n");
-        }
-    }
 }
 
 //build C matrix for a given molecule/system, with atom indicies (offset)/3..(offset+dim)/3
@@ -115,7 +112,6 @@ struct mtx *build_M(int dim, int offset, double **Am, double *sqrtKinv) {
 
     //allocate
     Cm = alloc_mtx(nonzero);
-
 
     //build lapack compatible matrix from Am[offset..dim, offset..dim]
     iC = jC = -1;  //C index
@@ -157,7 +153,9 @@ void printevects(struct mtx *M) {
 	\ 2  5  8 /									*/
 double *lapack_diag(struct mtx *M, int jobtype) {
     char job;         //job type
-    int workSize;        //size of work array
+    char uplo = 'L';  //operate on lower triagle
+    double *work;     //working space for dsyev
+    int lwork;        //size of work array
     int rval = 0;     //returned from dsyev_
     double *eigvals;
     char linebuf[MAXLINE];
@@ -172,30 +170,30 @@ double *lapack_diag(struct mtx *M, int jobtype) {
 
     //allocate eigenvalues array
     eigvals = malloc(M->dim * sizeof(double));
-    checknull(eigvals, "double * eigvals", M->dim * sizeof(double));
+    checknull(eigvals,
+              "double * eigvals", M->dim * sizeof(double));
     //optimize the size of work array
-    workSize = -1;
-
-    
-    char uplo = 'L';  //operate on lower triagle
-    double *workArr = malloc(sizeof(double));
-    checknull(workArr, "double * work", sizeof(double));
-    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
+    lwork = -1;
+    work = malloc(sizeof(double));
+    checknull(work,
+              "double * work", sizeof(double));
+    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);
     //now optimize work array size is stored as work[0]
-    workSize = (int)workArr[0];
-    workArr = realloc(workArr, workSize * sizeof(double));
-    checknull(workArr, "double * work", workSize * sizeof(double));
+    lwork = (int)work[0];
+    work = realloc(work, lwork * sizeof(double));
+    checknull(work,
+              "double * work", lwork * sizeof(double));
     //diagonalize
-    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, workArr, &workSize, &rval);
-
+    dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);
 
     if (rval != 0) {
-        sprintf(linebuf, "error: LAPACK: dsyev returned error: %d\n", rval);
+        sprintf(linebuf,
+                "error: LAPACK: dsyev returned error: %d\n", rval);
         error(linebuf);
         die(-1);
     }
 
-    free(workArr);
+    free(work);
 
     return eigvals;
 }
@@ -208,7 +206,7 @@ double wtanh ( double w, double T ) {
 }
 */
 
-static double eigen2energy(double *eigvals, int dim, double temperature) {
+double eigen2energy(double *eigvals, int dim, double temperature) {
     int i;
     double rval = 0;
 
@@ -224,7 +222,7 @@ static double eigen2energy(double *eigvals, int dim, double temperature) {
 
 //calculate energies for isolated molecules
 //if we don't know it, calculate it and save the value
-static double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
+double calc_e_iso(system_t *system, double *sqrtKinv, molecule_t *mptr) {
     int nstart, nsize;   // , curr_dimM;  (unused variable)
     double e_iso;        //total vdw energy of isolated molecules
     struct mtx *Cm_iso;  //matrix Cm_isolated
@@ -288,7 +286,8 @@ double sum_eiso_vdw(system_t *system, double *sqrtKinv) {
                           "calloc vdw_t * vdw_eiso_info", sizeof(vdw_t));
                 vpscan = system->vdw_eiso_info;  //set scan pointer
             } else {
-                for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next);
+                for (vpscan = system->vdw_eiso_info; vpscan->next != NULL; vpscan = vpscan->next)
+                    ;
                 vpscan->next = calloc(1, sizeof(vdw_t));  //allocate space
                 checknull(vpscan->next,
                           "calloc vdw_t * vpscan->next", sizeof(vdw_t));
@@ -329,7 +328,8 @@ double *getsqrtKinv(system_t *system, int N) {
 
     //malloc 3*N wastes an insignificant amount of memory, but saves us a lot of index management
     sqrtKinv = malloc(3 * N * sizeof(double));
-    checknull(sqrtKinv, "double * sqrtKinv", 3 * N * sizeof(double));
+    checknull(sqrtKinv,
+              "double * sqrtKinv", 3 * N * sizeof(double));
 
     for (molecule_ptr = system->molecules; molecule_ptr; molecule_ptr = molecule_ptr->next) {
         for (atom_ptr = molecule_ptr->atoms; atom_ptr; atom_ptr = atom_ptr->next) {
@@ -345,7 +345,7 @@ double *getsqrtKinv(system_t *system, int N) {
 }
 
 // long-range correction
-static double lr_vdw_corr(system_t *system) {
+double lr_vdw_corr(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -387,7 +387,7 @@ static double lr_vdw_corr(system_t *system) {
 }
 
 //calculate T matrix element for a particular separation
-static double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
+double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
     double energy;
     double lr = system->polar_damp * r;
     double lr2 = lr * lr;
@@ -428,7 +428,7 @@ static double e2body(system_t *system, atom_t *atom, pair_t *pair, double r) {
 }
 
 // feynman-hibbs correction - molecular pair finite differencing method
-static double fh_vdw_corr(system_t *system) {
+double fh_vdw_corr(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -486,7 +486,7 @@ static double fh_vdw_corr(system_t *system) {
 }
 
 // feynman-hibbs using 2BE (shitty)
-static double fh_vdw_corr_2be(system_t *system) {
+double fh_vdw_corr_2be(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -544,7 +544,7 @@ static double fh_vdw_corr_2be(system_t *system) {
 }
 
 //with damping
-static double twobody(system_t *system) {
+double twobody(system_t *system) {
     molecule_t *molecule_ptr;
     atom_t *atom_ptr;
     pair_t *pair_ptr;
@@ -573,15 +573,6 @@ static double twobody(system_t *system) {
     return energy;
 }
 
-static void print_m(int dim, double *matrix) {
-    for (int i = 0; i < dim * dim; i++) {
-         printf("%.3le ", matrix[i]);
-        if ((i + 1) % dim == 0 && i != 0) {
-            printf("\n");
-        }
-    }
-}
-
 //returns interaction VDW energy
 double vdw(system_t *system) {
     int N;                           //  dimC;  (unused variable)  //number of atoms, number of non-zero rows in C-Matrix
@@ -589,9 +580,8 @@ double vdw(system_t *system) {
     double *sqrtKinv;                //matrix K^(-1/2); cholesky decomposition of K
     double **Am = system->A_matrix;  //A_matrix
     struct mtx *Cm;                  //C_matrix (we use single pointer due to LAPACK requirements)
-    double *eigvals;                 //eigenvalues
-    double fh_corr = 0; 
-    double lr_corr = 0;
+    double *eigvals;                 //eigenvales
+    double fh_corr, lr_corr;
 
     N = system->natoms;
 
@@ -602,12 +592,10 @@ double vdw(system_t *system) {
     e_iso = sum_eiso_vdw(system, sqrtKinv);
 
     //Build the C_Matrix
-    thole_amatrix(system);
     Cm = build_M(3 * N, 0, Am, sqrtKinv);
 
     //setup and use lapack diagonalization routine dsyev_()
     eigvals = lapack_diag(Cm, system->polarvdw);  //eigenvectors if system->polarvdw == 2
-    
     if (system->polarvdw == 2)
         printevects(Cm);
 
@@ -617,7 +605,8 @@ double vdw(system_t *system) {
 
     //vdw energy comparison
     if (system->polarvdw == 3)
-        printf("VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
+        printf(
+            "VDW Two-Body | Many Body = %lf | %lf\n", twobody(system), e_total - e_iso);
 
     if (system->feynman_hibbs) {
         if (system->vdw_fh_2be)
@@ -637,6 +626,5 @@ double vdw(system_t *system) {
     free(eigvals);
     free_mtx(Cm);
 
-    double energy = e_total - e_iso + fh_corr + lr_corr;
-    return energy;
+    return e_total - e_iso + fh_corr + lr_corr;
 }

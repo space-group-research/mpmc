@@ -542,7 +542,10 @@ double calc_multi_configurational_energy(system_t *system) {
     if (system->polarization) {
 #ifdef CUDA
         if (system->cuda)
-            polar_energy = (double)polar_cuda(system);
+        {
+            polar_cuda(system);
+            polar_energy = system->observables->polarization_energy;
+        }
         else
             polar_energy = polar(system);
 #else

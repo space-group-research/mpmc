@@ -677,6 +677,7 @@ double vdw(system_t *system) {
     printf("vdw: %.4e\n", energy);
     */
     clock_t end = clock();
+    printf("%d x %d\n", 3 * N, 3 * N);
     printf("cpu vdw time: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
     return energy;
 }

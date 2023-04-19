@@ -231,6 +231,7 @@ __global__ static void print_matrix(int dim, double *A) {
 }
 
 
+
 extern "C" {
 #include <stdlib.h>
 #include <time.h>
@@ -820,6 +821,7 @@ extern "C" {
         */
         system->observables->vdw_energy = energy;
         clock_t end = clock();
+        printf("%d x %d\n", dim, dim);
         printf("vdw cuda time: %f\n", (double)(end - clck) / CLOCKS_PER_SEC);
         return NULL;
     }

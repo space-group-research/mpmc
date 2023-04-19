@@ -2,7 +2,7 @@ job_name                    muvt
 
 ensemble                    uvt
 
-seed                        10241
+seed                        1024
 numsteps                    500
 corrtime                    100
 
@@ -37,8 +37,8 @@ polar_gamma                 1.03
 polar_max_iter 4
 
 read_pqr_box                on
-#pqr_input                   HKUST-1.pqr
-pqr_input                   muvt.restart.pqr
+pqr_input                   HKUST-1.pqr
+#pqr_input                   muvt.restart.pqr
 
 pop_histogram               off
 pop_histogram_output        /dev/null

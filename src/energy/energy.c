@@ -114,7 +114,8 @@ double energy(system_t *system) {
                     printf("ERROR; return code from pthread_create() is %d\n", rc);
                     exit(-1);
                 }
-            } else {
+            }
+            else {
                 polar_energy = polar(system);
                 system->observables->polarization_energy = polar_energy;
             }
@@ -125,17 +126,21 @@ double energy(system_t *system) {
                     printf("Error in creating VDW cuda thread\n");
                     exit(-1);
                 }
-            } else {
+            }
+            else {
                 thole_resize_matrices(system);
                 thole_amatrix(system);
                 vdw_energy = vdw(system);
                 system->observables->vdw_energy = vdw_energy;
             }
+
 #else
             polar_energy = polar(system);
             system->observables->polarization_energy = polar_energy;
-            vdw_energy = vdw(system);
-            system->observables->vdw_energy = vdw_energy;
+            if (system->polarvdw) {
+                vdw_energy = vdw(system);
+                system->observables->vdw_energy = vdw_energy;
+            }
 #endif /* CUDA */
         }
 

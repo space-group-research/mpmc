@@ -3,7 +3,7 @@ job_name                    muvt
 ensemble                    uvt
 
 seed                        1024
-numsteps                    10000
+numsteps                    500
 corrtime                    100
 
 insert_probability          0.666
@@ -11,7 +11,7 @@ move_factor                 0.01
 rot_factor                  0.10
 
 temperature                 303
-pressure                    .01
+pressure                    .1
 
 parallel_restarts           on
 

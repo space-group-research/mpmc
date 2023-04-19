@@ -11,7 +11,7 @@ move_factor                 0.01
 rot_factor                  0.10
 
 temperature                 303
-pressure                    20
+pressure                    .1
 
 parallel_restarts           on
 

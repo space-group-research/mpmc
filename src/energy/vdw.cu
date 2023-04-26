@@ -1,6 +1,3 @@
-/**
- * /opt/cuda/extras/compute-sanitizer/compute-sanitizer --leak-check full --track-stream-ordered-races all --padding 32 ../build/mpmc
- */
 #include "cublas_v2.h"
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
@@ -270,6 +267,8 @@ static double eigen2energy(double *eigvals, int dim, double temperature) {
 
 //calculate energies for isolated molecules
 //if we don't know it, calculate it and save the value
+// This seems like it might be ripe for speeding up, but I checked the runtime and it was extremely minimal. The fact
+// that I didn't use an offset hardly makes a difference from my testing.
 static double calc_e_iso(system_t *system, molecule_t *mptr, double *device_A_matrix, int A_dim, double *device_pols,
                          double *device_omegas) {
     int nstart, nsize;   // , curr_dimM;  (unused variable)

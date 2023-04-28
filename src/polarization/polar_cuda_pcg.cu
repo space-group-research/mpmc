@@ -396,8 +396,7 @@ extern "C" {
         // P = Z
         cublasErrorHandler(cublasScopy(handle, 3 * N, z, 1, p, 1), __LINE__);
 
-        // TODO: remove this line, its temporary
-        // BUG: Not meant to be here :)
+        // This line was used for testing cuda cdvdw in hkust to prevent some non-NAN polarization values
         //system->polar_max_iter = 0;
         
         for (iterations = 0; iterations < system->polar_max_iter; iterations++) {

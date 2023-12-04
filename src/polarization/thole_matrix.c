@@ -6,33 +6,48 @@ University of South Florida
 
 */
 
+//#include <lapack.h>
+#include <math.h>
 #include <mc.h>
+#include "defines.h"
+#include "function_prototypes.h"
 
-void print_matrix(int N, double **matrix) {
+#define halfHBAR 3.81911146e-12     //Ks
+
+void print_matrix(int dim, double **matrix) {
     int i, j;
 
-    printf(
-        "\n");
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            printf(
-                "%.3f ", matrix[i][j]);
+    printf("\nA matrix:\n");
+    for (i = 0; i < dim; i++) {
+        for (j = 0; j < dim; j++) {
+            printf("%.3le ", matrix[i][j]);
         }
-        printf(
-            "\n");
+        printf("\n");
     }
-    printf(
-        "\n");
+    printf("\n");
+}
+
+void zero_out_matrix(double **matrix, int N) {
+    int i, j;
+    /* zero out the matrix */
+    for (i = 0; i < 3 * N; i++) {
+        for (j = 0; j < 3 * N; j++) {
+            matrix[i][j] = 0;
+        }
+    }
 }
 
 void zero_out_amatrix(system_t *system, int N) {
     int i, j;
     /* zero out the matrix */
-    for (i = 0; i < 3 * N; i++)
-        for (j = 0; j < 3 * N; j++)
+    for (i = 0; i < 3 * N; i++) {
+        for (j = 0; j < 3 * N; j++) {
             system->A_matrix[i][j] = 0;
+        }
+    }
     return;
 }
+
 
 /* calculate the dipole field tensor */
 void thole_amatrix(system_t *system) {
@@ -56,16 +71,19 @@ void thole_amatrix(system_t *system) {
     atom_array = system->atom_array;
     N = system->natoms;
 
+    thole_resize_matrices(system);
     zero_out_amatrix(system, N);
 
     /* set the diagonal blocks */
     for (i = 0; i < N; i++) {
         ii = i * 3;
         for (p = 0; p < 3; p++) {
-            if (atom_array[i]->polarizability != 0.0)
+            if (atom_array[i]->polarizability != 0.0) {
                 system->A_matrix[ii + p][ii + p] = 1.0 / atom_array[i]->polarizability;
-            else
+            }
+            else {
                 system->A_matrix[ii + p][ii + p] = MAXVALUE;
+            }
         }
     }
 
@@ -105,7 +123,7 @@ void thole_amatrix(system_t *system) {
                         damp1 = damp2 = 1.0;
                     }
                     break;
-                case DAMPING_EXPONENTIAL:
+                case DAMPING_EXPONENTIAL_UNSCALED:
                     explr = exp(-l * r);
                     damp1 = 1.0 - explr * (0.5 * l2 * r2 + l * r + 1.0);
                     damp2 = damp1 - explr * (l3 * r2 * r / 6.0);
@@ -114,10 +132,42 @@ void thole_amatrix(system_t *system) {
                         wdamp2 = wdamp1 - explrcut * (l3 * rcut3 / 6.0);
                     }
                     break;
+                case DAMPING_EXPONENTIAL: {
+                    double u;
+                    if ( atom_array[i]->polarizability * atom_array[j]->polarizability == 0 ) {
+                        u = r;
+                    }
+                    else {
+                        u = r / pow(atom_array[i]->polarizability * atom_array[j]->polarizability, 1.0 / 6.0);
+                    }
+                    explr = exp(-l * u);
+                    damp1 = 1.0 - explr * (0.5 * l2 * (u*u) + l * u + 1.0);
+                    damp2 = damp1 - explr * (l3 * (u*u*u) / 6.0);
+                    if (system->polar_wolf_full) {  //subtract off damped interaction at r_cutoff
+                        wdamp1 = 1.0 - explrcut * (0.5 * l2 * rcut2 + l * rcut + 1.0);
+                        wdamp2 = wdamp1 - explrcut * (l3 * rcut3 / 6.0);
+                    }
+                    break;
+                }
+                case DAMPING_AMOEBA: {
+                    double u;
+                    if ( atom_array[i]->polarizability * atom_array[j]->polarizability == 0 ) {
+                        u = r;
+                    }
+                    else {
+                        u = r / pow(atom_array[i]->polarizability * atom_array[j]->polarizability, 1.0 / 6.0);
+                    }
+                    double u3 = u * u * u;
+                    explr = exp(-l * u3);
+                    damp1 = 1 - explr;
+                    damp2 = 1 - (1 + l * u3) * explr;
+                    break;
+                }
                 default:
                     error(
                         "error: something unexpected happened in thole_matrix.c");
             }
+            
 
             /* build the tensor */
             for (p = 0; p < 3; p++) {
@@ -145,7 +195,7 @@ void thole_amatrix(system_t *system) {
     return;
 }
 
-/* for uvt runs, resize the A (and B) matrices */
+/* for uvt runs, resize the A (and B (and K)) matrices */
 void thole_resize_matrices(system_t *system) {
     int i, N, dN, oldN;
 
@@ -159,7 +209,9 @@ void thole_resize_matrices(system_t *system) {
 
     // grow A matricies by free/malloc (to prevent fragmentation)
     //free the A matrix
-    for (i = 0; i < oldN; i++) free(system->A_matrix[i]);
+    for (i = 0; i < oldN; i++){
+        free(system->A_matrix[i]);
+    } 
     free(system->A_matrix);
 
     //if not iterative, free the B matrix

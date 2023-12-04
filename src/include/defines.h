@@ -76,7 +76,9 @@ enum { READ,
        APPEND };  //file open modes for filecheck()
 enum { DAMPING_OFF,
        DAMPING_LINEAR,
-       DAMPING_EXPONENTIAL };
+       DAMPING_EXPONENTIAL,
+       DAMPING_EXPONENTIAL_UNSCALED,
+       DAMPING_AMOEBA };
 enum { NUCLEAR_SPIN_PARA,
        NUCLEAR_SPIN_ORTHO };
 enum {

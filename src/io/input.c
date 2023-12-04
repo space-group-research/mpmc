@@ -6,6 +6,7 @@ University of South Florida
 
 */
 
+#include "defines.h"
 #include <mc.h>
 
 //convert string *a to a double and store at the address of f.
@@ -193,7 +194,7 @@ int do_command(system_t *system, char **token) {
                          "model_dir")) {
         system->model_dir = calloc(MAXLINE, sizeof(char));
         memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
-        sprintf(system->model_dir, token[1]);
+        sprintf(system->model_dir, "%s", token[1]);
     }
     else if (!strcasecmp(token[0], "models")) {
         if (system->models == NULL) {
@@ -454,19 +455,14 @@ int do_command(system_t *system, char **token) {
             system->polarization = 0;
         else
             return 1;
-    } else if (!strcasecmp(token[0],
-                           "polarvdw") ||
-               !strcasecmp(token[0],
-                           "cdvdw")) {
-        if (!strcasecmp(token[1],
-                        "on")) {
+    } else if (!strcasecmp(token[0], "polarvdw") || !strcasecmp(token[0], "cdvdw")) {
+        if (!strcasecmp(token[1], "on")) {
             system->polarvdw = 1;
             system->polarization = 1;
             system->polar_iterative = 1;  //matrix inversion destroys A_matrix before vdw can use it.
             output(
                 "INPUT: Forcing polar_iterative ON for CP-VdW.\n");
-        } else if (!strcasecmp(token[1],
-                               "evects")) {
+        } else if (!strcasecmp(token[1], "evects")) {
             system->polarvdw = 2;  //calculate eigenvectors
             system->polarization = 1;
             system->polar_iterative = 1;  //matrix inversion destroys A_matrix before vdw can use it.
@@ -1183,15 +1179,16 @@ int do_command(system_t *system, char **token) {
         if (!strcasecmp(token[1],
                         "none"))
             system->damp_type = DAMPING_OFF;
-        else if (!strcasecmp(token[1],
-                             "off"))
+        else if (!strcasecmp(token[1], "off"))
             system->damp_type = DAMPING_OFF;
-        else if (!strcasecmp(token[1],
-                             "linear"))
+        else if (!strcasecmp(token[1], "linear"))
             system->damp_type = DAMPING_LINEAR;
-        else if (!strcasecmp(token[1],
-                             "exponential"))
+        else if (!strcasecmp(token[1], "exponential_unscaled"))
+            system->damp_type = DAMPING_EXPONENTIAL_UNSCALED;
+        else if (!strcasecmp(token[1], "exponential"))
             system->damp_type = DAMPING_EXPONENTIAL;
+        else if (!strcasecmp(token[1], "amoeba_damping"))
+            system->damp_type = DAMPING_AMOEBA;
         else
             return 1;
     } else if (!strcasecmp(token[0],
@@ -1587,7 +1584,7 @@ void setdefaults(system_t *system) {
 
         system->model_dir = calloc(MAXLINE, sizeof(char));
         memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);
-        sprintf(system->model_dir, probable_model_path);
+        sprintf(system->model_dir, "%s", probable_model_path);
     }
 
     /* set the default scaling to 1 */

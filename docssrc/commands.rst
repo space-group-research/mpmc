@@ -187,7 +187,7 @@ Polarization Options
     :widths: 20,40
 
     "polarization [on|off]", "Turns on Thole-Applequist polarization. **(default = off)**"
-    "polar_damp_type [off|none|linear|exponential]", "Type of polarization damping. (off=none)"
+    "polar_damp_type [off|none|linear|exponential|exponential_unscaled|amoeba_damping]", "Type of polarization damping. (off=none)"
     "polar_damp [double]", "Polarization exponential damping constant (to help avoid polarization catastrophe). **(required if polar_damp_type != off)**"
     "polar_ewald [on|off]", "Calculate induced polarization via ewald summation. **(default = off)**"
     "polarizability_tensor [on|off]", "Prints the molecular polarizability tensor for the system. **(default = off)**"

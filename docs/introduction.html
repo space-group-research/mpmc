@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Introduction &#8212; MPMC 1.1.306 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=c1433a87"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input File Specifications" href="input_files.html" />
@@ -39,12 +37,12 @@
           <div class="body" role="main">
             
   <section id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
 <a class="reference internal image-reference" href="_images/mpmc.png"><img alt="_images/mpmc.png" class="align-center" src="_images/mpmc.png" style="width: 600px;" /></a>
 <p>MPMC (Massively Parallel Monte Carlo) is an open-source Monte Carlo package primarily designed for the simulation of liquids, molecular interfaces and functionalized nanoscale materials. It was originally developed by <a class="reference external" href="http://people.llnl.gov/belof1">Jon Belof</a>, includes contributions from Keith McLaughlin, Brant Tudor, Christian Cioce, Adam Hogan and <a class="reference external" href="https://douglasfranz.com">Douglas Franz</a>, and is currently maintained by the <a class="reference external" href="http://drbrian.space/">Brian Space group</a> in the Department of Chemistry at North Carolina State University. MPMC has been applied to the scientific research challenges of nanomaterials for clean energy, environmental sequestration, and molecular detection. Developed to run efficiently on the most powerful supercomputing platforms, MPMC can scale to very large numbers of CPUs or GPUs (with support provided for NVidia’s CUDA).</p>
 <p>Optimized for the study of nanoscale interfaces, MPMC supports many common intermolecular potentials including Lennard-Jones and damped dispersion paired with exponential repulsion, many-body polarization, coupled-dipole van der Waals, quantum rotational statistics, semi-classical quantum effects, advanced importance sampling methods relevant to fluids, and numerous tools for the development of intermolecular potentials.</p>
 <section id="citing-mpmc">
-<h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Permalink to this headline">¶</a></h2>
+<h2>Citing MPMC<a class="headerlink" href="#citing-mpmc" title="Link to this heading">¶</a></h2>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference external" href="https://onlinelibrary.wiley.com/doi/full/10.1002/adts.201900113">MPMC and MCMD: Free High‐Performance Simulation Software for Atomistic Systems.</a></div>
@@ -54,19 +52,19 @@
 </div></blockquote>
 </section>
 <section id="supported-systems">
-<h2>Supported Systems<a class="headerlink" href="#supported-systems" title="Permalink to this headline">¶</a></h2>
+<h2>Supported Systems<a class="headerlink" href="#supported-systems" title="Link to this heading">¶</a></h2>
 <p>Currently a basic build of MPMC only requires a modern C compiler and CMake. Optionally MPMC may be configured to use <a class="reference external" href="https://www.open-mpi.org/">OpenMPI</a> or <a class="reference external" href="https://developer.nvidia.com/cuda-zone">CUDA</a>. Configuring with Coupled-Dipole VDW or QM Rotation options requires <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>.</p>
 <p>MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primarily tested on Linux and support is not guaranteed on other platforms.</p>
 </section>
 <section id="downloading-mpmc">
-<h2>Downloading MPMC<a class="headerlink" href="#downloading-mpmc" title="Permalink to this headline">¶</a></h2>
+<h2>Downloading MPMC<a class="headerlink" href="#downloading-mpmc" title="Link to this heading">¶</a></h2>
 <p>MPMC can be downloaded from the <a class="reference external" href="https://github.com/mpmccode/mpmc/releases">releases page on GitHub</a> or with the following command:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone --recursive https://github.com/mpmccode/mpmc
 </pre></div>
 </div>
 </section>
 <section id="building-mpmc">
-<h2>Building MPMC<a class="headerlink" href="#building-mpmc" title="Permalink to this headline">¶</a></h2>
+<h2>Building MPMC<a class="headerlink" href="#building-mpmc" title="Link to this heading">¶</a></h2>
 <p>Once MPMC has been downloaded it may be quickly compiled with the following bash script:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>bash compile.sh
 </pre></div>
@@ -81,14 +79,14 @@ make
 <p>Make sure to add MPMC to your path after compiling!</p>
 </section>
 <section id="running-mpmc">
-<h2>Running MPMC<a class="headerlink" href="#running-mpmc" title="Permalink to this headline">¶</a></h2>
+<h2>Running MPMC<a class="headerlink" href="#running-mpmc" title="Link to this heading">¶</a></h2>
 <p>MPMC accepts only one argument on the command line, the location of the MPMC input script:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mpmc input.inp
 </pre></div>
 </div>
 </section>
 <section id="updating-mpmc">
-<h2>Updating MPMC<a class="headerlink" href="#updating-mpmc" title="Permalink to this headline">¶</a></h2>
+<h2>Updating MPMC<a class="headerlink" href="#updating-mpmc" title="Link to this heading">¶</a></h2>
 <p>MPMC can be updated with the following command:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git pull
 </pre></div>
@@ -96,11 +94,11 @@ make
 <p>and then rebuilding as necessary.</p>
 </section>
 <section id="mpmc-tutorials">
-<h2>MPMC Tutorials<a class="headerlink" href="#mpmc-tutorials" title="Permalink to this headline">¶</a></h2>
+<h2>MPMC Tutorials<a class="headerlink" href="#mpmc-tutorials" title="Link to this heading">¶</a></h2>
 <p>Example MPMC input scripts and PQRs are available in the tutorials_and_examples folder in the root directory.</p>
 </section>
 <section id="mpmc-testing-suite">
-<h2>MPMC Testing Suite<a class="headerlink" href="#mpmc-testing-suite" title="Permalink to this headline">¶</a></h2>
+<h2>MPMC Testing Suite<a class="headerlink" href="#mpmc-testing-suite" title="Link to this heading">¶</a></h2>
 <p>An end-to-end test suite for MPMC is currently under development. If cloning MPMC anew, use the following to include the tests:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/mpmccode/mpmc --recurse-submodules
 </pre></div>
@@ -119,7 +117,7 @@ python3 run_tests.py
 <p>More information about the test suite can be found in its <a class="reference external" href="https://github.com/mpmccode/mpmc_testing">repository</a>.</p>
 </section>
 <section id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
 <p>MPMC is licensed under the GNU GPL v3 license, a copy is located in the <a class="reference external" href="https://github.com/mpmccode/mpmc/blob/master/LICENSE">root directory</a>.</p>
 </section>
 </section>
@@ -131,8 +129,9 @@ python3 run_tests.py
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#citing-mpmc">Citing MPMC</a></li>
 <li><a class="reference internal" href="#supported-systems">Supported Systems</a></li>
@@ -147,22 +146,27 @@ python3 run_tests.py
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to MPMC’s documentation!</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="input_files.html"
-                        title="next chapter">Input File Specifications</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Welcome to MPMC’s documentation!</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="input_files.html"
+                          title="next chapter">Input File Specifications</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -181,9 +185,9 @@ python3 run_tests.py
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+    &#169; Copyright 2019, The MPMC Project.
+      Last updated on Dec 05, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

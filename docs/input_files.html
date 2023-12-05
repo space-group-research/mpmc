@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Input File Specifications &#8212; MPMC 1.1.306 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=c1433a87"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="search" title="Search" href="search.html" />
@@ -40,10 +38,10 @@
           <div class="body" role="main">
             
   <section id="input-file-specifications">
-<h1>Input File Specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this headline">¶</a></h1>
+<h1>Input File Specifications<a class="headerlink" href="#input-file-specifications" title="Link to this heading">¶</a></h1>
 <p>The bulk of MPMC runs require two plain text files, the input script and the PQR data file. The input script contains all of the commands defining the type of run to be performed as well as details about the state point, control of the potentials, control of the input/output, etc. The PQR file contains the atomic positions of the system as well as force field parameters such as partial charges and van der Waals coefficients on each atom.</p>
 <section id="mpmc-input-script">
-<h2>MPMC Input Script<a class="headerlink" href="#mpmc-input-script" title="Permalink to this headline">¶</a></h2>
+<h2>MPMC Input Script<a class="headerlink" href="#mpmc-input-script" title="Link to this heading">¶</a></h2>
 <p>The MPMC input script contains a series of commands, usually of the form <code class="code docutils literal notranslate"><span class="pre">[command</span> <span class="pre">name]</span> <span class="pre">[on|off|value]</span></code>, and one per line. Comments may be included by beginning a line with <code class="code docutils literal notranslate"><span class="pre">!</span></code> or <code class="code docutils literal notranslate"><span class="pre">#</span></code>. Whitespace is ignored and the order of the commands is not important as the entire input script is read and then the simulation is started. A minimal MPMC input script contains the ensemble to simulate in, the temperature (and possibly pressure), the number of steps, and the output frequency. As an example, a minimal input script for a <span class="math notranslate nohighlight">\(\mu VT\)</span> simulation of H<sub>2</sub> sorption in MOF-5 is provided below and the full example is found in tutorial 1.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>job_name MOF5+BSS
 
@@ -64,7 +62,7 @@ abcbasis  25.669 25.669 25.669 90 90 90
 <p>The full list of commands is available in <a class="reference internal" href="commands.html"><span class="doc">Commands</span></a>.</p>
 </section>
 <section id="pqr-file">
-<h2>PQR File<a class="headerlink" href="#pqr-file" title="Permalink to this headline">¶</a></h2>
+<h2>PQR File<a class="headerlink" href="#pqr-file" title="Link to this heading">¶</a></h2>
 <p>PQR files used by MPMC contain additional columns compared to standard .pqr or .pdb files to support inclusion of the force field parameters. The format is as follows:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>1     2    3          4           5    6         7  8  9  10    11      12              13          14        15     16         17  18  19
 ATOM  ID#  Element    MolecLabel  M/F  MolecID   x  y  z  mass  charge  polarizability  LJ epsilon  LJ sigma  Omega  GWP alpha  C6  C8  C10
@@ -101,7 +99,7 @@ ATOM    429 H2N  H2  M    2     -0.363  -0.000   0.000  0.00000  0.00000  0.0000
 </div>
 </section>
 <section id="surface-fitting-files">
-<h2>Surface Fitting Files<a class="headerlink" href="#surface-fitting-files" title="Permalink to this headline">¶</a></h2>
+<h2>Surface Fitting Files<a class="headerlink" href="#surface-fitting-files" title="Link to this heading">¶</a></h2>
 <p>The default surface fitting input consists of three Euler angles specifying the rotational configuration for each molecule in the dimer followed by a list of center-of-mass distances and their respective ab initio energies used in the fitting process. When using this style of surface fitting the input PQR file consists of the two molecules in the dimer with their center-of-mass at the origin. An example for CO<sub>2</sub> calculated at the CCSD(T)/CBS level is provided below:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>* Data for slip parallel orientation of CO2 dimer
 
@@ -123,7 +121,7 @@ gamma2      0.0
 </pre></div>
 </div>
 <section id="surf-multi-fit-files">
-<h3>Surf_multi_fit Files<a class="headerlink" href="#surf-multi-fit-files" title="Permalink to this headline">¶</a></h3>
+<h3>Surf_multi_fit Files<a class="headerlink" href="#surf-multi-fit-files" title="Link to this heading">¶</a></h3>
 <p>The surf_multi_fit inputs are more general, able to handle an arbitrary number of atoms or molecules in arbitrary configurations. They begin with the word “Configuration”, followed by the ab initio energy, then a list of atoms in the system, with the format: atom type, molecule number, x, y, z, and partial charge. An example for an He dimer is shown below:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuration 1
 286570.1
@@ -151,8 +149,9 @@ He 2 0.7937655 0 0 0
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Input File Specifications</a><ul>
 <li><a class="reference internal" href="#mpmc-input-script">MPMC Input Script</a></li>
 <li><a class="reference internal" href="#pqr-file">PQR File</a></li>
@@ -164,22 +163,27 @@ He 2 0.7937655 0 0 0
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="introduction.html"
-                        title="previous chapter">Introduction</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="tutorial.html"
-                        title="next chapter">Tutorials</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="introduction.html"
+                          title="previous chapter">Introduction</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tutorial.html"
+                          title="next chapter">Tutorials</a></p>
+  </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -198,9 +202,9 @@ He 2 0.7937655 0 0 0
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, The MPMC Project.
-      Last updated on May 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+    &#169; Copyright 2019, The MPMC Project.
+      Last updated on Dec 05, 2023.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

@@ -21,7 +21,7 @@ MPMC supports compilation on Linux, macOS, and Windows; however MPMC is primaril
 MPMC can be downloaded with the following command.
 
 ```
-git clone https://github.com/space-group-research/mpmc
+git clone --recursive https://github.com/space-group-research/mpmc
 ```
 
 #### Compiling MPMC

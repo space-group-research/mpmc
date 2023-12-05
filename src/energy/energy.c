@@ -104,6 +104,7 @@ double energy(system_t *system) {
                                   /* moved this to the front so that we can start the cuda thread up before starting the other energy calculations */
 #ifdef CUDA
         pthread_t cuda_worker;
+        pthread_t vdw_worker;
 #endif
         if (!(system->sg || system->rd_only) && system->polarization) {
 #ifdef CUDA
@@ -113,13 +114,33 @@ double energy(system_t *system) {
                     printf("ERROR; return code from pthread_create() is %d\n", rc);
                     exit(-1);
                 }
-            } else {
+            }
+            else {
                 polar_energy = polar(system);
                 system->observables->polarization_energy = polar_energy;
             }
+
+            if (system->cuda && system->polarvdw) {
+                int vdw_status = pthread_create(&vdw_worker, NULL, vdw_cuda, (void *)system);
+                if (vdw_status) {
+                    printf("Error in creating VDW cuda thread\n");
+                    exit(-1);
+                }
+            }
+            else {
+                thole_resize_matrices(system);
+                thole_amatrix(system);
+                vdw_energy = vdw(system);
+                system->observables->vdw_energy = vdw_energy;
+            }
+
 #else
             polar_energy = polar(system);
             system->observables->polarization_energy = polar_energy;
+            if (system->polarvdw) {
+                vdw_energy = vdw(system);
+                system->observables->vdw_energy = vdw_energy;
+            }
 #endif /* CUDA */
         }
 
@@ -157,25 +178,16 @@ double energy(system_t *system) {
                 coulombic_energy = coulombic(system);
             system->observables->coulombic_energy = coulombic_energy;
 
-            if (system->polarvdw) {
-#ifdef CUDA
-                if (system->cuda) {
-                    error(
-                        "error: cuda polarvdw not yet implemented!\n");
-                    die(-1);
-                } else
-                    vdw_energy = vdw(system);
-#else
-                vdw_energy = vdw(system);
-#endif
-                system->observables->vdw_energy = vdw_energy;
-            }
         }
 
 #ifdef CUDA
         if (!(system->sg || system->rd_only) && system->polarization && system->cuda) {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;
+        }
+        if (system->cuda && system->polarvdw) {
+            pthread_join(vdw_worker, NULL);
+            vdw_energy = system->observables->vdw_energy;
         }
 #endif
     }  // end if cavity_autoreject_absolute did not find bad match. (if potential==0)

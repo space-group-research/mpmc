@@ -108,18 +108,19 @@ if(QM_ROTATION)
         src/quantum_rotation/rotational_eigenspectrum.c
         src/quantum_rotation/rotational_integrate.c
         src/quantum_rotation/rotational_potential.c)
-    set(LIB ${LIB} lapack)
 else()
     message("-- QM Rotation Disabled")
 endif()
 
 if(VDW)
     message("-- CDVDW Enabled")
-    if(NOT QM_ROTATION)
-        set(LIB ${LIB} lapack)
-    endif()
 else()
     message("-- CDVDW Disabled")
+endif()
+
+if(VDW OR QM_ROTATION)
+    link_directories(${CMAKE_SOURCE_DIR}/lapack/install_dir)
+    set(LIB ${LIB} liblapack.a libblas.a gfortran)
 endif()
 
 include_directories(${INCLUDE})

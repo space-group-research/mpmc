@@ -157,8 +157,17 @@ double disp_expansion(system_t *system) {
     }
 
     if (system->disp_expansion_mbvdw == 1) {
-        thole_amatrix(system);
-        potential += vdw(system);
+        #ifdef CUDA
+        {
+            vdw_cuda(system);
+            potential += system->observables->vdw_energy;
+        }
+        #else
+        {
+            thole_amatrix(system);
+            potential += vdw(system);
+        }
+        #endif /* CUDA */
     }
 
     /* calculate self LRC interaction */
@@ -218,8 +227,17 @@ double disp_expansion_nopbc(system_t *system) {
     }
 
     if (system->disp_expansion_mbvdw == 1) {
-        thole_amatrix(system);
-        potential += vdw(system);
+        #ifdef CUDA
+        {
+            vdw_cuda(system);
+            potential += system->observables->vdw_energy;
+        }
+        #else
+        {
+            thole_amatrix(system);
+            potential += vdw(system);
+        }
+        #endif /* CUDA */
     }
 
     return potential;

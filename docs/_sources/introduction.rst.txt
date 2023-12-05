@@ -30,7 +30,7 @@ MPMC can be downloaded from the `releases page on GitHub <https://github.com/mpm
 
 .. code-block:: none
 
-    git clone https://github.com/mpmccode/mpmc
+    git clone --recursive https://github.com/mpmccode/mpmc
 
 Building MPMC
 =============

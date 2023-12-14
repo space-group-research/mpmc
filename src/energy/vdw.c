@@ -174,7 +174,7 @@ double *lapack_diag(struct mtx *M, int jobtype) {
               "double * eigvals", M->dim * sizeof(double));
     //optimize the size of work array
     lwork = -1;
-    work = malloc(sizeof(double));
+    work = calloc(1, sizeof(double));
     checknull(work,
               "double * work", sizeof(double));
     dsyev_(&job, &uplo, &(M->dim), M->val, &(M->dim), eigvals, work, &lwork, &rval);

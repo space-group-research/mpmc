@@ -120,7 +120,10 @@ double energy(system_t *system) {
                 system->observables->polarization_energy = polar_energy;
             }
 
-            if (system->cuda && system->polarvdw) {
+            if (system->disp_expansion_mbvdw == 1) {
+                ;
+            }
+            else if (system->cuda && system->polarvdw) {
                 int vdw_status = pthread_create(&vdw_worker, NULL, vdw_cuda, (void *)system);
                 if (vdw_status) {
                     printf("Error in creating VDW cuda thread\n");
@@ -137,7 +140,7 @@ double energy(system_t *system) {
 #else
             polar_energy = polar(system);
             system->observables->polarization_energy = polar_energy;
-            if (system->polarvdw) {
+            if (system->polarvdw && system->disp_expansion_mbvdw == 0) {
                 vdw_energy = vdw(system);
                 system->observables->vdw_energy = vdw_energy;
             }
@@ -185,7 +188,7 @@ double energy(system_t *system) {
             pthread_join(cuda_worker, NULL);
             polar_energy = system->observables->polarization_energy;
         }
-        if (system->cuda && system->polarvdw) {
+        if (system->cuda && system->polarvdw && system->disp_expansion_mbvdw == 0) {
             pthread_join(vdw_worker, NULL);
             vdw_energy = system->observables->vdw_energy;
         }

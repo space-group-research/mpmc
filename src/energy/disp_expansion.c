@@ -159,8 +159,16 @@ double disp_expansion(system_t *system) {
     if (system->disp_expansion_mbvdw == 1) {
         #ifdef CUDA
         {
-            vdw_cuda(system);
-            potential += system->observables->vdw_energy;
+            if (system->cuda == 1)
+            {
+                vdw_cuda(system);
+                potential += system->observables->vdw_energy;
+            }
+            else
+            {
+                thole_amatrix(system);
+                potential += vdw(system);
+            }
         }
         #else
         {
@@ -229,8 +237,16 @@ double disp_expansion_nopbc(system_t *system) {
     if (system->disp_expansion_mbvdw == 1) {
         #ifdef CUDA
         {
-            vdw_cuda(system);
-            potential += system->observables->vdw_energy;
+            if (system->cuda == 1)
+            {
+                vdw_cuda(system);
+                potential += system->observables->vdw_energy;
+            }
+            else
+            {
+                thole_amatrix(system);
+                potential += vdw(system);
+            }
         }
         #else
         {

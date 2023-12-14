@@ -1562,7 +1562,7 @@ void setdefaults(system_t *system) {
     // then find the models dir relative to that.
     char *exe_path = system->argv[0];
     char str[1000];
-    strncpy(str, exe_path, sizeof(str));
+    strncpy(str, exe_path, sizeof(str)-1);
     char* parts[100] = {0};
     unsigned int index = 0;
     parts[index] = strtok(str, "/");
@@ -1577,10 +1577,10 @@ void setdefaults(system_t *system) {
     if (build_index_flag != -1) {
         char probable_model_path[1000] = "/";
         for (int i=0; i<build_index_flag; i++) {
-            strncat(probable_model_path, parts[i], strlen(parts[i]));
-            strncat(probable_model_path, "/", 1);
+            strncat(probable_model_path, parts[i], 101);
+            strncat(probable_model_path, "/", 2);
         }
-        strncat(probable_model_path, "models/", 7);
+        strncat(probable_model_path, "models/", 8);
 
         system->model_dir = calloc(MAXLINE, sizeof(char));
         memnullcheck(system->model_dir, MAXLINE * sizeof(char), __LINE__ - 1, __FILE__);

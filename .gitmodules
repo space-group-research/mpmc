@@ -4,4 +4,4 @@
 	branch = master
 [submodule "lapack"]
 	path = lapack
-	url = https://github.com/Reference-LAPACK/lapack
+	url = https://github.com/Reference-LAPACK/lapack.git

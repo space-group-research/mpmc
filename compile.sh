@@ -1,6 +1,7 @@
 #!/bin/bash
 
-if [ "$1" = "vdw" ] || [ "$1" == "all" ]; then
+if [ "$1" = "vdw" ] || [ "$1" == "all" ] || [ "$1" == "cuda" ]; then
+    git submodule update --init --recursive
     cd lapack/
     mkdir -p build
     cd build/
@@ -55,7 +56,7 @@ fi
 if [ "$1" = "debug" ]; then
     cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=OFF -DCMAKE_BUILD_TYPE=Debug -Wno-dev ../
 elif [ "$1" = "cuda" ]; then
-    cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=OFF -DCUDA=ON -DCMAKE_BUILD_TYPE=release -Wno-dev ../
+    cmake -DQM_ROTATION=ON -DVDW=ON -DMPI=OFF -DCUDA=ON -DCMAKE_BUILD_TYPE=release -Wno-dev ../
 elif [ "$1" = "mpi" ]; then
     cmake -DQM_ROTATION=OFF -DVDW=OFF -DMPI=ON -DCUDA=OFF -DCMAKE_BUILD_TYPE=release -Wno-dev ../
 elif [ "$1" = "vdw" ]; then

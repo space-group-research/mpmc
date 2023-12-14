@@ -10,6 +10,7 @@ University of South Florida
 #include <mc.h>
 #ifdef CUDA
 #include <pthread.h>
+extern void * vdw_cuda(void *);
 #endif
 
 /* count the number of molecules currently in the system excluding frozen, adiabatic, etc.*/

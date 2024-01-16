@@ -273,6 +273,7 @@ extern "C" {
 #include <time.h>
 #include "defines.h"
 #include "structs.h"
+#include "cmake_config.h"
 //#include "mc.h"
 
 extern void error(char *);

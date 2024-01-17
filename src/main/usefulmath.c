@@ -13,7 +13,7 @@ int iidotprod(int* a, int* b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-double min(double a, double b) {
+double min_double(double a, double b) {
     if (a > b)
         return b;
     else

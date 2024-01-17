@@ -70,10 +70,11 @@ __global__ static void build_a(int N, double *A, const double damp, double3 *pos
     float one_over_pol_i;
 
     if (pols[i] == 0) {
-        one_over_pol_i = INFINITY;
+        one_over_pol_i = 1e38;
     } else {
         one_over_pol_i = 1.0 / pols[i];
     }
+    
     const double3 pos_i = pos[i];
     const double3 recip_basis_0 =
         make_double3(recip_basis[0], recip_basis[1], recip_basis[2]);
@@ -269,12 +270,8 @@ __global__ static void print_matrix(int dim, double *A) {
 
 
 extern "C" {
-#include <stdlib.h>
-#include <time.h>
-#include "defines.h"
-#include "structs.h"
-#include "cmake_config.h"
-//#include "mc.h"
+
+#include "mc.h"
 
 extern void error(char *);
 extern void die(int);
@@ -689,8 +686,8 @@ static double lr_vdw_corr(system_t *system) {
     return corr;
 }
 
-void *vdw_cuda(void *systemptr) {
-    system_t *system = (system_t *)systemptr;
+void vdw_cuda(system_t *system) {
+    //system_t *system = (system_t *)systemptr;
     int N = system->natoms;
     int matrix_size = 3 * 3 * N * N;
     int dim = 3 * N;
@@ -786,6 +783,7 @@ void *vdw_cuda(void *systemptr) {
     cudaErrorHandler(cudaMemcpy(host_eigenvalues, d_W, dim * sizeof(double), cudaMemcpyDeviceToHost), __LINE__);
     cudaDeviceSynchronize();
     double e_total = 0;
+
     e_total = eigen2energy(host_eigenvalues, dim, system->temperature);
     e_total *= au2invseconds * halfHBAR;
 
@@ -832,7 +830,6 @@ void *vdw_cuda(void *systemptr) {
 
     double energy = e_total - e_iso + fh_corr + lr_corr;
     system->observables->vdw_energy = energy;
-    return NULL;
 }
 }
 

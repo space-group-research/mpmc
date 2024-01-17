@@ -30,8 +30,8 @@ double error_calc(system_t *system, int nCurves, int nPoints, curveData_t *curve
     for (j = 0; j < nCurves; j++) {
         for (i = 0; i < nPoints; i++) {
             //changed so all points contribute until both curves (ab-init and fit) exceed max_energy
-            a = min(max_energy, curve[j].input[i]);
-            b = min(max_energy, curve[j].output[i]);
+            a = min_double(max_energy, curve[j].input[i]);
+            b = min_double(max_energy, curve[j].output[i]);
             weight = exp(kweight * (max_energy - a) / max_energy);
             buffer = a - b;
             buffer *= buffer;

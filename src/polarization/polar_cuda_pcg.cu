@@ -74,7 +74,14 @@ __global__ static void build_a(int N, float *A, const float damp, float3 *pos, f
     float expr, damping_term1, damping_term2;
     float3 dr, dri, img;
 
-    const float one_over_pol_i = 1.0 / pols[i];
+    float one_over_pol_i;
+
+    if (pols[i] == 0) {
+        one_over_pol_i = 1e38;
+    } else {
+        one_over_pol_i = 1.0 / pols[i];
+    }
+    
     const float3 pos_i = pos[i];
     const float3 recip_basis_0 = make_float3(recip_basis[0], recip_basis[1], recip_basis[2]);
     const float3 recip_basis_1 = make_float3(recip_basis[3], recip_basis[4], recip_basis[5]);

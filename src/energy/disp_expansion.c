@@ -2,10 +2,6 @@
 
 //Copyright 2013-2019 Adam Hogan
 
-#ifdef CUDA
-    extern void * vdw_cuda(system_t *);
-#endif
-
 double de_fx(double r, double b, double sigma, double c6, double c8, double c10, int damp) {
     double energy = 0.0, repulsion = 0.0;
 
@@ -167,6 +163,7 @@ double disp_expansion(system_t *system) {
             {
                 vdw_cuda(system);
                 potential += system->observables->vdw_energy;
+                system->observables->vdw_energy = 0;
             }
             else
             {

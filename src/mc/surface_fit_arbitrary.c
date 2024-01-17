@@ -13,8 +13,8 @@ double error_calc_fr_arbitrary_configurations(system_t *system, int nConfigs, co
     for (i = 0; i < nConfigs; i++) {
         if (system->fit_boltzmann_weight == 0) {
             //changed so all points contribute until both curves (ab-init and fit) exceed max_energy
-            abInitio = min(max_energy, configuration[i].abInitioEnergy);
-            model = min(max_energy, configuration[i].currentFitEnergy);
+            abInitio = min_double(max_energy, configuration[i].abInitioEnergy);
+            model = min_double(max_energy, configuration[i].currentFitEnergy);
             weight = exp(kweight * (max_energy - abInitio) / max_energy);
         } else {
             abInitio = configuration[i].abInitioEnergy;

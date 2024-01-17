@@ -214,6 +214,7 @@ int are_we_done_yet(system_t *, int);
 /* polarization - CUDA */
 #ifdef CUDA
 void *polar_cuda(void *);
+void vdw_cuda(system_t *);
 #endif /* CUDA */
 
 /* linear algebra - VDW */
@@ -286,5 +287,5 @@ double get_rand(system_t *system);
 double dddotprod(double *, double *);
 double didotprod(double *, int *);
 int iidotprod(int *, int *);
-double min(double a, double b);
+double min_double(double a, double b);
 int is_singular(double **a, int n);

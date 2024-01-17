@@ -602,9 +602,9 @@ double calc_multi_error(system_t *system, multiConfigData_t *configs) {
         if (configs->fitEnergy[i] == MAXVALUE)
             configs->lastFitEnergy[i] = model_energy;
         configs->fitEnergy[i] = model_energy;
-        model_energy = min(model_energy, max_energy);
+        model_energy = min_double(model_energy, max_energy);
         double ab_initio_energy = configs->abInitioEnergy[i];
-        ab_initio_energy = min(ab_initio_energy, max_energy);
+        ab_initio_energy = min_double(ab_initio_energy, max_energy);
         double weight = exp(kweight * (max_energy - ab_initio_energy) / max_energy);
         double error = model_energy - ab_initio_energy;
         total_error += weight * error * error;

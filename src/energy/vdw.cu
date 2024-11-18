@@ -141,15 +141,6 @@ __global__ static void build_a(int N, double *A, const double damp, double3 *pos
             // END MINIMUM IMAGE
 
             switch (damp_type) {
-                case DAMPING_EXPONENTIAL_UNSCALED: {
-                    // damping terms
-                    expr = exp(-damp * r);
-                    damping_term1 = 1.0f - expr * (0.5f * damp2 * r2 + damp * r + 1.0f);
-                    damping_term2 = 1.0f - expr * (damp3 * r * r2 / 6.0f + 0.5f * damp2 * r2 +
-                        damp * r + 1.0f);
-
-                    break;
-                }
                 case DAMPING_AMOEBA: {
                     double l = damp;
                     double u;
@@ -165,19 +156,11 @@ __global__ static void build_a(int N, double *A, const double damp, double3 *pos
 
                     break;
                 }
-                default: { // Damping exponential with corrections
-                    double l = damp;
-                    double l2 = l * l;
-                    double l3 = l * l * l;
-                    double u;
-                    if (pols[i] * pols[j] == 0) {
-                        u = r;
-                    } else {
-                        u = r / pow(pols[i] * pols[j], 1 / 6.0);
-                    }
-                    double explr = exp(-l * u);
-                    damping_term1 = 1.0 - explr * (.5*l2*u*u + l*u + 1.0);
-                    damping_term2 = damping_term1 - explr * (l3 * u * u * u / 6.0);
+                default: { // exponential damping
+                    expr = exp(-damp * r);
+                    damping_term1 = 1.0f - expr * (0.5f * damp2 * r2 + damp * r + 1.0f);
+                    damping_term2 = 1.0f - expr * (damp3 * r * r2 / 6.0f + 0.5f * damp2 * r2 +
+                        damp * r + 1.0f);
 
                     break;
                 }

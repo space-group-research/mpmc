@@ -123,7 +123,7 @@ void thole_amatrix(system_t *system) {
                         damp1 = damp2 = 1.0;
                     }
                     break;
-                case DAMPING_EXPONENTIAL_UNSCALED:
+                case DAMPING_EXPONENTIAL:
                     explr = exp(-l * r);
                     damp1 = 1.0 - explr * (0.5 * l2 * r2 + l * r + 1.0);
                     damp2 = damp1 - explr * (l3 * r2 * r / 6.0);
@@ -132,23 +132,6 @@ void thole_amatrix(system_t *system) {
                         wdamp2 = wdamp1 - explrcut * (l3 * rcut3 / 6.0);
                     }
                     break;
-                case DAMPING_EXPONENTIAL: {
-                    double u;
-                    if ( atom_array[i]->polarizability * atom_array[j]->polarizability == 0 ) {
-                        u = r;
-                    }
-                    else {
-                        u = r / pow(atom_array[i]->polarizability * atom_array[j]->polarizability, 1.0 / 6.0);
-                    }
-                    explr = exp(-l * u);
-                    damp1 = 1.0 - explr * (0.5 * l2 * (u*u) + l * u + 1.0);
-                    damp2 = damp1 - explr * (l3 * (u*u*u) / 6.0);
-                    if (system->polar_wolf_full) {  //subtract off damped interaction at r_cutoff
-                        wdamp1 = 1.0 - explrcut * (0.5 * l2 * rcut2 + l * rcut + 1.0);
-                        wdamp2 = wdamp1 - explrcut * (l3 * rcut3 / 6.0);
-                    }
-                    break;
-                }
                 case DAMPING_AMOEBA: {
                     double u;
                     if ( atom_array[i]->polarizability * atom_array[j]->polarizability == 0 ) {
